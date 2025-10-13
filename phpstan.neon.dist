@@ -1,0 +1,8 @@
+parameters:
+  level: 8
+  paths:
+    - app
+  bootstrapFiles:
+    - vendor/autoload.php
+    - bootstrap/app.php
+  memoryLimit: 1G
