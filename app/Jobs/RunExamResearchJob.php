@@ -2,6 +2,7 @@
 
 namespace App\Jobs;
 
+use Illuminate\Support\Facades\Log;
 use App\Models\Exam;
 use App\Models\GenerationTask;
 use App\Services\LanguageApp\ExamResearchService;
@@ -29,6 +30,8 @@ class RunExamResearchJob implements ShouldQueue
             'status' => 'running',
             'request' => ['exam_id' => $exam->id, 'notes' => $this->notes],
         ]);
+
+        Log::debug('RunExamResearchJob', [ 'task' => $task]);
 
         try {
             $service->runPipeline($exam, $task);

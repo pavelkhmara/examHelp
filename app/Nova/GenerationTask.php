@@ -2,8 +2,9 @@
 
 namespace App\Nova;
 
-use Laravel\Nova\Fields\{ID, Text, Select, Code, Number, DateTime};
+use Laravel\Nova\Fields\{ID, BelongsTo, Text, Select, Code, Number, DateTime};
 use Laravel\Nova\Http\Requests\NovaRequest;
+use Laravel\Nova\Filters\Filter;
 
 class GenerationTask extends Resource
 {
@@ -16,6 +17,12 @@ class GenerationTask extends Resource
     {
         return [
             ID::make()->sortable(),
+            BelongsTo::make('Exam', 'exam', Exam::class)
+                ->searchable()
+                ->sortable()
+                ->readonly(function ($request) {
+                    return !$request->isResourceIndexRequest() && !$request->isResourceDetailRequest();
+                }),
             Text::make('Type')->sortable(),
             Select::make('Status')->options([
                 'queued'=>'queued','running'=>'running','completed'=>'completed','failed'=>'failed',
@@ -34,6 +41,16 @@ class GenerationTask extends Resource
     
     public function filters(NovaRequest $request)
     {
-        return [];
+        return [
+            new Filters\ExamFilter,
+        ];
+    }
+    
+    public static function indexQuery(NovaRequest $request, $query)
+    {
+        if ($examId = $request->get('exam')) {
+            $query->where('exam_id', $examId);
+        }
+        return $query;
     }
 }

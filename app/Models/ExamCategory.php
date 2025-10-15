@@ -6,7 +6,7 @@ use Illuminate\Database\Eloquent\Model;
 
 class ExamCategory extends Model
 {
-    protected $fillable = ['exam_id','key','name','meta'];
+    protected $fillable = ['exam_id','key','name','meta', 'description', 'order'];
     protected $casts = ['meta' => 'array'];
 
     public function exam() {
