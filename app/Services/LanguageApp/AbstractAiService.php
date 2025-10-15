@@ -2,153 +2,122 @@
 
 namespace App\Services\LanguageApp;
 
+use Illuminate\Support\Facades\Log;
 use App\Models\GenerationLog;
 use App\Models\GenerationTask;
 
 abstract class AbstractAiService
 {
-    protected function callAi(array $payload): array
+    public function __construct(
+        protected readonly AiProvider $ai
+    ) {}
+
+    /**
+     * @param array $payload
+     * @param array $opts       ['schema' => array|null, 'web' => bool, 'files' => array<int,\SplFileInfo|string>]
+     */
+    protected function callAi(array $payload, array $opts = []): array
     {
-        if (env('AI_ENABLE_MOCK')) {
-            $mock = [
-                'sections' => [
-                    ['key'=>'listening','title'=>'Listening','count'=>20,'time_per_question_sec'=>30,'prep_time_sec'=>0,'notes'=>'MCQ'],
-                    ['key'=>'reading','title'=>'Reading','count'=>20,'time_per_question_sec'=>45,'prep_time_sec'=>0,'notes'=>'MCQ + True/False'],
-                    ['key'=>'speaking','title'=>'Speaking','count'=>4,'time_per_question_sec'=>90,'prep_time_sec'=>30,'notes'=>'monologue/dialogue'],
-                    ['key'=>'writing','title'=>'Writing','count'=>2,'time_per_question_sec'=>1200,'prep_time_sec'=>0,'notes'=>'Essay + Letter'],
-                ],
-                'total_score' => ['min'=>0,'max'=>100],
-            ];
-            return ['ok'=>true,'data'=>$mock,'usage'=>['prompt_tokens'=>0,'completion_tokens'=>0,'total_tokens'=>0],'raw'=>['mock'=>true]];
-        }
+        Log::debug('AbstractAiService: calling AI', ['$payload' => $payload, 'options' => $opts]);
 
-        // ↓ дальше оставь текущую логику реального вызова
-        static $runner = null;
-        if ($runner === null) {
-            $runner = \App\Services\LanguageApp\AiProviderFactory::make();
+        $cfg = config('ai');
+        $provider = $cfg['provider'];
+        $contextNotes = '';
+ 
+        // 1) Context
+        $examInfo = $payload['exam_slug'] ?? $payload['input'] ?? 'No exam info provided';
+        // web
+        if (!empty($opts['web']) && $cfg[strval($provider)]['enable_web_search']) {
+            $contextNotes = $this->gatherWebHints($examInfo, (int)($cfg[strval($provider)]['max_web_snippets'] ?? 5));
         }
+    
+        // files
+        if (!empty($opts['files'])) {
+            $payload['files_hint'] = $this->gatherFileTexts($opts['files']);
+        }
+    
+        // 2) Prompt
+        $prompt = <<<EOT
+You are an educational researcher for exam prep.
+Information from user about exam: {$contextNotes}
 
+You must browse the web to discover authentic question patterns for the target exam.
+Follow these constraints:
+- Use at least 4 reputable sources with diversity (.gov, .edu, official exam sites, major publishers).
+- Extract patterns (archetypes), typical distractors, verbs, numeric ranges, units, common visuals, difficulty bands.
+- Add per-category weights by mapping archetypes to categories from the provided exam_matrix.
+- Record each source: url, title, publisher
+- If evidence conflicts, include both views and explain under rationale.
+
+Output strictly the JSON object described in the response_json_schema. If unsure, be conservative.
+
+Task: Mine question archetypes and style for the exam.
+
+exam_name: {$examInfo}
+exam_description: {{EXAM_VARIANT}}
+timebox_minutes: 3
+
+exam_matrix_json:
+{{EXAM_MATRIX_JSON}}
+EOT;
+    
+
+        // 3) Messages
         $messages = [
-            ['role' => 'system', 'content' => 'You extract exam structure. Output JSON only.'],
-            ['role' => 'user', 'content' => json_encode($payload, JSON_UNESCAPED_UNICODE)],
+            [
+                'role'    => 'system',
+                'content' => $prompt,
+            ]
         ];
 
-        $schema = json_encode([
-            'type' => 'object',
-            'required' => ['sections', 'total_score'],
-            'properties' => [
-                'sections' => [
-                    'type' => 'array',
-                    'items' => [
-                        'type' => 'object',
-                        'required' => ['key','title','count'],
-                        'properties' => [
-                            'key' => ['type'=>'string'],
-                            'title' => ['type'=>'string'],
-                            'count' => ['type'=>'integer'],
-                            'time_per_question_sec' => ['type'=>'integer'],
-                            'prep_time_sec' => ['type'=>'integer'],
-                            'notes' => ['type'=>'string'],
-                        ],
-                    ],
-                ],
-                'total_score' => [
-                    'type'=>'object',
-                    'required'=>['min','max'],
-                    'properties'=>[
-                        'min'=>['type'=>'integer'],
-                        'max'=>['type'=>'integer'],
-                    ],
-                ],
-            ],
-        ], JSON_UNESCAPED_UNICODE);
-
-        try {
-            return $runner($messages, $schema);
-        } catch (\Throwable $e) {
-            if (env('AI_FALLBACK_TO_MOCK_ON_ERROR', true)) {
-                $mock = [
-                    'sections' => [
-                        ['key'=>'listening','title'=>'Listening','count'=>20,'time_per_question_sec'=>30,'prep_time_sec'=>0,'notes'=>'MCQ'],
-                        ['key'=>'reading','title'=>'Reading','count'=>20,'time_per_question_sec'=>45,'prep_time_sec'=>0,'notes'=>'MCQ + True/False'],
-                        ['key'=>'speaking','title'=>'Speaking','count'=>4,'time_per_question_sec'=>90,'prep_time_sec'=>30,'notes'=>'monologue/dialogue'],
-                        ['key'=>'writing','title'=>'Writing','count'=>2,'time_per_question_sec'=>1200,'prep_time_sec'=>0,'notes'=>'Essay + Letter'],
-                    ],
-                    'total_score' => ['min'=>0,'max'=>100],
-                ];
-                return ['ok'=>true,'data'=>$mock,'usage'=>['prompt_tokens'=>0,'completion_tokens'=>0,'total_tokens'=>0],'raw'=>['fallback'=>'mock','error'=>$e->getMessage()]];
-            }
-            throw $e;
+        if (!empty($payload['user_input'])) {
+            $messages[] = [
+                'role'    => 'user',
+                'content' => $payload['user_input']
+            ];
         }
+    
+        $payload['messages'] = $messages;
+
+        Log::debug('AbstractAiService: prepared payload for AI', ['messages' => $messages]);
+        
+        $res = $this->ai->generate($payload, $opts);
+        
+        Log::debug('AbstractAiService.callAi', [
+            'ok' => $res['ok'] ?? null,
+            'usage' => $res['usage'] ?? null,
+        ]);
+        
+        return $res;
     }
-
-
-
-    // protected function callAi(array $payload): array
-    // {
-    //     static $runner = null;
-
-    //     if ($runner === null) {
-    //         $runner = \App\Services\LanguageApp\AiProviderFactory::make();
-    //     }
-
-    //     $messages = [
-    //         ['role' => 'system', 'content' => 'You extract exam structure. Output JSON only.'],
-    //         ['role' => 'user', 'content' => json_encode($payload, JSON_UNESCAPED_UNICODE)],
-    //     ];
-
-    //     $schema = json_encode([
-    //         'type' => 'object',
-    //         'required' => ['sections', 'total_score'],
-    //         'properties' => [
-    //             'sections' => [
-    //                 'type' => 'array',
-    //                 'items' => [
-    //                     'type' => 'object',
-    //                     'required' => ['key', 'title', 'count'],
-    //                     'properties' => [
-    //                         'key' => ['type' => 'string'],
-    //                         'title' => ['type' => 'string'],
-    //                         'count' => ['type' => 'integer'],
-    //                         'time_per_question_sec' => ['type' => 'integer'],
-    //                         'prep_time_sec'        => ['type' => 'integer'],
-    //                         'notes'                => ['type' => 'string'],
-    //                     ],
-    //                 ],
-    //             ],
-    //             'total_score' => [
-    //                 'type' => 'object',
-    //                 'required' => ['min', 'max'],
-    //                 'properties' => [
-    //                     'min' => ['type' => 'integer'],
-    //                     'max' => ['type' => 'integer'],
-    //                 ],
-    //             ],
-    //         ],
-    //     ], JSON_UNESCAPED_UNICODE);
-
-    //     $res = $runner($messages, $schema);
-
-    //     // Нормализуем возвращаемое значение, чтобы потребители не падали на null
-    //     if (!isset($res['data']) || !is_array($res['data'])) {
-    //         throw new \RuntimeException('AI runner returned empty data');
-    //     }
-
-    //     return $res;
-    // }
-
-
-
+    
+    private function gatherWebHints($exam_info, int $limit = 5): string
+    {
+        // СТАБ: здесь может быть ваш сервис web-поиска (SerpAPI, proxy и т.д.)
+        // Пока просто возвращаем пустышку, чтобы не ломать протокол
+        return $exam_info;
+    }
+    
+    private function gatherFileTexts(array $files): string
+    {
+        // СТАБ: здесь подключите ваш DocumentIngestService (pdf/docx/jpg → OCR/текст)
+        // Пока листаем имена файлов, чтобы AI видел подсказку
+        $names = array_map(function($f){
+            return is_string($f) ? basename($f) : (method_exists($f, 'getFilename') ? $f->getFilename() : '[unknown]');
+        }, $files);
+        return 'FILES_HINTS: ' . implode(', ', $names);
+    }
+    
     protected function log(GenerationTask $task, string $stage, array $request, array $response): void
     {
-        GenerationLog::create([
+        \App\Models\GenerationLog::create([
             'generation_task_id' => $task->id,
-            'stage' => $stage,
-            'request' => $request,
-            'response' => $response['data'] ?? null,
-            'prompt_tokens' => $response['usage']['prompt_tokens'] ?? 0,
-            'completion_tokens' => $response['usage']['completion_tokens'] ?? 0,
-            'total_tokens' => $response['usage']['total_tokens'] ?? 0,
+            'stage'              => $stage,
+            'request'            => $request,
+            'response'           => $response['data'] ?? null,
+            'prompt_tokens'      => $response['usage']['prompt_tokens'] ?? 0,
+            'completion_tokens'  => $response['usage']['completion_tokens'] ?? 0,
+            'total_tokens'       => $response['usage']['total_tokens'] ?? 0,
         ]);
     }
 }

@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Exam extends Model
 {
@@ -25,11 +26,33 @@ class Exam extends Model
         'is_active' => 'boolean',
     ];
 
-    public function categories() {
+    public function categories(): HasMany
+    {
         return $this->hasMany(ExamCategory::class);
     }
 
-    public function examples() {
+    public function examples(): HasMany
+    {
         return $this->hasMany(ExamExampleQuestion::class);
+    }
+
+    public function generationTasks(): HasMany
+    {
+        return $this->hasMany(GenerationTask::class);
+    }
+
+    public function generationLogs(): HasMany
+    {
+        return $this->hasMany(GenerationLog::class);
+    }
+
+    public function loadAllCounts()
+    {
+        return $this->loadCount([
+            'categories', 
+            'examples', 
+            'generationTasks',
+            'generationLogs'
+        ]);
     }
 }

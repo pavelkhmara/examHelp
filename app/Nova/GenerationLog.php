@@ -4,6 +4,7 @@ namespace App\Nova;
 
 use Laravel\Nova\Fields\{ID, BelongsTo, Text, Code, Number, DateTime};
 use Laravel\Nova\Http\Requests\NovaRequest;
+use Laravel\Nova\Filters\Filter;
 
 class GenerationLog extends Resource
 {
@@ -16,6 +17,12 @@ class GenerationLog extends Resource
     {
         return [
             ID::make()->sortable(),
+            BelongsTo::make('Exam', 'exam', Exam::class)
+                ->searchable()
+                ->sortable()
+                ->readonly(function ($request) {
+                    return !$request->isResourceIndexRequest() && !$request->isResourceDetailRequest();
+                }),
             BelongsTo::make('Task', 'task', GenerationTask::class)->searchable(),
             Text::make('Stage')->sortable(),
             Code::make('Request')->json()
@@ -33,6 +40,16 @@ class GenerationLog extends Resource
     
     public function filters(NovaRequest $request)
     {
-        return [];
+        return [
+            new Filters\ExamFilter,
+        ];
+    }
+
+    public static function indexQuery(NovaRequest $request, $query)
+    {
+        if ($examId = $request->get('exam')) {
+            $query->where('exam_id', $examId);
+        }
+        return $query;
     }
 }
