@@ -2,7 +2,7 @@
 
 namespace App\Nova;
 
-use Laravel\Nova\Fields\{ID, Text, Boolean, Select, Code, Number, HasMany};
+use Laravel\Nova\Fields\{ID, Text, Boolean, Select, Code, Number, HasMany, Badge};
 use Laravel\Nova\Http\Requests\NovaRequest;
 use App\Nova\Actions\ResearchAction;
 use App\Nova\Actions\ImportAiStructure;
@@ -28,7 +28,16 @@ class Exam extends Resource
                 'A1'=>'A1','A2'=>'A2','B1'=>'B1','B2'=>'B2','C1'=>'C1','C2'=>'C2',
             ])->displayUsingLabels()->sortable(),
             Boolean::make('Is Active'),
-            Text::make('Research Status')->sortable(),
+            Select::make('Research Status', 'research_status')
+                ->options([
+                    'queued'            => 'queued',
+                    'running_overview'  => 'running_overview',
+                    'completed'         => 'completed',
+                    'failed'            => 'failed',
+                ])
+                ->displayUsingLabels()
+                ->readonly()
+                ->sortable(),
             Number::make('Categories Count')->readonly(),
             Number::make('Examples Count')->readonly(),
 

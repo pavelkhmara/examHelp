@@ -65,7 +65,7 @@ Route::prefix('debug')->group(function () {
             }
     
             $task->update(['status' => 'completed']);
-            $exam->update(['status' => 'completed']);
+            $exam->update(['research_status' => 'completed']);
             Log::debug('req', ['result' => $result]);
             return response()->json(['ok' => true, 'task_id' => $task->id]);
         } catch (\Throwable $e) {
@@ -151,6 +151,7 @@ Route::prefix('debug')->group(function () {
             'task_id'   => optional($task)->id,
             'status'    => optional($task)->status,
             'structure' => optional($task)->result, // sections[], total_score{}
+            'research_status' => $exam->research_status,
         ]);
     });
 

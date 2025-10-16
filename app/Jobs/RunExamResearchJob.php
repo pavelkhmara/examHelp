@@ -24,6 +24,7 @@ class RunExamResearchJob implements ShouldQueue
     public function handle(ExamResearchService $service): void
     {
         $exam = Exam::findOrFail($this->examId);
+        $exam->update(['research_status' => 'running_overview']);
 
         $task = GenerationTask::create([
             'type' => 'research_overview',
@@ -31,11 +32,14 @@ class RunExamResearchJob implements ShouldQueue
             'request' => ['exam_id' => $exam->id, 'notes' => $this->notes],
         ]);
 
-        Log::debug('RunExamResearchJob', [ 'task' => $task]);
+        Log::debug('RunExamResearchJob [task_id]', [ 'task_id' => $task->id]);
 
         try {
-            $service->runPipeline($exam, $task);
-            $task->update(['status' => 'completed']);
+            $result = $service->runPipeline($exam, $task, $this->notes);
+            $task->update([
+                'status' => 'completed',
+                'result' => $result,
+            ]);
             $exam->update(['research_status' => 'completed']);
         } catch (\Throwable $e) {
             $task->update(['status' => 'failed', 'error' => $e->getMessage()]);
