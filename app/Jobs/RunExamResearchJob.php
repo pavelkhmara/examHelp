@@ -27,6 +27,7 @@ class RunExamResearchJob implements ShouldQueue
         $exam->update(['research_status' => 'running_overview']);
 
         $task = GenerationTask::create([
+            'exam_id' => $exam->id ?? $this->examId,
             'type' => 'research_overview',
             'status' => 'running',
             'request' => ['exam_id' => $exam->id, 'notes' => $this->notes],

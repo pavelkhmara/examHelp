@@ -3,14 +3,18 @@
 namespace Database\Seeders;
 
 use Illuminate\Database\Seeder;
-use Spatie\Permission\Models\Role;
 
 class RolesSeeder extends Seeder
 {
     public function run(): void
     {
-        foreach (['admin','editor','qa'] as $name) {
-            Role::findOrCreate($name);
+        if (!class_exists(\Spatie\Permission\Models\Role::class)) {
+            return;
+        }
+
+        $role = \Spatie\Permission\Models\Role::class;
+        foreach (['admin','user'] as $name) {
+            $role::query()->firstOrCreate(['name' => $name]);
         }
     }
 }

@@ -1,4 +1,4 @@
-.PHONY: up down migrate seed test cs stan bash app-shell queue-shell
+.PHONY: up down migrate seed test cs stan bash app-shell queue-shell refresh fast-refresh worker-restart cache-clear dump-autoload app-bash
 
 DC = docker compose
 
@@ -31,3 +31,28 @@ app-shell:
 
 queue-shell:
 	$(DC) exec queue-worker sh
+
+## Полный цикл: почистить кэши, перегреть автолоадер и перезапустить воркеры/горизонт
+refresh: cache-clear dump-autoload worker-restart
+	@echo "✅ Done: refresh"
+
+## Быстрый цикл (без composer): только кэши + рестарт воркеров
+fast-refresh: cache-clear worker-restart
+	@echo "✅ Done: fast-refresh"
+
+cache-clear:
+	$(DC) exec -T app php artisan config:clear
+	$(DC) exec -T app php artisan cache:clear
+	$(DC) exec -T app php artisan route:clear
+	$(DC) exec -T app php artisan view:clear
+	$(DC) exec -T app php artisan optimize:clear
+
+dump-autoload:
+	$(DC) exec -T app composer dump-autoload -o
+
+worker-restart:
+	-$(DC) exec -T app php artisan queue:restart || true
+
+
+app-bash:
+	$(DC) exec app bash

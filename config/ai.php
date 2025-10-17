@@ -43,23 +43,28 @@ return [
     ],
 
     'schema' => json_encode([
-        "exam_name" => "string",
-        "global_archetypes" => [
+      "exam_name" => "string",
+      "sources" => [["url" => ["string"], "title" => ["string"], "publisher" => ["string"]]],
+      "global_archetypes" => [
           [
-            "id" => "string",
-            "name" => "string",
-            "stem_templates" => ["string"],
-            "skills_measured" => ["string"],
-            "common_distractors" => ["string"],
-            "difficulty_band" => "medium|hard"
+              "id" => "string",
+              "name" => "string",
+              "stem_templates" => ["string"],
+              "skills_measured" => ["string"],
+              "common_distractors" => ["string"],
+              "difficulty_band" => "medium|hard",
+              "step_duration" => "<minutes>",
+              "sequence_matters" => "boolean",
+              "step_order" => "integer|null"
           ]
-        ],
-        "category_map" => [
+      ],
+      "category_map" => [
           "<category_name>" => [
-            "archetype_weights" => ["archetype_id" => "string","weight" => 0.0],
+              "archetype_weights" => ["archetype_id" => "string", "weight" => "<percents>"],
           ],
-        ],
-        "rationale" => "string",
-    ], JSON_UNESCAPED_UNICODE),
+      ],
+      "total_exam_duration" => "<minutes>",
+      "rationale" => "string",
+  ], JSON_UNESCAPED_UNICODE),
 
 ];

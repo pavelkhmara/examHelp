@@ -13,6 +13,7 @@ class GenerationLog extends Model
     ];
 
     protected $casts = [
+        'exam_id' => 'string',
         'request' => 'array',
         'response' => 'array',
     ];
@@ -25,4 +26,17 @@ class GenerationLog extends Model
     public function task() {
         return $this->belongsTo(GenerationTask::class, 'generation_task_id');
     }
+
+    protected static function booted()
+    {
+        static::creating(function ($log) {
+            if (empty($log->exam_id) && !empty($log->generation_task_id)) {
+                $task = \App\Models\GenerationTask::find($log->generation_task_id);
+                if ($task && $task->exam_id) {
+                    $log->exam_id = $task->exam_id;
+                }
+            }
+        });
+    }
+
 }

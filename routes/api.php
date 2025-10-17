@@ -5,6 +5,8 @@ use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Http\Request;
 use App\Http\Controllers\LanguageApp\ExamController;
+use App\Http\Controllers\Api\StructureController;
+use Laravel\Nova\Http\Middleware\Authenticate;
 
 use App\Services\LanguageApp\ExamResearchService;
 use App\Services\LanguageApp\AiProviderFactory;
@@ -37,6 +39,10 @@ Route::middleware('auth:sanctum')->group(function () {
     });
 });
 
+Route::get('/exams/{exam}/structure', [StructureController::class, 'show'])
+->withoutMiddleware(['auth', 'auth:sanctum', Authenticate::class])
+->name('exams.structure');
+
 
 
 // ===== DEBUG routes =====
@@ -57,10 +63,14 @@ Route::prefix('debug')->group(function () {
     
             if (is_array($result) && isset($result['raw'])) {
                 GenerationLog::create([
+                    'exam_id'            => $task->exam_id,
                     'generation_task_id' => $task->id,
                     'stage'              => 'overview_raw',
-                    'payload'            => ['raw' => $result['raw']],
-                    'message'            => 'Raw AI response snapshot',
+                    'request'            => null,
+                    'response'           => ['message' => 'Raw AI response snapshot','raw' => $result['raw']],
+                    'prompt_tokens'      => 0,
+                    'completion_tokens'  => 0,
+                    'total_tokens'       => 0,
                 ]);
             }
     
