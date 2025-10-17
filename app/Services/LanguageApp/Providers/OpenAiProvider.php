@@ -113,27 +113,27 @@ final class OpenAiProvider implements AiProvider
             throw new \RuntimeException('AI non-2xx status: '.$status.' body: '.self::clip($raw));
         }
 
-        $data = json_decode($raw, true) ?? [];
-        if (!is_array($data) || !isset($data['choices'][0]['message']['content'])) {
+        $body = json_decode($raw, true) ?? [];
+        if (!is_array($body) || !isset($body['choices'][0]['message']['content'])) {
             throw new \RuntimeException('AI response is malformed: '.self::clip($raw));
         }
 
-        $content = $data['choices'][0]['message']['content'];
-        $json    = json_decode($content, true);
+        $contentText = $body['choices'][0]['message']['content'];
+        $content    = json_decode($contentText, true);
 
-        Log::debug('AiProviderFactory: response FULL ►', [ 'data' => $data, 'content' => $content, 'json' => $json ]);
+        Log::debug('AiProviderFactory: response FULL ►', [ 'body' => $body, 'content' => $content, 'contentText' => $contentText ]);
 
-        if (!is_array($json)) {
-            throw new \RuntimeException('AI returned non-JSON content: '.self::clip($content));
+        if (!is_array($content)) {
+            throw new \RuntimeException('AI returned non-JSON content: '.self::clip($contentText));
         }
 
         return [
-            'ok'      => true,
-            'json'    => $raw,
-            'usage'   => $data['usage'] ?? ['prompt_tokens'=>0,'completion_tokens'=>0,'total_tokens'=>0],
-            'data'    => $data,
-            'content' => $json,
-            'content_json' => $content,
+            'ok'               => true,
+            'raw'              => $raw,                 // сырое тело HTTP-ответа провайдера
+            'body'             => $body,                // декодированный top-level JSON провайдера
+            'content_text'     => $contentText,         // строка JSON внутри message.content
+            'content'          => $content,             // ДЕКОДИРОВАННЫЙ overview-объект — используем дальше в сервисе
+            'usage'            => $body['usage'] ?? ['prompt_tokens'=>0,'completion_tokens'=>0,'total_tokens'=>0],
         ];
     }
 

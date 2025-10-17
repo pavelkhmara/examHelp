@@ -13,8 +13,9 @@ class AppServiceProvider extends ServiceProvider
      */
     public function register(): void
     {
-        $this->app->singleton(AiProvider::class, function () {
-            return AiProviderFactory::make();
+        $this->app->bind(AiProvider::class, function ($app) {
+            $cfg = config('ai', []);
+            return AiProviderFactory::make($cfg['provider'] ?? null, $cfg);
         });
     }
 

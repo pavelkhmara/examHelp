@@ -8,7 +8,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class GenerationTask extends Model
 {
-    protected $fillable = ['type','status','request','response','error','attempts', 'result'];
+    protected $fillable = ['exam_id','type','status','request','response','error','attempts', 'result'];
 
     protected $casts = [
         'request' => 'array',

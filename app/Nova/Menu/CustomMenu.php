@@ -9,6 +9,7 @@ use Laravel\Nova\Nova;
 use Laravel\Nova\Tool;
 use Illuminate\Http\Request;
 use App\Models\Exam;
+use App\Nova\Filters\ExamCategoryFilter;
 
 class CustomMenu extends Tool
 {
@@ -27,17 +28,19 @@ class CustomMenu extends Tool
                 ->collapsable(),
 
             // Отдельные разделы для всех сущностей
-            MenuSection::make('All Exam Categories', '/resources/exam-categories')
-                ->icon('tag'),
+            MenuSection::make('data', [
+                MenuItem::resource(\App\Nova\ExamCategory::class)
+                    ->name('All Categories'),
+                MenuItem::resource(\App\Nova\ExamExampleQuestion::class)
+                    ->name('All Example Questions'),
+                MenuItem::resource(\App\Nova\GenerationTask::class)
+                    ->name('All Generation Tasks'),
+                MenuItem::resource(\App\Nova\GenerationLog::class)
+                    ->name('All Generation Logs'),
 
-            MenuSection::make('All Example Questions', '/resources/exam-example-questions')
-                ->icon('question-mark-circle'),
-
-            MenuSection::make('All Generation Tasks', '/resources/generation-tasks')
-                ->icon('chip'),
-
-            MenuSection::make('All Generation Logs', '/resources/generation-logs')
-                ->icon('document-text'),
+            ])
+            ->icon('document-text')
+            ->collapsable(),
         ];
     }
 
@@ -56,42 +59,58 @@ class CustomMenu extends Tool
 
             foreach ($exams as $exam) {
                 $examLabel = "{$exam->title}";
+
+                // $examId = $exam->id; // UUID нужного экзамена
+                $examId = 'a02051f8-2ada-407d-8346-feb02588b8aa';
+                $filtersPayload = [
+                    ['class' => ExamCategoryFilter::class, 'value' => $examId],
+                ];
+                $filters = base64_encode(json_encode($filtersPayload, JSON_UNESCAPED_SLASHES));
+                $query = 'filters=' . rawurlencode($filters);
+                // $url = '/resources/exam-categories' . '?filters=' . rawurlencode($filters);
+                $url = '/resources/exam-categories/' . '?' . $query;
                 
                 // Получаем счетчики безопасным способом
                 $categoriesCount = $exam->categories_count ?? $exam->categories()->count();
                 $examplesCount = $exam->examples_count ?? $exam->examples()->count();
                 $tasksCount = $exam->generationTasks()->count();
+                // $logsCount = $exam->generationLogs()->count();
 
                 // Создаем подменю для каждого экзамена
-                $examItems[] = MenuSection::make($examLabel, [
+                // $examItems[] = MenuSection::make($examLabel, [
                     // Карточка самого экзамена
-                    MenuItem::link('Exam Details', "/resources/exams/{$exam->id}"),
+                    $examItems[] = MenuItem::link($examLabel, "/resources/exams/{$exam->id}");
+                    // MenuItem::link('Exam Details', "/resources/exams/{$exam->id}"),
 
                     // Категории этого экзамена
-                    MenuItem::link(
-                        "Categories ({$categoriesCount})",
-                        "/resources/exam-categories?exam={$exam->id}"
-                    ),
+                    // MenuItem::link(
+                    //     "Categories ({$categoriesCount})",
+                    //     $url
+                    //     // "/resources/exam-categories/lens/exam-categories-by-exam?exam_id={$exam->id}"
+                    //     // "/resources/exam-categories?viaResource=exams&viaResourceId={$exam->id}&viaRelationship=categories"
+                    //     // "/resources/exam-categories?exam={$exam->id}"
+                    //     // "/resources/exam-categories?exam_id={$exam->id}"
+                    // ),
 
-                    // Примеры вопросов этого экзамена
-                    MenuItem::link(
-                        "Example Questions ({$examplesCount})",
-                        "/resources/exam-example-questions?exam={$exam->id}"
-                    ),
+                    // // Примеры вопросов этого экзамена
+                    // MenuItem::link(
+                    //     "Example Questions ({$examplesCount})",
+                    //     "/resources/exam-example-questions?exam={$exam->id}"
+                    // ),
 
-                    // Задачи генерации этого экзамена
-                    MenuItem::link(
-                        "Generation Tasks ({$tasksCount})",
-                        "/resources/generation-tasks?exam={$exam->id}"
-                    ),
+                    // // Задачи генерации этого экзамена
+                    // MenuItem::link(
+                    //     "Generation Tasks ({$tasksCount})",
+                    //     "/resources/generation-tasks?exam={$exam->id}"
+                    // ),
 
-                    // Логи генерации этого экзамена
-                    MenuItem::link(
-                        "Generation Logs",
-                        "/resources/generation-logs?exam={$exam->id}"
-                    ),
+                    // // Логи генерации этого экзамена
+                    // MenuItem::link(
+                    //     "Generation Logs",
+                    //     "/resources/generation-logs?exam={$exam->id}"
+                    // ),
 
-                ])->icon('document-text')->collapsable();
+                // ])->icon('document-text')->collapsable();
             }
         } catch (\Exception $e) {
             // Если возникла ошибка, просто показываем базовое меню

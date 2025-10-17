@@ -14,17 +14,21 @@ return new class extends Migration
     {
         // Меняем типы ID-полей на UUID-совместимые.
         // Если таблица пуста, это пройдет без боли. Если нет — убедись, что там нет нужных данных.
-        DB::statement("ALTER TABLE action_events MODIFY actionable_id CHAR(36) NOT NULL");
-        DB::statement("ALTER TABLE action_events MODIFY target_id     CHAR(36) NULL");
-        DB::statement("ALTER TABLE action_events MODIFY model_id      CHAR(36) NULL");
-        // batch_id в Nova уже строка, user_id остается BIGINT.
+        if (Schema::getConnection()->getDriverName() === 'mysql') {
+            DB::statement("ALTER TABLE action_events MODIFY actionable_id CHAR(36) NOT NULL");
+            DB::statement("ALTER TABLE action_events MODIFY target_id     CHAR(36) NULL");
+            DB::statement("ALTER TABLE action_events MODIFY model_id      CHAR(36) NULL");
+            // batch_id в Nova уже строка, user_id остается BIGINT.
+        }
     }
 
     public function down(): void
     {
         // Откат к BIGINT (как по умолчанию у Nova)
-        DB::statement("ALTER TABLE action_events MODIFY actionable_id BIGINT UNSIGNED NOT NULL");
-        DB::statement("ALTER TABLE action_events MODIFY target_id     BIGINT UNSIGNED NULL");
-        DB::statement("ALTER TABLE action_events MODIFY model_id      BIGINT UNSIGNED NULL");
+        if (Schema::getConnection()->getDriverName() === 'mysql') {
+            DB::statement("ALTER TABLE action_events MODIFY actionable_id BIGINT UNSIGNED NOT NULL");
+            DB::statement("ALTER TABLE action_events MODIFY target_id     BIGINT UNSIGNED NULL");
+            DB::statement("ALTER TABLE action_events MODIFY model_id      BIGINT UNSIGNED NULL");
+        }
     }
 };

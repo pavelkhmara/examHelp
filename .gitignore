@@ -27,3 +27,4 @@ docker-compose.override.yml
 /docs
 context-pack.sh
 repo-context.md
+/files
