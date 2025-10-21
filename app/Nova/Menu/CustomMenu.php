@@ -35,6 +35,9 @@ class CustomMenu extends Tool
                     ->name('All Generation Tasks'),
                 MenuItem::resource(\App\Nova\GenerationLog::class)
                     ->name('All Generation Logs'),
+                MenuItem::resource(\App\Nova\ExamDocument::class)
+                    ->name('All Documents'),
+
 
             ])
                 ->icon('document-text')

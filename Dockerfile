@@ -12,6 +12,8 @@ RUN apt-get update \
     libpng-dev \
     libjpeg62-turbo-dev \
     libfreetype6-dev \
+    poppler-utils \
+    tesseract-ocr tesseract-ocr-eng tesseract-ocr-pol tesseract-ocr-ces tesseract-ocr-rus tesseract-ocr-deu tesseract-ocr-ita tesseract-ocr-spa tesseract-ocr-fra \
  && docker-php-ext-configure intl \
  && docker-php-ext-install \
     pdo \
@@ -30,6 +32,9 @@ RUN curl -fsSL https://deb.nodesource.com/setup_20.x | bash - \
  && apt-get install -y --no-install-recommends nodejs \
  && node --version \
  && npm --version
+
+RUN git config --global --add safe.directory /var/www/html
+RUN git config --global --add safe.directory /app
 
 # Install Composer
 COPY --from=composer:2 /usr/bin/composer /usr/bin/composer
