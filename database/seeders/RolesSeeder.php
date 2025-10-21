@@ -8,12 +8,12 @@ class RolesSeeder extends Seeder
 {
     public function run(): void
     {
-        if (!class_exists(\Spatie\Permission\Models\Role::class)) {
+        if (! class_exists(\Spatie\Permission\Models\Role::class)) {
             return;
         }
 
         $role = \Spatie\Permission\Models\Role::class;
-        foreach (['admin','user'] as $name) {
+        foreach (['admin', 'user'] as $name) {
             $role::query()->firstOrCreate(['name' => $name]);
         }
     }

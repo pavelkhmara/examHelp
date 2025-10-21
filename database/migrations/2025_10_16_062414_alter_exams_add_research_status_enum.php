@@ -2,8 +2,8 @@
 
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
-use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
 {
@@ -17,10 +17,10 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('exams', function (Blueprint $table) {
-            if (!Schema::hasColumn('exams', 'research_status')) {
+            if (! Schema::hasColumn('exams', 'research_status')) {
                 $table->enum('research_status', $this->enum)
-                      ->default('queued')
-                      ->after('meta');
+                    ->default('queued')
+                    ->after('meta');
             }
         });
 

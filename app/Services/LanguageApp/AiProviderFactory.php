@@ -2,17 +2,17 @@
 
 namespace App\Services\LanguageApp;
 
-use Illuminate\Support\Facades\Log;
-use GuzzleHttp\Client;
-use App\Services\LanguageApp\Providers\OpenAiProvider;
 use App\Services\LanguageApp\Providers\MockAiProvider;
+use App\Services\LanguageApp\Providers\OpenAiProvider;
+use GuzzleHttp\Client;
+use Illuminate\Support\Facades\Log;
 
 final class AiProviderFactory
 {
     public static function make(?string $provider, array $cfg): AiProvider
     {
         $provider = $provider ?: 'mock';
-        Log::debug('AiProviderFactory: creating provider', [ 'provider' => $provider ]);
+        Log::debug('AiProviderFactory: creating provider', ['provider' => $provider]);
 
         if ($provider === 'mock') {
             return new MockAiProvider($cfg['mock'] ?? []);
@@ -20,32 +20,33 @@ final class AiProviderFactory
 
         try {
             $baseUrl = rtrim($cfg[$provider]['base_url'], '/').'/';
-            $apiKey  = $cfg[$provider]['api_key'];
-            $timeout = (int)($cfg[$provider]['timeout'] ?? 60);
-    
-            if (!$baseUrl || !$apiKey) {
-                if (!empty($cfg['openai']['fallback_to_mock_on_error'])) {
+            $apiKey = $cfg[$provider]['api_key'];
+            $timeout = (int) ($cfg[$provider]['timeout'] ?? 60);
+
+            if (! $baseUrl || ! $apiKey) {
+                if (! empty($cfg['openai']['fallback_to_mock_on_error'])) {
                     Log::warning('AiProviderFactory: missing base_url/api_key -> fallback to mock');
+
                     return new MockAiProvider($cfg['mock'] ?? []);
                 }
                 throw new \RuntimeException('AI base_url/api_key is not configured.');
             }
-    
+
             $client = new Client([
                 'base_uri' => $baseUrl,
-                'timeout'  => $timeout,
+                'timeout' => $timeout,
             ]);
-    
-            
+
             return new OpenAiProvider(
-                http:   $client,
+                http: $client,
                 apiKey: $cfg['openai']['api_key'],
-                baseUrl:$cfg['openai']['base_url'],
-                model:  $cfg['openai']['model'],
+                baseUrl: $cfg['openai']['base_url'],
+                model: $cfg['openai']['model'],
             );
         } catch (\Throwable $e) {
-            if (!empty($cfg['openai']['fallback_to_mock_on_error'])) {
+            if (! empty($cfg['openai']['fallback_to_mock_on_error'])) {
                 Log::error('AiProviderFactory: provider init failed, fallback to mock', ['error' => $e->getMessage()]);
+
                 return new MockAiProvider($cfg['mock'] ?? []);
             }
             throw new \RuntimeException("Unknown AI provider: {$provider}. Error: {$e->getMessage()}");

@@ -3,10 +3,9 @@
 namespace App\Services\LanguageApp\Providers;
 
 use App\Services\LanguageApp\AiProvider;
-use Illuminate\Support\Facades\Log;
-
 use GuzzleHttp\Client;
 use GuzzleHttp\Exception\GuzzleException;
+use Illuminate\Support\Facades\Log;
 
 final class OpenAiProvider implements AiProvider
 {
@@ -23,7 +22,7 @@ final class OpenAiProvider implements AiProvider
         //     'connect_timeout' => 10,           // соединение
         //     'read_timeout'    => 80,
         // ]);
-    
+
         // $handler = \GuzzleHttp\HandlerStack::create();
         // $handler->push(\GuzzleHttp\Middleware::retry(
         //     function ($retries, $request, $response, $exception) {
@@ -40,26 +39,25 @@ final class OpenAiProvider implements AiProvider
 
     public function generate(array $payload, array $opts = []): array
     {
-        Log::debug('OpenAiProvider: generate start', ['payload' => $payload, 'options' => $opts ]);
-
+        Log::debug('OpenAiProvider: generate start', ['payload' => $payload, 'options' => $opts]);
 
         $cfg = config('ai');
         $openai_cfg = $cfg['openai'];
         $model = $this->model ?? $openai_cfg['model'];
 
         $baseMessages = $payload['messages'] ?? $payload['input'] ?? $payload;
-        
+
         if (is_string($baseMessages)) {
             $baseMessages = [['role' => 'user', 'content' => $baseMessages]];
         }
 
         $messages = [];
-        
+
         // 1. System message for JSON strict mode
         if ($openai_cfg['json_strict'] ?? false) {
             $messages[] = [
                 'role' => 'system',
-                'content' => 'Return ONLY valid JSON that matches the provided JSON schema. No prose, no markdown.'
+                'content' => 'Return ONLY valid JSON that matches the provided JSON schema. No prose, no markdown.',
             ];
         }
 
@@ -71,7 +69,7 @@ final class OpenAiProvider implements AiProvider
         if ($responseJsonSchema) {
             $messages[] = [
                 'role' => 'system',
-                'content' => 'Return JSON only matching the schema into response_json_schema. Your opinion important additions put into "additional_info" object.'
+                'content' => 'Return JSON only matching the schema into response_json_schema. Your opinion important additions put into "additional_info" object.',
             ];
         }
 
@@ -94,52 +92,54 @@ final class OpenAiProvider implements AiProvider
         try {
             $res = $this->http->post('chat/completions', [
                 'headers' => [
-                    'Authorization' => 'Bearer ' . $this->apiKey,
-                    'Content-Type'  => 'application/json',
+                    'Authorization' => 'Bearer '.$this->apiKey,
+                    'Content-Type' => 'application/json',
                 ],
                 'json' => $body,
             ]);
         } catch (GuzzleException $e) {
-            throw new \RuntimeException('AI HTTP error: ' . $e->getMessage());
-            return ['ok'=>false,'data'=>null,'usage'=>[],'raw'=>['error'=>$e->getMessage()]];
+            throw new \RuntimeException('AI HTTP error: '.$e->getMessage());
+
+            return ['ok' => false, 'data' => null, 'usage' => [], 'raw' => ['error' => $e->getMessage()]];
         }
 
         $status = $res->getStatusCode();
-        $raw    = (string) $res->getBody();
+        $raw = (string) $res->getBody();
 
-        Log::debug('AiProviderFactory: response status ►', [ 'status' => $status ]);
+        Log::debug('AiProviderFactory: response status ►', ['status' => $status]);
 
         if ($status < 200 || $status >= 300) {
             throw new \RuntimeException('AI non-2xx status: '.$status.' body: '.self::clip($raw));
         }
 
         $body = json_decode($raw, true) ?? [];
-        if (!is_array($body) || !isset($body['choices'][0]['message']['content'])) {
+        if (! is_array($body) || ! isset($body['choices'][0]['message']['content'])) {
             throw new \RuntimeException('AI response is malformed: '.self::clip($raw));
         }
 
         $contentText = $body['choices'][0]['message']['content'];
-        $content    = json_decode($contentText, true);
+        $content = json_decode($contentText, true);
 
-        Log::debug('AiProviderFactory: response FULL ►', [ 'body' => $body, 'content' => $content, 'contentText' => $contentText ]);
+        Log::debug('AiProviderFactory: response FULL ►', ['body' => $body, 'content' => $content, 'contentText' => $contentText]);
 
-        if (!is_array($content)) {
+        if (! is_array($content)) {
             throw new \RuntimeException('AI returned non-JSON content: '.self::clip($contentText));
         }
 
         return [
-            'ok'               => true,
-            'raw'              => $raw,                 // сырое тело HTTP-ответа провайдера
-            'body'             => $body,                // декодированный top-level JSON провайдера
-            'content_text'     => $contentText,         // строка JSON внутри message.content
-            'content'          => $content,             // ДЕКОДИРОВАННЫЙ overview-объект — используем дальше в сервисе
-            'usage'            => $body['usage'] ?? ['prompt_tokens'=>0,'completion_tokens'=>0,'total_tokens'=>0],
+            'ok' => true,
+            'raw' => $raw,                 // сырое тело HTTP-ответа провайдера
+            'body' => $body,                // декодированный top-level JSON провайдера
+            'content_text' => $contentText,         // строка JSON внутри message.content
+            'content' => $content,             // ДЕКОДИРОВАННЫЙ overview-объект — используем дальше в сервисе
+            'usage' => $body['usage'] ?? ['prompt_tokens' => 0, 'completion_tokens' => 0, 'total_tokens' => 0],
         ];
     }
 
     private static function clip(string $s, int $len = 800): string
     {
         $s = trim($s);
+
         return mb_strlen($s) > $len ? (mb_substr($s, 0, $len).'…') : $s;
     }
 }

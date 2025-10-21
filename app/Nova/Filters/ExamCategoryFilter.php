@@ -2,10 +2,10 @@
 
 namespace App\Nova\Filters;
 
+use App\Models\Exam;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 use Laravel\Nova\Filters\Filter;
-use Illuminate\Http\Request;
-use App\Models\Exam;
 
 class ExamCategoryFilter extends Filter
 {
@@ -39,11 +39,11 @@ class ExamCategoryFilter extends Filter
         if (request()->has('exam_id')) {
             return request()->get('exam_id');
         }
-        
+
         return null;
 
-        // $examId = request()->get('exam_id') 
-        //         ?? request()->get('exam') 
+        // $examId = request()->get('exam_id')
+        //         ?? request()->get('exam')
         //         ?? (request()->viaResourceId() && request()->viaResource() === 'exams' ? request()->viaResourceId() : null);
 
         // return $examId;

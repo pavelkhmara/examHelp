@@ -2,9 +2,9 @@
 
 namespace App\Nova\Filters;
 
+use App\Models\Exam;
 use Illuminate\Http\Request;
 use Laravel\Nova\Filters\Filter;
-use App\Models\Exam;
 
 class ExamFilter extends Filter
 {

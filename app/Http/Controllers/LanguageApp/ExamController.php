@@ -14,6 +14,7 @@ class ExamController extends Controller
     {
         // права можно ограничить ролями (spatie/permission) — по необходимости
         RunExamResearchJob::dispatch($exam->id, (string) $request->input('notes'));
+
         return response()->json(['ok' => true, 'queued' => true]);
     }
 

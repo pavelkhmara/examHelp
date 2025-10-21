@@ -8,7 +8,6 @@ use App\Services\LanguageApp\ExamResearchService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
-
 class ResearchOverviewFlowTest extends TestCase
 {
     use RefreshDatabase;
@@ -19,8 +18,8 @@ class ResearchOverviewFlowTest extends TestCase
 
         $task = GenerationTask::create([
             'exam_id' => $exam->id,
-            'type'    => 'research',
-            'status'  => 'running',
+            'type' => 'research',
+            'status' => 'running',
         ]);
 
         /** @var ExamResearchService $svc */

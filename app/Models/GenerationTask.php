@@ -3,17 +3,17 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Relations\MorphTo;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\MorphTo;
 
 class GenerationTask extends Model
 {
-    protected $fillable = ['exam_id','type','status','request','response','error','attempts', 'result'];
+    protected $fillable = ['exam_id', 'type', 'status', 'request', 'response', 'error', 'attempts', 'result'];
 
     protected $casts = [
         'request' => 'array',
         'response' => 'array',
-        'result'   => 'array',
+        'result' => 'array',
     ];
 
     public function exam(): BelongsTo
@@ -21,11 +21,13 @@ class GenerationTask extends Model
         return $this->belongsTo(Exam::class);
     }
 
-    public function subject(): MorphTo {
+    public function subject(): MorphTo
+    {
         return $this->morphTo();
     }
 
-    public function logs() {
+    public function logs()
+    {
         return $this->hasMany(GenerationLog::class);
     }
 }

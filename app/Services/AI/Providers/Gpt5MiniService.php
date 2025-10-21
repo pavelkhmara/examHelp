@@ -11,32 +11,33 @@ class Gpt5MiniService extends AbstractAiService
     protected function endpoint(): string
     {
         $cfg = config('api.gpt5mini');
-        $useResponses = (bool)($cfg['use_responses_api'] ?? false);
+        $useResponses = (bool) ($cfg['use_responses_api'] ?? false);
         $base = rtrim($cfg['base_url'], '/');
+
         return $useResponses
-            ? $base . '/responses'
-            : $base . '/chat/completions';
+            ? $base.'/responses'
+            : $base.'/chat/completions';
     }
 
     public function callAi(array $messages, array $opts = []): array
     {
-        $cfg   = config('api');
-        $prov  = $cfg['gpt5mini'];
+        $cfg = config('api');
+        $prov = $cfg['gpt5mini'];
         $model = $cfg['model'];
 
-        $payload = $this->buildPayload($messages, $opts, $model, (bool)$prov['use_responses_api']);
+        $payload = $this->buildPayload($messages, $opts, $model, (bool) $prov['use_responses_api']);
 
         $resp = Http::withHeaders([
-                'Authorization' => 'Bearer '.$prov['api_key'],
-                'Content-Type'  => 'application/json',
-            ])
-            ->timeout((int)($cfg['timeout'] ?? 60))
+            'Authorization' => 'Bearer '.$prov['api_key'],
+            'Content-Type' => 'application/json',
+        ])
+            ->timeout((int) ($cfg['timeout'] ?? 60))
             ->post($this->endpoint(), $payload);
 
-        if (!$resp->ok()) {
+        if (! $resp->ok()) {
             // Проброс понятной ошибки + сохранение
             $body = $resp->json();
-            $msg  = Arr::get($body, 'error.message', 'AI provider error');
+            $msg = Arr::get($body, 'error.message', 'AI provider error');
             // лог/метрики можно тут
             throw new \RuntimeException($msg, $resp->status());
         }
@@ -44,15 +45,15 @@ class Gpt5MiniService extends AbstractAiService
         $data = $resp->json();
 
         // Нормализуем ответ в единый вид
-        return $this->normalizeResponse($data, (bool)$prov['use_responses_api']);
+        return $this->normalizeResponse($data, (bool) $prov['use_responses_api']);
     }
 
     protected function buildPayload(array $messages, array $opts, string $model, bool $useResponses): array
     {
         $temperature = $opts['temperature'] ?? 0.2;
-        $web         = (bool)($opts['web_search'] ?? false);
-        $strictJson  = (bool)(config('api.json_strict') ?? true);
-        $jsonSchema  = $opts['json_schema'] ?? null;
+        $web = (bool) ($opts['web_search'] ?? false);
+        $strictJson = (bool) (config('api.json_strict') ?? true);
+        $jsonSchema = $opts['json_schema'] ?? null;
 
         // инструменты
         $tools = [];
@@ -67,9 +68,9 @@ class Gpt5MiniService extends AbstractAiService
                         'type' => 'object',
                         'properties' => [
                             'query' => ['type' => 'string'],
-                            'max_results' => ['type' => 'integer', 'default' => 5]
+                            'max_results' => ['type' => 'integer', 'default' => 5],
                         ],
-                        'required' => ['query']
+                        'required' => ['query'],
                     ],
                 ],
             ];
@@ -82,8 +83,8 @@ class Gpt5MiniService extends AbstractAiService
                 'type' => 'json_schema',
                 'json_schema' => [
                     'name' => $jsonSchema['name'] ?? 'result',
-                    'schema' => $jsonSchema['schema'] ?? ['type' => 'object']
-                ]
+                    'schema' => $jsonSchema['schema'] ?? ['type' => 'object'],
+                ],
             ];
         } elseif ($strictJson) {
             $responseFormat = ['type' => 'json_object'];
@@ -102,7 +103,7 @@ class Gpt5MiniService extends AbstractAiService
                 'temperature' => $temperature,
             ];
 
-            if (!empty($tools)) {
+            if (! empty($tools)) {
                 $payload['tools'] = $tools;
             }
             if ($responseFormat) {
@@ -118,7 +119,7 @@ class Gpt5MiniService extends AbstractAiService
             'messages' => $messages,
             'temperature' => $temperature,
         ];
-        if (!empty($tools)) {
+        if (! empty($tools)) {
             $payload['tools'] = $tools;
             $payload['tool_choice'] = 'auto';
         }
@@ -147,6 +148,7 @@ class Gpt5MiniService extends AbstractAiService
                     }
                 }
             }
+
             return [
                 'text' => $text,
                 'tool_calls' => $toolCalls,
@@ -156,9 +158,10 @@ class Gpt5MiniService extends AbstractAiService
 
         // /chat/completions
         $choice = $data['choices'][0] ?? [];
-        $msg    = $choice['message'] ?? [];
+        $msg = $choice['message'] ?? [];
+
         return [
-            'text' => (string)($msg['content'] ?? ''),
+            'text' => (string) ($msg['content'] ?? ''),
             'tool_calls' => $msg['tool_calls'] ?? [],
             'raw' => $data,
             'usage' => $data['usage'] ?? null,
@@ -177,6 +180,7 @@ class Gpt5MiniService extends AbstractAiService
                 'text' => "[{$role}] ".$content,
             ];
         }
+
         return $blocks;
     }
 }

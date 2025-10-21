@@ -22,6 +22,8 @@
         "laravel/sail": "^1.26",
         "mockery/mockery": "^1.6",
         "nunomaduro/collision": "^8.1",
+        "nunomaduro/larastan": "^2.9",
+        "phpstan/phpstan": "^1.11",
         "phpunit/phpunit": "^11.0.1"
     },
     "autoload": {
@@ -41,6 +43,7 @@
             "Illuminate\\Foundation\\ComposerScripts::postAutoloadDump",
             "@php artisan package:discover --ansi"
         ],
+        "stan": "phpstan analyse --memory-limit=1G",
         "post-update-cmd": [
             "@php artisan vendor:publish --tag=laravel-assets --ansi --force"
         ],

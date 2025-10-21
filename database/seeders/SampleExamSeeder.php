@@ -15,10 +15,10 @@ class SampleExamSeeder extends Seeder
     public function run(): void
     {
         // МОДЕЛИ — проверь имена и при необходимости замени:
-        $Exam            = \App\Models\Exam::class;
-        $ExamCategory    = class_exists(\App\Models\ExamCategory::class) ? \App\Models\ExamCategory::class : null;
-        $GenerationTask  = \App\Models\GenerationTask::class;
-        $GenerationLog   = \App\Models\GenerationLog::class;
+        $Exam = \App\Models\Exam::class;
+        $ExamCategory = class_exists(\App\Models\ExamCategory::class) ? \App\Models\ExamCategory::class : null;
+        $GenerationTask = \App\Models\GenerationTask::class;
+        $GenerationLog = \App\Models\GenerationLog::class;
 
         // ===== Exam A: COMPLETED =====
         /** @var \App\Models\Exam $examA */
@@ -51,7 +51,7 @@ class SampleExamSeeder extends Seeder
             'exam_description' => '',
             'timebox_minutes' => 3,
             'sources' => [
-                ['url'=>'https://example.com/ielts','title'=>'IELTS Spec','publisher'=>'Example'],
+                ['url' => 'https://example.com/ielts', 'title' => 'IELTS Spec', 'publisher' => 'Example'],
             ],
             'archetypes' => [
                 [
@@ -60,9 +60,9 @@ class SampleExamSeeder extends Seeder
                     'section' => 'reading',
                     'question_types' => ['True/False/Not Given'],
                     'typical_distractors' => ['Paraphrase traps'],
-                    'verbs' => ['select','decide'],
+                    'verbs' => ['select', 'decide'],
                     'weights' => ['Reading' => 1.0],
-                    'numeric_ranges' => ['word_limits' => [1,3]],
+                    'numeric_ranges' => ['word_limits' => [1, 3]],
                     'difficulty' => 'medium',
                 ],
                 [
@@ -83,16 +83,16 @@ class SampleExamSeeder extends Seeder
 
         $taskA = $GenerationTask::query()->create([
             'exam_id' => $examA->id,
-            'type'    => 'research',
-            'status'  => 'completed',
-            'result'  => $resultA,
-            'error'   => null,
+            'type' => 'research',
+            'status' => 'completed',
+            'result' => $resultA,
+            'error' => null,
         ]);
 
         $GenerationLog::query()->create([
             'generation_task_id' => $taskA->id,
-            'stage'              => 'overview_validated',
-            'response'            => ['result' => $resultA, 'message' => 'Overview JSON validated and saved (seed)'],
+            'stage' => 'overview_validated',
+            'response' => ['result' => $resultA, 'message' => 'Overview JSON validated and saved (seed)'],
         ]);
 
         // ===== Exam B: FAILED =====
@@ -116,16 +116,16 @@ class SampleExamSeeder extends Seeder
 
         $taskB = $GenerationTask::query()->create([
             'exam_id' => $examB->id,
-            'type'    => 'research',
-            'status'  => 'failed',
-            'result'  => null,
-            'error'   => 'Overview JSON validation failed',
+            'type' => 'research',
+            'status' => 'failed',
+            'result' => null,
+            'error' => 'Overview JSON validation failed',
         ]);
 
         $GenerationLog::query()->create([
             'generation_task_id' => $taskB->id,
-            'stage'              => 'overview_validation_error',
-            'response'            => ['errors' => ['sections' => ['missing']], 'data' => ['foo' => 'bar'], 'message' => 'Validation error (seed)'],
+            'stage' => 'overview_validation_error',
+            'response' => ['errors' => ['sections' => ['missing']], 'data' => ['foo' => 'bar'], 'message' => 'Validation error (seed)'],
         ]);
 
         // ===== Exam C: QUEUED =====

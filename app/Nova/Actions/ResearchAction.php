@@ -17,14 +17,15 @@ class ResearchAction extends Action
 
     public function fields(NovaRequest $request)
     {
-        return [ Textarea::make('Notes')->help('Optional context/hints') ];
+        return [Textarea::make('Notes')->help('Optional context/hints')];
     }
 
     public function handle(ActionFields $fields, $models)
     {
         foreach ($models as $exam) {
-            RunExamResearchJob::dispatch($exam->id, (string)($fields->get('Notes') ?? null));
+            RunExamResearchJob::dispatch($exam->id, (string) ($fields->get('Notes') ?? null));
         }
+
         return Action::message('Research queued.');
     }
 }

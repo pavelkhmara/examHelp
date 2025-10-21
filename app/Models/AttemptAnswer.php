@@ -11,7 +11,7 @@ class AttemptAnswer extends Model
 {
     use HasFactory, HasUuid;
 
-    protected $fillable = ['attempt_id','question_id','selected_option_id','text_answer','is_correct'];
+    protected $fillable = ['attempt_id', 'question_id', 'selected_option_id', 'text_answer', 'is_correct'];
 
     public function attempt(): BelongsTo
     {

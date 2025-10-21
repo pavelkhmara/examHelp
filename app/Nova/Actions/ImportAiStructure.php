@@ -5,9 +5,8 @@ namespace App\Nova\Actions;
 use App\Models\Exam;
 use App\Models\GenerationTask;
 use App\Services\LanguageApp\ExamResearchService;
+use App\Services\LanguageApp\Validators\QuestionTypeContract;
 use Illuminate\Bus\Queueable;
-use Illuminate\Support\Arr;
-use Illuminate\Support\Str;
 use Laravel\Nova\Actions\Action;
 use Laravel\Nova\Fields\ActionFields;
 use Laravel\Nova\Fields\Boolean;
@@ -35,11 +34,11 @@ class ImportAiStructure extends Action
     {
         /** @var ExamResearchService $svc */
         $svc = app(ExamResearchService::class);
+        $validator = app(QuestionTypeContract::class);
 
         foreach ($models as $exam) {
             /** @var Exam $exam */
-
-            $ai = null;
+            $json = null;
 
             if ($fields->get('take_latest')) {
                 $task = GenerationTask::query()
@@ -48,29 +47,44 @@ class ImportAiStructure extends Action
                     ->latest('id')
                     ->first();
 
-                if (!$task || empty($task->result)) {
-                    return Action::danger('Нет завершённой задачи с result для этого экзамена.');
+                if (! $task || empty($task->result)) {
+                    return Action::danger('No completed GenerationTask with result for this exam.');
                 }
 
-                $ai = $task->result; // уже массив, если ты так сохраняешь
+                $json = $task->result; // уже массив, если ты так сохраняешь
             } else {
-                $raw = (string)($fields->get('json'));
-                if (!strlen(trim($raw))) {
+                $raw = (string) ($fields->get('json'));
+                if (! strlen(trim($raw))) {
                     return Action::danger('Пустой JSON.');
                 }
-                $ai = json_decode($raw, true);
+                $json = json_decode($raw, true);
                 if (json_last_error() !== JSON_ERROR_NONE) {
-                    return Action::danger('Некорректный JSON: '.json_last_error_msg());
+                    return Action::danger('Provided JSON is invalid: '.json_last_error_msg());
                 }
             }
 
+            // VALIDATE tasks with strict whitelist — reject on any unknowns
+            $invalid = [];
+            $normalizedTasks = [];
+            $tasks = $json['tasks'] ?? ($json['examples'] ?? []); // поддерживаем оба варианта структуры
+            foreach ($tasks as $tIdx => $task) {
+                try {
+                    $normalizedTasks[] = $validator->validateTask($task);
+                } catch (\Illuminate\Validation\ValidationException $ve) {
+                    $invalid[] = ['index' => $tIdx, 'errors' => $ve->errors()];
+                }
+            }
+            if (! empty($invalid)) {
+                return Action::danger('Import rejected: some tasks have invalid/unknown types. Details: '.json_encode($invalid, JSON_UNESCAPED_UNICODE));
+            }
+
             try {
-                $svc->importAiJson($exam, $ai);
+                $svc->importAiJson($exam, $normalizedTasks);
             } catch (\Throwable $e) {
                 return Action::danger('Импорт не удался: '.$e->getMessage());
             }
         }
 
-        return Action::message('Импорт выполнен. Источники и категории обновлены.');
+        return Action::message('Validated and imported.');
     }
 }

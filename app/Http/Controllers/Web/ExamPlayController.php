@@ -12,7 +12,7 @@ class ExamPlayController extends Controller
     {
         $exams = Exam::query()
             ->where('is_active', true)
-            ->select(['id','title','level'])
+            ->select(['id', 'title', 'level'])
             ->orderBy('title')
             ->get()
             ->toArray();
@@ -26,9 +26,9 @@ class ExamPlayController extends Controller
             ->whereKey($exam)
             ->where('is_active', true)
             ->with(['questions' => function ($q) {
-                $q->select(['id','exam_id','type','prompt','position'])->orderBy('position');
+                $q->select(['id', 'exam_id', 'type', 'prompt', 'position'])->orderBy('position');
             }, 'questions.options' => function ($q) {
-                $q->select(['id','question_id','text']); // скрываем is_correct
+                $q->select(['id', 'question_id', 'text']); // скрываем is_correct
             }])
             ->firstOrFail();
 
@@ -45,7 +45,7 @@ class ExamPlayController extends Controller
                     'type' => $q->type,
                     'prompt' => $q->prompt,
                     'position' => $q->position,
-                    'options' => $q->options->map(fn($o) => [
+                    'options' => $q->options->map(fn ($o) => [
                         'id' => $o->id,
                         'question_id' => $o->question_id,
                         'text' => $o->text,
@@ -66,5 +66,4 @@ class ExamPlayController extends Controller
     {
         return view('attempts.result', ['attemptId' => $attempt]);
     }
-
 }

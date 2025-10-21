@@ -2,10 +2,10 @@
 
 namespace Tests\Feature\Api;
 
+use App\Models\Attempt;
 use App\Models\Exam;
 use App\Models\Question;
 use App\Models\QuestionOption;
-use App\Models\Attempt;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Str;
 use Tests\TestCase;

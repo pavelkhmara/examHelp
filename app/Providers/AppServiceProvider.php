@@ -2,9 +2,9 @@
 
 namespace App\Providers;
 
-use Illuminate\Support\ServiceProvider;
 use App\Services\LanguageApp\AiProvider;
 use App\Services\LanguageApp\AiProviderFactory;
+use Illuminate\Support\ServiceProvider;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -15,6 +15,7 @@ class AppServiceProvider extends ServiceProvider
     {
         $this->app->bind(AiProvider::class, function ($app) {
             $cfg = config('ai', []);
+
             return AiProviderFactory::make($cfg['provider'] ?? null, $cfg);
         });
     }

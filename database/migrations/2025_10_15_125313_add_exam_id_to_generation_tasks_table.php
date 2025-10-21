@@ -13,7 +13,7 @@ return new class extends Migration
     {
         Schema::table('generation_tasks', function (Blueprint $table) {
             // Добавляем exam_id если его нет
-            if (!Schema::hasColumn('generation_tasks', 'exam_id')) {
+            if (! Schema::hasColumn('generation_tasks', 'exam_id')) {
                 $table->char('exam_id', 36)->nullable()->after('id');
                 $table->foreign('exam_id')->references('id')->on('exams')->onDelete('cascade');
             }
