@@ -1,0 +1,17 @@
+{
+    "name": "ExamHelp (app)",
+    "dockerComposeFile": ["../docker-compose.yml"],
+    "service": "app",
+    "workspaceFolder": "/var/www/html",
+    "shutdownAction": "stopCompose",
+    "overrideCommand": false,
+    "customizations": {
+      "vscode": {
+        "extensions": [
+          "bmewburn.vscode-intelephense-client",
+          "xdebug.php-pack"
+        ]
+      }
+    }
+  }
+  

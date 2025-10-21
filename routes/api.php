@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\Api\StructureController;
 use App\Http\Controllers\Api\ScoringController;
+use App\Http\Controllers\Api\DocumentController;
 use App\Http\Controllers\LanguageApp\ExamController;
 use App\Models\Exam;
 use App\Models\GenerationLog;
@@ -32,6 +33,12 @@ Route::middleware('auth:sanctum')->group(function () {
             'roles' => $u->getRoleNames(), // spatie/permission
         ]);
     });
+
+    Route::post('/exams/{exam}/documents', [DocumentController::class, 'store'])
+        ->name('exams.documents.store');
+
+    Route::get('/documents/{document}', [DocumentController::class, 'show'])
+        ->name('documents.show');
 });
 
 Route::get('/exams/{exam}/structure', [StructureController::class, 'show'])
