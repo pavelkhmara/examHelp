@@ -11,30 +11,30 @@ class JsonSchemaExamOverviewTest extends TestCase
     public function test_valid_overview_passes(): void
     {
         $data = [
-          "exam_name" => "ielts",
-          "sources" => [
-                ["url" => "https://www.ielts.org/about-the-test","title" =>"About the test","publisher" =>"IELTS"],
-                ["url" => "https://takeielts.britishcouncil.org/","title" =>"Take IELTS","publisher" =>"British Council"]
-              ],
-          "archetypes" => [
-            [
-              "id" => "reading_true_false_notgiven",
-              "name" => "Reading — True/False/Not Given",
-              "question_types" => ["True/False/Not Given","Matching"],
-              "typical_distractors" => ["Paraphrase traps"],
-              "verbs" => ["decide","select"],
-              "numeric_ranges" => ["word_limits" => [1,3]],
-              "weights" => ["Reading" => 1.0],
-              "difficulty" => "medium"
+            'exam_name' => 'ielts',
+            'sources' => [
+                ['url' => 'https://www.ielts.org/about-the-test', 'title' => 'About the test', 'publisher' => 'IELTS'],
+                ['url' => 'https://takeielts.britishcouncil.org/', 'title' => 'Take IELTS', 'publisher' => 'British Council'],
             ],
-          ],
+            'archetypes' => [
+                [
+                    'id' => 'reading_true_false_notgiven',
+                    'name' => 'Reading — True/False/Not Given',
+                    'question_types' => ['True/False/Not Given', 'Matching'],
+                    'typical_distractors' => ['Paraphrase traps'],
+                    'verbs' => ['decide', 'select'],
+                    'numeric_ranges' => ['word_limits' => [1, 3]],
+                    'weights' => ['Reading' => 1.0],
+                    'difficulty' => 'medium',
+                ],
+            ],
             'sections' => [
-                ['key' => 'listening', 'title'=>'Listening', 'count' => 20, 'time_per_question_sec'=>30],
+                ['key' => 'listening', 'title' => 'Listening', 'count' => 20, 'time_per_question_sec' => 30],
                 ['key' => 'reading', 'count' => 20],
             ],
-            'total_score' => ['min'=>0,'max'=>100],
+            'total_score' => ['min' => 0, 'max' => 100],
         ];
-        $v = new JsonSchemaExamOverview();
+        $v = new JsonSchemaExamOverview;
         $out = $v->validate($data);
 
         $this->assertEquals(2, count($out['sources']));
@@ -44,21 +44,21 @@ class JsonSchemaExamOverviewTest extends TestCase
     public function test_invalid_missing_sections_fails(): void
     {
         $this->expectException(ValidationException::class);
-        (new JsonSchemaExamOverview())->validate(['total_score' => ['min'=>0,'max'=>100]]);
+        (new JsonSchemaExamOverview)->validate(['total_score' => ['min' => 0, 'max' => 100]]);
     }
 
     public function test_invalid_types_fails(): void
     {
-      $this->expectException(ValidationException::class);
-      (new JsonSchemaExamOverview())->validate([
-          'sections' => [['key'=>123, 'count'=>'twenty']],
-          'total_score' => ['min'=>0,'max'=>100],
-      ]);
+        $this->expectException(ValidationException::class);
+        (new JsonSchemaExamOverview)->validate([
+            'sections' => [['key' => 123, 'count' => 'twenty']],
+            'total_score' => ['min' => 0, 'max' => 100],
+        ]);
     }
-    
+
     public function test_overview_like_in_logs_passes()
     {
-        $json = <<<JSON
+        $json = <<<'JSON'
     {
       "exam_name": "ielts",
       "exam_description": "",
@@ -91,15 +91,13 @@ class JsonSchemaExamOverviewTest extends TestCase
       "exam_matrix_provided": false
     }
     JSON;
-    
+
         $data = json_decode($json, true);
-        $v = new \App\Services\LanguageApp\Validators\JsonSchemaExamOverview();
+        $v = new \App\Services\LanguageApp\Validators\JsonSchemaExamOverview;
         $out = $v->validate($data);
-    
+
         $this->assertEquals('ielts', $out['exam_name']);
         $this->assertCount(2, $out['sources']);
         $this->assertCount(2, $out['archetypes']);
     }
 }
-
-

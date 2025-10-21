@@ -12,7 +12,7 @@ class ExamController extends Controller
     {
         $exams = Exam::query()
             ->where('is_active', true)
-            ->select(['id','title','level'])
+            ->select(['id', 'title', 'level'])
             ->orderBy('title')
             ->get();
 
@@ -24,13 +24,14 @@ class ExamController extends Controller
         abort_unless($exam->is_active, 404);
 
         $exam->load([
-            'questions' => fn ($q) => $q->select(['id','exam_id','type','prompt','position'])->orderBy('position'),
-            'questions.options' => fn ($q) => $q->select(['id','question_id','text','is_correct']),
+            'questions' => fn ($q) => $q->select(['id', 'exam_id', 'type', 'prompt', 'position'])->orderBy('position'),
+            'questions.options' => fn ($q) => $q->select(['id', 'question_id', 'text', 'is_correct']),
         ]);
 
         $exam->questions->each(function ($question) {
             $question->options->transform(function ($opt) {
                 unset($opt->is_correct);
+
                 return $opt;
             });
         });

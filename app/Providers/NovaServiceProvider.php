@@ -2,14 +2,6 @@
 
 namespace App\Providers;
 
-use Illuminate\Support\Facades\Gate;
-use Illuminate\Support\Facades\Log;
-use Illuminate\Http\Request;
-use Laravel\Nova\Nova;
-use Laravel\Nova\NovaApplicationServiceProvider;
-use Laravel\Nova\Menu\Menu;
-use Laravel\Nova\Menu\MenuItem;
-use Laravel\Nova\Menu\MenuSection;
 use App\Models\Exam;
 use App\Nova\Exam as ExamResource;
 use App\Nova\ExamCategory as ExamCategoryResource;
@@ -17,6 +9,14 @@ use App\Nova\ExamExampleQuestion as ExamExampleQuestionResource;
 use App\Nova\GenerationLog as GenerationLogResource;
 use App\Nova\GenerationTask as GenerationTaskResource;
 use App\Nova\Menu\CustomMenu;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Gate;
+use Illuminate\Support\Facades\Log;
+use Laravel\Nova\Menu\Menu;
+use Laravel\Nova\Menu\MenuItem;
+use Laravel\Nova\Menu\MenuSection;
+use Laravel\Nova\Nova;
+use Laravel\Nova\NovaApplicationServiceProvider;
 
 class NovaServiceProvider extends NovaApplicationServiceProvider
 {
@@ -66,6 +66,7 @@ class NovaServiceProvider extends NovaApplicationServiceProvider
         // // Итоговое меню = глобальные пункты + «Exams» со всеми экземплярами
         // return new Menu(array_merge($global, [$byExams]));
     }
+
     /**
      * Bootstrap any application services.
      *
@@ -88,9 +89,9 @@ class NovaServiceProvider extends NovaApplicationServiceProvider
     protected function routes()
     {
         Nova::routes()
-                ->withAuthenticationRoutes()
-                ->withPasswordResetRoutes()
-                ->register();
+            ->withAuthenticationRoutes()
+            ->withPasswordResetRoutes()
+            ->register();
     }
 
     /**

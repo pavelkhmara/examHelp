@@ -6,7 +6,8 @@ use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
 {
-    public function up(): void {
+    public function up(): void
+    {
         Schema::create('exam_example_questions', function (Blueprint $table) {
             $table->increments('id'); // INT UNSIGNED PK
             $table->char('exam_id', 36);
@@ -14,7 +15,7 @@ return new class extends Migration
 
             $table->unsignedInteger('exam_category_id');
             $table->foreign('exam_category_id')->references('id')->on('exam_categories')->cascadeOnDelete();
-            
+
             $table->text('question');
             $table->json('good_answer')->nullable();
             $table->json('average_answer')->nullable();

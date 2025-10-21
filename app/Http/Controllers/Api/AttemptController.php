@@ -5,7 +5,6 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use App\Models\Attempt;
 use App\Models\AttemptAnswer;
-use App\Models\Exam;
 use App\Models\Question;
 use App\Models\QuestionOption;
 use Illuminate\Http\Request;
@@ -17,7 +16,7 @@ class AttemptController extends Controller
     public function store(Request $request)
     {
         $data = $request->validate([
-            'exam_id' => ['required','uuid', Rule::exists('exams','id')->where('is_active', true)],
+            'exam_id' => ['required', 'uuid', Rule::exists('exams', 'id')->where('is_active', true)],
         ]);
 
         $attempt = Attempt::create([
@@ -33,17 +32,17 @@ class AttemptController extends Controller
         abort_if($attempt->completed_at !== null, 422, 'Attempt already completed.');
 
         $data = $request->validate([
-            'question_id' => ['required','uuid', Rule::exists('questions','id')->where('exam_id', $attempt->exam_id)],
-            'type' => ['required', Rule::in(['MCQ','TEXT'])],
-            'selected_option_id' => ['nullable','uuid'],
-            'text_answer' => ['nullable','string'],
+            'question_id' => ['required', 'uuid', Rule::exists('questions', 'id')->where('exam_id', $attempt->exam_id)],
+            'type' => ['required', Rule::in(['MCQ', 'TEXT'])],
+            'selected_option_id' => ['nullable', 'uuid'],
+            'text_answer' => ['nullable', 'string'],
         ]);
 
         if ($data['type'] === 'MCQ') {
             $request->validate([
                 'selected_option_id' => [
-                    'required','uuid',
-                    Rule::exists('question_options','id')->where('question_id', $data['question_id'])
+                    'required', 'uuid',
+                    Rule::exists('question_options', 'id')->where('question_id', $data['question_id']),
                 ],
             ]);
         }

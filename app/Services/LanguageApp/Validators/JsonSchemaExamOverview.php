@@ -2,7 +2,6 @@
 
 namespace App\Services\LanguageApp\Validators;
 
-use Illuminate\Support\Arr;
 use Illuminate\Validation\ValidationException;
 
 /**
@@ -49,7 +48,7 @@ final class JsonSchemaExamOverview
 {
     public function validate(mixed $data): array
     {
-        if (!is_array($data) || !$this->isAssoc($data)) {
+        if (! is_array($data) || ! $this->isAssoc($data)) {
             throw ValidationException::withMessages(['root' => 'overview must be a JSON object']);
         }
 
@@ -78,7 +77,7 @@ final class JsonSchemaExamOverview
         }
 
         // --- archetypes (вход может называться по-разному, но в примерах — "archetypes")
-        if (!isset($data['archetypes']) || !is_array($data['archetypes'])) {
+        if (! isset($data['archetypes']) || ! is_array($data['archetypes'])) {
             // Иногда встречается "global_archetypes" — подстрахуемся
             if (isset($data['global_archetypes']) && is_array($data['global_archetypes'])) {
                 $data['archetypes'] = $data['global_archetypes'];
@@ -91,10 +90,10 @@ final class JsonSchemaExamOverview
         $categoryMap = []; // "<category>" => ["archetype_weights" => [[archetype_id, weight], ...]]
 
         foreach ($data['archetypes'] as $i => $arc) {
-            if (!is_array($arc) || !$this->isAssoc($arc)) {
+            if (! is_array($arc) || ! $this->isAssoc($arc)) {
                 throw ValidationException::withMessages(["archetypes.$i" => 'must be an object']);
             }
-            $id   = $this->mustString($arc, 'id', "archetypes.$i.id");
+            $id = $this->mustString($arc, 'id', "archetypes.$i.id");
             $name = $this->mustString($arc, 'name', "archetypes.$i.name");
 
             // category_weights на уровне архетипа: допускаем разные ключи и любой регистр
@@ -136,44 +135,44 @@ final class JsonSchemaExamOverview
 
             // other: все ключи архетипа, которые мы не использовали — «как есть», без валидации
             $knownKeys = [
-                'id','name','category','category_weights','weights','section','pattern','question_types',
-                'typical_distractors','common_distractors','distractors','verbs','typical_verbs','common_verbs',
-                'units','common_visuals','evidence','evidence_sources','difficulty','difficulty_band','difficulty_band_cefr',
-                'typical_answer_length_or_range','typical_length_or_time','numeric_ranges','numeric_ranges_and_constraints',
-                'typical_instructions','rationale','description'
+                'id', 'name', 'category', 'category_weights', 'weights', 'section', 'pattern', 'question_types',
+                'typical_distractors', 'common_distractors', 'distractors', 'verbs', 'typical_verbs', 'common_verbs',
+                'units', 'common_visuals', 'evidence', 'evidence_sources', 'difficulty', 'difficulty_band', 'difficulty_band_cefr',
+                'typical_answer_length_or_range', 'typical_length_or_time', 'numeric_ranges', 'numeric_ranges_and_constraints',
+                'typical_instructions', 'rationale', 'description',
             ];
             $other = [];
             foreach ($arc as $k => $v) {
-                if (!in_array($k, $knownKeys, true)) {
+                if (! in_array($k, $knownKeys, true)) {
                     $other[$k] = $v;
                 }
             }
 
             // наполнить category_map
             foreach ($cw as $cat => $w) {
-                if (!isset($categoryMap[$cat])) {
+                if (! isset($categoryMap[$cat])) {
                     $categoryMap[$cat] = ['archetype_weights' => []];
                 }
                 $categoryMap[$cat]['archetype_weights'][] = [
                     'archetype_id' => $id,
-                    'weight'       => (float)$w,
+                    'weight' => (float) $w,
                 ];
             }
 
             $globalArchetypes[] = [
-                'id'               => $id,
-                'name'             => $name,
-                'category'         => $category,
+                'id' => $id,
+                'name' => $name,
+                'category' => $category,
                 'category_weights' => $cw,
-                'step_duration'    => $stepDuration,
+                'step_duration' => $stepDuration,
 
-                'stem_templates'   => $stemTemplates,
-                'evidence'         => $evidence,
-                'distractors'      => $distractors,
-                'ranges'           => $ranges,
-                'difficulty'       => $difficulty,
+                'stem_templates' => $stemTemplates,
+                'evidence' => $evidence,
+                'distractors' => $distractors,
+                'ranges' => $ranges,
+                'difficulty' => $difficulty,
 
-                'other'            => $other,
+                'other' => $other,
             ];
         }
 
@@ -182,43 +181,45 @@ final class JsonSchemaExamOverview
 
         // Итог
         return [
-            'exam_name'           => $examName,
-            'sources'             => $sources,
-            'global_archetypes'   => $globalArchetypes,
-            'category_map'        => $categoryMap,
+            'exam_name' => $examName,
+            'sources' => $sources,
+            'global_archetypes' => $globalArchetypes,
+            'category_map' => $categoryMap,
             'total_exam_duration' => $totalDuration,
-            'rationale'           => $rationale,
+            'rationale' => $rationale,
         ];
     }
 
     // ----------------- Helpers -----------------
 
-    private function mustString(array $a, string $key, string $path = null): string
+    private function mustString(array $a, string $key, ?string $path = null): string
     {
         $p = $path ?: $key;
-        if (!isset($a[$key]) || !is_string($a[$key]) || $a[$key] === '') {
+        if (! isset($a[$key]) || ! is_string($a[$key]) || $a[$key] === '') {
             throw ValidationException::withMessages([$p => 'must be non-empty string']);
         }
+
         return $a[$key];
     }
 
     private function normalizeSources(mixed $src): array
     {
-        if (!is_array($src)) {
+        if (! is_array($src)) {
             throw ValidationException::withMessages(['sources' => 'sources must be an array']);
         }
         $out = [];
         foreach ($src as $i => $s) {
-            if (!is_array($s)) {
+            if (! is_array($s)) {
                 throw ValidationException::withMessages(["sources.$i" => 'must be object']);
             }
-            foreach (['url','title','publisher'] as $f) {
-                if (!isset($s[$f]) || !is_string($s[$f]) || $s[$f] === '') {
+            foreach (['url', 'title', 'publisher'] as $f) {
+                if (! isset($s[$f]) || ! is_string($s[$f]) || $s[$f] === '') {
                     throw ValidationException::withMessages(["sources.$i.$f" => 'must be non-empty string']);
                 }
             }
-            $out[] = ['url'=>$s['url'],'title'=>$s['title'],'publisher'=>$s['publisher']];
+            $out[] = ['url' => $s['url'], 'title' => $s['title'], 'publisher' => $s['publisher']];
         }
+
         return $out;
     }
 
@@ -226,11 +227,12 @@ final class JsonSchemaExamOverview
     {
         $norm = [];
         foreach ($weights as $k => $v) {
-            if (!is_string($k) || !is_numeric($v)) {
+            if (! is_string($k) || ! is_numeric($v)) {
                 throw ValidationException::withMessages(["$path.$k" => 'key must be string, value must be numeric']);
             }
-            $norm[strtolower($k)] = (float)$v;
+            $norm[strtolower($k)] = (float) $v;
         }
+
         return $norm;
     }
 
@@ -238,32 +240,39 @@ final class JsonSchemaExamOverview
     {
         if ($cw !== []) {
             arsort($cw, SORT_NUMERIC);
+
             return (string) array_key_first($cw);
         }
         // fallback: section / explicit category-like hints
-        foreach (['category','section','skill','module'] as $k) {
+        foreach (['category', 'section', 'skill', 'module'] as $k) {
             if (isset($arc[$k]) && is_string($arc[$k]) && $arc[$k] !== '') {
                 return strtolower($arc[$k]);
             }
         }
+
         return 'unknown';
     }
 
     private function inferStepDurationMinutes(array $arc): ?int
     {
-        // typical_length_or_time может быть числом, объектом или массивом; ищем minutes/seconds и т.п. 
+        // typical_length_or_time может быть числом, объектом или массивом; ищем minutes/seconds и т.п.
         $candidates = [
             'typical_length_or_time',
             'typical_answer_length_or_range',
             'numeric_ranges',
-            'numeric_ranges_and_constraints'
+            'numeric_ranges_and_constraints',
         ];
         foreach ($candidates as $k) {
-            if (!array_key_exists($k, $arc)) continue;
+            if (! array_key_exists($k, $arc)) {
+                continue;
+            }
             $val = $arc[$k];
             $mins = $this->extractMinutes($val);
-            if (!is_null($mins)) return $mins;
+            if (! is_null($mins)) {
+                return $mins;
+            }
         }
+
         // иногда units/description намекают на "minutes" — но без числа надёжно не извлечь. Оставим null. :contentReference[oaicite:3]{index=3}
         return null;
     }
@@ -271,18 +280,23 @@ final class JsonSchemaExamOverview
     private function extractMinutes(mixed $v): ?int
     {
         // Число
-        if (is_int($v)) return $v;
-        if (is_float($v)) return (int)round($v);
+        if (is_int($v)) {
+            return $v;
+        }
+        if (is_float($v)) {
+            return (int) round($v);
+        }
 
         // Строка: ищем "NN minute(s)"
         if (is_string($v)) {
             if (preg_match('/(\d{1,3})\s*min/u', $v, $m)) {
-                return (int)$m[1];
+                return (int) $m[1];
             }
             // диапазоны "2–5 minutes" -> берём среднее
             if (preg_match('/(\d{1,3})\s*[–-]\s*(\d{1,3})\s*min/u', $v, $m)) {
-                return (int)round(($m[1]+$m[2])/2);
+                return (int) round(($m[1] + $m[2]) / 2);
             }
+
             return null;
         }
 
@@ -293,39 +307,51 @@ final class JsonSchemaExamOverview
                 // прямые минуты в массиве минут
                 if (isset($v['minutes'])) {
                     $mins = $this->avgFromArray($v['minutes']);
-                    if (!is_null($mins)) return $mins;
+                    if (! is_null($mins)) {
+                        return $mins;
+                    }
                 }
                 // альтернативные ключи (monologue_minutes, recording_seconds -> перевод)
                 foreach ($v as $key => $val) {
-                    if (stripos((string)$key, 'minutes') !== false) {
+                    if (stripos((string) $key, 'minutes') !== false) {
                         $mins = $this->avgFromArray($val);
-                        if (!is_null($mins)) return $mins;
+                        if (! is_null($mins)) {
+                            return $mins;
+                        }
                     }
-                    if (stripos((string)$key, 'seconds') !== false) {
+                    if (stripos((string) $key, 'seconds') !== false) {
                         $secs = $this->avgFromArray($val);
-                        if (!is_null($secs)) return (int)round($secs/60);
+                        if (! is_null($secs)) {
+                            return (int) round($secs / 60);
+                        }
                     }
                 }
             } else {
                 // простой список — попробуем найти строку с "minutes"
                 foreach ($v as $item) {
                     $mins = $this->extractMinutes($item);
-                    if (!is_null($mins)) return $mins;
+                    if (! is_null($mins)) {
+                        return $mins;
+                    }
                 }
             }
         }
+
         return null;
     }
 
     private function avgFromArray(mixed $val): ?int
     {
-        if (is_int($val) || is_float($val)) return (int)round($val);
-        if (is_array($val) && !$this->isAssoc($val) && count($val) > 0) {
-            $nums = array_values(array_filter($val, fn($x) => is_numeric($x)));
+        if (is_int($val) || is_float($val)) {
+            return (int) round($val);
+        }
+        if (is_array($val) && ! $this->isAssoc($val) && count($val) > 0) {
+            $nums = array_values(array_filter($val, fn ($x) => is_numeric($x)));
             if ($nums) {
-                return (int) round(array_sum($nums)/count($nums));
+                return (int) round(array_sum($nums) / count($nums));
             }
         }
+
         return null;
     }
 
@@ -352,10 +378,11 @@ final class JsonSchemaExamOverview
             null,
             allowNull: true
         ) ?? [];
-        $out = array_merge($out, array_map(fn($v) => "verb: ".$v, $verbs));
+        $out = array_merge($out, array_map(fn ($v) => 'verb: '.$v, $verbs));
 
         // уберём дубликаты/пробелы
-        $out = array_values(array_unique(array_map('trim', array_filter($out, fn($s) => is_string($s) && $s !== ''))));
+        $out = array_values(array_unique(array_map('trim', array_filter($out, fn ($s) => is_string($s) && $s !== ''))));
+
         return $out;
     }
 
@@ -366,33 +393,42 @@ final class JsonSchemaExamOverview
         // индексы/строки
         if (isset($arc['evidence']) && is_array($arc['evidence'])) {
             foreach ($arc['evidence'] as $e) {
-                if (is_string($e) || is_int($e)) $ev[] = $e;
+                if (is_string($e) || is_int($e)) {
+                    $ev[] = $e;
+                }
             }
         }
         // источники-строки/URL
         if (isset($arc['evidence_sources']) && is_array($arc['evidence_sources'])) {
             foreach ($arc['evidence_sources'] as $e) {
-                if (is_string($e)) $ev[] = $e;
+                if (is_string($e)) {
+                    $ev[] = $e;
+                }
             }
         }
+
         return $ev;
     }
 
     private function collectRanges(array $arc): mixed
     {
-        foreach (['numeric_ranges','numeric_ranges_and_constraints','typical_answer_length_or_range','typical_length_or_time'] as $k) {
+        foreach (['numeric_ranges', 'numeric_ranges_and_constraints', 'typical_answer_length_or_range', 'typical_length_or_time'] as $k) {
             if (array_key_exists($k, $arc)) {
                 return $arc[$k]; // как есть
             }
         }
+
         return null;
     }
 
     private function pickFirstString(array $arr, array $keys): ?string
     {
         foreach ($keys as $k) {
-            if (isset($arr[$k]) && is_string($arr[$k])) return $arr[$k];
+            if (isset($arr[$k]) && is_string($arr[$k])) {
+                return $arr[$k];
+            }
         }
+
         return null;
     }
 
@@ -401,32 +437,42 @@ final class JsonSchemaExamOverview
         if (is_null($value)) {
             return $allowNull ? null : [];
         }
-        if (!is_array($value)) {
-            if ($allowNull) return null;
+        if (! is_array($value)) {
+            if ($allowNull) {
+                return null;
+            }
             throw ValidationException::withMessages([$path ?? 'array' => 'must be array of strings']);
         }
         $res = [];
         foreach ($value as $i => $v) {
-            if (is_string($v) && $v !== '') $res[] = $v;
+            if (is_string($v) && $v !== '') {
+                $res[] = $v;
+            }
         }
+
         return $res;
     }
 
     private function sumDurations(array $globalArchetypes): ?int
     {
-        $sum = 0; $has = false;
+        $sum = 0;
+        $has = false;
         foreach ($globalArchetypes as $ga) {
             if (isset($ga['step_duration']) && is_int($ga['step_duration'])) {
                 $sum += $ga['step_duration'];
                 $has = true;
             }
         }
+
         return $has ? $sum : null;
     }
 
     private function isAssoc(array $arr): bool
     {
-        if ($arr === []) return true;
-        return array_keys($arr) !== range(0, count($arr)-1);
+        if ($arr === []) {
+            return true;
+        }
+
+        return array_keys($arr) !== range(0, count($arr) - 1);
     }
 }

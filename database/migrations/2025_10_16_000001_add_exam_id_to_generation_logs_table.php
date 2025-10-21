@@ -2,10 +2,11 @@
 
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
-use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Schema;
 
-return new class extends Migration {
+return new class extends Migration
+{
     public function up(): void
     {
         Schema::table('generation_logs', function (Blueprint $table) {
@@ -14,12 +15,12 @@ return new class extends Migration {
         });
 
         // Если логи связаны с тасками, а у тасков уже есть exam_id — заполним из них
-        DB::statement("
+        DB::statement('
             UPDATE generation_logs gl
             JOIN generation_tasks gt ON gt.id = gl.generation_task_id
             SET gl.exam_id = gt.exam_id
             WHERE gl.exam_id IS NULL
-        ");
+        ');
 
         // (опционально) если хотите FK и у вас exams.id = UUID
         Schema::table('generation_logs', function (Blueprint $table) {

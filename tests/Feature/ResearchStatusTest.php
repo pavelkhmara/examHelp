@@ -6,7 +6,6 @@ use App\Jobs\RunExamResearchJob;
 use App\Models\Exam;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Config;
-use Illuminate\Support\Facades\Queue;
 use Tests\TestCase;
 
 class ResearchStatusTest extends TestCase

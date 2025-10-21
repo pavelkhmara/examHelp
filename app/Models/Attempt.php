@@ -12,7 +12,7 @@ class Attempt extends Model
 {
     use HasFactory, HasUuid;
 
-    protected $fillable = ['exam_id','user_id','started_at','completed_at','score'];
+    protected $fillable = ['exam_id', 'user_id', 'started_at', 'completed_at', 'score'];
 
     public function exam(): BelongsTo
     {

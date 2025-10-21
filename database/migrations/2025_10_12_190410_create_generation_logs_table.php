@@ -9,7 +9,8 @@ return new class extends Migration
     /**
      * Run the migrations.
      */
-    public function up(): void {
+    public function up(): void
+    {
         Schema::create('generation_logs', function (Blueprint $table) {
             $table->id();
             $table->foreignId('generation_task_id')->constrained()->cascadeOnDelete();
@@ -21,7 +22,7 @@ return new class extends Migration
             $table->unsignedInteger('total_tokens')->default(0);
             $table->timestamps();
 
-            $table->index(['generation_task_id','stage']);
+            $table->index(['generation_task_id', 'stage']);
         });
     }
 

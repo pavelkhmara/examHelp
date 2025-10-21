@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use App\Models\Exam;
 use App\Models\GenerationTask;
+use App\Services\LanguageApp\Validators\QuestionTypeContract;
 use Illuminate\Http\JsonResponse;
 
 class StructureController extends Controller
@@ -18,34 +19,47 @@ class StructureController extends Controller
             ->latest('id')
             ->first();
 
-        if (!$task || !is_array($task->result)) {
+        if (! $task || ! is_array($task->result)) {
             return response()->json([
                 'message' => 'Structure not ready for this exam.',
-                'code'    => 'structure_not_ready',
+                'code' => 'structure_not_ready',
             ], 404);
         }
 
         $result = $task->result;
+        // safety-filter: leave only known types (defense-in-depth)
+        $validator = app(QuestionTypeContract::class);
+        if (isset($result['tasks']) && is_array($result['tasks'])) {
+            $filtered = [];
+            foreach ($result['tasks'] as $t) {
+                try {
+                    $filtered[] = $validator->validateTask($t);
+                } catch (\Throwable) {
+                    // skip invalid
+                }
+            }
+            $result['tasks'] = $filtered;
+        }
 
         // sources
         $sources = [];
-        if (!empty($result['sources']) && is_array($result['sources'])) {
+        if (! empty($result['sources']) && is_array($result['sources'])) {
             $sources = array_values(array_map(fn ($s) => [
-                'url'       => (string)($s['url'] ?? ''),
-                'title'     => (string)($s['title'] ?? ''),
-                'publisher' => (string)($s['publisher'] ?? ''),
+                'url' => (string) ($s['url'] ?? ''),
+                'title' => (string) ($s['title'] ?? ''),
+                'publisher' => (string) ($s['publisher'] ?? ''),
             ], $result['sources']));
         }
 
         // archetypes (как вернули из валидатора)
         $archetypes = [];
-        if (!empty($result['archetypes']) && is_array($result['archetypes'])) {
+        if (! empty($result['archetypes']) && is_array($result['archetypes'])) {
             $archetypes = $result['archetypes'];
         }
 
         // total_score (может отсутствовать)
         $totalScore = null;
-        if (!empty($result['total_score']) && is_array($result['total_score'])) {
+        if (! empty($result['total_score']) && is_array($result['total_score'])) {
             $ts = $result['total_score'];
             if (isset($ts['min'], $ts['max']) && is_int($ts['min']) && is_int($ts['max'])) {
                 $totalScore = ['min' => $ts['min'], 'max' => $ts['max']];
@@ -57,12 +71,13 @@ class StructureController extends Controller
         foreach ($archetypes as $arc) {
             $section = $arc['section'] ?? null;
 
-            if (!$section) {
+            if (! $section) {
                 $weights = $arc['weights'] ?? ($arc['category_weights'] ?? null);
                 if (is_array($weights)) {
                     foreach (array_keys($weights) as $k) {
                         $sectionsAgg[$k] = ($sectionsAgg[$k] ?? 0) + 1;
                     }
+
                     continue;
                 }
             }
@@ -74,21 +89,22 @@ class StructureController extends Controller
 
         $sections = [];
         foreach ($sectionsAgg as $key => $count) {
-            $sections[] = ['key' => (string)$key, 'archetype_count' => (int)$count];
+            $sections[] = ['key' => (string) $key, 'archetype_count' => (int) $count];
         }
 
         return response()->json([
             'exam' => [
-                'id'              => $exam->id,
-                'slug'            => $exam->slug,
-                'title'           => $exam->title,
+                'id' => $exam->id,
+                'slug' => $exam->slug,
+                'title' => $exam->title,
                 'research_status' => $exam->research_status,
             ],
-            'sources'     => $sources,
-            'archetypes'  => $archetypes,
-            'sections'    => $sections,
+            'sources' => $sources,
+            'archetypes' => $archetypes,
+            'sections' => $sections,
+            'structure' => optional($task)->result,
             'total_score' => $totalScore,
-            'task_id'     => $task->id,
+            'task_id' => $task->id,
         ]);
     }
 }

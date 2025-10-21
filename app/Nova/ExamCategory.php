@@ -2,16 +2,24 @@
 
 namespace App\Nova;
 
-use Illuminate\Support\Facades\Log;
-use Laravel\Nova\Fields\{ID, BelongsTo, Text, Number, Code, HasMany};
-use Laravel\Nova\Http\Requests\NovaRequest;
 use App\Nova\Filters\ExamCategoryFilter;
+use Laravel\Nova\Fields\BelongsTo;
+use Laravel\Nova\Fields\Code;
+use Laravel\Nova\Fields\HasMany;
+use Laravel\Nova\Fields\ID;
+use Laravel\Nova\Fields\Number;
+use Laravel\Nova\Fields\Text;
+use Laravel\Nova\Http\Requests\NovaRequest;
 use Laravel\Nova\Panel;
+
 class ExamCategory extends Resource
 {
     public static $model = \App\Models\ExamCategory::class;
+
     public static $title = 'name';
-    public static $search = ['id','key','name'];
+
+    public static $search = ['id', 'key', 'name'];
+
     public static $group = 'Language App';
 
     public function fields(NovaRequest $request)
@@ -45,27 +53,27 @@ class ExamCategory extends Resource
             new Panel('Category Meta', [
                 // Шаги внутри категории с порядком и длительностью
                 Code::make('Steps')
-                    ->json(JSON_UNESCAPED_UNICODE|JSON_PRETTY_PRINT)
-                    ->resolveUsing(fn() => json_encode(data_get($this->meta, 'steps', []), JSON_UNESCAPED_UNICODE|JSON_PRETTY_PRINT))
+                    ->json(JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT)
+                    ->resolveUsing(fn () => json_encode(data_get($this->meta, 'steps', []), JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT))
                     ->onlyOnDetail(),
 
                 // Краткие сведения по архетипам (id/name/weights/duration)
                 Code::make('Archetypes')
-                    ->json(JSON_UNESCAPED_UNICODE|JSON_PRETTY_PRINT)
-                    ->resolveUsing(fn() => json_encode(data_get($this->meta, 'archetypes', []), JSON_UNESCAPED_UNICODE|JSON_PRETTY_PRINT))
+                    ->json(JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT)
+                    ->resolveUsing(fn () => json_encode(data_get($this->meta, 'archetypes', []), JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT))
                     ->onlyOnDetail(),
 
                 // Сводные числа
-                Number::make('Sum Weight', fn() => (float) data_get($this->meta, 'sum_weight', 0.0))->onlyOnDetail(),
-                Number::make('Archetype Count', fn() => (int) data_get($this->meta, 'archetype_count', 0))->onlyOnDetail(),
+                Number::make('Sum Weight', fn () => (float) data_get($this->meta, 'sum_weight', 0.0))->onlyOnDetail(),
+                Number::make('Archetype Count', fn () => (int) data_get($this->meta, 'archetype_count', 0))->onlyOnDetail(),
             ]),
         ];
     }
-    
+
     public function filters(NovaRequest $request)
     {
         return [
-            new ExamCategoryFilter(),
+            new ExamCategoryFilter,
         ];
     }
 

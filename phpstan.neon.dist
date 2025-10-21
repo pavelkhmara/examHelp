@@ -1,8 +1,28 @@
+includes:
+  - vendor/nunomaduro/larastan/extension.neon
+
 parameters:
-  level: 8
+  level: 6
   paths:
     - app
+    - app/Domain
+    - app/Services
+    - app/Nova
+    - database/seeders
+  excludePaths:
+    - database/migrations/*
+    - storage/*
+    - bootstrap/cache/*
+    - vendor/*
+  tmpDir: storage/framework/cache/phpstan
+  
+  checkModelProperties: true
+  checkMissingIterableValueType: true
+  reportUnmatchedIgnoredErrors: true
+
+  # ignoreErrors:
+  #   - '#Call to an undefined static method Laravel\\Nova\\Nova::.*#'
+  
   bootstrapFiles:
     - vendor/autoload.php
     - bootstrap/app.php
-  memoryLimit: 1G

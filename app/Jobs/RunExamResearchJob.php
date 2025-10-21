@@ -2,7 +2,6 @@
 
 namespace App\Jobs;
 
-use Illuminate\Support\Facades\Log;
 use App\Models\Exam;
 use App\Models\GenerationTask;
 use App\Services\LanguageApp\ExamResearchService;
@@ -11,6 +10,7 @@ use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
 use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Queue\SerializesModels;
+use Illuminate\Support\Facades\Log;
 
 class RunExamResearchJob implements ShouldQueue
 {
@@ -33,7 +33,7 @@ class RunExamResearchJob implements ShouldQueue
             'request' => ['exam_id' => $exam->id, 'notes' => $this->notes],
         ]);
 
-        Log::debug('RunExamResearchJob [task_id]', [ 'task_id' => $task->id]);
+        Log::debug('RunExamResearchJob [task_id]', ['task_id' => $task->id]);
 
         try {
             $result = $service->runPipeline($exam, $task, $this->notes);

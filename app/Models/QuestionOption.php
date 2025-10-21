@@ -11,7 +11,7 @@ class QuestionOption extends Model
 {
     use HasFactory, HasUuid;
 
-    protected $fillable = ['question_id','text','is_correct'];
+    protected $fillable = ['question_id', 'text', 'is_correct'];
 
     public function question(): BelongsTo
     {

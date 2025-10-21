@@ -15,11 +15,11 @@ return new class extends Migration
             $table->uuid('id')->primary();
             $table->string('title');
             $table->text('description')->nullable();
-            $table->enum('level', ['A1','A2','B1','B2','C1','C2'])->default('B1');
+            $table->enum('level', ['A1', 'A2', 'B1', 'B2', 'C1', 'C2'])->default('B1');
             $table->boolean('is_active')->default(true);
             $table->timestamps();
         });
-        
+
     }
 
     /**

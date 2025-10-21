@@ -14,13 +14,13 @@ return new class extends Migration
         Schema::create('questions', function (Blueprint $table) {
             $table->uuid('id')->primary();
             $table->uuid('exam_id');
-            $table->enum('type', ['MCQ','TEXT'])->default('MCQ');
+            $table->enum('type', ['MCQ', 'TEXT'])->default('MCQ');
             $table->text('prompt');
             $table->unsignedInteger('position')->default(1);
             $table->timestamps();
-        
+
             $table->foreign('exam_id')->references('id')->on('exams')->cascadeOnDelete();
-        });        
+        });
     }
 
     /**

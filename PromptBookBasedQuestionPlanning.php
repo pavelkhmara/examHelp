@@ -27,7 +27,7 @@ class PromptBookBasedQuestionPlanning
         array $existingPlans = [],
         array $archetypeData = []
     ): string {
-        $existingPlans = [];//TODO REMOVE
+        $existingPlans = []; // TODO REMOVE
         $currentCategory = $currentCategoryObject->name;
         $parentCategory = $parentCategoryObject?->name;
 
@@ -39,14 +39,14 @@ class PromptBookBasedQuestionPlanning
         $categoriesData = [
             'current_category' => [
                 'name' => $currentCategoryObject->name,
-                'description' => $currentCategoryObject->description ?? ''
-            ]
+                'description' => $currentCategoryObject->description ?? '',
+            ],
         ];
 
         if ($parentCategoryObject) {
             $categoriesData['parent_category'] = [
                 'name' => $parentCategoryObject->name,
-                'description' => $parentCategoryObject->description ?? ''
+                'description' => $parentCategoryObject->description ?? '',
             ];
         }
 
@@ -60,7 +60,7 @@ class PromptBookBasedQuestionPlanning
 
         $tableGuidance = '';
         if ($shouldUseTables) {
-            $tableGuidance = <<<EOT
+            $tableGuidance = <<<'EOT'
 
 **TABLE USAGE GUIDELINES:**
 When planning questions, consider using tables when they would make the question more effective:
@@ -80,7 +80,7 @@ EOT;
 
         $formulaGuidance = '';
         if ($shouldHaveFormulas) {
-            $formulaGuidance = <<<EOT
+            $formulaGuidance = <<<'EOT'
 
 **MATHEMATICAL FORMULA GUIDELINES:**
 When planning questions that involve mathematical content, consider if they need LaTeX formulas:
@@ -115,7 +115,7 @@ EOT;
 
         $imageGuidance = '';
         if ($currentCategoryObject->should_have_images) {
-            $imageGuidance = <<<EOT
+            $imageGuidance = <<<'EOT'
 
 **IMAGE-INTEGRATED QUESTION PLANNING (MANDATORY):**
 Every planned question must rely on an image to be answerable.
@@ -149,7 +149,7 @@ EOT;
         }
 
         $existingPlansSection = '';
-        if (!empty($existingPlans)) {
+        if (! empty($existingPlans)) {
             $existingPlansJson = json_encode($existingPlans, JSON_THROW_ON_ERROR | JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE);
             $existingPlansSection = <<<EOT
 
@@ -160,11 +160,11 @@ EOT;
         }
 
         $archetypeGuidance = '';
-        if (!empty($archetypeData)) {
+        if (! empty($archetypeData)) {
             $archetypes = $archetypeData['archetypes'] ?? [];
             $difficultyFocus = $archetypeData['difficulty_focus'] ?? 'hard';
 
-            if (!empty($archetypes)) {
+            if (! empty($archetypes)) {
                 $archetypesJson = json_encode($archetypes, JSON_THROW_ON_ERROR | JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE);
                 $archetypeGuidance = <<<EOT
 
@@ -268,136 +268,136 @@ EOT;
         $planProperties = [
             'n' => [
                 'type' => $isGoogle ? 'INTEGER' : 'integer',
-                'description' => 'Question plan number (1, 2, 3, etc.)'
+                'description' => 'Question plan number (1, 2, 3, etc.)',
             ],
             'concept' => [
                 'type' => $isGoogle ? 'STRING' : 'string',
-                'description' => 'The main concept or topic to be tested'
+                'description' => 'The main concept or topic to be tested',
             ],
             'difficulty_focus' => [
                 'type' => $isGoogle ? 'STRING' : 'string',
                 'enum' => ['analysis', 'synthesis', 'complex_application', 'evaluation', 'critical_thinking'],
-                'description' => 'The type of cognitive challenge'
+                'description' => 'The type of cognitive challenge',
             ],
             'question_approach' => [
                 'type' => $isGoogle ? 'STRING' : 'string',
-                'description' => 'How the question will test understanding (scenario-based, case study, comparison, problem-solving, etc.)'
+                'description' => 'How the question will test understanding (scenario-based, case study, comparison, problem-solving, etc.)',
             ],
             'key_content' => [
                 'type' => $isGoogle ? 'STRING' : 'string',
-                'description' => 'Include 1-2 critical sentences or key phrases directly from the source material essential for this question, along with specific content references'
+                'description' => 'Include 1-2 critical sentences or key phrases directly from the source material essential for this question, along with specific content references',
             ],
             'challenge_level' => [
                 'type' => $isGoogle ? 'STRING' : 'string',
-                'description' => 'What makes this question particularly challenging'
+                'description' => 'What makes this question particularly challenging',
             ],
             'uses_table' => [
                 'type' => $isGoogle ? 'BOOLEAN' : 'boolean',
-                'description' => 'Whether this question would benefit from a table format'
+                'description' => 'Whether this question would benefit from a table format',
             ],
             'table_purpose' => $isGoogle ? [
                 'type' => 'STRING',
-                'description' => 'If uses_table is true, describe what the table will contain and why. Otherwise null.'
+                'description' => 'If uses_table is true, describe what the table will contain and why. Otherwise null.',
             ] : [
                 'anyOf' => [
                     ['type' => 'string'],
-                    ['type' => 'null']
+                    ['type' => 'null'],
                 ],
-                'description' => 'If uses_table is true, describe what the table will contain and why. Otherwise null.'
+                'description' => 'If uses_table is true, describe what the table will contain and why. Otherwise null.',
             ],
             'table_data_type' => $isGoogle ? [
                 'type' => 'STRING',
-                'description' => 'If uses_table is true, describe the type of data in the table. Otherwise null.'
+                'description' => 'If uses_table is true, describe the type of data in the table. Otherwise null.',
             ] : [
                 'anyOf' => [
                     ['type' => 'string'],
-                    ['type' => 'null']
+                    ['type' => 'null'],
                 ],
-                'description' => 'If uses_table is true, describe the type of data in the table. Otherwise null.'
+                'description' => 'If uses_table is true, describe the type of data in the table. Otherwise null.',
             ],
             'uses_latex' => [
                 'type' => $isGoogle ? 'BOOLEAN' : 'boolean',
-                'description' => 'Whether this question requires LaTeX for mathematical formulas'
+                'description' => 'Whether this question requires LaTeX for mathematical formulas',
             ],
             'latex_type' => $isGoogle ? [
                 'type' => 'STRING',
                 'enum' => ['inline', 'standalone'],
-                'description' => 'If uses_latex is true, specify if the formula is inline or standalone. Otherwise null.'
+                'description' => 'If uses_latex is true, specify if the formula is inline or standalone. Otherwise null.',
             ] : [
                 'anyOf' => [
                     ['type' => 'string', 'enum' => ['inline', 'standalone']],
-                    ['type' => 'null']
+                    ['type' => 'null'],
                 ],
-                'description' => 'If uses_latex is true, specify if the formula is inline or standalone. Otherwise null.'
+                'description' => 'If uses_latex is true, specify if the formula is inline or standalone. Otherwise null.',
             ],
             'formula_purpose' => $isGoogle ? [
                 'type' => 'STRING',
-                'description' => 'If uses_latex is true, describe the mathematical content to be displayed. Otherwise null.'
+                'description' => 'If uses_latex is true, describe the mathematical content to be displayed. Otherwise null.',
             ] : [
                 'anyOf' => [
                     ['type' => 'string'],
-                    ['type' => 'null']
+                    ['type' => 'null'],
                 ],
-                'description' => 'If uses_latex is true, describe the mathematical content to be displayed. Otherwise null.'
+                'description' => 'If uses_latex is true, describe the mathematical content to be displayed. Otherwise null.',
             ],
             'image_description' => $isGoogle ? [
                 'type' => 'STRING',
-                'description' => 'A brief description of a graphic illustration, photo, chart, or image suitable for this quiz question. Only required when category has should_have_images=true. Otherwise null.'
+                'description' => 'A brief description of a graphic illustration, photo, chart, or image suitable for this quiz question. Only required when category has should_have_images=true. Otherwise null.',
             ] : [
                 'anyOf' => [
                     ['type' => 'string'],
-                    ['type' => 'null']
+                    ['type' => 'null'],
                 ],
-                'description' => 'A brief description of a graphic illustration, photo, chart, or image suitable for this quiz question. Only required when category has should_have_images=true. Otherwise null.'
+                'description' => 'A brief description of a graphic illustration, photo, chart, or image suitable for this quiz question. Only required when category has should_have_images=true. Otherwise null.',
             ],
             'image_required' => [
                 'type' => $isGoogle ? 'BOOLEAN' : 'boolean',
-                'description' => 'Image is required to answer the question'
+                'description' => 'Image is required to answer the question',
             ],
             'image_use_in_stem' => $isGoogle ? [
                 'type' => 'STRING',
-                'enum' => ['identify','measure','compare','locate','sequence','diagnose','infer_process'],
-                'description' => 'How the image will be used in the stem'
+                'enum' => ['identify', 'measure', 'compare', 'locate', 'sequence', 'diagnose', 'infer_process'],
+                'description' => 'How the image will be used in the stem',
             ] : [
-                'anyOf' => [['type' => 'string','enum' => ['identify','measure','compare','locate','sequence','diagnose','infer_process']],['type' => 'null']],
-                'description' => 'How the image will be used in the stem'
+                'anyOf' => [['type' => 'string', 'enum' => ['identify', 'measure', 'compare', 'locate', 'sequence', 'diagnose', 'infer_process']], ['type' => 'null']],
+                'description' => 'How the image will be used in the stem',
             ],
             'image_answer_dependency' => $isGoogle ? [
                 'type' => 'STRING',
-                'description' => 'Specific visual element that anchors the correct answer'
+                'description' => 'Specific visual element that anchors the correct answer',
             ] : [
-                'anyOf' => [['type' => 'string'],['type' => 'null']],
-                'description' => 'Specific visual element that anchors the correct answer'
+                'anyOf' => [['type' => 'string'], ['type' => 'null']],
+                'description' => 'Specific visual element that anchors the correct answer',
             ],
             'image_visual_cues' => $isGoogle ? [
                 'type' => 'STRING',
-                'description' => 'Bullet-like text listing required visible cues'
+                'description' => 'Bullet-like text listing required visible cues',
             ] : [
-                'anyOf' => [['type' => 'string'],['type' => 'null']],
-                'description' => 'Bullet-like text listing required visible cues'
+                'anyOf' => [['type' => 'string'], ['type' => 'null']],
+                'description' => 'Bullet-like text listing required visible cues',
             ],
             'image_distractor_strategy' => $isGoogle ? [
                 'type' => 'STRING',
-                'description' => 'How distractors map to plausible misreads of the image'
+                'description' => 'How distractors map to plausible misreads of the image',
             ] : [
-                'anyOf' => [['type' => 'string'],['type' => 'null']],
-                'description' => 'How distractors map to plausible misreads of the image'
+                'anyOf' => [['type' => 'string'], ['type' => 'null']],
+                'description' => 'How distractors map to plausible misreads of the image',
             ],
             'image_validation' => $isGoogle ? [
                 'type' => 'STRING',
-                'description' => 'Checklist ensuring the question cannot be answered without the image'
+                'description' => 'Checklist ensuring the question cannot be answered without the image',
             ] : [
-                'anyOf' => [['type' => 'string'],['type' => 'null']],
-                'description' => 'Checklist ensuring the question cannot be answered without the image'
+                'anyOf' => [['type' => 'string'], ['type' => 'null']],
+                'description' => 'Checklist ensuring the question cannot be answered without the image',
             ],
             'image_style' => $isGoogle ? [
                 'type' => 'STRING',
-                'enum' => ['photo','3d_render','illustration'],
-                'description' => 'Visual style for image generation'
+                'enum' => ['photo', '3d_render', 'illustration'],
+                'description' => 'Visual style for image generation',
             ] : [
-                'anyOf' => [['type' => 'string','enum' => ['photo','3d_render','illustration']],['type' => 'null']],
-                'description' => 'Visual style for image generation'
-            ]
+                'anyOf' => [['type' => 'string', 'enum' => ['photo', '3d_render', 'illustration']], ['type' => 'null']],
+                'description' => 'Visual style for image generation',
+            ],
         ];
 
         $schema = [
@@ -405,7 +405,7 @@ EOT;
             'properties' => [
                 'analysis' => [
                     'type' => $isGoogle ? 'STRING' : 'string',
-                    'description' => 'Analysis of the provided content identifying key concepts, procedures, and challenging scenarios'
+                    'description' => 'Analysis of the provided content identifying key concepts, procedures, and challenging scenarios',
                 ],
                 'question_plans' => [
                     'type' => $isGoogle ? 'ARRAY' : 'array',
@@ -413,11 +413,11 @@ EOT;
                     'items' => [
                         'type' => $isGoogle ? 'OBJECT' : 'object',
                         'properties' => $planProperties,
-                        'required' => ['n', 'concept', 'difficulty_focus', 'question_approach', 'key_content', 'challenge_level', 'uses_table', 'table_purpose', 'table_data_type', 'uses_latex', 'latex_type', 'formula_purpose', 'image_description', 'image_required', 'image_use_in_stem', 'image_answer_dependency', 'image_visual_cues', 'image_distractor_strategy', 'image_validation', 'image_style']
-                    ]
-                ]
+                        'required' => ['n', 'concept', 'difficulty_focus', 'question_approach', 'key_content', 'challenge_level', 'uses_table', 'table_purpose', 'table_data_type', 'uses_latex', 'latex_type', 'formula_purpose', 'image_description', 'image_required', 'image_use_in_stem', 'image_answer_dependency', 'image_visual_cues', 'image_distractor_strategy', 'image_validation', 'image_style'],
+                    ],
+                ],
             ],
-            'required' => ['analysis', 'question_plans']
+            'required' => ['analysis', 'question_plans'],
         ];
 
         if ($isGoogle) {
@@ -434,7 +434,7 @@ EOT;
             'name' => 'question_planning_response',
             'description' => 'Response containing detailed plans for generating exam questions',
             'schema' => $schema,
-            'strict' => true
+            'strict' => true,
         ];
     }
 }

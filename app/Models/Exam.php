@@ -2,23 +2,24 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
-use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Exam extends Model
 {
     use HasFactory, HasUuids;
 
     public $incrementing = false;
+
     protected $keyType = 'string';
 
     protected $fillable = [
         'id',
-        'slug','title','description','level','is_active',
-        'sources','meta','research_status',
-        'categories_count','examples_count',
+        'slug', 'title', 'description', 'level', 'is_active',
+        'sources', 'meta', 'research_status',
+        'categories_count', 'examples_count',
     ];
 
     protected $casts = [
@@ -29,7 +30,7 @@ class Exam extends Model
 
     public function categories(): HasMany
     {
-        return $this->hasMany(ExamCategory::class,'exam_id', 'id');
+        return $this->hasMany(ExamCategory::class, 'exam_id', 'id');
     }
 
     public function examples(): HasMany
@@ -50,10 +51,10 @@ class Exam extends Model
     public function loadAllCounts()
     {
         return $this->loadCount([
-            'categories', 
-            'examples', 
+            'categories',
+            'examples',
             'generationTasks',
-            'generationLogs'
+            'generationLogs',
         ]);
     }
 
@@ -83,6 +84,7 @@ class Exam extends Model
                 return $s;
             }
         }
+
         return [];
     }
 }

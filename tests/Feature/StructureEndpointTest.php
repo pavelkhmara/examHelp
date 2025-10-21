@@ -26,29 +26,29 @@ class StructureEndpointTest extends TestCase
 
         GenerationTask::create([
             'exam_id' => $exam->id,
-            'type'    => 'research',
-            'status'  => 'completed',
-            'result'  => [
+            'type' => 'research',
+            'status' => 'completed',
+            'result' => [
                 'exam_name' => 'ielts',
-                'sources'   => [
-                    ['url'=>'https://example.com','title'=>'Spec','publisher'=>'Example'],
+                'sources' => [
+                    ['url' => 'https://example.com', 'title' => 'Spec', 'publisher' => 'Example'],
                 ],
-                'archetypes'=> [
-                    ['id'=>'reading_tfn','name'=>'Reading — T/F/N','section'=>'reading'],
-                    ['id'=>'listening_mcq','name'=>'Listening — MCQ','weights'=>['Listening'=>1.0]],
+                'archetypes' => [
+                    ['id' => 'reading_tfn', 'name' => 'Reading — T/F/N', 'section' => 'reading'],
+                    ['id' => 'listening_mcq', 'name' => 'Listening — MCQ', 'weights' => ['Listening' => 1.0]],
                 ],
-                'total_score' => ['min'=>0,'max'=>100],
+                'total_score' => ['min' => 0, 'max' => 100],
             ],
         ]);
 
         $this->getJson("/api/exams/{$exam->id}/structure")
             ->assertOk()
             ->assertJsonStructure([
-                'exam' => ['id','slug','title','research_status'],
-                'sources' => [['url','title','publisher']],
+                'exam' => ['id', 'slug', 'title', 'research_status'],
+                'sources' => [['url', 'title', 'publisher']],
                 'archetypes',
-                'sections' => [['key','archetype_count']],
-                'total_score' => ['min','max'],
+                'sections' => [['key', 'archetype_count']],
+                'total_score' => ['min', 'max'],
                 'task_id',
             ]);
     }
