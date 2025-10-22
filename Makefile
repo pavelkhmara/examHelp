@@ -1,4 +1,5 @@
-.PHONY: up down migrate seed test cs stan bash app-shell queue-shell refresh fast-refresh worker-restart cache-clear dump-autoload app-bash
+SHELL := /usr/bin/env bash
+.PHONY: up down migrate seed test cs stan bash app-shell queue-shell refresh fast-refresh worker-restart cache-clear dump-autoload app-bash ctx ctx-models ctx-db ctx-models-db ctx-nova ctx-file ctx-file-auto ctx-help
 
 DC = docker compose
 
@@ -56,3 +57,62 @@ worker-restart:
 
 app-bash:
 	$(DC) exec app bash
+
+
+
+# ===== Context pack shortcuts =====
+#   ARTISAN_CMD ?= docker compose exec -T app php artisan
+#   CTX_SCRIPT  ?= ./context-pack.sh
+#   CTX_OUT     ?= repo-context.md
+
+ARTISAN_CMD ?= docker compose exec -T app php artisan
+CTX_SCRIPT  ?= ./context-pack.sh
+CTX_OUT     ?= repo-context.md
+
+# Full pack (everything)
+ctx:
+	OUT=$(CTX_OUT) ARTISAN_CMD="$(ARTISAN_CMD)" $(CTX_SCRIPT) all
+
+# Only Models (table, fillable, casts, relations)
+ctx-models:
+	OUT=$(basename $(CTX_OUT)).models.md ARTISAN_CMD="$(ARTISAN_CMD)" $(CTX_SCRIPT) models
+
+# Only DB (tables, columns with types/null/default, FKs)
+ctx-db:
+	OUT=$(basename $(CTX_OUT)).db.md ARTISAN_CMD="$(ARTISAN_CMD)" $(CTX_SCRIPT) db
+
+# Models + DB (recommended for schema focus)
+ctx-models-db:
+	OUT=$(basename $(CTX_OUT)).models-db.md ARTISAN_CMD="$(ARTISAN_CMD)" $(CTX_SCRIPT) models+db
+
+# Nova resources (class, $model, fields() head)
+ctx-nova:
+	OUT=$(basename $(CTX_OUT)).nova.md ARTISAN_CMD="$(ARTISAN_CMD)" $(CTX_SCRIPT) nova
+
+# Single file + related (use: make ctx-file FILE=path/to/File.php)
+ctx-file:
+	@if [ -z "$$FILE" ]; then echo "Usage: make ctx-file FILE=app/Services/LanguageApp/ExamResearchService.php"; exit 1; fi
+	OUT=$(basename $(CTX_OUT)).file.$(notdir $(FILE)).md ARTISAN_CMD="$(ARTISAN_CMD)" $(CTX_SCRIPT) file "$$FILE"
+
+# Debug variant
+ctx-file-debug:
+	@if [ -z "$$FILE" ]; then echo "Usage: make ctx-file-debug FILE=..."; exit 1; fi
+	DEBUG=1 OUT=$(basename $(CTX_OUT)).file.$(notdir $(FILE)).md ARTISAN_CMD="$(ARTISAN_CMD)" $(CTX_SCRIPT) file $(FILE)
+
+# Single file (auto-resolve: path | App\\Class | basename)
+ctx-file-auto:
+	@if [ -z "$$FILE" ]; then echo "Usage: make ctx-file-auto FILE=ExamResearchService.php|App\\Services\\...|app/.../File.php"; exit 1; fi
+	OUT=$(basename $(CTX_OUT)).file.$(notdir $(FILE)).md ARTISAN_CMD="$(ARTISAN_CMD)" $(CTX_SCRIPT) file "$$FILE"
+
+# Help
+ctx-help:
+	@echo "Context pack targets:"
+	@echo "  make ctx                 # full context"
+	@echo "  make ctx-models          # only models"
+	@echo "  make ctx-db              # only database (live schema)"
+	@echo "  make ctx-models-db       # models + database"
+	@echo "  make ctx-nova            # Nova resources"
+	@echo "  make ctx-file FILE=...       # one file + related (exact path)"
+	@echo "  make ctx-file-auto FILE=...  # same, but FILE can be App\\Class or just basename"
+	@echo ""
+	@echo "Vars: CTX_OUT (default: repo-context.md), CTX_SCRIPT (default: ./context-pack.sh), ARTISAN_CMD"

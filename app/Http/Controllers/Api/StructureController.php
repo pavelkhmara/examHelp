@@ -48,6 +48,9 @@ class StructureController extends Controller
                 'url' => (string) ($s['url'] ?? ''),
                 'title' => (string) ($s['title'] ?? ''),
                 'publisher' => (string) ($s['publisher'] ?? ''),
+                'provenance' => (string) ($s['provenance'] ?? ''),
+                'doc_id'     => (string) ($s['doc_id'] ?? ''),
+                'filename'   => (string) ($s['filename'] ?? ''),
             ], $result['sources']));
         }
 

@@ -41,6 +41,17 @@ return [
         ],
     ],
 
+    'documents' => [
+        // сколько документов максимум даём в files_hint
+        'max_docs_hint'      => env('AI_DOCS_MAX_HINT', 3),
+        // сколько символов берём из каждого документа (усекаем большой текст)
+        'max_chars_per_doc'  => env('AI_DOCS_MAX_CHARS', 4000),
+        // «вес» документа относительно web-источников (подсказка в промпт)
+        'weight'             => env('AI_DOCS_PREFERRED_WEIGHT', 2.0),
+        // если true — в промпте явно просим предпочесть документы
+        'prefer_documents'   => env('AI_DOCS_PREFER', true),
+    ],
+
     'schema' => json_encode([
         'exam_name' => 'string',
         'sources' => [['url' => ['string'], 'title' => ['string'], 'publisher' => ['string']]],
