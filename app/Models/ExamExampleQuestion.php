@@ -20,7 +20,11 @@ class ExamExampleQuestion extends Model
     ];
 
     protected $casts = [
-        'payload' => 'array',
+        'good_answer'      => 'json',
+        'average_answer'   => 'json',
+        'bad_answer'       => 'json',
+        'rubric_breakdown' => 'json',
+        'payload'          => 'json',
         'type' => QuestionType::class,
     ];
 
@@ -35,16 +39,26 @@ class ExamExampleQuestion extends Model
     }
 
     protected static function booted(): void
-    {
-        static::saving(function (self $model) {
-            $val = is_string($model->type) ? $model->type : ($model->type?->value ?? null);
-            $type = (string) $model->type;
-            $payload = (array) ($model->payload ?? []);
-            // строгая валидация payload под тип
-            QuestionPayloadValidator::validate($type, $payload);
-            if (!in_array($val, QuestionType::all(), true)) {
-                throw new \InvalidArgumentException("Invalid question type '{$val}' for ExamExampleQuestion");
-            }
-        });
-    }
+{
+    static::saving(function (self $model) {
+        // ВСЕГДА берём строковое значение типа
+        $val = is_string($model->type) ? $model->type : ($model->type?->value ?? null);
+
+        $type = (string) ($val ?? '');
+
+        $payload = (array) ($model->payload ?? []);
+
+        // строгая валидация payload под тип
+        QuestionPayloadValidator::validate($type, $payload);
+
+        if (!in_array($val, QuestionType::all(), true)) {
+            throw new \InvalidArgumentException("Unknown question type: ".($val ?? 'null'));
+        }
+
+        // если у тебя ниже есть присваивания, оставь как было
+        $model->type    = $val;
+        $model->payload = $payload;
+    });
+}
+
 }

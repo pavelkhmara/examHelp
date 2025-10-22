@@ -12,6 +12,7 @@ class DatabaseSeeder extends Seeder
             RolesSeeder::class,
             AdminUserSeeder::class,
             SampleExamSeeder::class,
+            EvaluateTextDemoSeeder::class,
         ]);
 
     }

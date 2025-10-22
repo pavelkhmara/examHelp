@@ -4,6 +4,7 @@ use App\Http\Controllers\Api\StructureController;
 use App\Http\Controllers\Api\ScoringController;
 use App\Http\Controllers\Api\DocumentController;
 use App\Http\Controllers\LanguageApp\ExamController;
+use App\Http\Controllers\Api\EvaluationController;
 use App\Models\Exam;
 use App\Models\GenerationLog;
 use App\Models\GenerationTask;
@@ -39,15 +40,19 @@ Route::middleware('auth:sanctum')->group(function () {
 
     Route::get('/documents/{document}', [DocumentController::class, 'show'])
         ->name('documents.show');
-});
-
-Route::get('/exams/{exam}/structure', [StructureController::class, 'show'])
-    ->withoutMiddleware(['auth', 'auth:sanctum', Authenticate::class])
-    ->name('exams.structure');
-
-Route::post('/score/preview', [ScoringController::class, 'preview'])
-    ->withoutMiddleware(['auth', 'auth:sanctum', Authenticate::class])
-    ->name('score.preview');
+    });
+    
+    Route::get('/exams/{exam}/structure', [StructureController::class, 'show'])
+        ->withoutMiddleware(['auth', 'auth:sanctum', Authenticate::class])
+        ->name('exams.structure');
+    
+    Route::post('/score/preview', [ScoringController::class, 'preview'])
+        ->withoutMiddleware(['auth', 'auth:sanctum', Authenticate::class])
+        ->name('score.preview');
+    
+    Route::post('/evaluate/text', [EvaluationController::class, 'evaluateText'])
+        ->withoutMiddleware(['auth', 'auth:sanctum', \Laravel\Nova\Http\Middleware\Authenticate::class])
+        ->name('evaluate.text');
 
 // ===== DEBUG routes =====
 Route::prefix('debug')->group(function () {
