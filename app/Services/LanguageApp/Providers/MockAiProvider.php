@@ -15,14 +15,41 @@ final class MockAiProvider implements AiProvider
 
     public function generate(array $payload, array $opts = []): array
     {
+        $files = is_array($opts['files'] ?? null) ? $opts['files'] : [];
+
+        $docSources = [];
+        foreach ($files as $f) {
+            $docSources[] = [
+                'url'        => '',
+                'title'      => (string)($f['name'] ?? $f['filename'] ?? $f['id'] ?? 'document'),
+                'publisher'  => 'user_uploaded',
+                'provenance' => 'document',
+                'doc_id'     => (string)($f['id'] ?? ''),
+                'filename'   => (string)($f['name'] ?? ''),
+            ];
+        }
+
+        $webSources = [
+            [
+                'url'        => 'https://example.edu/exam-guide',
+                'title'      => 'Exam Guide',
+                'publisher'  => 'Example EDU',
+                'provenance' => 'web',
+            ],
+            [
+                'url'        => 'https://official-exam.org/format',
+                'title'      => 'Official Format',
+                'publisher'  => 'Official Board',
+                'provenance' => 'web',
+            ],
+        ];
+        
         // минимальный валидный overview, который проходит JsonSchemaExamOverview
         $content = [
             'exam_name' => $payload['exam_slug'] ?? 'mock_exam',
             'exam_description' => '',
             'timebox_minutes' => 3,
-            'sources' => [
-                ['url' => 'https://example.com/spec', 'title' => 'Spec', 'publisher' => 'Example'],
-            ],
+            'sources' => array_merge($docSources, $webSources),
             'archetypes' => [
                 [
                     'id' => 'reading_true_false',
@@ -40,7 +67,7 @@ final class MockAiProvider implements AiProvider
             // опциональные поля можно не передавать
             'exam_matrix_provided' => false,
         ];
-
+        
         $contentText = json_encode($content, JSON_UNESCAPED_UNICODE);
         $body = [
             'id' => 'mock-resp-1',
@@ -66,8 +93,8 @@ final class MockAiProvider implements AiProvider
             'ok' => true,
             'raw' => $raw,
             'body' => $body,
-            'content_text' => $contentText,
-            'content' => $content,
+            'content' => $contentText,
+            'content_json' => $content,
             'usage' => $body['usage'],
         ];
     }

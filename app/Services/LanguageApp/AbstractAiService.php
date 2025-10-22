@@ -102,7 +102,30 @@ EOT;
         // СТАБ: здесь подключите ваш DocumentIngestService (pdf/docx/jpg → OCR/текст)
         // Пока листаем имена файлов, чтобы AI видел подсказку
         $names = array_map(function ($f) {
-            return is_string($f) ? basename($f) : (method_exists($f, 'getFilename') ? $f->getFilename() : '[unknown]');
+            // строка пути — берём basename
+            if (is_string($f)) {
+                return basename($f);
+            }
+        
+            // массив (наш формат files_hint из документов)
+            if (is_array($f)) {
+                return (string)($f['name'] ?? $f['filename'] ?? $f['path'] ?? $f['id'] ?? '[unknown]');
+            }
+        
+            // объекты: UploadedFile и пр.
+            if (is_object($f)) {
+                if (method_exists($f, 'getClientOriginalName')) {
+                    return $f->getClientOriginalName();
+                }
+                if (method_exists($f, 'getFilename')) {
+                    return $f->getFilename();
+                }
+                if (method_exists($f, '__toString')) {
+                    return basename((string) $f);
+                }
+            }
+        
+            return '[unknown]';
         }, $files);
 
         return 'FILES_HINTS: '.implode(', ', $names);

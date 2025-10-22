@@ -13,6 +13,13 @@ class AppServiceProvider extends ServiceProvider
      */
     public function register(): void
     {
+        if ($this->app->environment('testing')) {
+            // Когда сервисы просят AiProvider, отдаём наш мок
+            $this->app->singleton(\App\Services\LanguageApp\AiProvider::class, function ($app) {
+                return new \App\Services\LanguageApp\Providers\MockAiProvider();
+            });
+        }
+        
         $this->app->bind(AiProvider::class, function ($app) {
             $cfg = config('ai', []);
 

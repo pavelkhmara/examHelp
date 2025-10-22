@@ -33,6 +33,10 @@ RUN curl -fsSL https://deb.nodesource.com/setup_20.x | bash - \
  && node --version \
  && npm --version
 
+# Xdebug
+RUN pecl install xdebug \
+ && docker-php-ext-enable xdebug
+
 RUN git config --global --add safe.directory /var/www/html
 RUN git config --global --add safe.directory /app
 
