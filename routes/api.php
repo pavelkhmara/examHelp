@@ -4,6 +4,8 @@ use App\Http\Controllers\Api\StructureController;
 use App\Http\Controllers\Api\ScoringController;
 use App\Http\Controllers\Api\DocumentController;
 use App\Http\Controllers\LanguageApp\ExamController;
+use App\Http\Controllers\Api\ExamResearchController;
+use App\Http\Controllers\Api\TasksController;
 use App\Http\Controllers\Api\EvaluationController;
 use App\Models\Exam;
 use App\Models\GenerationLog;
@@ -22,8 +24,7 @@ Route::get('/health', function () {
 });
 
 Route::middleware('auth:sanctum')->group(function () {
-    Route::post('/exams/{exam}/research', [ExamController::class, 'research']);
-    Route::get('/tasks/{task}', [ExamController::class, 'task']);
+    
 
     Route::get('/me', function (Request $request) {
         $u = $request->user();
@@ -40,19 +41,25 @@ Route::middleware('auth:sanctum')->group(function () {
 
     Route::get('/documents/{document}', [DocumentController::class, 'show'])
         ->name('documents.show');
-    });
+});
+
+Route::post('/exams/{id}/research', [ExamResearchController::class, 'research'])
+    ->withoutMiddleware([\Illuminate\Auth\Middleware\Authenticate::class, 'auth:sanctum']);
+
+Route::get('/tasks/{id}', [TasksController::class, 'show'])
+    ->withoutMiddleware([\Illuminate\Auth\Middleware\Authenticate::class, 'auth:sanctum']);
     
-    Route::get('/exams/{exam}/structure', [StructureController::class, 'show'])
-        ->withoutMiddleware(['auth', 'auth:sanctum', Authenticate::class])
-        ->name('exams.structure');
-    
-    Route::post('/score/preview', [ScoringController::class, 'preview'])
-        ->withoutMiddleware(['auth', 'auth:sanctum', Authenticate::class])
-        ->name('score.preview');
-    
-    Route::post('/evaluate/text', [EvaluationController::class, 'evaluateText'])
-        ->withoutMiddleware(['auth', 'auth:sanctum', \Laravel\Nova\Http\Middleware\Authenticate::class])
-        ->name('evaluate.text');
+Route::get('/exams/{exam}/structure', [StructureController::class, 'show'])
+    ->withoutMiddleware(['auth', 'auth:sanctum', Authenticate::class])
+    ->name('exams.structure');
+
+Route::post('/score/preview', [ScoringController::class, 'preview'])
+    ->withoutMiddleware(['auth', 'auth:sanctum', Authenticate::class])
+    ->name('score.preview');
+
+Route::post('/evaluate/text', [EvaluationController::class, 'evaluateText'])
+    ->withoutMiddleware(['auth', 'auth:sanctum', \Laravel\Nova\Http\Middleware\Authenticate::class])
+    ->name('evaluate.text');
 
 // ===== DEBUG routes =====
 Route::prefix('debug')->group(function () {
