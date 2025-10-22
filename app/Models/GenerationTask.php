@@ -8,7 +8,12 @@ use Illuminate\Database\Eloquent\Relations\MorphTo;
 
 class GenerationTask extends Model
 {
-    protected $fillable = ['exam_id', 'type', 'status', 'request', 'response', 'error', 'attempts', 'result'];
+    protected $fillable = [
+        'exam_id', 'type', 'status', 
+        'request', 'response', 'result',
+        'error', 'attempts',
+        'idempotency_key',
+    ];
 
     protected $casts = [
         'request' => 'array',

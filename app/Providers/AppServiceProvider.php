@@ -25,6 +25,10 @@ class AppServiceProvider extends ServiceProvider
 
             return AiProviderFactory::make($cfg['provider'] ?? null, $cfg);
         });
+
+        $this->app->singleton('task-dispatcher', function ($app) {
+            return new \App\Support\Queue\TaskDispatcher();
+        });
     }
 
     /**
