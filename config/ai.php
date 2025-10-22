@@ -52,6 +52,11 @@ return [
         'prefer_documents'   => env('AI_DOCS_PREFER', true),
     ],
 
+    'evaluation' => [
+        // включить LLM-подсказки в фидбек (пока по умолчанию выкл — Stage 1)
+        'enable_llm' => env('AI_EVALUATION_LLM', false),
+    ],
+
     'schema' => json_encode([
         'exam_name' => 'string',
         'sources' => [['url' => ['string'], 'title' => ['string'], 'publisher' => ['string']]],
