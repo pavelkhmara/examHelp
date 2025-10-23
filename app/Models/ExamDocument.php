@@ -41,5 +41,4 @@ class ExamDocument extends Model
     {
         return $this->belongsTo(\App\Models\GenerationTask::class, 'generation_task_id');
     }
-
 }

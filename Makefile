@@ -1,5 +1,5 @@
 SHELL := /usr/bin/env bash
-.PHONY: up down migrate seed test cs stan bash app-shell queue-shell refresh fast-refresh worker-restart cache-clear dump-autoload app-bash ctx ctx-models ctx-db ctx-models-db ctx-nova ctx-file ctx-file-auto ctx-help
+.PHONY: up down init migrate seed test cs stan bash app-shell queue queue-shell refresh fast-refresh worker-restart logs lint cache-clear dump-autoload app-bash ctx ctx-models ctx-db ctx-models-db ctx-nova ctx-file ctx-file-auto ctx-help
 
 DC = docker compose
 
@@ -8,6 +8,13 @@ up:
 
 down:
 	$(DC) down -v
+
+init:
+	docker compose pull
+	docker compose up -d --wait
+	docker compose exec app composer install -n
+	docker compose exec app php artisan key:generate
+	docker compose exec app php artisan migrate:fresh --seed
 
 migrate:
 	$(DC) exec app php artisan migrate
@@ -29,6 +36,9 @@ bash:
 
 app-shell:
 	$(DC) exec app sh
+
+queue:
+	docker compose exec app php artisan queue:work --tries=1 --queue=default
 
 queue-shell:
 	$(DC) exec queue-worker sh
@@ -54,6 +64,11 @@ dump-autoload:
 worker-restart:
 	-$(DC) exec -T app php artisan queue:restart || true
 
+logs:
+	docker compose logs -f app
+
+lint:
+	docker compose exec app vendor/bin/pint --test
 
 app-bash:
 	$(DC) exec app bash

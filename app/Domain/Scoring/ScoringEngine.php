@@ -1,53 +1,63 @@
 <?php
-declare(strict_types=1);
 
 namespace App\Domain\Scoring;
 
 use App\Domain\Scoring\Adapters\ExactScoringAdapter;
 use App\Domain\Scoring\Adapters\FuzzyScoringAdapter;
 use App\Domain\Scoring\Adapters\PartialScoringAdapter;
+use App\Domain\Scoring\Adapters\RegexScoringAdapter;
 use App\Domain\Scoring\Adapters\RubricScoringAdapter;
+use App\Domain\Scoring\Contracts\ScoringAdapter;
 
 final class ScoringEngine
 {
-    private ExactScoringAdapter $exact;
-    private PartialScoringAdapter $partial;
-    private FuzzyScoringAdapter $fuzzy;
-    private RubricScoringAdapter $rubric;
+    /** @var array<string,ScoringAdapter> */
+    private array $adapters;
 
-    public function __construct()
+    public function __construct(array $adapters)
     {
-        $this->exact   = new ExactScoringAdapter();
-        $this->partial = new PartialScoringAdapter();
-        $this->fuzzy   = new FuzzyScoringAdapter();
-        $this->rubric  = new RubricScoringAdapter();
+        $this->adapters = $adapters;
+    }
+
+    public static function default(): self
+    {
+        return new self([
+            'exact' => new ExactScoringAdapter,
+            'partial' => new PartialScoringAdapter,
+            'fuzzy' => new FuzzyScoringAdapter,
+            'regex' => new RegexScoringAdapter,
+            'rubric' => new RubricScoringAdapter,
+        ]);
     }
 
     /**
-     * @param array<string,mixed> $payload
-     * @param mixed $userAnswer
+     * Унифицированный API для тестов/контроллеров:
+     *
+     * @return array{auto_gradable:bool,total:int,per_item:array}
      */
-    public function score(string $type, array $payload, mixed $userAnswer): Score
+    public function scoreTask(array $task, array $userMap): array
     {
-        $mode = $this->modeByType($type);
+        $type = (string) ($task['type'] ?? '');
+        $mode = (string) ($task['scoring']['mode'] ?? 'exact');
 
-        return match ($mode) {
-            'exact'   => $this->exact->score($payload, $userAnswer),
-            'partial' => $this->partial->score(array_merge($payload, ['type' => $type]), $userAnswer),
-            'fuzzy'   => $this->fuzzy->score($payload, $userAnswer),
-            'rubric'  => $this->rubric->score($payload, $userAnswer),
-            default   => $this->exact->score($payload, $userAnswer),
-        };
-    }
+        // Простейшая маршрутизация: если short_answer и заданы regex — используем regex
+        if ($type === 'short_answer') {
+            if (! empty($task['patterns'] ?? $task['items'][0]['patterns'] ?? null)) {
+                $mode = 'regex';
+            }
+        }
 
-    private function modeByType(string $type): string
-    {
-        return match ($type) {
-            'single_select', 'true_false', 'yes_no_ng', 'numeric', 'listen_mcq' => 'exact',
-            'multi_select', 'matching', 'order_sentences', 'order_words', 'highlight_text' => 'partial',
-            'dropdown_cloze', 'gap_cloze', 'short_answer', 'dictation', 'error_correction' => 'fuzzy',
-            'writing_prompt', 'speaking_prompt' => 'rubric',
-            default => 'exact',
-        };
+        $adapter = $this->adapters[$mode] ?? $this->adapters['exact'];
+        $score = $adapter->score($task, $userMap[$type] ?? $userMap);
+
+        $itemId = (string) ($task['id'] ?? $task['items'][0]['id'] ?? 'item-0');
+
+        return [
+            'auto_gradable' => $score->isAuto(),
+            'total' => $score->obtained(), // для превью тесты ожидают «score» как «obtained»
+            'per_item' => [
+                $itemId => ['score' => $score->obtained(), 'total' => $score->total()],
+            ],
+        ];
     }
 }

@@ -23,7 +23,7 @@ class SchemaStrictnessTest extends TestCase
                 'rationale' => 'R',
                 'expected_payload' => [],
             ]],
-            'sources' => [[ 'url' => 'https://ex.org', 'title' => 'X' ]],
+            'sources' => [['url' => 'https://ex.org', 'title' => 'X']],
         ];
 
         AiJsonValidator::validate($schema, $ok);

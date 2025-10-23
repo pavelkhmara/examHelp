@@ -9,8 +9,6 @@ use App\Models\ExamDocument;
 use App\Models\GenerationTask;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Storage;
-use Illuminate\Validation\Rule;
 
 class DocumentController extends Controller
 {
@@ -34,14 +32,14 @@ class DocumentController extends Controller
         $uuid = (string) \Illuminate\Support\Str::uuid();
 
         $disk = config('filesystems.default', 'local');
-        $dir  = "exams/{$exam->id}/documents/{$uuid}";
+        $dir = "exams/{$exam->id}/documents/{$uuid}";
         $path = $file->storeAs($dir, 'original.'.$file->getClientOriginalExtension(), $disk);
 
         // Трекер процесса
         $task = GenerationTask::create([
             'exam_id' => $exam->id,
-            'type'    => 'doc_extract',
-            'status'  => 'queued',
+            'type' => 'doc_extract',
+            'status' => 'queued',
             'request' => [
                 'original_name' => $file->getClientOriginalName(),
                 'disk' => $disk,
@@ -53,16 +51,16 @@ class DocumentController extends Controller
 
         // Запись документа
         $doc = ExamDocument::create([
-            'id'                 => $uuid,
-            'exam_id'            => $exam->id,
+            'id' => $uuid,
+            'exam_id' => $exam->id,
             'generation_task_id' => $task->id,
-            'original_name'      => $file->getClientOriginalName(),
-            'disk'               => $disk,
-            'path'               => $path,
-            'mime'               => $file->getClientMimeType(),
-            'size'               => $file->getSize(),
-            'status'             => 'uploaded',
-            'meta'               => [],
+            'original_name' => $file->getClientOriginalName(),
+            'disk' => $disk,
+            'path' => $path,
+            'mime' => $file->getClientMimeType(),
+            'size' => $file->getSize(),
+            'status' => 'uploaded',
+            'meta' => [],
         ]);
 
         // Джоба извлечения
@@ -73,12 +71,11 @@ class DocumentController extends Controller
             ExtractExamDocumentTextJob::dispatch($doc->id);
         }
 
-
         return response()->json([
             'data' => [
                 'document_id' => $doc->id,
-                'task_id'     => $task->id,
-                'status'      => $doc->status,
+                'task_id' => $task->id,
+                'status' => $doc->status,
             ],
         ], 201);
     }
@@ -89,7 +86,7 @@ class DocumentController extends Controller
     public function show(ExamDocument $document): JsonResponse
     {
         $preview = '';
-        if (!empty($document->extracted_text)) {
+        if (! empty($document->extracted_text)) {
             $preview = mb_substr($document->extracted_text, 0, 500);
         }
 

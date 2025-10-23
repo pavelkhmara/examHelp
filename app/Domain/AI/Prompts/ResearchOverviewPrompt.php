@@ -21,7 +21,7 @@ final class ResearchOverviewPrompt implements Prompt
     public function system(): string
     {
         // Источники разделены явно: USER_DOCS vs WEB
-        return <<<SYS
+        return <<<'SYS'
 You are an educational researcher building a typed exam structure.
 
 SOURCES:
@@ -61,7 +61,7 @@ USR;
     {
         return [
             'temperature' => 0.2,
-            'web_search'  => true,     // executor will pass through to provider
+            'web_search' => true,     // executor will pass through to provider
         ];
     }
 }

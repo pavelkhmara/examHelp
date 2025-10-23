@@ -12,9 +12,9 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('generation_tasks', function (Blueprint $table) {
-            if (!Schema::hasColumn('generation_tasks', 'idempotency_key')) {
+            if (! Schema::hasColumn('generation_tasks', 'idempotency_key')) {
                 $table->string('idempotency_key', 191)->nullable()->after('attempts');
-                $table->index(['exam_id','type','status'], 'gt_exam_type_status_idx');
+                $table->index(['exam_id', 'type', 'status'], 'gt_exam_type_status_idx');
                 $table->unique('idempotency_key', 'gt_idem_uniq');
             }
         });

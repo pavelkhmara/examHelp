@@ -6,18 +6,21 @@ use App\Http\Controllers\Controller;
 use App\Models\Exam;
 use App\Models\GenerationTask;
 use App\Services\LanguageApp\Validators\QuestionTypeContract;
+use App\Support\Structure\ExamStructureBuilder;
 use Illuminate\Http\JsonResponse;
 
 class StructureController extends Controller
 {
     public function show(Exam $exam): JsonResponse
     {
+        // readiness gate — «graceful 404»
         $task = GenerationTask::query()
             ->where('exam_id', $exam->id)
             ->whereIn('type', ['research', 'research_overview'])
             ->where('status', 'completed')
             ->latest('id')
             ->first();
+        // ->exists(); ????
 
         if (! $task || ! is_array($task->result)) {
             return response()->json([
@@ -26,88 +29,106 @@ class StructureController extends Controller
             ], 404);
         }
 
-        $result = $task->result;
-        // safety-filter: leave only known types (defense-in-depth)
-        $validator = app(QuestionTypeContract::class);
-        if (isset($result['tasks']) && is_array($result['tasks'])) {
-            $filtered = [];
-            foreach ($result['tasks'] as $t) {
-                try {
-                    $filtered[] = $validator->validateTask($t);
-                } catch (\Throwable) {
-                    // skip invalid
-                }
-            }
-            $result['tasks'] = $filtered;
-        }
+        // основной агрегат из БД (категории + примеры)
+        $payload = ExamStructureBuilder::build($exam);
 
-        // sources
-        $sources = [];
-        if (! empty($result['sources']) && is_array($result['sources'])) {
-            $sources = array_values(array_map(fn ($s) => [
-                'url' => (string) ($s['url'] ?? ''),
-                'title' => (string) ($s['title'] ?? ''),
-                'publisher' => (string) ($s['publisher'] ?? ''),
-                'provenance' => (string) ($s['provenance'] ?? ''),
-                'doc_id'     => (string) ($s['doc_id'] ?? ''),
-                'filename'   => (string) ($s['filename'] ?? ''),
-            ], $result['sources']));
-        }
+        // safety: если вдруг в sources окажутся «сырцовые tasks» из LLM — жёстко фильтруем типы
+        $payload['sections'] = collect($payload['sections'])
+            ->map(function ($sec) {
+                $sec['examples'] = collect($sec['examples'] ?? [])->filter(function ($ex) {
+                    $isKnown = QuestionTypeContract::isKnownType($ex['type'] ?? null);
+                    $hasPayload = ! is_null($ex['payload'] ?? null);
 
-        // archetypes (как вернули из валидатора)
-        $archetypes = [];
-        if (! empty($result['archetypes']) && is_array($result['archetypes'])) {
-            $archetypes = $result['archetypes'];
-        }
+                    return $isKnown && $hasPayload;
+                })->values()->all();
 
-        // total_score (может отсутствовать)
-        $totalScore = null;
-        if (! empty($result['total_score']) && is_array($result['total_score'])) {
-            $ts = $result['total_score'];
-            if (isset($ts['min'], $ts['max']) && is_int($ts['min']) && is_int($ts['max'])) {
-                $totalScore = ['min' => $ts['min'], 'max' => $ts['max']];
-            }
-        }
+                return $sec;
+            })->values()->all();
 
-        // sections: из archetype.section или из ключей weights/category_weights
-        $sectionsAgg = [];
-        foreach ($archetypes as $arc) {
-            $section = $arc['section'] ?? null;
+        return response()->json($payload);
 
-            if (! $section) {
-                $weights = $arc['weights'] ?? ($arc['category_weights'] ?? null);
-                if (is_array($weights)) {
-                    foreach (array_keys($weights) as $k) {
-                        $sectionsAgg[$k] = ($sectionsAgg[$k] ?? 0) + 1;
-                    }
+        // $result = $task->result;
+        // // safety-filter: leave only known types (defense-in-depth)
+        // $validator = app(QuestionTypeContract::class);
+        // if (isset($result['tasks']) && is_array($result['tasks'])) {
+        //     $filtered = [];
+        //     foreach ($result['tasks'] as $t) {
+        //         try {
+        //             $filtered[] = $validator->validateTask($t);
+        //         } catch (\Throwable) {
+        //             // skip invalid
+        //         }
+        //     }
+        //     $result['tasks'] = $filtered;
+        // }
 
-                    continue;
-                }
-            }
+        // // sources
+        // $sources = [];
+        // if (! empty($result['sources']) && is_array($result['sources'])) {
+        //     $sources = array_values(array_map(fn ($s) => [
+        //         'url' => (string) ($s['url'] ?? ''),
+        //         'title' => (string) ($s['title'] ?? ''),
+        //         'publisher' => (string) ($s['publisher'] ?? ''),
+        //         'provenance' => (string) ($s['provenance'] ?? ''),
+        //         'doc_id'     => (string) ($s['doc_id'] ?? ''),
+        //         'filename'   => (string) ($s['filename'] ?? ''),
+        //     ], $result['sources']));
+        // }
 
-            if ($section) {
-                $sectionsAgg[$section] = ($sectionsAgg[$section] ?? 0) + 1;
-            }
-        }
+        // // archetypes (как вернули из валидатора)
+        // $archetypes = [];
+        // if (! empty($result['archetypes']) && is_array($result['archetypes'])) {
+        //     $archetypes = $result['archetypes'];
+        // }
 
-        $sections = [];
-        foreach ($sectionsAgg as $key => $count) {
-            $sections[] = ['key' => (string) $key, 'archetype_count' => (int) $count];
-        }
+        // // total_score (может отсутствовать)
+        // $totalScore = null;
+        // if (! empty($result['total_score']) && is_array($result['total_score'])) {
+        //     $ts = $result['total_score'];
+        //     if (isset($ts['min'], $ts['max']) && is_int($ts['min']) && is_int($ts['max'])) {
+        //         $totalScore = ['min' => $ts['min'], 'max' => $ts['max']];
+        //     }
+        // }
 
-        return response()->json([
-            'exam' => [
-                'id' => $exam->id,
-                'slug' => $exam->slug,
-                'title' => $exam->title,
-                'research_status' => $exam->research_status,
-            ],
-            'sources' => $sources,
-            'archetypes' => $archetypes,
-            'sections' => $sections,
-            'structure' => optional($task)->result,
-            'total_score' => $totalScore,
-            'task_id' => $task->id,
-        ]);
+        // // sections: из archetype.section или из ключей weights/category_weights
+        // $sectionsAgg = [];
+        // foreach ($archetypes as $arc) {
+        //     $section = $arc['section'] ?? null;
+
+        //     if (! $section) {
+        //         $weights = $arc['weights'] ?? ($arc['category_weights'] ?? null);
+        //         if (is_array($weights)) {
+        //             foreach (array_keys($weights) as $k) {
+        //                 $sectionsAgg[$k] = ($sectionsAgg[$k] ?? 0) + 1;
+        //             }
+
+        //             continue;
+        //         }
+        //     }
+
+        //     if ($section) {
+        //         $sectionsAgg[$section] = ($sectionsAgg[$section] ?? 0) + 1;
+        //     }
+        // }
+
+        // $sections = [];
+        // foreach ($sectionsAgg as $key => $count) {
+        //     $sections[] = ['key' => (string) $key, 'archetype_count' => (int) $count];
+        // }
+
+        // return response()->json([
+        //     'exam' => [
+        //         'id' => $exam->id,
+        //         'slug' => $exam->slug,
+        //         'title' => $exam->title,
+        //         'research_status' => $exam->research_status,
+        //     ],
+        //     'sources' => $sources,
+        //     'archetypes' => $archetypes,
+        //     'sections' => $sections,
+        //     'structure' => optional($task)->result,
+        //     'total_score' => $totalScore,
+        //     'task_id' => $task->id,
+        // ]);
     }
 }

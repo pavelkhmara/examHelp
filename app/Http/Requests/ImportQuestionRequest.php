@@ -9,16 +9,19 @@ use Illuminate\Validation\Rule;
 
 class ImportQuestionRequest extends FormRequest
 {
-    public function authorize(): bool { return true; }
+    public function authorize(): bool
+    {
+        return true;
+    }
 
     public function rules(): array
     {
         return [
-            'type'    => ['required','string', Rule::in(QuestionTypeContract::WHITELIST)],
-            'payload' => ['required','array', new ValidQuestionPayload('type')],
+            'type' => ['required', 'string', Rule::in(QuestionTypeContract::WHITELIST)],
+            'payload' => ['required', 'array', new ValidQuestionPayload('type')],
             // другие поля импорта:
-            'prompt'  => ['sometimes','string'],
-            'exam_id' => ['sometimes','integer','exists:exams,id'],
+            'prompt' => ['sometimes', 'string'],
+            'exam_id' => ['sometimes', 'integer', 'exists:exams,id'],
         ];
     }
 }

@@ -23,13 +23,12 @@ final class EvaluationController extends Controller
     public function evaluateText(Request $req): JsonResponse
     {
         $data = $req->validate([
-            'exam_id'     => ['required', 'uuid', Rule::exists('exams', 'id')],
+            'exam_id' => ['required', 'uuid', Rule::exists('exams', 'id')],
             'category_id' => ['nullable', 'integer', Rule::exists('exam_categories', 'id')],
             'question_id' => ['nullable', 'integer', Rule::exists('exam_example_questions', 'id')],
             'answer_text' => ['required', 'string', 'min:1'],
-            'async'       => ['sometimes', 'boolean'],
+            'async' => ['sometimes', 'boolean'],
         ]);
-        
 
         $async = (bool) ($data['async'] ?? false);
 
@@ -40,8 +39,8 @@ final class EvaluationController extends Controller
         if ($async) {
             $task = GenerationTask::create([
                 'exam_id' => $exam->id,
-                'type'    => 'evaluate_text',
-                'status'  => 'queued',
+                'type' => 'evaluate_text',
+                'status' => 'queued',
                 'request' => $data,
             ]);
 
@@ -65,11 +64,11 @@ final class EvaluationController extends Controller
 
         // Сохраним один снапшот в Evaluation (по желанию)
         Evaluation::create([
-            'user_id'          => null,
-            'exam_id'          => $exam->id,
+            'user_id' => null,
+            'exam_id' => $exam->id,
             'exam_category_id' => $data['category_id'] ?? null,
-            'answer'           => $data['answer_text'],
-            'result'           => $res,
+            'answer' => $data['answer_text'],
+            'result' => $res,
         ]);
 
         return response()->json(['ok' => true] + $res, 200);

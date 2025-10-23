@@ -2,13 +2,12 @@
 
 namespace Tests\Feature\Api;
 
+use App\Jobs\ExtractExamDocumentTextJob;
 use App\Models\Exam;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\UploadedFile;
-use Illuminate\Support\Facades\Config;
 // +++
-use App\Jobs\ExtractExamDocumentTextJob;   // <— добавь
-
+use Illuminate\Support\Facades\Config;   // <— добавь
 use Tests\TestCase;
 
 class DocumentUploadTest extends TestCase

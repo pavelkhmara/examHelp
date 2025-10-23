@@ -14,13 +14,14 @@ class ExamCategoryFactory extends Factory
     public function definition(): array
     {
         $name = $this->faker->unique()->words(2, true); // "Writing Tasks"
+
         return [
-            'exam_id'     => Exam::factory(),
-            'key'         => Str::slug($name),
-            'name'        => ucfirst($name),
+            'exam_id' => Exam::factory(),
+            'key' => Str::slug($name),
+            'name' => ucfirst($name),
             'description' => $this->faker->optional()->sentence(10),
-            'meta'        => [],
-            'order'       => $this->faker->numberBetween(1, 99),
+            'meta' => [],
+            'order' => $this->faker->numberBetween(1, 99),
         ];
     }
 }

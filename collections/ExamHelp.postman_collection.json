@@ -1,0 +1,43 @@
+{
+    "info": {
+      "name": "ExamHelp Stage1",
+      "_postman_id": "7c3f0a5e-0e8b-4b0b-9e77-eee000111222",
+      "description": "Basic endpoints for Stage 1: research, structure, evaluate",
+      "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+    },
+    "item": [
+      {
+        "name": "Research: enqueue",
+        "request": {
+          "method": "POST",
+          "header": [{ "key": "Content-Type", "value": "application/json" }],
+          "url": { "raw": "{{baseUrl}}/api/exams/{{examId}}/research", "host": ["{{baseUrl}}"], "path": ["api", "exams", "{{examId}}", "research"] },
+          "body": { "mode": "raw", "raw": "{\n  \"notes\": \"Chcę zdać egzamin B2\"\n}" }
+        }
+      },
+      {
+        "name": "Structure: get",
+        "request": {
+          "method": "GET",
+          "url": { "raw": "{{baseUrl}}/api/exams/{{examId}}/structure", "host": ["{{baseUrl}}"], "path": ["api", "exams", "{{examId}}", "structure"] }
+        }
+      },
+      {
+        "name": "Evaluate: text",
+        "request": {
+          "method": "POST",
+          "header": [{ "key": "Content-Type", "value": "application/json" }],
+          "url": { "raw": "{{baseUrl}}/api/evaluate/text", "host": ["{{baseUrl}}"], "path": ["api", "evaluate", "text"] },
+          "body": {
+            "mode": "raw",
+            "raw": "{\n  \"exam_id\": \"{{examId}}\",\n  \"category_id\": 6,\n  \"question_id\": 2,\n  \"answer_text\": \"I usually wake up at seven and go to work by bus.\"\n}"
+          }
+        }
+      }
+    ],
+    "variable": [
+      { "key": "baseUrl", "value": "http://localhost:8080" },
+      { "key": "examId", "value": "" }
+    ]
+  }
+  

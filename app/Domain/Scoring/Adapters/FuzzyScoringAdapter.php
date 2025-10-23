@@ -1,45 +1,39 @@
 <?php
-declare(strict_types=1);
 
 namespace App\Domain\Scoring\Adapters;
 
 use App\Domain\Scoring\Contracts\ScoringAdapter;
 use App\Domain\Scoring\Score;
 
-/**
- * FuzzyScoringAdapter — строковая похожесть (0..1) по лучшему совпадению.
- */
 final class FuzzyScoringAdapter implements ScoringAdapter
 {
-    /**
-     * @param array<string,mixed> $payload
-     * @param mixed $userAnswer
-     */
-    public function score(array $payload, mixed $userAnswer): Score
+    public function validateConfig(array $scoring): void
     {
-        $ua = (string)$userAnswer;
-        $best = 0.0;
-
-        if (\array_key_exists('answers', $payload) && \is_array($payload['answers'])) {
-            foreach ($payload['answers'] as $exp) {
-                $best = \max($best, $this->similarity($ua, (string)$exp));
-            }
-        } elseif (\array_key_exists('answer', $payload)) {
-            $best = $this->similarity($ua, (string)$payload['answer']);
-        }
-
-        return new Score(true, $best, []);
+        // threshold опционально (0..1)
     }
 
-    private function similarity(string $a, string $b): float
+    public function score(array $task, mixed $userAnswer): Score
     {
-        if ($a === '' && $b === '') return 1.0;
-        if ($a === '' || $b === '') return 0.0;
+        $expected = (string) (
+            $task['answer'] ??
+            $task['answer_key'] ??
+            $task['items'][0]['answer'] ??
+            $task['items'][0]['answer_key'] ??
+            ''
+        );
+        $ua = (string) (is_array($userAnswer) ? ($userAnswer['text'] ?? '') : $userAnswer);
 
-        $a = mb_strtolower($a);
-        $b = mb_strtolower($b);
-        $dist = levenshtein($a, $b);
-        $maxLen = max(mb_strlen($a), mb_strlen($b));
-        return 1.0 - ($dist / max(1, $maxLen));
+        $total = 1;
+        $got = 0;
+
+        if ($expected !== '' && $ua !== '') {
+            $len = max(1, max(strlen($expected), strlen($ua)));
+            $dist = levenshtein(mb_strtolower($expected), mb_strtolower($ua));
+            $sim = 1 - ($dist / $len); // 0..1
+            $threshold = (float) ($task['scoring']['threshold'] ?? 0.75);
+            $got = $sim >= $threshold ? 1 : 0;
+        }
+
+        return new Score($total, $got, true);
     }
 }

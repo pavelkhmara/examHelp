@@ -8,7 +8,7 @@ use Illuminate\Database\Eloquent\Model;
 class ExamCategory extends Model
 {
     use HasFactory;
-    
+
     protected $fillable = ['exam_id', 'key', 'name', 'meta', 'description', 'order'];
 
     protected $casts = ['meta' => 'array'];

@@ -33,16 +33,16 @@ trait InteractsWithGenerationTask
         Log::error('[GenerationTask] failed', ['task_id' => $task->id, 'error' => $e->getMessage()]);
     }
 
-    protected function logStage(GenerationTask $task, string $stage, array $request = null, array $response = null): void
+    protected function logStage(GenerationTask $task, string $stage, ?array $request = null, ?array $response = null): void
     {
         GenerationLog::create([
             'generation_task_id' => $task->id,
-            'stage'              => $stage,
-            'request'            => $request,
-            'response'           => $response,
-            'prompt_tokens'      => 0,
-            'completion_tokens'  => 0,
-            'total_tokens'       => 0,
+            'stage' => $stage,
+            'request' => $request,
+            'response' => $response,
+            'prompt_tokens' => 0,
+            'completion_tokens' => 0,
+            'total_tokens' => 0,
         ]);
     }
 }

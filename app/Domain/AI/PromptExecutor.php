@@ -45,7 +45,7 @@ final class PromptExecutor
 
                 $payload = [
                     'system' => $prompt->system(),
-                    'user'   => $prompt->user(),
+                    'user' => $prompt->user(),
                 ];
 
                 $opts = array_merge($prompt->opts(), [
@@ -53,17 +53,17 @@ final class PromptExecutor
                 ]);
 
                 $result = $ai->generate($payload, $opts);
-                $usage  = (array) ($result['usage'] ?? []);
+                $usage = (array) ($result['usage'] ?? []);
 
                 // log raw
                 GenerationLog::create([
                     'generation_task_id' => $task->id,
-                    'stage'              => $prompt->id(),
-                    'request'            => ['messages' => $payload, 'opts' => $opts],
-                    'response'           => $result,
-                    'prompt_tokens'      => $usage['prompt_tokens']     ?? null,
-                    'completion_tokens'  => $usage['completion_tokens'] ?? null,
-                    'total_tokens'       => $usage['total_tokens']      ?? null,
+                    'stage' => $prompt->id(),
+                    'request' => ['messages' => $payload, 'opts' => $opts],
+                    'response' => $result,
+                    'prompt_tokens' => $usage['prompt_tokens'] ?? null,
+                    'completion_tokens' => $usage['completion_tokens'] ?? null,
+                    'total_tokens' => $usage['total_tokens'] ?? null,
                 ]);
 
                 if (empty($result['ok'])) {
@@ -76,17 +76,20 @@ final class PromptExecutor
 
                 // success
                 $task->refresh(); // ensure attempts visible in UI
+
                 return ['data' => $data, 'usage' => $usage];
             } catch (\Throwable $e) {
                 $error = $e;
                 Log::warning('PromptExecutor attempt failed', [
                     'task_id' => $task->id,
-                    'stage'   => $prompt->id(),
+                    'stage' => $prompt->id(),
                     'attempt' => $attempt,
-                    'error'   => $e->getMessage(),
+                    'error' => $e->getMessage(),
                 ]);
 
-                if ($attempt > $maxRetries) break;
+                if ($attempt > $maxRetries) {
+                    break;
+                }
 
                 // backoff
                 usleep(($baseBackoffMs * (2 ** ($attempt - 1))) * 1000);

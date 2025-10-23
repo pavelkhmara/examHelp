@@ -142,4 +142,36 @@ final class QuestionTypeContract
                 break;
         }
     }
+
+    /**
+     * Возвращает whitelist всех допустимых типов вопросов из enum QuestionType.
+     *
+     * @return array<int,string>
+     */
+    public static function allowedTypes(): array
+    {
+        // Поддерживаем два варианта реализации enum-сущности: custom ::all() или native ::cases()
+        if (method_exists(\App\Domain\Taxonomy\QuestionType::class, 'all')) {
+            /** @phpstan-ignore-next-line */
+            return \App\Domain\Taxonomy\QuestionType::all();
+        }
+
+        // PHP 8.1+ backed enum: соберём значения cases()
+        return array_map(
+            static fn ($c) => $c->value,
+            \App\Domain\Taxonomy\QuestionType::cases()
+        );
+    }
+
+    /**
+     * Проверяет, что тип из whitelist. Нейтрализует null/пустые строки.
+     */
+    public static function isKnownType(?string $type): bool
+    {
+        if ($type === null || $type === '') {
+            return false;
+        }
+
+        return in_array($type, self::allowedTypes(), true);
+    }
 }

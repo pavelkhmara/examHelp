@@ -15,7 +15,7 @@ final class ResearchOverviewSchema
         // Derive whitelist from enum
         $allowed = method_exists(QuestionType::class, 'all')
             ? QuestionType::all()
-            : array_map(fn($c) => $c->value, QuestionType::cases());
+            : array_map(fn ($c) => $c->value, QuestionType::cases());
 
         return [
             'type' => 'object',

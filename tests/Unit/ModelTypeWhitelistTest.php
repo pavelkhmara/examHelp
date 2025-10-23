@@ -1,4 +1,5 @@
 <?php
+
 namespace Tests\Unit;
 
 use App\Models\ExamExampleQuestion;
@@ -17,7 +18,7 @@ class ModelTypeWhitelistTest extends TestCase
             'exam_id' => 1,
             'exam_category_id' => 1,
             'question' => 'dummy',
-            'type'    => 'not_a_valid_type',
+            'type' => 'not_a_valid_type',
             'payload' => null,
         ]);
     }
@@ -28,7 +29,7 @@ class ModelTypeWhitelistTest extends TestCase
             'exam_id' => 1,
             'exam_category_id' => 1,
             'question' => 'dummy',
-            'type'    => 'single_select',
+            'type' => 'single_select',
             'payload' => ['sample' => true],
         ]);
         $this->assertSame('single_select', $row->type->value);

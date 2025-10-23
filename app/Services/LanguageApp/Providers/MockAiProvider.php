@@ -20,30 +20,30 @@ final class MockAiProvider implements AiProvider
         $docSources = [];
         foreach ($files as $f) {
             $docSources[] = [
-                'url'        => '',
-                'title'      => (string)($f['name'] ?? $f['filename'] ?? $f['id'] ?? 'document'),
-                'publisher'  => 'user_uploaded',
+                'url' => '',
+                'title' => (string) ($f['name'] ?? $f['filename'] ?? $f['id'] ?? 'document'),
+                'publisher' => 'user_uploaded',
                 'provenance' => 'document',
-                'doc_id'     => (string)($f['id'] ?? ''),
-                'filename'   => (string)($f['name'] ?? ''),
+                'doc_id' => (string) ($f['id'] ?? ''),
+                'filename' => (string) ($f['name'] ?? ''),
             ];
         }
 
         $webSources = [
             [
-                'url'        => 'https://example.edu/exam-guide',
-                'title'      => 'Exam Guide',
-                'publisher'  => 'Example EDU',
+                'url' => 'https://example.edu/exam-guide',
+                'title' => 'Exam Guide',
+                'publisher' => 'Example EDU',
                 'provenance' => 'web',
             ],
             [
-                'url'        => 'https://official-exam.org/format',
-                'title'      => 'Official Format',
-                'publisher'  => 'Official Board',
+                'url' => 'https://official-exam.org/format',
+                'title' => 'Official Format',
+                'publisher' => 'Official Board',
                 'provenance' => 'web',
             ],
         ];
-        
+
         // минимальный валидный overview, который проходит JsonSchemaExamOverview
         $content = [
             'exam_name' => $payload['exam_slug'] ?? 'mock_exam',
@@ -67,7 +67,7 @@ final class MockAiProvider implements AiProvider
             // опциональные поля можно не передавать
             'exam_matrix_provided' => false,
         ];
-        
+
         $contentText = json_encode($content, JSON_UNESCAPED_UNICODE);
         $body = [
             'id' => 'mock-resp-1',

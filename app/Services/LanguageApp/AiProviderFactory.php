@@ -11,7 +11,8 @@ final class AiProviderFactory
 {
     public static function make(?string $provider, array $cfg): AiProvider
     {
-        $provider = $provider ?: 'mock';
+        $cfg = $cfg ?: (array) config('ai');
+        $provider = $provider ?: ($cfg['provider'] ?? 'mock');
         Log::debug('AiProviderFactory: creating provider', ['provider' => $provider]);
 
         if ($provider === 'mock') {
@@ -19,8 +20,8 @@ final class AiProviderFactory
         }
 
         try {
-            $baseUrl = rtrim($cfg[$provider]['base_url'], '/').'/';
-            $apiKey = $cfg[$provider]['api_key'];
+            $baseUrl = rtrim((string) ($cfg[$provider]['base_url'] ?? ''), '/').'/';
+            $apiKey = (string) ($cfg[$provider]['api_key'] ?? '');
             $timeout = (int) ($cfg[$provider]['timeout'] ?? 60);
 
             if (! $baseUrl || ! $apiKey) {

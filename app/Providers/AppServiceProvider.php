@@ -16,10 +16,10 @@ class AppServiceProvider extends ServiceProvider
         if ($this->app->environment('testing')) {
             // Когда сервисы просят AiProvider, отдаём наш мок
             $this->app->singleton(\App\Services\LanguageApp\AiProvider::class, function ($app) {
-                return new \App\Services\LanguageApp\Providers\MockAiProvider();
+                return new \App\Services\LanguageApp\Providers\MockAiProvider;
             });
         }
-        
+
         $this->app->bind(AiProvider::class, function ($app) {
             $cfg = config('ai', []);
 
@@ -27,7 +27,7 @@ class AppServiceProvider extends ServiceProvider
         });
 
         $this->app->singleton('task-dispatcher', function ($app) {
-            return new \App\Support\Queue\TaskDispatcher();
+            return new \App\Support\Queue\TaskDispatcher;
         });
     }
 

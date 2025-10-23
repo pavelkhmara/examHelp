@@ -1,10 +1,11 @@
 <?php
+
 namespace App\Http\Controllers\Api;
 
-use App\Http\Controllers\Controller;
 use App\Domain\Scoring\ScoringEngine;
-use App\Services\LanguageApp\Validators\QuestionTypeContract;
+use App\Http\Controllers\Controller;
 use App\Services\LanguageApp\Validators\AnswerEnvelopeValidator;
+use App\Services\LanguageApp\Validators\QuestionTypeContract;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Validation\ValidationException;
@@ -17,13 +18,13 @@ final class ScoringController extends Controller
 {
     public function preview(Request $req): JsonResponse
     {
-        $task     = (array)$req->input('task');         // валидированный task по нашему контракту
-        $envelope = (array)$req->input('answer');       // AnswerEnvelope (FE → API)
+        $task = (array) $req->input('task');         // валидированный task по нашему контракту
+        $envelope = (array) $req->input('answer');       // AnswerEnvelope (FE → API)
 
         /** @var QuestionTypeContract $taskValidator */
         $taskValidator = app(QuestionTypeContract::class);
         /** @var AnswerEnvelopeValidator $ansValidator */
-        $ansValidator  = app(AnswerEnvelopeValidator::class);
+        $ansValidator = app(AnswerEnvelopeValidator::class);
 
         // 1) строгая проверка задания (типы/моды/минимальные поля)
         $task = $taskValidator->validateTask($task);
@@ -36,7 +37,7 @@ final class ScoringController extends Controller
 
         // 3) прогон через движок (используем только scoring.*)
         $engine = ScoringEngine::default();
-        $res    = $engine->scoreTask($task, self::toUserMap($envelope));
+        $res = $engine->scoreTask($task, self::toUserMap($envelope));
 
         return response()->json([
             'ok' => true,
@@ -51,16 +52,16 @@ final class ScoringController extends Controller
      */
     private static function toUserMap(array $env): array
     {
-        $type = (string)($env['type'] ?? '');
+        $type = (string) ($env['type'] ?? '');
+
         return match ($type) {
-            'single_select','listen_mcq','dropdown_cloze','banked_cloze','short_answer','numeric','true_false','yes_no_ng','gap_cloze'
-                => (array)($env['answers'] ?? []),
-            'multi_select' => (array)($env['answers'] ?? []),
-            'matching'     => ['_matching' => (array)($env['pairs'] ?? [])],
-            'order_sentences','order_words' => ['_order' => (array)($env['order'] ?? [])],
-            'highlight_text' => ['_spans' => (array)($env['spans'] ?? [])],
-            'dictation','error_correction','writing_prompt' => ['_text' => (string)($env['text'] ?? '')],
-            'speaking_prompt' => ['_audioUrl' => (string)($env['audioUrl'] ?? '')],
+            'single_select','listen_mcq','dropdown_cloze','banked_cloze','short_answer','numeric','true_false','yes_no_ng','gap_cloze' => (array) ($env['answers'] ?? []),
+            'multi_select' => (array) ($env['answers'] ?? []),
+            'matching' => ['_matching' => (array) ($env['pairs'] ?? [])],
+            'order_sentences','order_words' => ['_order' => (array) ($env['order'] ?? [])],
+            'highlight_text' => ['_spans' => (array) ($env['spans'] ?? [])],
+            'dictation','error_correction','writing_prompt' => ['_text' => (string) ($env['text'] ?? '')],
+            'speaking_prompt' => ['_audioUrl' => (string) ($env['audioUrl'] ?? '')],
             default => [],
         };
     }

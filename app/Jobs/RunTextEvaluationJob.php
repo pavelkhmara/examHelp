@@ -23,10 +23,10 @@ class RunTextEvaluationJob implements ShouldQueue
         $task->update(['status' => 'running']);
 
         $req = (array) ($task->request ?? []);
-        $exam     = Exam::findOrFail($req['exam_id']);
+        $exam = Exam::findOrFail($req['exam_id']);
         $category = isset($req['category_id']) ? ExamCategory::find($req['category_id']) : null;
-        $example  = isset($req['question_id']) ? ExamExampleQuestion::find($req['question_id']) : null;
-        $answer   = (string) ($req['answer_text'] ?? '');
+        $example = isset($req['question_id']) ? ExamExampleQuestion::find($req['question_id']) : null;
+        $answer = (string) ($req['answer_text'] ?? '');
 
         $svc = app(EvaluationService::class);
         $res = $svc->evaluateText($exam, $category, $example, $answer);
