@@ -9,7 +9,7 @@ use App\Support\LiteValidationException;
  * - supports: type: object|array|string|number|integer
  * - supports: required, additionalProperties=false, enum
  * - recursively validates nested objects/arrays
- * 
+ *
  * NOTE: json_decode(..., true) maps {} -> [].
  * We therefore treat an empty array as a valid empty "object" when type=object.
  */
@@ -20,21 +20,21 @@ final class AiJsonValidator
         $type = $schema['type'] ?? null;
 
         if ($type === 'object') {
-            if (!is_array($data) || (array_is_list($data) && count($data) > 0)) {
+            if (! is_array($data) || (array_is_list($data) && count($data) > 0)) {
                 throw new LiteValidationException([], "{$path}: expected object");
             }
 
             if (($schema['additionalProperties'] ?? true) === false) {
                 $known = array_keys($schema['properties'] ?? []);
                 foreach (array_keys($data) as $k) {
-                    if (!in_array($k, $known, true)) {
+                    if (! in_array($k, $known, true)) {
                         throw new LiteValidationException([], "{$path}: unknown property '{$k}'");
                     }
                 }
             }
 
             foreach (($schema['required'] ?? []) as $req) {
-                if (!array_key_exists($req, $data)) {
+                if (! array_key_exists($req, $data)) {
                     throw new LiteValidationException([], "{$path}: missing required '{$req}'");
                 }
             }
@@ -46,7 +46,7 @@ final class AiJsonValidator
             }
 
         } elseif ($type === 'array') {
-            if (!is_array($data) || !array_is_list($data)) {
+            if (! is_array($data) || ! array_is_list($data)) {
                 throw new LiteValidationException([], "{$path}: expected array");
             }
             $min = $schema['minItems'] ?? null;
@@ -58,20 +58,20 @@ final class AiJsonValidator
                     self::validate($schema['items'], $item, "{$path}[{$i}]");
                 }
             }
-            
+
         } elseif ($type === 'string') {
-            if (!is_string($data)) {
+            if (! is_string($data)) {
                 throw new LiteValidationException([], "{$path}: expected string");
             }
-            if (isset($schema['enum']) && !in_array($data, $schema['enum'], true)) {
+            if (isset($schema['enum']) && ! in_array($data, $schema['enum'], true)) {
                 throw new LiteValidationException([], "{$path}: value '{$data}' not in enum");
             }
         } elseif ($type === 'number') {
-            if (!is_numeric($data)) {
+            if (! is_numeric($data)) {
                 throw new LiteValidationException([], "{$path}: expected number");
             }
         } elseif ($type === 'integer') {
-            if (!is_int($data)) {
+            if (! is_int($data)) {
                 throw new LiteValidationException([], "{$path}: expected integer");
             }
         } else {

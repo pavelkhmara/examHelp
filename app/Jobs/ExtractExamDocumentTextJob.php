@@ -10,8 +10,6 @@ use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
 use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Queue\SerializesModels;
-use Illuminate\Support\Arr;
-use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
 use RuntimeException;
 use Spatie\PdfToText\Pdf;
@@ -103,27 +101,28 @@ class ExtractExamDocumentTextJob implements ShouldQueue
     {
         if (str_contains($mime, 'pdf')) {
             $bin = config('documents.pdftotext_bin'); // null = autodetect in PATH
-        
-            $pdf = new Pdf();
+
+            $pdf = new Pdf;
             // if ($bin) {
             //     $pdf->setPdftotextBinary($bin);
             // }
-        
+
             $pdf->setPdf($fullPath);
-        
+
             return $pdf->text();
         }
-        
 
         if (str_contains($mime, 'jpeg') || str_contains($mime, 'jpg') || str_contains($mime, 'png')) {
-            if (!config('documents.ocr_enabled', false)) {
+            if (! config('documents.ocr_enabled', false)) {
                 throw new RuntimeException('OCR disabled (enable DOC_OCR_ENABLED to use Tesseract).');
             }
             $langs = (string) config('documents.ocr_langs', 'eng');
             $tess = new TesseractOCR($fullPath);
             $tess->lang(...array_map('trim', explode('+', $langs)));
             $binPath = config('documents.tesseract_bin');
-            if ($binPath) $tess->executable($binPath);
+            if ($binPath) {
+                $tess->executable($binPath);
+            }
 
             return $tess->run();
         }
@@ -133,7 +132,9 @@ class ExtractExamDocumentTextJob implements ShouldQueue
 
     protected function markTask(?GenerationTask $task, string $status, ?array $result): void
     {
-        if (!$task) return;
+        if (! $task) {
+            return;
+        }
 
         $task->update([
             'status' => $status,

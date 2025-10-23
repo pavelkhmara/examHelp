@@ -2,14 +2,14 @@
 
 namespace App\Nova;
 
+use App\Domain\Taxonomy\QuestionType;
 use App\Nova\Filters\ExamFilter;
+use Laravel\Nova\Fields\Badge;
 use Laravel\Nova\Fields\BelongsTo;
 use Laravel\Nova\Fields\Code;
 use Laravel\Nova\Fields\ID;
 use Laravel\Nova\Fields\Text;
-use Laravel\Nova\Fields\Badge;
 use Laravel\Nova\Http\Requests\NovaRequest;
-use App\Domain\Taxonomy\QuestionType;
 
 class ExamExampleQuestion extends Resource
 {
@@ -34,47 +34,47 @@ class ExamExampleQuestion extends Resource
             BelongsTo::make('Category', 'category', ExamCategory::class)
                 ->searchable()
                 ->nullable(),
-                Badge::make('Type','type')
-                        ->map([
-                            QuestionType::SINGLE_SELECT->value   => 'info',
-                            QuestionType::MULTI_SELECT->value    => 'info',
-                            QuestionType::TRUE_FALSE->value      => 'success',
-                            QuestionType::YES_NO_NG->value       => 'success',
-                            QuestionType::DROPDOWN_CLOZE->value  => 'warning',
-                            QuestionType::GAP_CLOZE->value       => 'warning',
-                            QuestionType::BANKED_CLOZE->value    => 'warning',
-                            QuestionType::MATCHING->value        => 'info',
-                            QuestionType::ORDER_SENTENCES->value => 'info',
-                            QuestionType::ORDER_WORDS->value     => 'info',
-                            QuestionType::HIGHLIGHT_TEXT->value  => 'info',
-                            QuestionType::SHORT_ANSWER->value    => 'warning',
-                            QuestionType::NUMERIC->value         => 'success',
-                            QuestionType::LISTEN_MCQ->value      => 'info',
-                            QuestionType::DICTATION->value       => 'warning',
-                            QuestionType::ERROR_CORRECTION->value=> 'danger',
-                            QuestionType::WRITING_PROMPT->value  => 'danger',
-                            QuestionType::SPEAKING_PROMPT->value => 'danger',
-                        ])
-                        ->labels([
-                            QuestionType::SINGLE_SELECT->value   => 'Single',
-                            QuestionType::MULTI_SELECT->value    => 'Multi',
-                            QuestionType::TRUE_FALSE->value      => 'T/F',
-                            QuestionType::YES_NO_NG->value       => 'Yes/No/NG',
-                            QuestionType::DROPDOWN_CLOZE->value  => 'Dropdown Cloze',
-                            QuestionType::GAP_CLOZE->value       => 'Gap Cloze',
-                            QuestionType::BANKED_CLOZE->value    => 'Banked Cloze',
-                            QuestionType::MATCHING->value        => 'Matching',
-                            QuestionType::ORDER_SENTENCES->value => 'Order Sentences',
-                            QuestionType::ORDER_WORDS->value     => 'Order Words',
-                            QuestionType::HIGHLIGHT_TEXT->value  => 'Highlight',
-                            QuestionType::SHORT_ANSWER->value    => 'Short Answer',
-                            QuestionType::NUMERIC->value         => 'Numeric',
-                            QuestionType::LISTEN_MCQ->value      => 'Listen MCQ',
-                            QuestionType::DICTATION->value       => 'Dictation',
-                            QuestionType::ERROR_CORRECTION->value=> 'Error Correction',
-                            QuestionType::WRITING_PROMPT->value  => 'Writing',
-                            QuestionType::SPEAKING_PROMPT->value => 'Speaking',
-                        ]),
+            Badge::make('Type', 'type')
+                ->map([
+                    QuestionType::SINGLE_SELECT->value => 'info',
+                    QuestionType::MULTI_SELECT->value => 'info',
+                    QuestionType::TRUE_FALSE->value => 'success',
+                    QuestionType::YES_NO_NG->value => 'success',
+                    QuestionType::DROPDOWN_CLOZE->value => 'warning',
+                    QuestionType::GAP_CLOZE->value => 'warning',
+                    QuestionType::BANKED_CLOZE->value => 'warning',
+                    QuestionType::MATCHING->value => 'info',
+                    QuestionType::ORDER_SENTENCES->value => 'info',
+                    QuestionType::ORDER_WORDS->value => 'info',
+                    QuestionType::HIGHLIGHT_TEXT->value => 'info',
+                    QuestionType::SHORT_ANSWER->value => 'warning',
+                    QuestionType::NUMERIC->value => 'success',
+                    QuestionType::LISTEN_MCQ->value => 'info',
+                    QuestionType::DICTATION->value => 'warning',
+                    QuestionType::ERROR_CORRECTION->value => 'danger',
+                    QuestionType::WRITING_PROMPT->value => 'danger',
+                    QuestionType::SPEAKING_PROMPT->value => 'danger',
+                ])
+                ->labels([
+                    QuestionType::SINGLE_SELECT->value => 'Single',
+                    QuestionType::MULTI_SELECT->value => 'Multi',
+                    QuestionType::TRUE_FALSE->value => 'T/F',
+                    QuestionType::YES_NO_NG->value => 'Yes/No/NG',
+                    QuestionType::DROPDOWN_CLOZE->value => 'Dropdown Cloze',
+                    QuestionType::GAP_CLOZE->value => 'Gap Cloze',
+                    QuestionType::BANKED_CLOZE->value => 'Banked Cloze',
+                    QuestionType::MATCHING->value => 'Matching',
+                    QuestionType::ORDER_SENTENCES->value => 'Order Sentences',
+                    QuestionType::ORDER_WORDS->value => 'Order Words',
+                    QuestionType::HIGHLIGHT_TEXT->value => 'Highlight',
+                    QuestionType::SHORT_ANSWER->value => 'Short Answer',
+                    QuestionType::NUMERIC->value => 'Numeric',
+                    QuestionType::LISTEN_MCQ->value => 'Listen MCQ',
+                    QuestionType::DICTATION->value => 'Dictation',
+                    QuestionType::ERROR_CORRECTION->value => 'Error Correction',
+                    QuestionType::WRITING_PROMPT->value => 'Writing',
+                    QuestionType::SPEAKING_PROMPT->value => 'Speaking',
+                ]),
             Text::make('Question')->rules('required')->onlyOnForms(),
             Text::make('Question Preview', 'question')->exceptOnForms()->onlyOnDetail(),
             // Code::make('Good Answer')->json()

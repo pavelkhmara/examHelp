@@ -106,12 +106,12 @@ EOT;
             if (is_string($f)) {
                 return basename($f);
             }
-        
+
             // массив (наш формат files_hint из документов)
             if (is_array($f)) {
-                return (string)($f['name'] ?? $f['filename'] ?? $f['path'] ?? $f['id'] ?? '[unknown]');
+                return (string) ($f['name'] ?? $f['filename'] ?? $f['path'] ?? $f['id'] ?? '[unknown]');
             }
-        
+
             // объекты: UploadedFile и пр.
             if (is_object($f)) {
                 if (method_exists($f, 'getClientOriginalName')) {
@@ -124,7 +124,7 @@ EOT;
                     return basename((string) $f);
                 }
             }
-        
+
             return '[unknown]';
         }, $files);
 

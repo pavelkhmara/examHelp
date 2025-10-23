@@ -15,7 +15,7 @@ class ValidQuestionPayload implements ValidationRule
         $payload = is_array($value) ? $value : [];
         $type = request()->input($this->typeField); // в FormRequest удобно
         try {
-            QuestionPayloadValidator::validate((string)$type, $payload);
+            QuestionPayloadValidator::validate((string) $type, $payload);
         } catch (\Illuminate\Validation\ValidationException $e) {
             foreach ($e->errors() as $fld => $msgs) {
                 foreach ($msgs as $m) {
@@ -23,7 +23,7 @@ class ValidQuestionPayload implements ValidationRule
                 }
             }
         } catch (\Throwable $e) {
-            Log::warning('ValidQuestionPayload: unexpected', ['e'=>$e]);
+            Log::warning('ValidQuestionPayload: unexpected', ['e' => $e]);
             $fail("{$attribute} validation failed: ".$e->getMessage());
         }
     }

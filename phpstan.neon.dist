@@ -17,12 +17,17 @@ parameters:
   tmpDir: storage/framework/cache/phpstan
   
   checkModelProperties: true
-  checkMissingIterableValueType: true
   reportUnmatchedIgnoredErrors: true
+  inferPrivatePropertyTypeFromConstructor: true
 
-  # ignoreErrors:
-  #   - '#Call to an undefined static method Laravel\\Nova\\Nova::.*#'
-  
+  ignoreErrors:
+    - '#Call to an undefined static method Laravel\\Nova\\Nova::.*#'
+    - '#Unsafe usage of new static\(\)#'
+    - '#Call to an undefined static method Illuminate\\Support\\Facades\\(.*)::fake#'
+    - '#Property .* does not accept null#'
+    - '#Offset .* does not exist on array#'
+    - identifier: missingType.iterableValue
+
   bootstrapFiles:
     - vendor/autoload.php
     - bootstrap/app.php

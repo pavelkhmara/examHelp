@@ -25,21 +25,21 @@ class ResearchUsesDocumentsTest extends TestCase
 
         // 2) Документ: ОБЯЗАТЕЛЬНО задать path и корректные имена полей
         $doc = ExamDocument::create([
-            'exam_id'        => $exam->id,
-            'status'         => 'completed',
-            'original_name'  => 'b1_sample.pdf',
-            'disk'           => config('filesystems.default', 'local'),
-            'path'           => "exams/{$exam->id}/documents/sample.pdf",
-            'mime'           => 'application/pdf',
-            'size'           => 1234,
+            'exam_id' => $exam->id,
+            'status' => 'completed',
+            'original_name' => 'b1_sample.pdf',
+            'disk' => config('filesystems.default', 'local'),
+            'path' => "exams/{$exam->id}/documents/sample.pdf",
+            'mime' => 'application/pdf',
+            'size' => 1234,
             'extracted_text' => 'DOC_HINT_FAKE_CONTENT lorem ipsum...',
         ]);
 
         // 3) Таск ресёрча
         $task = GenerationTask::create([
             'exam_id' => $exam->id,
-            'type'    => 'research',
-            'status'  => 'running',
+            'type' => 'research',
+            'status' => 'running',
         ]);
 
         // 4) Запуск пайплайна
@@ -60,7 +60,7 @@ class ResearchUsesDocumentsTest extends TestCase
         $this->assertEquals($doc->id, $first['doc_id'] ?? null);
 
         // И должен присутствовать хотя бы один web-источник
-        $hasWeb = collect($sources)->contains(fn($s) => ($s['provenance'] ?? '') === 'web');
+        $hasWeb = collect($sources)->contains(fn ($s) => ($s['provenance'] ?? '') === 'web');
         $this->assertTrue($hasWeb, 'web source is expected alongside document source');
     }
 }

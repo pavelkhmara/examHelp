@@ -2,8 +2,8 @@
 
 namespace Tests\Unit\Ai;
 
-use App\Domain\AI\PromptExecutor;
 use App\Domain\AI\Contracts\Prompt;
+use App\Domain\AI\PromptExecutor;
 use App\Models\Exam;
 use App\Models\GenerationTask;
 use App\Services\LanguageApp\AiProvider;
@@ -19,21 +19,35 @@ class PromptExecutorTest extends TestCase
         $exam = Exam::factory()->create();
         $task = GenerationTask::create([
             'exam_id' => $exam->id,
-            'type'    => 'research',
-            'status'  => 'running',
+            'type' => 'research',
+            'status' => 'running',
             'request' => ['notes' => 'Chcę zdać egzamin B2'],
         ]);
 
         // Fake Prompt
-        $prompt = new class implements Prompt {
-            public function id(): string { return 'research_overview'; }
-            public function system(): string { return 'sys'; }
-            public function user(): string { return 'user'; }
-            public function jsonSchema(): array {
+        $prompt = new class implements Prompt
+        {
+            public function id(): string
+            {
+                return 'research_overview';
+            }
+
+            public function system(): string
+            {
+                return 'sys';
+            }
+
+            public function user(): string
+            {
+                return 'user';
+            }
+
+            public function jsonSchema(): array
+            {
                 return [
                     'type' => 'object',
                     'additionalProperties' => false,
-                    'required' => ['tasks','sources','summary'],
+                    'required' => ['tasks', 'sources', 'summary'],
                     'properties' => [
                         'summary' => ['type' => 'string'],
                         'tasks' => [
@@ -41,7 +55,7 @@ class PromptExecutorTest extends TestCase
                             'minItems' => 1,
                             'items' => [
                                 'type' => 'object',
-                                'required' => ['type','name','rationale','expected_payload'],
+                                'required' => ['type', 'name', 'rationale', 'expected_payload'],
                                 'properties' => [
                                     'type' => ['type' => 'string', 'enum' => ['SINGLE_SELECT']],
                                     'name' => ['type' => 'string'],
@@ -56,29 +70,36 @@ class PromptExecutorTest extends TestCase
                             'minItems' => 1,
                             'items' => [
                                 'type' => 'object',
-                                'required' => ['url','title'],
+                                'required' => ['url', 'title'],
                                 'properties' => [
                                     'url' => ['type' => 'string'],
                                     'title' => ['type' => 'string'],
                                 ],
                                 'additionalProperties' => false,
-                            ]
+                            ],
                         ],
                     ],
                 ];
             }
-            public function opts(): array { return ['temperature'=>0.2,'web_search'=>true]; }
+
+            public function opts(): array
+            {
+                return ['temperature' => 0.2, 'web_search' => true];
+            }
         };
 
         // Fake Provider: 1-я попытка ошибка, 2-я — успех
-        $fake = new class implements AiProvider {
+        $fake = new class implements AiProvider
+        {
             private int $calls = 0;
+
             public function generate(array $payload, array $opts = []): array
             {
                 $this->calls++;
                 if ($this->calls === 1) {
-                    return ['ok' => false, 'error' => 'temporary', 'usage' => ['prompt_tokens'=>10,'completion_tokens'=>0,'total_tokens'=>10]];
+                    return ['ok' => false, 'error' => 'temporary', 'usage' => ['prompt_tokens' => 10, 'completion_tokens' => 0, 'total_tokens' => 10]];
                 }
+
                 return [
                     'ok' => true,
                     'data' => [
@@ -87,11 +108,11 @@ class PromptExecutorTest extends TestCase
                             'type' => 'SINGLE_SELECT',
                             'name' => 'Task 1',
                             'rationale' => 'why',
-                            'expected_payload' => ['min_options'=>3],
+                            'expected_payload' => ['min_options' => 3],
                         ]],
-                        'sources' => [[ 'url'=>'https://example.com','title'=>'Ex' ]],
+                        'sources' => [['url' => 'https://example.com', 'title' => 'Ex']],
                     ],
-                    'usage' => ['prompt_tokens'=>42,'completion_tokens'=>99,'total_tokens'=>141],
+                    'usage' => ['prompt_tokens' => 42, 'completion_tokens' => 99, 'total_tokens' => 141],
                 ];
             }
         };

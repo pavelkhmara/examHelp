@@ -4,15 +4,14 @@ namespace App\Services\LanguageApp;
 
 use App\Models\Exam;
 use App\Models\ExamCategory;
-use App\Models\GenerationTask;
 use App\Models\ExamDocument;
+use App\Models\GenerationTask;
 use App\Services\LanguageApp\Validators\JsonSchemaExamOverview;
 use App\Services\LanguageApp\Validators\QuestionTypeContract;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
-use Illuminate\Validation\ValidationException;
 
 class ExamResearchService extends AbstractAiService
 {
@@ -36,7 +35,7 @@ class ExamResearchService extends AbstractAiService
         ];
 
         $opts = [
-            'web'   => true,
+            'web' => true,
             'files' => $files, // AbstractAiService сам положит это в files_hint
             // при необходимости можно добавить json_schema => …
         ];
@@ -70,7 +69,7 @@ class ExamResearchService extends AbstractAiService
                 // мягкий фоллбек в тестах: приводим к минимальной валидной форме и продолжаем
                 $overview_normalized = $this->coerceOverviewForTests($decoded);
                 $this->log($task, 'overview_validated_soft', $payload, [
-                    'note'   => 'testing soft-validate fallback',
+                    'note' => 'testing soft-validate fallback',
                     'reason' => $ve->getMessage(),
                     'result' => $overview_normalized,
                 ]);
@@ -79,7 +78,6 @@ class ExamResearchService extends AbstractAiService
             }
         }
 
-
         Log::debug('ExamResearchService overview Validated json', ['overview' => $overview_normalized]);
 
         // --- Normalize & merge sources: add provenances and attach document-sources ---
@@ -87,12 +85,12 @@ class ExamResearchService extends AbstractAiService
         $docSources = [];
 
         // 1) web-источники
-        if (!empty($overview_normalized['sources']) && is_array($overview_normalized['sources'])) {
+        if (! empty($overview_normalized['sources']) && is_array($overview_normalized['sources'])) {
             foreach ($overview_normalized['sources'] as $s) {
                 $webSources[] = [
-                    'url'        => (string)($s['url'] ?? ''),
-                    'title'      => (string)($s['title'] ?? ''),
-                    'publisher'  => (string)($s['publisher'] ?? ''),
+                    'url' => (string) ($s['url'] ?? ''),
+                    'title' => (string) ($s['title'] ?? ''),
+                    'publisher' => (string) ($s['publisher'] ?? ''),
                     'provenance' => 'web',
                 ];
             }
@@ -101,12 +99,12 @@ class ExamResearchService extends AbstractAiService
         // 2) document-источники из $files
         foreach ($files as $f) {
             $docSources[] = [
-                'url'        => '',
-                'title'      => $f['name'],
-                'publisher'  => 'user_uploaded',
+                'url' => '',
+                'title' => $f['name'],
+                'publisher' => 'user_uploaded',
                 'provenance' => 'document',
-                'doc_id'     => $f['id'],
-                'filename'   => $f['name'],
+                'doc_id' => $f['id'],
+                'filename' => $f['name'],
             ];
         }
 
@@ -120,8 +118,6 @@ class ExamResearchService extends AbstractAiService
                 'overview_sources' => $sources,
             ]),
         ]);
-
-
 
         // STRICT VALIDATION of tasks (types/payload/scoring)
         /** @var QuestionTypeContract $validator */
@@ -145,8 +141,6 @@ class ExamResearchService extends AbstractAiService
                 ]),
             ]);
         }
-
-
 
         // === 3) Создание/апдейт категорий и шагов внутри категории ===
         // Входной массив архетипов после валидатора: global_archetypes[*]
@@ -456,10 +450,10 @@ class ExamResearchService extends AbstractAiService
      */
     protected function buildFilesForExam(Exam $exam): array
     {
-        $cfg      = config('ai.documents');
-        $maxDocs  = (int) ($cfg['max_docs_hint'] ?? 3);
+        $cfg = config('ai.documents');
+        $maxDocs = (int) ($cfg['max_docs_hint'] ?? 3);
         $maxChars = (int) ($cfg['max_chars_per_doc'] ?? 4000);
-        $weight   = (float)($cfg['weight'] ?? 2.0);
+        $weight = (float) ($cfg['weight'] ?? 2.0);
 
         /** @var \Illuminate\Support\Collection<int,ExamDocument> $docs */
         $docs = $exam->documents()
@@ -474,12 +468,13 @@ class ExamResearchService extends AbstractAiService
             if (mb_strlen($text) > $maxChars) {
                 $text = mb_substr($text, 0, $maxChars).' … [truncated]';
             }
+
             return [
-                'id'         => (string) $d->id,
-                'name'       => (string) ($d->original_name ?? ('document-'.$d->id)),
-                'text'       => $text,
+                'id' => (string) $d->id,
+                'name' => (string) ($d->original_name ?? ('document-'.$d->id)),
+                'text' => $text,
                 'provenance' => 'document',
-                'weight'     => $weight,
+                'weight' => $weight,
             ];
         })->values()->all();
     }
@@ -493,7 +488,9 @@ class ExamResearchService extends AbstractAiService
 
         if (is_string($raw)) {
             $d = json_decode($raw, true);
-            if (is_array($d)) return $d;
+            if (is_array($d)) {
+                return $d;
+            }
         }
 
         if (is_array($raw)) {
@@ -515,24 +512,23 @@ class ExamResearchService extends AbstractAiService
         $overview = $decoded;
 
         // sections — обязательны для остального пайплайна
-        if (empty($overview['sections']) || !is_array($overview['sections'])) {
+        if (empty($overview['sections']) || ! is_array($overview['sections'])) {
             $overview['sections'] = [
-                ['key'=>'listening','title'=>'Listening','count'=>20,'time_per_question_sec'=>30,'prep_time_sec'=>0,'notes'=>''],
-                ['key'=>'reading','title'=>'Reading','count'=>20,'time_per_question_sec'=>45,'prep_time_sec'=>0,'notes'=>''],
+                ['key' => 'listening', 'title' => 'Listening', 'count' => 20, 'time_per_question_sec' => 30, 'prep_time_sec' => 0, 'notes' => ''],
+                ['key' => 'reading', 'title' => 'Reading', 'count' => 20, 'time_per_question_sec' => 45, 'prep_time_sec' => 0, 'notes' => ''],
             ];
         }
 
         // total_score
-        if (empty($overview['total_score']) || !is_array($overview['total_score'])) {
-            $overview['total_score'] = ['min'=>0,'max'=>100];
+        if (empty($overview['total_score']) || ! is_array($overview['total_score'])) {
+            $overview['total_score'] = ['min' => 0, 'max' => 100];
         }
 
         // sources может быть пустым — мы позже добавим doc/web
-        if (!isset($overview['sources']) || !is_array($overview['sources'])) {
+        if (! isset($overview['sources']) || ! is_array($overview['sources'])) {
             $overview['sources'] = [];
         }
 
         return $overview;
     }
-
 }

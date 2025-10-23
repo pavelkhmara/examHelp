@@ -2,10 +2,10 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Factories\HasFactory;
-use Illuminate\Database\Eloquent\Model;
 use App\Domain\Questions\Validation\QuestionPayloadValidator;
 use App\Domain\Taxonomy\QuestionType;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Model;
 
 class ExamExampleQuestion extends Model
 {
@@ -20,11 +20,11 @@ class ExamExampleQuestion extends Model
     ];
 
     protected $casts = [
-        'good_answer'      => 'json',
-        'average_answer'   => 'json',
-        'bad_answer'       => 'json',
+        'good_answer' => 'json',
+        'average_answer' => 'json',
+        'bad_answer' => 'json',
         'rubric_breakdown' => 'json',
-        'payload'          => 'json',
+        'payload' => 'json',
         'type' => QuestionType::class,
     ];
 
@@ -39,26 +39,25 @@ class ExamExampleQuestion extends Model
     }
 
     protected static function booted(): void
-{
-    static::saving(function (self $model) {
-        // ВСЕГДА берём строковое значение типа
-        $val = is_string($model->type) ? $model->type : ($model->type?->value ?? null);
+    {
+        static::saving(function (self $model) {
+            // ВСЕГДА берём строковое значение типа
+            $val = is_string($model->type) ? $model->type : ($model->type?->value ?? null);
 
-        $type = (string) ($val ?? '');
+            $type = (string) ($val ?? '');
 
-        $payload = (array) ($model->payload ?? []);
+            $payload = (array) ($model->payload ?? []);
 
-        // строгая валидация payload под тип
-        QuestionPayloadValidator::validate($type, $payload);
+            // строгая валидация payload под тип
+            QuestionPayloadValidator::validate($type, $payload);
 
-        if (!in_array($val, QuestionType::all(), true)) {
-            throw new \InvalidArgumentException("Unknown question type: ".($val ?? 'null'));
-        }
+            if (! in_array($val, QuestionType::all(), true)) {
+                throw new \InvalidArgumentException('Unknown question type: '.($val ?? 'null'));
+            }
 
-        // если у тебя ниже есть присваивания, оставь как было
-        $model->type    = $val;
-        $model->payload = $payload;
-    });
-}
-
+            // если у тебя ниже есть присваивания, оставь как было
+            $model->type = $val;
+            $model->payload = $payload;
+        });
+    }
 }

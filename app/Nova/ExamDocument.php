@@ -32,7 +32,7 @@ class ExamDocument extends Resource
             Text::make('Status', 'status')->sortable(),
             Text::make('Error', 'error')->hideFromIndex(),
             Code::make('Extracted Text', 'extracted_text')->hideFromIndex(),
-            Code::make('Meta', 'meta')->json()->resolveUsing(fn($v)=> is_string($v)?$v:json_encode($v, JSON_PRETTY_PRINT|JSON_UNESCAPED_UNICODE))->hideFromIndex(),
+            Code::make('Meta', 'meta')->json()->resolveUsing(fn ($v) => is_string($v) ? $v : json_encode($v, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE))->hideFromIndex(),
             DateTime::make('Created', 'created_at')->onlyOnDetail(),
             DateTime::make('Updated', 'updated_at')->onlyOnDetail(),
             BelongsTo::make('Generation Task', 'generationTask', GenerationTaskResource::class)

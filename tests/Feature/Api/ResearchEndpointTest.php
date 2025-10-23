@@ -17,7 +17,7 @@ class ResearchEndpointTest extends TestCase
     {
         // Отключаем Authenticate на время теста, чтобы не ловить 401
         $this->withoutMiddleware(\Illuminate\Auth\Middleware\Authenticate::class);
-        
+
         Queue::fake();
 
         $exam = Exam::query()->create([
@@ -32,7 +32,7 @@ class ResearchEndpointTest extends TestCase
             'notes' => 'Chcę zdać egzamin B2',
         ]);
 
-        $res->assertStatus(202)->assertJsonStructure(['task_id','status']);
+        $res->assertStatus(202)->assertJsonStructure(['task_id', 'status']);
 
         Queue::assertPushed(RunExamResearchJob::class);
     }

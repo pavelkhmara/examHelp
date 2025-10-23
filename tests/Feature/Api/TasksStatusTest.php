@@ -14,7 +14,7 @@ class TasksStatusTest extends TestCase
     {
         // Отключаем Authenticate на время теста
         $this->withoutMiddleware(\Illuminate\Auth\Middleware\Authenticate::class);
-        
+
         $task = GenerationTask::query()->create([
             'exam_id' => null,
             'type' => 'exam.research',

@@ -1,12 +1,12 @@
 <?php
 
-use App\Http\Controllers\Api\StructureController;
-use App\Http\Controllers\Api\ScoringController;
 use App\Http\Controllers\Api\DocumentController;
-use App\Http\Controllers\LanguageApp\ExamController;
-use App\Http\Controllers\Api\ExamResearchController;
-use App\Http\Controllers\Api\TasksController;
 use App\Http\Controllers\Api\EvaluationController;
+use App\Http\Controllers\Api\ExamController;
+use App\Http\Controllers\Api\ExamResearchController;
+use App\Http\Controllers\Api\ScoringController;
+use App\Http\Controllers\Api\StructureController;
+use App\Http\Controllers\Api\TasksController;
 use App\Models\Exam;
 use App\Models\GenerationLog;
 use App\Models\GenerationTask;
@@ -23,8 +23,28 @@ Route::get('/health', function () {
     return response()->json(['status' => 'ok']);
 });
 
+// Route::get('/exams', [ExamController::class, 'index'])->name('exams.index');
+// Route::get('/exams/{exam}', [ExamController::class, 'show'])->name('exams.show');
+
+// Route::post('/exams/{id}/research', [ExamResearchController::class, 'research'])
+//     ->withoutMiddleware([\Illuminate\Auth\Middleware\Authenticate::class, 'auth:sanctum']);
+
+// Route::get('/tasks/{id}', [TasksController::class, 'show'])
+//     ->withoutMiddleware([\Illuminate\Auth\Middleware\Authenticate::class, 'auth:sanctum']);
+
+// Route::get('/exams/{exam}/structure', [StructureController::class, 'show'])
+//     ->withoutMiddleware(['auth', 'auth:sanctum', Authenticate::class])
+//     ->name('exams.structure');
+
+// Route::post('/score/preview', [ScoringController::class, 'preview'])
+//     ->withoutMiddleware(['auth', 'auth:sanctum', Authenticate::class])
+//     ->name('score.preview');
+
+// Route::post('/evaluate/text', [EvaluationController::class, 'evaluateText'])
+//     ->withoutMiddleware(['auth', 'auth:sanctum', \Laravel\Nova\Http\Middleware\Authenticate::class])
+//     ->name('evaluate.text');
+
 Route::middleware('auth:sanctum')->group(function () {
-    
 
     Route::get('/me', function (Request $request) {
         $u = $request->user();
@@ -48,7 +68,7 @@ Route::post('/exams/{id}/research', [ExamResearchController::class, 'research'])
 
 Route::get('/tasks/{id}', [TasksController::class, 'show'])
     ->withoutMiddleware([\Illuminate\Auth\Middleware\Authenticate::class, 'auth:sanctum']);
-    
+
 Route::get('/exams/{exam}/structure', [StructureController::class, 'show'])
     ->withoutMiddleware(['auth', 'auth:sanctum', Authenticate::class])
     ->name('exams.structure');

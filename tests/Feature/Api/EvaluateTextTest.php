@@ -5,7 +5,6 @@ namespace Tests\Feature\Api;
 use App\Models\Exam;
 use App\Models\ExamCategory;
 use App\Models\ExamExampleQuestion;
-use App\Models\GenerationTask;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
@@ -16,15 +15,15 @@ class EvaluateTextTest extends TestCase
     public function test_sync_text_evaluation_returns_score_and_rubric(): void
     {
         $exam = Exam::factory()->create(['is_active' => true]);
-        $cat  = ExamCategory::factory()->create(['exam_id' => $exam->id]);
+        $cat = ExamCategory::factory()->create(['exam_id' => $exam->id]);
 
         $ex = ExamExampleQuestion::factory()->create([
-            'exam_id'          => $exam->id,
+            'exam_id' => $exam->id,
             'exam_category_id' => $cat->id,
         ]);
 
         $resp = $this->postJson('/api/evaluate/text', [
-            'exam_id'     => $exam->id,
+            'exam_id' => $exam->id,
             'category_id' => $cat->id,
             'question_id' => $ex->id,
             'answer_text' => 'I usually wake up at seven and go to work by bus.',
@@ -45,9 +44,9 @@ class EvaluateTextTest extends TestCase
         $exam = Exam::factory()->create(['is_active' => true]);
 
         $resp = $this->postJson('/api/evaluate/text', [
-            'exam_id'     => $exam->id,
+            'exam_id' => $exam->id,
             'answer_text' => 'Short text',
-            'async'       => true,
+            'async' => true,
         ])->assertStatus(202)->json();
 
         $this->assertTrue($resp['ok']);
@@ -55,8 +54,8 @@ class EvaluateTextTest extends TestCase
         $this->assertNotEmpty($resp['task_id']);
 
         $this->assertDatabaseHas('generation_tasks', [
-            'id'     => $resp['task_id'],
-            'type'   => 'evaluate_text',
+            'id' => $resp['task_id'],
+            'type' => 'evaluate_text',
             'status' => 'queued',
         ]);
     }

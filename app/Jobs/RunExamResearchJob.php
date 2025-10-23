@@ -2,6 +2,7 @@
 
 namespace App\Jobs;
 
+use App\Jobs\Traits\InteractsWithGenerationTask;
 use App\Models\Exam;
 use App\Models\GenerationTask;
 use App\Services\LanguageApp\ExamResearchService;
@@ -12,11 +13,9 @@ use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Queue\SerializesModels;
 use Illuminate\Support\Facades\Log;
 
-use App\Jobs\Traits\InteractsWithGenerationTask;
-
 class RunExamResearchJob implements ShouldQueue
 {
-    use Dispatchable, InteractsWithQueue, Queueable, SerializesModels, InteractsWithGenerationTask;
+    use Dispatchable, InteractsWithGenerationTask, InteractsWithQueue, Queueable, SerializesModels;
 
     public int $taskId;
 
@@ -63,7 +62,7 @@ class RunExamResearchJob implements ShouldQueue
         try {
             // exam_id обязателен для pipeline исследования
             $exam = $task->exam ?? null;
-            if (!$exam instanceof Exam) {
+            if (! $exam instanceof Exam) {
                 throw new \RuntimeException('Exam not found for GenerationTask '.$task->id);
             }
 

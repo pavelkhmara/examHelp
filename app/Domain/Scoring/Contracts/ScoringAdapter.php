@@ -1,18 +1,24 @@
 <?php
-declare(strict_types=1);
 
 namespace App\Domain\Scoring\Contracts;
 
 use App\Domain\Scoring\Score;
 
 /**
- * Базовый контракт адаптера скоринга.
+ * Унифицированный контракт скоринга: адаптер валидирует свой конфиг
+ * и возвращает объект Score (а не массив/булевы значения).
  */
 interface ScoringAdapter
 {
     /**
-     * @param array<string,mixed> $payload  Канонический payload задания (ожидаемые ответы и т.п.)
-     * @param mixed $userAnswer             Ответ пользователя в формате, ожидаемом адаптером
+     * Базовая проверка (и нормализация при необходимости) секции scoring.
+     * Бросает ValidationException/InvalidArgumentException при проблемах.
      */
-    public function score(array $payload, mixed $userAnswer): Score;
+    public function validateConfig(array $scoring): void;
+
+    /**
+     * @param  array  $task  Нормализованный task-айтем (type+payload/items part)
+     * @param  mixed  $userAnswer  Нормализованный ответ пользователя
+     */
+    public function score(array $task, mixed $userAnswer): Score;
 }

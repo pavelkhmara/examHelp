@@ -6,20 +6,18 @@ use App\Models\Exam;
 use App\Models\GenerationTask;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Log;
-use Illuminate\Support\Str;
 
 class TaskDispatcher
 {
     /**
      * Поставить задачу в очередь с единым контрактом и идемпотентностью.
      *
-     * @param  string $type         Логический тип задачи (например, 'exam.research')
-     * @param  Model|null $subject  Субъект (Exam/Category/...), можно null
-     * @param  array $request       Произвольный request-пэйлоад для трассировки/повторов
-     * @param  class-string $jobClass Класс джобы (implements ShouldQueue), __construct(int $taskId)
-     * @param  string|null $idempotencyKey Уникальный ключ (если повторная постановка недопустима)
-     * @param  string|null $queue    Имя очереди (опционально)
-     * @return GenerationTask
+     * @param  string  $type  Логический тип задачи (например, 'exam.research')
+     * @param  Model|null  $subject  Субъект (Exam/Category/...), можно null
+     * @param  array  $request  Произвольный request-пэйлоад для трассировки/повторов
+     * @param  class-string  $jobClass  Класс джобы (implements ShouldQueue), __construct(int $taskId)
+     * @param  string|null  $idempotencyKey  Уникальный ключ (если повторная постановка недопустима)
+     * @param  string|null  $queue  Имя очереди (опционально)
      */
     public function enqueue(
         string $type,
@@ -39,19 +37,19 @@ class TaskDispatcher
                 ->latest('id')
                 ->first();
 
-            if ($existing && in_array($existing->status, ['queued','running','completed'], true)) {
+            if ($existing && in_array($existing->status, ['queued', 'running', 'completed'], true)) {
                 return $existing;
             }
         }
 
         $task = GenerationTask::create([
-            'exam_id'         => $examId,
-            'type'            => $type,
-            'status'          => 'queued',
-            'request'         => $request,
-            'attempts'        => 0,
-            'result'          => null,
-            'error'           => null,
+            'exam_id' => $examId,
+            'type' => $type,
+            'status' => 'queued',
+            'request' => $request,
+            'attempts' => 0,
+            'result' => null,
+            'error' => null,
             'idempotency_key' => $idempotencyKey,
         ]);
 

@@ -26,7 +26,6 @@ final class QuestionTypeContract
         'speaking_prompt',
     ];
 
-    /** @return bool */
     public static function isAllowed(string $type): bool
     {
         return in_array($type, self::WHITELIST, true);

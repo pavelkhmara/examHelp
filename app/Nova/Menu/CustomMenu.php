@@ -21,27 +21,28 @@ class CustomMenu extends Tool
     {
         return [
             // Главное меню "Exams" с выпадающим списком всех экзаменов
-            MenuSection::make('Exams', $this->createExamsSubmenu())
-                ->icon('book')
-                ->collapsable(),
+            // MenuSection::make('Exams', $this->createExamsSubmenu())
+            //     ->icon('book')
+            //     ->collapsable(),
 
             // Отдельные разделы для всех сущностей
-            MenuSection::make('data', [
-                MenuItem::resource(\App\Nova\ExamCategory::class)
-                    ->name('All Categories'),
-                MenuItem::resource(\App\Nova\ExamExampleQuestion::class)
-                    ->name('All Example Questions'),
-                MenuItem::resource(\App\Nova\GenerationTask::class)
-                    ->name('All Generation Tasks'),
-                MenuItem::resource(\App\Nova\GenerationLog::class)
-                    ->name('All Generation Logs'),
-                MenuItem::resource(\App\Nova\ExamDocument::class)
-                    ->name('All Documents'),
+            // MenuSection::make('data', [
+            MenuItem::resource(\App\Nova\Exam::class)
+                ->name('Exams'),
+            MenuItem::resource(\App\Nova\ExamCategory::class)
+                ->name('All Categories'),
+            MenuItem::resource(\App\Nova\ExamExampleQuestion::class)
+                ->name('All Example Questions'),
+            MenuItem::resource(\App\Nova\GenerationTask::class)
+                ->name('All Generation Tasks'),
+            MenuItem::resource(\App\Nova\GenerationLog::class)
+                ->name('All Generation Logs'),
+            MenuItem::resource(\App\Nova\ExamDocument::class)
+                ->name('All Documents'),
 
-
-            ])
-                ->icon('document-text')
-                ->collapsable(),
+            // ])
+            //     ->icon('document-text')
+            //     ->collapsable(),
         ];
     }
 

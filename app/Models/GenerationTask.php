@@ -9,7 +9,7 @@ use Illuminate\Database\Eloquent\Relations\MorphTo;
 class GenerationTask extends Model
 {
     protected $fillable = [
-        'exam_id', 'type', 'status', 
+        'exam_id', 'type', 'status',
         'request', 'response', 'result',
         'error', 'attempts',
         'idempotency_key',

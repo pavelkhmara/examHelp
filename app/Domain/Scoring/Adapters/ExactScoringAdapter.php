@@ -1,85 +1,49 @@
 <?php
-declare(strict_types=1);
 
 namespace App\Domain\Scoring\Adapters;
 
 use App\Domain\Scoring\Contracts\ScoringAdapter;
 use App\Domain\Scoring\Score;
 
-/**
- * ExactScoringAdapter — полное совпадение.
- * Возвращает auto_gradable=true, total ∈ [0..1].
- */
 final class ExactScoringAdapter implements ScoringAdapter
 {
-    /**
-     * @param array<string,mixed> $payload
-     * @param mixed $userAnswer
-     */
-    public function score(array $payload, mixed $userAnswer): Score
+    public function validateConfig(array $scoring): void
     {
-        // Одиночный ответ (строка/число/булево)
-        if (\array_key_exists('answer', $payload)) {
-            $expected = $payload['answer'];
-            $ok = $this->scalarEqual($userAnswer, $expected);
-            return new Score(true, $ok ? 1.0 : 0.0, []);
-        }
+        // exact — без обязательных полей
+    }
 
-        // Набор ответов (мультиселект, сопоставления и т.п.)
-        if (\array_key_exists('answers', $payload) && \is_array($payload['answers'])) {
-            $expected = $payload['answers'];
-            $perItem = [];
+    public function score(array $task, mixed $userAnswer): Score
+    {
+        // поддержим два распространенных кейса:
+        // 1) single_select: options[ {id,is_correct} ], userAnswer['selected_option_id']
+        // 2) exact текст/число: answer_key в $task['answer_key'] против userAnswer['text'] | ['value']
+        $type = (string) ($task['type'] ?? '');
+        $total = 1;
+        $got = 0;
 
-            if (\is_array($userAnswer)) {
-                // item-wise точность, если ответы ассоц.массивом
-                foreach ($expected as $key => $val) {
-                    $hit = (isset($userAnswer[$key]) && $this->scalarEqual($userAnswer[$key], $val)) ? 1.0 : 0.0;
-                    $perItem[] = $hit;
+        if (in_array($type, ['single_select', 'true_false', 'yes_no_ng', 'dropdown_cloze', 'banked_cloze'], true)) {
+            $selected = $userAnswer['selected_option_id'] ?? null;
+            $correctId = null;
+
+            // поиск правильного варианта (options с is_correct)
+            foreach ((array) ($task['options'] ?? $task['items'][0]['options'] ?? []) as $opt) {
+                if (! empty($opt['is_correct'])) {
+                    $correctId = $opt['id'] ?? null;
+                    break;
                 }
             }
+            $got = ($selected !== null && $correctId !== null && (string) $selected === (string) $correctId) ? 1 : 0;
 
-            $total = 0.0;
-            if ($perItem !== []) {
-                $total = \array_sum($perItem) / \max(1, \count($perItem));
-            } else {
-                // иначе — строгое равенство массивов
-                $total = ($this->arrayLooseEqual($userAnswer, $expected)) ? 1.0 : 0.0;
-            }
-
-            return new Score(true, $total, $perItem);
+            return new Score($total, $got, true);
         }
 
-        // Фоллбэк
-        return new Score(true, 0.0, []);
-    }
-
-    private function scalarEqual($a, $b): bool
-    {
-        if (\is_bool($a) || \is_bool($b)) {
-            return (bool)$a === (bool)$b;
-        }
-        return (string)$a === (string)$b;
-    }
-
-    /**
-     * "Мягкое" сравнение массивов (без учёта порядка для списков).
-     * @param mixed $given
-     * @param mixed $expected
-     */
-    private function arrayLooseEqual($given, $expected): bool
-    {
-        if (!\is_array($given) || !\is_array($expected)) {
-            return false;
-        }
-        $isList = static fn(array $arr): bool => array_keys($arr) === range(0, count($arr) - 1);
-
-        if ($isList($given) && $isList($expected)) {
-            $a = $given; $b = $expected;
-            sort($a); sort($b);
-            return $a === $b;
+        // exact для короткого ответа
+        $expected = $task['answer_key'] ?? $task['items'][0]['answer_key'] ?? null;
+        $ua = is_array($userAnswer) ? ($userAnswer['text'] ?? $userAnswer['value'] ?? null) : $userAnswer;
+        if ($expected !== null && $ua !== null && trim((string) $expected) === trim((string) $ua)) {
+            $got = 1;
         }
 
-        ksort($given); ksort($expected);
-        return $given === $expected;
+        return new Score($total, $got, true);
     }
 }
