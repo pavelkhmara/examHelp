@@ -56,11 +56,17 @@ Route::middleware('auth:sanctum')->group(function () {
         ]);
     });
 
+    Route::post('/exams', [ExamController::class, 'store'])
+        ->name('exams.store');
+
     Route::post('/exams/{exam}/documents', [DocumentController::class, 'store'])
         ->name('exams.documents.store');
 
     Route::get('/documents/{document}', [DocumentController::class, 'show'])
         ->name('documents.show');
+
+    Route::post('/exams/{examId}/research/{taskId}/confirm-identity', [ExamResearchController::class, 'confirmIdentity'])
+        ->name('exams.research.confirm-identity');
 });
 
 Route::post('/exams/{id}/research', [ExamResearchController::class, 'research'])

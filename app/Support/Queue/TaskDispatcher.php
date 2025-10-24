@@ -37,8 +37,31 @@ class TaskDispatcher
                 ->latest('id')
                 ->first();
 
+            // Return existing task if it's still processing or already completed
+            // But allow retry if it's pending_confirmation or pending_clarification (waiting for user)
             if ($existing && in_array($existing->status, ['queued', 'running', 'completed'], true)) {
                 return $existing;
+            }
+        }
+
+        // Also check for recent tasks of same type for this exam (to prevent rapid duplicates)
+        if ($examId) {
+            $recent = GenerationTask::query()
+                ->where('exam_id', $examId)
+                ->where('type', $type)
+                ->whereIn('status', ['queued', 'running'])
+                ->where('created_at', '>', now()->subMinutes(5))
+                ->latest('id')
+                ->first();
+
+            if ($recent && ! $idempotencyKey) {
+                Log::info('[TaskDispatcher] skipping duplicate task', [
+                    'type' => $type,
+                    'exam_id' => $examId,
+                    'existing_task_id' => $recent->id,
+                ]);
+
+                return $recent;
             }
         }
 
