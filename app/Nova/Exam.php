@@ -2,7 +2,8 @@
 
 namespace App\Nova;
 
-use App\Nova\Actions\ImportAiStructure;
+use App\Nova\Actions\ConfirmIdentityAction;
+use App\Nova\Actions\ProvideAnswersAction;
 use App\Nova\Actions\ResearchAction;
 use Laravel\Nova\Fields\Badge;
 use Laravel\Nova\Fields\Boolean;
@@ -12,6 +13,7 @@ use Laravel\Nova\Fields\ID;
 use Laravel\Nova\Fields\Number;
 use Laravel\Nova\Fields\Select;
 use Laravel\Nova\Fields\Text;
+use Laravel\Nova\Fields\Textarea;
 use Laravel\Nova\Http\Requests\NovaRequest;
 use Laravel\Nova\Panel;
 
@@ -35,9 +37,19 @@ class Exam extends Resource
 
     public static $group = 'Language App';
 
+    public static function indexQuery(NovaRequest $request, $query)
+    {
+        return $query->orderBy('created_at', 'desc');
+    }
+
+    public static function refreshInterval()
+    {
+        return 5; // seconds - auto-refresh detail page
+    }
+
     public function fields(NovaRequest $request)
     {
-        return [
+        $fields = [
             ID::make()->sortable()->hideFromIndex(),
             Text::make('ID', 'id')->onlyOnIndex(),
             Text::make('Slug')->rules('required')->sortable(),
@@ -46,26 +58,77 @@ class Exam extends Resource
                 'A1' => 'A1', 'A2' => 'A2', 'B1' => 'B1', 'B2' => 'B2', 'C1' => 'C1', 'C2' => 'C2',
             ])->displayUsingLabels()->sortable(),
             Boolean::make('Is Active'),
-            Select::make('Research Status', 'research_status')
-                ->options([
-                    'queued' => 'queued',
-                    'running_overview' => 'running_overview',
-                    'completed' => 'completed',
-                    'failed' => 'failed',
+            Badge::make('Research Status', 'research_status')
+                ->map([
+                    'queued' => 'info',
+                    'running' => 'warning',
+                    'running_overview' => 'warning',
+                    'completed' => 'success',
+                    'failed' => 'danger',
                 ])
-                ->displayUsingLabels()
-                ->readonly()
+                ->labels([
+                    'queued' => 'Queued',
+                    'running' => 'Running',
+                    'running_overview' => 'In Progress',
+                    'completed' => 'Completed',
+                    'failed' => 'Failed',
+                ])
                 ->sortable(),
-            Number::make('Categories Count')->readonly(),
-            Number::make('Examples Count')->readonly(),
+        ];
 
-            // Компактная структура для быстрой навигации
-            new Panel('Exam Structure', [
-                // Читаемый список секций и шагов
+        // Показываем счетчики только если есть данные
+        if ($this->categories_count > 0) {
+            $fields[] = Number::make('Categories', 'categories_count')->onlyOnIndex();
+        }
+        if ($this->examples_count > 0) {
+            $fields[] = Number::make('Examples', 'examples_count')->onlyOnIndex();
+        }
+
+        return array_merge($fields, $this->getConditionalFields());
+    }
+
+    /**
+     * Условные поля в зависимости от стадии исследования
+     */
+    private function getConditionalFields(): array
+    {
+        $fields = [];
+        $task = $this->generationTasks()->latest()->first();
+        $identity = $task ? ($task->result['identity'] ?? null) : null;
+
+        // ============== STAGE 1: Identity Verification ==============
+        if ($task && $identity) {
+            $fields[] = new Panel('🔍 Stage 1: Identity Verification', $this->buildIdentityFields($task, $identity));
+
+            // Показываем вопросы, если они есть
+            if (! empty($identity['followups']) || ! empty($identity['need_fields'])) {
+                $fields[] = $this->buildFollowupPanel($identity, $task);
+            }
+
+            // Показываем "Why We Trust" только если identity есть
+            $fields[] = new Panel('📋 Trust Reasons', [
+                Code::make('Why We Trust This Identity')
+                    ->resolveUsing(function () use ($identity) {
+                        return $this->buildTrustReasons($identity);
+                    })
+                    ->onlyOnDetail(),
+            ]);
+        }
+
+        // ============== STAGE 2: Overview & Structure ==============
+        if ($this->research_status === 'completed' && $this->structure_sections) {
+            $fields[] = new Panel('📚 Stage 2: Exam Structure', [
+                Number::make('Categories Count', 'categories_count')->onlyOnDetail(),
+                Number::make('Total Exam Duration (min)', 'total_exam_duration')->onlyOnDetail(),
+                Number::make('Total Tokens Used')
+                    ->resolveUsing(function () {
+                        return $this->generationLogs()->sum('total_tokens');
+                    })
+                    ->onlyOnDetail(),
+
                 Code::make('Sections (compact)')
                     ->resolveUsing(function () {
                         $sections = $this->structure_sections ?? [];
-                        // оставим по названию и шагам с порядком/длительностью
                         $compact = array_map(function ($s) {
                             return [
                                 'name' => $s['name'] ?? $s['key'] ?? '',
@@ -83,215 +146,306 @@ class Exam extends Resource
                     ->json()
                     ->onlyOnDetail(),
 
-                // Полный JSON структуры (для отладки/экспорта)
-                Code::make('Exam Structure JSON')
+                Code::make('Full Structure JSON')
                     ->json(JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT)
-                    ->resolveUsing(fn () => json_encode($this->exam_structure ?? (object) [], JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT))
+                    ->resolveUsing(fn () => json_encode($this->exam_structure ?? [], JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT))
                     ->onlyOnDetail(),
-            ]),
+            ]);
+        }
 
-            // Статус ресёрча и основные числа
-            new Panel('Overview', [
-                Badge::make('Research Status', 'research_status')
-                    ->map([
-                        'queued' => 'info',
-                        'processing' => 'warning',
-                        'running_overview' => 'warning',
-                        'running' => 'warning',
-                        'failed' => 'danger',
-                        'error' => 'danger',
-                        'completed' => 'success',
-                        'succeeded' => 'success',
-                    ])
-                    ->labels([
-                        'queued' => 'New',
-                        'running_overview' => 'In Progress',
-                        'processing' => 'Processing',
-                        'completed' => 'Completed',
-                        'failed' => 'Failed',
-                        'running' => 'Running',
-                        'error' => 'Error',
-                        'succeeded' => 'Succeeded',
-                    ])
-                    ->onlyOnDetail(),
+        // ============== STAGE 3: Categories (если есть) ==============
+        if ($this->categories_count > 0) {
+            $fields[] = HasMany::make('Categories', 'categories', ExamCategory::class);
+        }
 
-                Number::make('Categories Count', 'categories_count')
-                    ->onlyOnDetail(),
+        // ============== STAGE 4: Examples (если есть) ==============
+        if ($this->examples_count > 0) {
+            $fields[] = HasMany::make('Examples', 'examples', ExamExampleQuestion::class);
+        }
 
-                Number::make('Total Exam Duration (min)', 'total_exam_duration')
-                    ->onlyOnDetail(),
-            ]),
-
-            // Источники: показываем как JSON (читаемо)
-            new Panel('Sources', [
+        // ============== Sources (если есть) ==============
+        if (! empty($this->sources)) {
+            $fields[] = new Panel('📚 Sources', [
                 Code::make('Sources JSON')
                     ->json(JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT)
                     ->resolveUsing(fn () => json_encode($this->sources ?? [], JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT))
                     ->onlyOnDetail(),
-            ]),
+            ]);
+        }
 
-            Code::make('Exam Overview')
-                ->resolveUsing(function () {
-                    $task = $this->generationTasks()->latest()->first();
-                    if ($task && $task->result) {
-                        $result = $task->result;
+        // ============== Generation Logs (всегда показываем, если есть) ==============
+        $fields[] = new Panel('🔧 Generation Pipeline', [
+            HasMany::make('Generation Tasks', 'generationTasks', \App\Nova\GenerationTask::class),
+            HasMany::make('Generation Logs', 'generationLogs', \App\Nova\GenerationLog::class),
+        ]);
 
-                        $overview = [
-                            'exam_name' => $result['exam_name'] ?? 'Unknown',
-                            'sources_count' => count($result['sources'] ?? []),
-                            'archetypes_count' => count($result['archetypes'] ?? []),
-                            'categories_covered' => $this->extractCategories($result['archetypes'] ?? []),
-                        ];
+        return $fields;
+    }
 
-                        if ($task->error !== null) {
-                            $overview['error'] = $task->error;
-                        }
+    /**
+     * Построить поля Identity Verification
+     */
+    private function buildIdentityFields($task, $identity): array
+    {
+        $fields = [
+            Badge::make('Task Status')
+                ->resolveUsing(fn () => $task->status)
+                ->map([
+                    'queued' => 'info',
+                    'running' => 'warning',
+                    'pending_confirmation' => 'warning',
+                    'pending_clarification' => 'warning',
+                    'completed' => 'success',
+                    'failed' => 'danger',
+                ])
+                ->labels([
+                    'queued' => 'Queued',
+                    'running' => 'Running',
+                    'pending_confirmation' => '⏸ Waiting for Confirmation',
+                    'pending_clarification' => '⏸ Needs Clarification',
+                    'completed' => 'Completed',
+                    'failed' => 'Failed',
+                ])
+                ->onlyOnDetail(),
 
-                        return json_encode($overview, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE);
+            Badge::make('Identity Status')
+                ->resolveUsing(fn () => $identity['status'] ?? 'unknown')
+                ->map([
+                    'certain' => 'success',
+                    'uncertain' => 'warning',
+                    'unknown' => 'danger',
+                ])
+                ->labels([
+                    'certain' => '✓ Certain',
+                    'uncertain' => '? Uncertain',
+                    'unknown' => 'Unknown',
+                ])
+                ->onlyOnDetail(),
+
+            Badge::make('Confidence')
+                ->resolveUsing(function () use ($identity) {
+                    $conf = $identity['confidence'] ?? 0;
+                    $percent = number_format($conf * 100, 0);
+
+                    // Определяем тип на основе процента
+                    if ($percent >= 90) {
+                        $type = 'high';
+                    } elseif ($percent >= 70) {
+                        $type = 'medium-high';
+                    } elseif ($percent >= 50) {
+                        $type = 'medium';
+                    } else {
+                        $type = 'low';
                     }
 
-                    return 'No research data available';
+                    return $type;
                 })
-                ->readonly()
-                ->hideFromIndex(),
-
-            // Сводка по секциям/категориям/шагам
-            Code::make('Exam Structure')
-                ->resolveUsing(function () {
-                    $task = $this->generationTasks()->latest()->first();
-                    if ($task && $task->result && isset($task->result['archetypes'])) {
-                        return $this->generateSectionSummary($task->result['archetypes']);
-                    }
-
-                    return 'No section data available';
-                })
-                ->readonly()
-                ->hideFromIndex(),
-
-            // Детальные архетипы
-            Code::make('Question Archetypes')
-                ->resolveUsing(function () {
-                    $task = $this->generationTasks()->latest()->first();
-                    if ($task && $task->result && isset($task->result['archetypes'])) {
-                        $archetypes = collect($task->result['archetypes'])->map(function ($archetype) {
-                            return [
-                                'name' => $archetype['name'],
-                                'category' => $this->getPrimaryCategory($archetype['category_weights'] ?? ['empty']),
-                                'difficulty' => $archetype['difficulty'] ?? 'no difficulty',
-                                'description' => $archetype['description'] ?? 'no description',
-                            ];
-                        })->toArray();
-
-                        return json_encode($archetypes, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE);
-                    }
-
-                    return 'No archetype data available';
-                })
-                ->readonly()
-                ->hideFromIndex(),
-
-            // Источники исследования
-            Code::make('Research Sources')
-                ->resolveUsing(function () {
-                    $task = $this->generationTasks()->latest()->first();
-                    if ($task && $task->result && isset($task->result['sources'])) {
-                        $sources = collect($task->result['sources'])->map(function ($source) {
-                            return [
-                                'title' => $source['title'],
-                                'publisher' => $source['publisher'],
-                                'url' => $source['url'],
-                            ];
-                        })->toArray();
-
-                        return json_encode($sources, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE);
-                    }
-
-                    return 'No source data available';
-                })
-                ->readonly()
-                ->hideFromIndex(),
-
-            // Code::make('Meta')
-            //     ->json()
-            //     ->resolveUsing(fn ($v) => is_string($v) ? $v : json_encode($v, JSON_PRETTY_PRINT|JSON_UNESCAPED_UNICODE))
-            //     ->fillUsing(function ($request, $model, $attribute, $requestAttribute) {
-            //         $model->$attribute = json_decode($request->$requestAttribute ?: 'null', true);
-            //     })
-            //     ->hideFromIndex(),
-
-            HasMany::make('Categories', 'categories', ExamCategory::class),
-            HasMany::make('Examples', 'examples', ExamExampleQuestion::class),
-            HasMany::make('Generation Tasks', 'generationTasks', GenerationTask::class),
-            // HasMany::make('Generation Logs', 'generationLogs', GenerationLog::class),
-            // Генерация — чтобы сразу видеть пайплайн
-            new Panel('Generation', [
-                HasMany::make('Generation Tasks', 'generationTasks', \App\Nova\GenerationTask::class),
-                HasMany::make('Generation Logs', 'generationLogs', \App\Nova\GenerationLog::class),
-            ]),
+                ->map([
+                    'high' => 'success',
+                    'medium-high' => 'info',
+                    'medium' => 'warning',
+                    'low' => 'danger',
+                ])
+                ->labels([
+                    'high' => '90%+',
+                    'medium-high' => '70-89%',
+                    'medium' => '50-69%',
+                    'low' => '0-49%',
+                ])
+                ->onlyOnDetail(),
         ];
+
+        // Add disclaimer if auto-confirmed or auto-clarified
+        if ($identity['auto_confirmed'] ?? false) {
+            $fields[] = Badge::make('Auto-Confirmed')
+                ->resolveUsing(fn () => '⚠️ AI Auto-Confirmed')
+                ->map(['⚠️ AI Auto-Confirmed' => 'warning'])
+                ->onlyOnDetail();
+
+            $fields[] = Textarea::make('AI Disclaimer')
+                ->resolveUsing(fn () => $identity['disclaimer'] ?? 'Identity auto-confirmed by AI without user confirmation')
+                ->readonly()
+                ->rows(2)
+                ->onlyOnDetail()
+                ->help('This exam structure was generated without user confirmation');
+        }
+
+        if ($identity['auto_clarified'] ?? false) {
+            $fields[] = Badge::make('Auto-Clarified')
+                ->resolveUsing(fn () => '⚠️ AI Auto-Clarified')
+                ->map(['⚠️ AI Auto-Clarified' => 'warning'])
+                ->onlyOnDetail();
+
+            $fields[] = Textarea::make('AI Disclaimer')
+                ->resolveUsing(fn () => $identity['disclaimer'] ?? 'Missing information was inferred by AI')
+                ->readonly()
+                ->rows(2)
+                ->onlyOnDetail()
+                ->help('AI made inferences to fill missing data');
+
+            if (! empty($identity['auto_clarified_data'])) {
+                $fields[] = Code::make('AI-Inferred Data')
+                    ->resolveUsing(fn () => json_encode($identity['auto_clarified_data'], JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE))
+                    ->json()
+                    ->onlyOnDetail()
+                    ->help('Data that was automatically inferred by AI');
+            }
+
+            if (! empty($identity['ai_reasoning'])) {
+                $fields[] = Textarea::make('AI Reasoning')
+                    ->resolveUsing(fn () => $identity['ai_reasoning'])
+                    ->readonly()
+                    ->rows(4)
+                    ->onlyOnDetail();
+            }
+        }
+
+        $fields[] = Code::make('Identified Exam')
+            ->resolveUsing(function () use ($identity) {
+                return json_encode($identity['canonical'] ?? [], JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE);
+            })
+            ->json()
+            ->onlyOnDetail();
+
+        return $fields;
+    }
+
+    /**
+     * Построить панель с вопросами для пользователя
+     */
+    private function buildFollowupPanel($identity, $task): Panel
+    {
+        return new Panel('❓ Questions from AI', [
+            Textarea::make('Missing Fields')
+                ->resolveUsing(function () use ($identity) {
+                    $fields = $identity['need_fields'] ?? [];
+
+                    return ! empty($fields) ? implode("\n", array_map(fn ($f) => "• $f", $fields)) : 'None';
+                })
+                ->readonly()
+                ->rows(3)
+                ->onlyOnDetail(),
+
+            Textarea::make('Follow-up Questions')
+                ->resolveUsing(function () use ($identity) {
+                    $followups = $identity['followups'] ?? [];
+
+                    return ! empty($followups) ? implode("\n\n", array_map(fn ($q, $i) => ($i + 1).". $q", $followups, array_keys($followups))) : 'None';
+                })
+                ->readonly()
+                ->rows(8)
+                ->onlyOnDetail()
+                ->help('AI needs more information. Use "Provide Answers" action to respond.'),
+
+            Badge::make('Action Required')
+                ->resolveUsing(function () use ($task) {
+                    return in_array($task->status, ['pending_confirmation', 'pending_clarification'])
+                        ? '⚠ Waiting for your response'
+                        : '✓ No action needed';
+                })
+                ->map([
+                    '⚠ Waiting for your response' => 'warning',
+                    '✓ No action needed' => 'success',
+                ])
+                ->onlyOnDetail(),
+        ]);
+    }
+
+    /**
+     * Построить текст "Why We Trust"
+     */
+    private function buildTrustReasons($identity): string
+    {
+        $reasons = [];
+
+        // Confidence level
+        $conf = $identity['confidence'] ?? 0;
+        if ($conf >= 0.97) {
+            $reasons[] = "✓ VERY HIGH confidence score: {$conf}";
+        } elseif ($conf >= 0.90) {
+            $reasons[] = "~ HIGH confidence score: {$conf} (needs user confirmation)";
+        } elseif ($conf >= 0.70) {
+            $reasons[] = "~ MEDIUM confidence score: {$conf}";
+        } else {
+            $reasons[] = "✗ LOW confidence score: {$conf}";
+        }
+
+        // Confidence boost information
+        if (isset($identity['confidence_boost'])) {
+            $boost = $identity['confidence_boost'];
+            $reasons[] = '';
+            $reasons[] = 'CONFIDENCE BOOST APPLIED:';
+            $reasons[] = "  Original: {$boost['original_confidence']}";
+            $reasons[] = "  Boosted: {$boost['boosted_confidence']}";
+            $reasons[] = "  Reason: {$boost['adjustment_reason']}";
+            $reasons[] = "  Evidence Quality: {$boost['evidence_quality']}";
+
+            $checks = $boost['checks_performed'] ?? [];
+            $reasons[] = '';
+            $reasons[] = 'CHECKS PERFORMED:';
+            $reasons[] = '  Sections match: '.($checks['sections_match'] === true ? '✓ YES' : ($checks['sections_match'] === false ? '✗ NO' : '~ '.strtoupper((string) $checks['sections_match'])));
+            $reasons[] = '  Timing match: '.($checks['timing_match'] === true ? '✓ YES' : ($checks['timing_match'] === false ? '✗ NO' : '~ '.strtoupper((string) $checks['timing_match'])));
+            $reasons[] = '  Scoring match: '.($checks['scoring_match'] === true ? '✓ YES' : ($checks['scoring_match'] === false ? '✗ NO' : '~ '.strtoupper((string) $checks['scoring_match'])));
+            $reasons[] = '  Signatures found: '.($checks['signatures_found'] ?? 0);
+
+            if (! empty($checks['red_flags'])) {
+                $reasons[] = '  Red flags: '.implode(', ', $checks['red_flags']);
+            }
+        }
+
+        $reasons[] = '';
+
+        // Status
+        if (($identity['status'] ?? '') === 'certain') {
+            $reasons[] = '✓ AI marked as CERTAIN';
+        } else {
+            $reasons[] = '✗ AI marked as UNCERTAIN';
+        }
+
+        // User confirmation
+        if ($identity['user_confirmed'] ?? false) {
+            $reasons[] = '✓ USER CONFIRMED';
+            if (isset($identity['confirmation_notes'])) {
+                $reasons[] = "  Notes: {$identity['confirmation_notes']}";
+            }
+        }
+
+        if ($identity['user_rejected'] ?? false) {
+            $reasons[] = '✗ USER REJECTED';
+            if (isset($identity['rejection_notes'])) {
+                $reasons[] = "  Notes: {$identity['rejection_notes']}";
+            }
+        }
+
+        // Evidence anchors
+        if (! empty($identity['anchors'])) {
+            $reasons[] = '✓ '.count($identity['anchors']).' evidence anchors from document';
+        }
+
+        // Missing fields
+        if (! empty($identity['need_fields'])) {
+            $reasons[] = '⚠ Missing required fields: '.implode(', ', $identity['need_fields']);
+        }
+
+        // Red flags
+        if (! empty($identity['red_flags'])) {
+            $reasons[] = '⚠ RED FLAGS: '.implode(', ', $identity['red_flags']);
+        }
+
+        return implode("\n", $reasons);
     }
 
     public function actions(NovaRequest $request)
     {
         return [
             new ResearchAction,
-            // new ImportAiStructure,
+            new ConfirmIdentityAction,
+            new ProvideAnswersAction,
         ];
     }
 
     public function filters(NovaRequest $request)
     {
         return [];
-    }
-
-    /**
-     * Вспомогательные методы для обработки данных
-     */
-    private function generateSectionSummary($archetypes)
-    {
-        $sections = [
-            'Listening' => ['count' => 0, 'difficulties' => []],
-            'Reading' => ['count' => 0, 'difficulties' => []],
-            'Writing' => ['count' => 0, 'difficulties' => []],
-            'Speaking' => ['count' => 0, 'difficulties' => []],
-        ];
-
-        foreach ($archetypes as $archetype) {
-            $primaryCategory = $this->getPrimaryCategory($archetype['category_weights'] ?? ['empty']);
-            if (isset($sections[$primaryCategory])) {
-                $sections[$primaryCategory]['count']++;
-                $sections[$primaryCategory]['difficulties'][] = $archetype['difficulty'] ?? 'no difficulty';
-            }
-        }
-
-        $summary = [];
-        foreach ($sections as $section => $data) {
-            if ($data['count'] > 0) {
-                $difficultySummary = array_count_values($data['difficulties']);
-                $summary[] = "{$section}: {$data['count']} archetypes (".
-                            implode(', ', array_map(fn ($k, $v) => "$v $k",
-                                array_keys($difficultySummary), $difficultySummary)).')';
-            }
-        }
-
-        return implode("\n", $summary);
-    }
-
-    private function getPrimaryCategory($categoryWeights)
-    {
-        arsort($categoryWeights);
-
-        return array_key_first($categoryWeights);
-    }
-
-    private function extractCategories($archetypes)
-    {
-        $categories = [];
-        foreach ($archetypes as $archetype) {
-            $primary = $this->getPrimaryCategory($archetype['category_weights'] ?? ['empty']);
-            $categories[$primary] = ($categories[$primary] ?? 0) + 1;
-        }
-
-        return $categories;
     }
 }

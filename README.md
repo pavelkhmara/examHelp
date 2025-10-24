@@ -1,46 +1,60 @@
-# Laravel Docker Infrastructure (Stage 1)
+# ExamHelp — Stage 1 (README)
 
-Minimal Dockerized setup for a Laravel app with Nginx, Postgres, Redis, queue worker, scheduler, and Mailpit.  
-Includes health endpoints, Makefile, and dev tools (Pint, PHPStan, PHPUnit).
-
-This guide helps any developer spin up the project quickly, with good performance on Windows/macOS/Linux.
+> Быстрый старт, проверка окружения, основные эндпоинты и сценарии тестирования.  
+> Актуально на: **24.10.2025** (Европа/Варшава)
 
 ---
 
-## Prerequisites
+## 1) Что это и что уже работает
+
+**ExamHelp** — Laravel-приложение с очередями, Nova-админкой и AI‑пайплайном для исследования экзамена и построения его структуры.  
+Stage 1 покрывает:
+
+- Docker-инфраструктуру (Nginx + PHP-FPM, **MySQL**, Redis, queue-worker, scheduler, Mailpit).
+- Nova ресурсы: Exams/Categories/Documents/GenerationTask/GenerationLog и действия для запуска пайплайна.
+- API для создания экзамена, запуска ресёрча, получения статуса задачи и финальной структуры.
+- Оценку текстовых ответов (`/api/evaluate/text`).
+
+> На этапе Stage 1 **ещё в работе**: `POST /api/evaluate/audio` и полноценный учёт токенов как отдельной сущности (`TokenUsage`).
+
+---
+
+## 2) Предварительные требования
 
 - Docker + Docker Compose
-- Make (optional, but convenient)
-- Free ports: **80** (Nginx), **5432** (Postgres), **6379** (Redis), **8025/1025** (Mailpit)
+- (опционально) `make`
+- Свободные локальные порты: **8080** (Nginx), **3306** (MySQL), **6379** (Redis), **8025/1025** (Mailpit)
+- Утилиты для тестов: `curl`, `jq`
 
-> If ports are in use, see **Ports Busy (override)** below.
+> Если порты заняты — см. раздел **Переопределение портов** ниже.
 
 ---
 
-## 1) Setup
+## 3) Установка и запуск
 
 ```bash
-git clone <repo> && cd <repo>
+git clone <repo-url> && cd <repo>
 cp .env.example .env
 ```
 
-Recommended `.env` (fast in Docker):
+### 3.1 Минимальная конфигурация `.env` (MySQL + Redis)
 
-```
+```dotenv
 APP_ENV=local
 APP_DEBUG=true
+APP_URL=http://localhost:8080
+APP_KEY=
 
-DB_CONNECTION=pgsql
-DB_HOST=postgres
-DB_PORT=5432
-DB_DATABASE=app
+DB_CONNECTION=mysql
+DB_HOST=mysql
+DB_PORT=3306
+DB_DATABASE=examhelp
 DB_USERNAME=app
 DB_PASSWORD=app
 
+REDIS_CLIENT=phpredis
 REDIS_HOST=redis
 REDIS_PORT=6379
-# Redis client (choose one; Predis is easiest for dev):
-REDIS_CLIENT=predis
 
 CACHE_DRIVER=redis
 CACHE_STORE=redis
@@ -50,170 +64,276 @@ QUEUE_CONNECTION=redis
 MAIL_MAILER=smtp
 MAIL_HOST=mailpit
 MAIL_PORT=1025
+
+# Провайдер ИИ: openai | mock
+AI_PROVIDER=mock
+# Если AI_PROVIDER=openai — добавить ключ:
+GPT5_API_KEY=your-api-key-here
+AI_MODEL=gpt-4o-mini
 ```
 
----
-
-## 2) Start containers
+### 3.2 Поднятие окружения
 
 ```bash
-make up      # or: docker compose up -d --build
+# через make (если есть)
+make up
+
+# или напрямую:
+docker compose up -d --build
 ```
 
----
-
-## 3) One-time permissions/bootstrap (inside container)
+### 3.3 Первичная инициализация
 
 ```bash
+# Права на каталоги (Linux/WSL/macOS)
 docker compose exec -u root app sh -lc '
-  install -d -m 0775 -o www-data -g www-data \
-    /var/www/html/vendor \
-    /var/www/html/storage \
-    /var/www/html/storage/framework/cache \
-    /var/www/html/storage/framework/sessions \
-    /var/www/html/storage/framework/views \
-    /var/www/html/bootstrap/cache
+  mkdir -p storage/framework/{cache,sessions,views} bootstrap/cache &&
+  chown -R www-data:www-data storage bootstrap/cache &&
+  find storage bootstrap/cache -type d -exec chmod 775 {} \; &&
+  find storage bootstrap/cache -type f -exec chmod 664 {} \;
 '
-```
 
----
-
-## 4) Dependencies & app key
-
-```bash
-# Predis for Redis without rebuilding the image
-docker compose exec app composer require predis/predis:^2.0 -W
-
+# Генерация ключа и оптимизация
 docker compose exec app composer install -o --no-interaction
 docker compose exec app php artisan key:generate
 docker compose exec app php artisan storage:link || true
-```
-
----
-
-## 5) Migrations & seeders
-
-```bash
 docker compose exec app php artisan migrate
 
-# Demo data (if included in the repo)
-docker compose exec app php artisan db:seed --class=SampleExamSeeder
-
-# Admin user for /admin (email: admin@example.com / password: password)
+# (опционально) Сид админа для Nova (admin@example.com / password)
 docker compose exec app php artisan db:seed --class=AdminUserSeeder
 ```
 
+### 3.4 Проверка, что всё работает
+
+- Приложение: http://localhost:8080  
+- Health: http://localhost:8080/health  
+- Nova: http://localhost:8080/nova (admin@example.com / **password**)  
+- Mailpit: http://localhost:8025
+
+Очередь должна обрабатывать задания:  
+```bash
+docker compose ps queue-worker
+docker compose logs queue-worker -f
+```
+
 ---
 
-## 6) Dev optimizations (for snappy UX)
+## 4) Быстрый старт по API (curl)
+
+### 4.1 Получить токен доступа
+
+Через Tinker:
+```bash
+docker compose exec app php artisan tinker <<'PHP'
+$user = \App\Models\User::first() ?? \App\Models\User::factory()->create([
+  'email' => 'admin@example.com',
+  'name' => 'Admin',
+  'password' => bcrypt('password'),
+]);
+echo $user->createToken('local')->plainTextToken.PHP_EOL;
+PHP
+```
+
+Сохранить:
+```bash
+export API_TOKEN="1|your-token-here"
+export BASE_URL="http://localhost:8080"
+```
+
+### 4.2 Создать экзамен
 
 ```bash
-docker compose exec app php artisan config:clear
-docker compose exec app php artisan cache:clear
-docker compose exec app composer dump-autoload -o
+curl -s -X POST "$BASE_URL/api/exams" \
+  -H "Authorization: Bearer $API_TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{"title":"IELTS Academic Test","level":"B2"}' | jq .
+```
+
+Сохранить `EXAM_ID`:
+```bash
+export EXAM_ID=$(curl -s -X POST "$BASE_URL/api/exams" \
+  -H "Authorization: Bearer $API_TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{"title":"English Exam","level":"B2"}' | jq -r '.data.id')
+echo "EXAM_ID=$EXAM_ID"
+```
+
+### 4.3 Запустить ресёрч (Stage 1: Identity)
+
+```bash
+RESP=$(curl -s -X POST "$BASE_URL/api/exams/$EXAM_ID/research" \
+  -H "Authorization: Bearer $API_TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "user_input": {
+      "language": "English",
+      "where": {"country": "PL","city": "Warsaw","modality": "test_center"},
+      "target": {"level": "B2","score":"6.5"},
+      "exam_name": "IELTS Academic"
+    }
+  }')
+echo "$RESP" | jq .
+export TASK_ID=$(echo "$RESP" | jq -r '.task_id')
+```
+
+### 4.4 Проверить статус задачи
+
+```bash
+curl -s "$BASE_URL/api/tasks/$TASK_ID" -H "Authorization: Bearer $API_TOKEN" | jq .
+```
+
+Если статус `pending_confirmation` и `identity.hold=true` — подтвердите:
+
+```bash
+curl -s -X POST "$BASE_URL/api/exams/$EXAM_ID/research/$TASK_ID/confirm-identity" \
+  -H "Authorization: Bearer $API_TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{"confirmed":true,"notes":"OK"}' | jq .
+```
+
+### 4.5 Получить финальную структуру экзамена
+
+```bash
+sleep 15
+curl -s "$BASE_URL/api/exams/$EXAM_ID/structure" \
+  -H "Authorization: Bearer $API_TOKEN" | jq .
+```
+
+### 4.6 (Опционально) Ресёрч без подтверждения
+
+```bash
+curl -s -X POST "$BASE_URL/api/exams/$EXAM_ID/research" \
+  -H "Authorization: Bearer $API_TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "user_input": {"exam_name":"TOEFL iBT","language":"English","where":{"country":"US"},"target":{"score":"90"}},
+    "without_confirmation": true
+  }' | jq .
+```
+
+### 4.7 Оценка текста
+
+```bash
+curl -s -X POST "$BASE_URL/api/evaluate/text" \
+  -H "Authorization: Bearer $API_TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "exam_id": "'"$EXAM_ID"'",
+    "category_id": 1,
+    "question_id": 1,
+    "answer_text": "I usually wake up at seven and go to work by bus."
+  }' | jq .
+```
+
+> **TODO (Stage 1 доп.):** `/api/evaluate/audio` (multipart) — заглушка ASR → текст → оценка.
+
+---
+
+## 5) Тестирование сценариев
+
+Для полного покрытия Stage 1 используйте файл: **`TESTING_ALL_SCENARIOS_ru.md`** (лежит в репозитории).  
+Там описаны 5 сценариев: базовый флоу, без подтверждения, загрузка документа, отклонение идентичности, неполный ввод с уточнениями — с примерами curl/Postman и проверками в Nova/БД.
+
+Запуск всех тестов:
+```bash
+docker compose exec app php artisan test --verbose
+```
+
+> Если очередь «молчит» — проверьте контейнер `queue-worker` и логи (см. раздел ниже).
+
+---
+
+## 6) Полезные команды
+
+```bash
+# Docker
+docker compose up -d --build         # поднять
+docker compose down -v               # остановить и очистить тома
+docker compose logs -f app           # логи приложения
+docker compose logs -f queue-worker  # логи воркера очередей
+
+# Artisan
+docker compose exec app php artisan migrate
+docker compose exec app php artisan db:seed --class=AdminUserSeeder
 docker compose exec app php artisan optimize
+docker compose exec app php artisan route:clear && docker compose exec app php artisan view:clear
+
+# Composer
+docker compose exec app composer install -o
+docker compose exec app composer dump-autoload -o
 ```
 
-> If you edit routes/views often:  
-> `php artisan route:clear && php artisan view:clear && php artisan optimize`
+---
+
+## 7) Nova
+
+- URL: **http://localhost:8080/nova**
+- Логин: **admin@example.com**
+- Пароль: **password** (после `AdminUserSeeder`)
+
+Панели:
+- **🔍 Stage 1: Identity Verification** — статус, confidence, canonical данные.
+- **📚 Stage 2: Exam Structure** — секции/шаги, итоговая структура.
+- **🧰 Generation Logs** — подробные логи стадий (prompt/completion tokens и пр.).
 
 ---
 
-## 7) Verify
+## 8) Устранение неполадок
 
-- App: http://localhost  
-- Health: http://localhost/health  
-- API exams list: `curl -s http://localhost/api/exams | jq .`  
-- Front flow: http://localhost/exams  
-- Admin (Nova): http://localhost:8080/nova  
-- Mailpit UI: http://localhost:8025
-
----
-
-## Useful Make targets
-
+### Очередь не обрабатывает задачи
 ```bash
-make up       # docker compose up -d --build
-make down     # docker compose down -v (also removes volumes)
-make migrate  # php artisan migrate
-make seed     # php artisan db:seed
-make test     # php artisan test
-make cs       # pint
-make stan     # phpstan
+docker compose ps queue-worker
+docker compose logs queue-worker --tail=100
+docker compose restart queue-worker
+# разово отработать задачи в контейнере app:
+docker compose exec app php artisan queue:work --stop-when-empty
 ```
+
+### Документ загружен, но текст не извлёкся
+- Убедитесь, что установлен инструмент извлечения (в образе).
+- Проверьте задачу извлечения в логах `generation_logs`/консоль `queue-worker`.
+
+### `Not Found` при обращении к API
+- Проверьте корректность `APP_URL` и портов.
+- Пересоберите контейнеры (`docker compose up -d --build`) и очистите кэш роутов:
+  ```bash
+  docker compose exec app php artisan route:clear && docker compose exec app php artisan optimize
+  ```
 
 ---
 
-## Ports Busy (override without touching main compose)
+## 9) Переопределение портов (пример)
 
-Create `docker-compose.override.yml` next to the main file:
-
+Создайте рядом `docker-compose.override.yml`:
 ```yaml
 services:
-  postgres:
-    ports: ["55432:5432"]
+  nginx:
+    ports: ["18080:8080"]
+  mysql:
+    ports: ["13306:3306"]
   redis:
-    ports: ["56379:6379"]
+    ports: ["16379:6379"]
   mailpit:
     ports:
       - "18025:8025"
       - "11025:1025"
 ```
 
-Run:
-
-```bash
-docker compose up -d
-```
-
-> Keep **internal** ports in `.env` (`DB_PORT=5432`, `REDIS_PORT=6379`)—those are used inside the Docker network.
+В таком случае приложение будет доступно на `http://localhost:18080` (обновите `APP_URL`).
 
 ---
 
-## Performance tips (Windows/macOS)
+## 10) Статус Stage 1 и дальше
 
-1) Ensure `vendor` and `storage` are **named volumes** in `docker-compose.yml` (avoids slow bind mounts).  
-2) Use **Redis** for cache/sessions (see `.env` above).  
-3) On Windows, keep the project on **WSL2 (ext4)** for 3–10× faster I/O than `C:\` bind mounts.
+**Сделано:** инфраструктура, Nova, API для ресёрча/структуры/текста, загрузка документов, логи и ретраи, сценарии тестирования.  
+**Осталось закрыть:**
 
----
-
-## Troubleshooting
-
-- **`Class "Redis" not found`**  
-  Use Predis:  
-  `docker compose exec app composer require predis/predis:^2.0 -W`
-
-- **`relation "cache" does not exist` during `cache:clear/optimize`**  
-  You’re on database cache. Switch to Redis (`CACHE_STORE=redis`, `CACHE_DRIVER=redis`) and run:  
-  `php artisan config:clear && php artisan cache:clear && php artisan optimize`  
-  *(Alternatively create the table: `php artisan cache:table && php artisan migrate`.)*
-
-- **Slow on Windows/macOS**  
-  Confirm named volumes for `vendor` and `storage`, use Redis cache/sessions, prefer WSL2 filesystem.
-
-- **`chmod: missing operand` when fixing permissions**  
-  Use `find -exec` (safe when no files yet):
-  ```bash
-  docker compose exec -u root app sh -lc '
-    mkdir -p storage/framework/{cache,sessions,views} bootstrap/cache &&
-    find storage bootstrap/cache -type d -exec chmod 775 {} \; &&
-    find storage bootstrap/cache -type f -exec chmod 664 {} \;
-  '
-  ```
-
-- **`502 Bad Gateway`**  
-  Check logs: `docker compose logs nginx app | tail -n 100`. Usually `app` not up or missing `public/index.php`.
+1. `POST /api/evaluate/audio` (multipart; ASR-заглушка → текст → оценка).
+2. Учёт токенов как отдельной сущности (`TokenUsage`) + агрегации по экзамену/задаче/пользователю.
+3. Обновление скриншотов/скриптов для Nova (если UI менялся) — по мере правок.
 
 ---
 
-## Clean restart (when things drift)
+## 11) Лицензия / вклад
 
-```bash
-make down
-make up
-# then repeat: sections 3 → 4 → 5 → 6
-```
-
----
-
+Добавляйте Issue/PR с чётким описанием шага/сценария, ссылкой на соответствующий раздел в `TESTING_ALL_SCENARIOS_ru.md`, и скрином/логами подтверждения.

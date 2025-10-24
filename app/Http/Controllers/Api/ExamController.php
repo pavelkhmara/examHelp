@@ -46,4 +46,43 @@ class ExamController extends Controller
             ],
         ]);
     }
+
+    public function store(Request $request)
+    {
+        $validated = $request->validate([
+            'title' => ['required', 'string', 'max:255'],
+            'description' => ['nullable', 'string'],
+            'level' => ['required', 'string', 'in:A1,A2,B1,B2,C1,C2'],
+            'slug' => ['nullable', 'string', 'max:255', 'unique:exams,slug'],
+            'is_active' => ['nullable', 'boolean'],
+            'sources' => ['nullable', 'array'],
+            'meta' => ['nullable', 'array'],
+        ]);
+
+        // Автогенерация slug если не указан
+        if (empty($validated['slug'])) {
+            $validated['slug'] = \Illuminate\Support\Str::slug($validated['title']);
+        }
+
+        // Дефолтные значения
+        $validated['is_active'] = $validated['is_active'] ?? true;
+        $validated['research_status'] = 'queued';
+        $validated['categories_count'] = 0;
+        $validated['examples_count'] = 0;
+
+        $exam = Exam::create($validated);
+
+        return response()->json([
+            'data' => [
+                'id' => $exam->id,
+                'slug' => $exam->slug,
+                'title' => $exam->title,
+                'description' => $exam->description,
+                'level' => $exam->level,
+                'is_active' => $exam->is_active,
+                'research_status' => $exam->research_status,
+                'created_at' => $exam->created_at,
+            ],
+        ], 201);
+    }
 }

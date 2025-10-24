@@ -38,6 +38,25 @@ abstract class AbstractAiService
         }
 
         // 2) Prompt
+        $retryHint = $payload['retry_hint'] ?? null;
+        $categoryWeightHint = <<<'HINT'
+
+CRITICAL REQUIREMENT - Category Distribution:
+Each archetype MUST include a 'category_weights' field mapping it to appropriate exam sections.
+Common categories: listening, reading, writing, speaking, grammar, vocabulary.
+Example:
+{
+  "id": "L-MC",
+  "name": "Listening multiple choice",
+  "category_weights": {
+    "listening": 1.0
+  }
+}
+
+DO NOT leave category_weights empty. DO NOT put all archetypes in "unknown" category.
+If uncertain about category, assign to most relevant section based on skill tested.
+HINT;
+
         $prompt = <<<EOT
 You are an educational researcher for exam prep.
 Information from user about exam: {$userInput}
@@ -46,9 +65,11 @@ You must browse the web to discover authentic question patterns for the target e
 Follow these constraints:
 - Use at least 4 reputable sources with diversity (.gov, .edu, official exam sites, major publishers).
 - Extract patterns (archetypes), typical distractors, verbs, numeric ranges, units, common visuals, difficulty bands.
-- Add per-category weights by mapping archetypes to categories from the provided exam_matrix.
+- **REQUIRED**: Add per-category weights by mapping EACH archetype to categories from the provided exam_matrix.
 - Record each source: url, title, publisher
 - If evidence conflicts, include both views and explain under rationale.
+{$categoryWeightHint}
+{$retryHint}
 
 Output strictly the JSON object described in the response_json_schema. If unsure, be conservative.
 

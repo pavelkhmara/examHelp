@@ -2,8 +2,6 @@
 
 namespace Tests;
 
-use App\Services\LanguageApp\AiProvider;
-use App\Services\LanguageApp\Providers\MockAiProvider;
 use Illuminate\Foundation\Testing\TestCase as BaseTestCase;
 
 abstract class TestCase extends BaseTestCase
@@ -12,8 +10,8 @@ abstract class TestCase extends BaseTestCase
     {
         parent::setUp();
 
-        $this->app->bind(AiProvider::class, function () {
-            return new MockAiProvider;
-        });
+        config()->set('queue.default', env('QUEUE_CONNECTION', 'sync'));
+        config()->set('cache.default', env('CACHE_STORE', 'array'));
+        config()->set('session.driver', env('SESSION_DRIVER', 'array'));
     }
 }

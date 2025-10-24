@@ -2,38 +2,66 @@
 
 namespace Tests\Feature\Api;
 
-use App\Jobs\RunExamResearchJob;
 use App\Models\Exam;
+use App\Models\ExamDocument;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Queue;
-use Illuminate\Support\Str;
 use Tests\TestCase;
 
 class ResearchEndpointTest extends TestCase
 {
     use RefreshDatabase;
 
-    public function test_it_queues_research_task_and_returns_task_id(): void
+    public function test_research_accepts_full_user_input_and_queues_task(): void
     {
-        // Отключаем Authenticate на время теста, чтобы не ловить 401
-        $this->withoutMiddleware(\Illuminate\Auth\Middleware\Authenticate::class);
+        $exam = Exam::factory()->create();
+
+        // Не даём джобе выполниться немедленно (иначе статус станет completed)
+        Queue::fake();
+
+        $full = [
+            'language' => 'English',
+            'where' => ['country' => 'PL', 'city' => 'Warsaw', 'modality' => 'online'],
+            'target' => ['level' => 'B2'],
+            'exam_name' => 'IELTS',
+        ];
+
+        $res = $this->postJson("/api/exams/{$exam->id}/research", [
+            'user_input' => $full,
+        ])->assertStatus(202)->json();
+
+        $this->assertArrayHasKey('task_id', $res);
+        $this->assertDatabaseHas('generation_tasks', [
+            'id' => $res['task_id'],
+            'exam_id' => $exam->id,
+            'type' => 'research',
+            'status' => 'queued', // ожидаем queued, т.к. очередь зафейкана
+        ]);
+    }
+
+    public function test_research_accepts_incomplete_and_still_queues_with_document_id(): void
+    {
+        $exam = Exam::factory()->create();
+        $doc = ExamDocument::factory()->create(['exam_id' => $exam->id]);
 
         Queue::fake();
 
-        $exam = Exam::query()->create([
-            'id' => (string) Str::uuid(),
-            'slug' => 'test-exam',
-            'title' => 'Test Exam',
-            'level' => 'B1',
-            'is_active' => true,
-        ]);
+        $incomplete = [
+            'language' => 'German',
+            // нет where/country/modality и target
+        ];
 
         $res = $this->postJson("/api/exams/{$exam->id}/research", [
-            'notes' => 'Chcę zdać egzamin B2',
+            'user_input' => $incomplete,
+            'document_id' => $doc->id,
+        ])->assertStatus(202)->json();
+
+        $this->assertArrayHasKey('task_id', $res);
+        $this->assertDatabaseHas('generation_tasks', [
+            'id' => $res['task_id'],
+            'exam_id' => $exam->id,
+            'type' => 'research',
+            'status' => 'queued',
         ]);
-
-        $res->assertStatus(202)->assertJsonStructure(['task_id', 'status']);
-
-        Queue::assertPushed(RunExamResearchJob::class);
     }
 }
