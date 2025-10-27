@@ -37,18 +37,37 @@ class ConfirmIdentityAction extends Action
             }
 
             $identity = $task->result['identity'] ?? null;
-            if (! $identity || ! ($identity['hold'] ?? false)) {
-                return Action::danger('No identity hold to confirm for this exam.');
+            if (! $identity) {
+                return Action::danger('No identity data found for this exam.');
+            }
+
+            // Check if confirmation is needed:
+            // 1. Old logic: hold = true (high confidence but requires user confirmation)
+            // 2. New logic: confidence < 0.97 (low confidence, must confirm)
+            $needsConfirmation = ($identity['hold'] ?? false) || ($identity['confidence'] ?? 0) < 0.97;
+
+            if (! $needsConfirmation) {
+                return Action::danger('This exam does not require identity confirmation (confidence >= 0.97 and no hold).');
             }
 
             $confirmed = $fields->get('confirmed');
             $notes = $fields->get('notes');
 
             if ($confirmed) {
-                // User confirmed - remove hold and continue pipeline
+                // User confirmed - remove hold and boost confidence
+                $originalConfidence = $identity['confidence'] ?? 0;
                 $identity['hold'] = false;
                 $identity['user_confirmed'] = true;
                 $identity['confirmed_at'] = now()->toISOString();
+
+                // CRITICAL: User confirmation overrides low confidence
+                // Set confidence to 1.0 (100%) since user manually verified
+                if ($originalConfidence < 0.97) {
+                    $identity['confidence'] = 1.0;
+                    $identity['confidence_boosted_by'] = 'user_confirmation';
+                    $identity['original_confidence'] = $originalConfidence;
+                }
+
                 if ($notes) {
                     $identity['confirmation_notes'] = $notes;
                 }
@@ -56,6 +75,7 @@ class ConfirmIdentityAction extends Action
                 $result = (array) ($task->result ?? []);
                 $result['identity'] = $identity;
                 $task->result = $result;
+                $task->status = 'queued'; // Reset to queued so job can pick it up
                 $task->save();
 
                 // Continue the pipeline

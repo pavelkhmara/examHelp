@@ -33,53 +33,23 @@ abstract class AbstractAiService
         }
 
         // files
+        $filesHint = '';
         if (! empty($opts['files'])) {
-            $payload['files_hint'] = $this->gatherFileTexts($opts['files']);
+            $filesHint = $this->gatherFileTexts($opts['files']);
+            $payload['files_hint'] = $filesHint;
         }
 
-        // 2) Prompt
+        // 2) Build prompt using PromptExamOverview
         $retryHint = $payload['retry_hint'] ?? null;
-        $categoryWeightHint = <<<'HINT'
-
-CRITICAL REQUIREMENT - Category Distribution:
-Each archetype MUST include a 'category_weights' field mapping it to appropriate exam sections.
-Common categories: listening, reading, writing, speaking, grammar, vocabulary.
-Example:
-{
-  "id": "L-MC",
-  "name": "Listening multiple choice",
-  "category_weights": {
-    "listening": 1.0
-  }
-}
-
-DO NOT leave category_weights empty. DO NOT put all archetypes in "unknown" category.
-If uncertain about category, assign to most relevant section based on skill tested.
-HINT;
-
-        $prompt = <<<EOT
-You are an educational researcher for exam prep.
-Information from user about exam: {$userInput}
-
-You must browse the web to discover authentic question patterns for the target exam.
-Follow these constraints:
-- Use at least 4 reputable sources with diversity (.gov, .edu, official exam sites, major publishers).
-- Extract patterns (archetypes), typical distractors, verbs, numeric ranges, units, common visuals, difficulty bands.
-- **REQUIRED**: Add per-category weights by mapping EACH archetype to categories from the provided exam_matrix.
-- Record each source: url, title, publisher
-- If evidence conflicts, include both views and explain under rationale.
-{$categoryWeightHint}
-{$retryHint}
-
-Output strictly the JSON object described in the response_json_schema. If unsure, be conservative.
-
-Task: Mine question archetypes and style for the exam.
-
-exam_name: {$examTitle}
-exam_description: {$contextNotes}
-timebox_minutes: 2,5
-exam_matrix_json: use RESPONSE_JSON_SCHEMA provided
-EOT;
+        $userInputParsed = $payload['user_input'] ?? null;
+        $prompt = Prompts\PromptExamOverview::build(
+            $examTitle,
+            $userInput,
+            $contextNotes,
+            $retryHint,
+            $userInputParsed,
+            $filesHint
+        );
 
         // 3) Messages
         $messages = [
@@ -120,36 +90,55 @@ EOT;
 
     private function gatherFileTexts(array $files): string
     {
-        // СТАБ: здесь подключите ваш DocumentIngestService (pdf/docx/jpg → OCR/текст)
-        // Пока листаем имена файлов, чтобы AI видел подсказку
-        $names = array_map(function ($f) {
-            // строка пути — берём basename
-            if (is_string($f)) {
-                return basename($f);
+        if (empty($files)) {
+            return '';
+        }
+
+        $hints = [];
+
+        foreach ($files as $f) {
+            // массив (наш формат из buildFilesForExam) — используем текст из extracted_text
+            if (is_array($f)) {
+                $name = (string) ($f['name'] ?? $f['filename'] ?? $f['id'] ?? 'document');
+                $text = (string) ($f['text'] ?? '');
+
+                if ($text !== '') {
+                    $hints[] = "=== DOCUMENT: {$name} ===\n{$text}\n=== END DOCUMENT ===";
+                } else {
+                    // Если текста нет, хотя бы имя укажем
+                    $hints[] = "DOCUMENT (no text extracted): {$name}";
+                }
+
+                continue;
             }
 
-            // массив (наш формат files_hint из документов)
-            if (is_array($f)) {
-                return (string) ($f['name'] ?? $f['filename'] ?? $f['path'] ?? $f['id'] ?? '[unknown]');
+            // строка пути — берём basename (оставляем для совместимости)
+            if (is_string($f)) {
+                $hints[] = 'FILE: '.basename($f);
+
+                continue;
             }
 
             // объекты: UploadedFile и пр.
             if (is_object($f)) {
+                $name = '[unknown]';
                 if (method_exists($f, 'getClientOriginalName')) {
-                    return $f->getClientOriginalName();
+                    $name = $f->getClientOriginalName();
+                } elseif (method_exists($f, 'getFilename')) {
+                    $name = $f->getFilename();
+                } elseif (method_exists($f, '__toString')) {
+                    $name = basename((string) $f);
                 }
-                if (method_exists($f, 'getFilename')) {
-                    return $f->getFilename();
-                }
-                if (method_exists($f, '__toString')) {
-                    return basename((string) $f);
-                }
+
+                $hints[] = "FILE: {$name}";
             }
+        }
 
-            return '[unknown]';
-        }, $files);
+        if (empty($hints)) {
+            return '';
+        }
 
-        return 'FILES_HINTS: '.implode(', ', $names);
+        return "\n\n## UPLOADED EXAM DOCUMENTS ##\n\n".implode("\n\n", $hints)."\n\n## END DOCUMENTS ##\n";
     }
 
     protected function log(GenerationTask $task, string $stage, array $request, array $response): void
