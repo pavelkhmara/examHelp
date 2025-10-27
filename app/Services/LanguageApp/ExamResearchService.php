@@ -28,6 +28,13 @@ class ExamResearchService extends AbstractAiService
         $res1 = null;
 
         while ($retryAttempt <= $maxRetries) {
+            // Log activity for overview stage
+            if ($retryAttempt === 0) {
+                $task->addActivity('overview_started', 'Requesting exam overview from AI');
+            } else {
+                $task->addActivity('overview_retry', "Retrying overview (attempt {$retryAttempt}/{$maxRetries}) - improving structure quality");
+            }
+
             // 1) Overview
             $payload = [
                 'exam_slug' => $exam->slug,
@@ -74,6 +81,8 @@ class ExamResearchService extends AbstractAiService
                 $validator = new JsonSchemaExamOverview;
                 $overview_normalized = $validator->validate($res1['content'] ?? null);
                 $this->log($task, 'overview_validated', $payload, ['result' => $overview_normalized]);
+
+                $task->addActivity('overview_validated', 'Overview validated successfully');
             } catch (\Throwable $ve) {
                 if (app()->environment('testing')) {
                     // мягкий фоллбек в тестах: приводим к минимальной валидной форме и продолжаем
@@ -83,7 +92,11 @@ class ExamResearchService extends AbstractAiService
                         'reason' => $ve->getMessage(),
                         'result' => $overview_normalized,
                     ]);
+
+                    $task->addActivity('overview_validated_soft', 'Overview validated with test fallback');
                 } else {
+                    $task->addActivity('overview_validation_failed', 'Overview validation failed: '.$ve->getMessage());
+
                     return ['ok' => false, 'error' => 'validation_failed', 'errors' => [$ve->getMessage()]];
                 }
             }
@@ -101,6 +114,11 @@ class ExamResearchService extends AbstractAiService
                 'buckets' => array_map('count', $buckets),
             ]);
 
+            $task->addActivity('overview_quality_check', "Structure quality score: {$qualityScore}", [
+                'quality_score' => $qualityScore,
+                'categories_count' => count($buckets),
+            ]);
+
             // If quality is poor and we can retry, continue loop
             if ($qualityScore < 0.5 && $retryAttempt < $maxRetries) {
                 $retryAttempt++;
@@ -109,12 +127,21 @@ class ExamResearchService extends AbstractAiService
                     'quality_score' => $qualityScore,
                 ]);
 
+                $task->addActivity('overview_quality_poor', "Quality too low ({$qualityScore} < 0.5), retrying...", [
+                    'quality_score' => $qualityScore,
+                    'retry_attempt' => $retryAttempt,
+                ]);
+
                 continue;
             }
 
             // Good quality or max retries reached - break and continue with pipeline
             break;
         }
+
+        $task->addActivity('overview_quality_accepted', "Structure quality accepted ({$qualityScore}), proceeding to category creation", [
+            'quality_score' => $qualityScore,
+        ]);
 
         // --- Normalize & merge sources: add provenances and attach document-sources ---
         $webSources = [];
@@ -186,6 +213,11 @@ class ExamResearchService extends AbstractAiService
         //  - если есть overview['category_map'] — возьмём порядок убывания суммарного веса
         //  - иначе — как встретились
         $categoryOrder = $this->rankCategories($overview_normalized, $buckets);
+
+        $categoriesCount = count($categoryOrder);
+        $task->addActivity('categories_creation_started', "Creating {$categoriesCount} exam categories with archetypes", [
+            'categories_count' => $categoriesCount,
+        ]);
 
         $createdCategories = [];
         DB::transaction(function () use ($exam, $buckets, $categoryOrder, &$createdCategories) {
@@ -271,9 +303,16 @@ class ExamResearchService extends AbstractAiService
             'categories' => $createdCategories,
         ]);
 
+        $task->addActivity('categories_created', "Created {$categoriesCount} categories successfully", [
+            'categories_count' => $categoriesCount,
+        ]);
+
         // === 4) Сборка упрощённой «структуры экзамена» ===
         // Для Nova карточки — компактно и понятно: секции (категории) с ordered-steps.
         $structure = $this->buildSimplifiedStructure($overview_normalized, $buckets, $categoryOrder);
+
+        // Add global_archetypes to structure for example generation
+        $structure['global_archetypes'] = $overview_normalized['global_archetypes'] ?? [];
 
         // Можно продублировать структуру в Exam->meta['exam_structure'] (по желанию)
         Log::debug('ExamResearchService add exam-meta-structure', ['exam_structure' => $structure]);
@@ -286,11 +325,20 @@ class ExamResearchService extends AbstractAiService
         $exam->save();
 
         // === 5) task->result и логи ===
-        $task->result = $structure;
+        // Save both structure AND overview (with global_archetypes) for later use
+        $task->result = array_merge($task->result ?? [], [
+            'structure' => $structure,
+            'overview' => $overview_normalized, // Contains global_archetypes needed for example generation
+        ]);
         $task->status = 'completed';
         $task->save();
 
         $this->log($task, 'structure_created', [], ['structure' => $structure]);
+
+        $task->addActivity('pipeline_completed', 'Research pipeline completed successfully', [
+            'categories_count' => count($createdCategories),
+            'archetypes_count' => count($overview_normalized['global_archetypes'] ?? []),
+        ]);
 
         return [
             'ok' => true,
@@ -1271,6 +1319,148 @@ class ExamResearchService extends AbstractAiService
             'confidence' => $clarification['confidence'] ?? 0.5,
             'reasoning' => $clarification['reasoning'] ?? 'AI made best-effort inference from available data',
             'disclaimer' => $clarification['disclaimer'] ?? 'AI-inferred without user confirmation',
+        ];
+    }
+
+    /**
+     * Generate example questions for exam archetypes
+     */
+    public function generateExamples(Exam $exam, GenerationTask $task, int $examplesPerArchetype = 1): array
+    {
+        // Get exam structure and archetypes from exam or task result
+        $structure = $exam->exam_structure ?? $task->result['overview'] ?? [];
+        $archetypes = $structure['global_archetypes'] ?? [];
+
+        if (empty($archetypes)) {
+            throw new \RuntimeException('No archetypes found in exam structure. Run research pipeline first.');
+        }
+
+        // Build exam info for prompt
+        $examInfo = [
+            'canonical' => $task->result['identity']['canonical'] ?? [],
+            'title' => $exam->title,
+            'level' => $exam->level,
+        ];
+
+        // Build prompt
+        $prompt = \App\Services\LanguageApp\Prompts\PromptExampleGeneration::build(
+            $examInfo,
+            $archetypes,
+            $examplesPerArchetype
+        );
+
+        // Build messages for AI
+        $messages = [
+            [
+                'role' => 'system',
+                'content' => $prompt,
+            ],
+        ];
+
+        // Call AI directly (not through callAi which is for overview only)
+        $payload = [
+            'stage' => 'example_generation',
+            'exam_slug' => $exam->slug,
+            'exam_level' => $exam->level,
+            'messages' => $messages,
+        ];
+
+        $res = $this->ai->generate($payload, [
+            'schema' => $this->buildExampleSchema(),
+        ]);
+
+        $this->log($task, 'example_generation', $payload, $res);
+
+        // Validate response
+        $validator = new \App\Services\LanguageApp\Validators\JsonSchemaExamExamples;
+        $validated = $validator->validate($res['content'] ?? []);
+
+        $examples = $validated['examples'] ?? [];
+
+        // Persist examples to database
+        $createdCount = 0;
+        foreach ($examples as $example) {
+            // Find category for this archetype
+            $archetypeId = $example['archetype_id'];
+            $archetype = collect($archetypes)->firstWhere('id', $archetypeId);
+
+            if (! $archetype) {
+                Log::warning('Archetype not found for example', ['archetype_id' => $archetypeId]);
+
+                continue;
+            }
+
+            // Get category name from archetype
+            $categoryName = $archetype['category'] ?? 'unknown';
+
+            // Find or create category
+            $category = \App\Models\ExamCategory::firstOrCreate(
+                [
+                    'exam_id' => $exam->id,
+                    'name' => $categoryName,
+                ],
+                [
+                    'order' => 0,
+                    'meta' => [],
+                ]
+            );
+
+            // Create example question
+            \App\Models\ExamExampleQuestion::create([
+                'exam_id' => $exam->id,
+                'exam_category_id' => $category->id,
+                'question' => $example['question'],
+                'description' => $example['description'],
+                'duration_minutes' => $example['duration_minutes'],
+                'instructions' => $example['instructions'],
+                'example_response' => $example['example_response'],
+                'assessment_guide' => $example['assessment_guide'],
+                'type' => $example['type'],
+                'payload' => $example['payload'],
+            ]);
+
+            $createdCount++;
+        }
+
+        // Update exam examples_count
+        $exam->examples_count = $exam->examples()->count();
+        $exam->save();
+
+        return [
+            'examples_created' => $createdCount,
+            'total_archetypes' => count($archetypes),
+            'examples_per_archetype' => $examplesPerArchetype,
+        ];
+    }
+
+    /**
+     * Build JSON schema for example generation
+     */
+    private function buildExampleSchema(): array
+    {
+        return [
+            'type' => 'object',
+            'properties' => [
+                'examples' => [
+                    'type' => 'array',
+                    'items' => [
+                        'type' => 'object',
+                        'properties' => [
+                            'archetype_id' => ['type' => 'string'],
+                            'question' => ['type' => 'string'],
+                            'description' => ['type' => ['string', 'null']],
+                            'duration_minutes' => ['type' => ['integer', 'null']],
+                            'instructions' => ['type' => ['string', 'null']],
+                            'example_response' => ['type' => ['object', 'null']],
+                            'assessment_guide' => ['type' => ['string', 'null']],
+                            'type' => ['type' => 'string'],
+                            'payload' => ['type' => ['object', 'null']],
+                        ],
+                        'required' => ['archetype_id', 'question', 'type'],
+                    ],
+                ],
+            ],
+            'required' => ['examples'],
         ];
     }
 }

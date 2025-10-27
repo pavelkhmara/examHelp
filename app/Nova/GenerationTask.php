@@ -42,6 +42,26 @@ class GenerationTask extends Resource
             Code::make('Response')->json()
                 ->resolveUsing(fn ($v) => is_string($v) ? $v : json_encode($v, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE))
                 ->hideFromIndex(),
+            Code::make('Activities')
+                ->resolveUsing(function ($activities) {
+                    if (empty($activities)) {
+                        return '[]';
+                    }
+
+                    // Format activities as human-readable list
+                    $formatted = [];
+                    foreach ($activities as $activity) {
+                        $timestamp = $activity['timestamp'] ?? 'unknown time';
+                        $message = $activity['message'] ?? 'no message';
+                        $event = $activity['event'] ?? 'unknown';
+
+                        $formatted[] = "[{$timestamp}] {$message} ({$event})";
+                    }
+
+                    return implode("\n", $formatted);
+                })
+                ->help('Timeline of task operations and stage transitions')
+                ->hideFromIndex(),
             Text::make('Error')->hideFromIndex(),
             DateTime::make('Created At')->sortable(),
         ];

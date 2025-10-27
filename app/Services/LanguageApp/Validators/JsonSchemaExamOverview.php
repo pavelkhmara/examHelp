@@ -159,6 +159,30 @@ final class JsonSchemaExamOverview
                 ];
             }
 
+            // CRITICAL: Validate that step_duration is not null
+            // AI must search for timing information, not leave it empty
+            if ($stepDuration === null) {
+                \Illuminate\Support\Facades\Log::warning('Archetype missing step_duration - AI failed to find timing', [
+                    'archetype_id' => $id,
+                    'archetype_name' => $name,
+                ]);
+
+                // In production, we require timing information
+                // In testing, we allow soft fallback via coerceOverviewForTests
+                if (! app()->environment('testing')) {
+                    throw ValidationException::withMessages([
+                        "archetypes.$i.step_duration" => "step_duration is required - AI must search official sources for timing information. Found null for archetype: {$name}",
+                    ]);
+                }
+
+                // In tests, set a default duration
+                $stepDuration = 5; // 5 minutes default for tests
+                \Illuminate\Support\Facades\Log::debug('Using default step_duration for tests', [
+                    'archetype_id' => $id,
+                    'duration' => $stepDuration,
+                ]);
+            }
+
             $globalArchetypes[] = [
                 'id' => $id,
                 'name' => $name,
@@ -178,6 +202,13 @@ final class JsonSchemaExamOverview
 
         // total_exam_duration: сумма известных step_duration
         $totalDuration = $this->sumDurations($globalArchetypes);
+
+        // CRITICAL: Validate that total_exam_duration is not null (except in tests)
+        if (($totalDuration === null || $totalDuration === 0) && ! app()->environment('testing')) {
+            throw ValidationException::withMessages([
+                'total_exam_duration' => 'total_exam_duration is required - all archetypes must have step_duration',
+            ]);
+        }
 
         // Итог
         return [

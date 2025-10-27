@@ -72,7 +72,7 @@ class ResearchAction extends Action
             }
         }
 
-        return Action::message('Research queued via internal API.');
+        return Action::message('✅ Research task started! 🔄 Refresh this page to see progress and results.');
     }
 
     public function fields(NovaRequest $request)

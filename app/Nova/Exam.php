@@ -44,7 +44,9 @@ class Exam extends Resource
 
     public static function refreshInterval()
     {
-        return 5; // seconds - auto-refresh detail page
+        // NOTE: This only works for INDEX page, NOT detail page
+        // Users must manually refresh detail page to see updates
+        return 5; // seconds - auto-refresh index page
     }
 
     public function fields(NovaRequest $request)
@@ -52,6 +54,18 @@ class Exam extends Resource
         $fields = [
             ID::make()->sortable()->hideFromIndex(),
             Text::make('ID', 'id')->onlyOnIndex(),
+
+            // Явный индикатор когда идет обработка (только на detail page)
+            // Badge::make('⚠️ Processing', function () {
+            //     return in_array($this->research_status, ['queued', 'running', 'running_overview'], true)
+            //         ? 'REFRESH PAGE TO SEE UPDATES'
+            //         : null;
+            // })
+            //     ->map(['REFRESH PAGE TO SEE UPDATES' => 'warning'])
+            //     ->onlyOnDetail()
+            //     ->exceptOnForms(),
+            // ->hideWhenNull(),
+
             Text::make('Slug')->rules('required')->sortable(),
             Text::make('Title')->rules('required')->sortable(),
             Select::make('Level')->options([
@@ -73,7 +87,14 @@ class Exam extends Resource
                     'completed' => 'Completed',
                     'failed' => 'Failed',
                 ])
-                ->sortable(),
+                ->sortable()
+                ->help(function () {
+                    if (in_array($this->research_status, ['queued', 'running', 'running_overview'], true)) {
+                        return '🔄 <strong>Task is processing. Refresh this page to see updates.</strong>';
+                    }
+
+                    return null;
+                }),
         ];
 
         // Показываем счетчики только если есть данные
@@ -116,14 +137,15 @@ class Exam extends Resource
         }
 
         // ============== STAGE 2: Overview & Structure ==============
-        if ($this->research_status === 'completed' && $this->structure_sections) {
+        if ($this->research_status === 'completed' && ! empty($this->structure_sections)) {
             $fields[] = new Panel('📚 Stage 2: Exam Structure', [
                 Number::make('Categories Count', 'categories_count')->onlyOnDetail(),
                 Number::make('Total Exam Duration (min)', 'total_exam_duration')->onlyOnDetail(),
-                Number::make('Total Tokens Used')
-                    ->resolveUsing(function () {
-                        return $this->generationLogs()->sum('total_tokens');
-                    })
+                Number::make('Total Tokens Used', function () {
+                    $sum = $this->generationLogs()->sum('total_tokens');
+
+                    return $sum ? (int) $sum : 0;
+                })
                     ->onlyOnDetail(),
 
                 Code::make('Sections (compact)')
@@ -153,15 +175,13 @@ class Exam extends Resource
             ]);
         }
 
-        // ============== STAGE 3: Categories (если есть) ==============
-        if ($this->categories_count > 0) {
-            $fields[] = HasMany::make('Categories', 'categories', ExamCategory::class);
-        }
+        // ============== STAGE 3: Categories ==============
+        // Always show, even if count is 0 - Nova will show empty state
+        $fields[] = HasMany::make('Categories', 'categories', ExamCategory::class);
 
-        // ============== STAGE 4: Examples (если есть) ==============
-        if ($this->examples_count > 0) {
-            $fields[] = HasMany::make('Examples', 'examples', ExamExampleQuestion::class);
-        }
+        // ============== STAGE 4: Examples ==============
+        // Always show, even if count is 0 - Nova will show empty state
+        $fields[] = HasMany::make('Examples', 'examples', ExamExampleQuestion::class);
 
         // ============== Sources (если есть) ==============
         if (! empty($this->sources)) {
@@ -254,6 +274,51 @@ class Exam extends Resource
                 ])
                 ->onlyOnDetail(),
         ];
+
+        // Show user input (what user provided)
+        if (! empty($task->request['user_input'])) {
+            $fields[] = Code::make('User Input')
+                ->resolveUsing(function () use ($task) {
+                    return json_encode($task->request['user_input'], JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE);
+                })
+                ->json()
+                ->onlyOnDetail()
+                ->help('Information provided by the user');
+        }
+
+        // Show evidence from document
+        if (! empty($identity['anchors'])) {
+            $fields[] = Number::make('Evidence Count')
+                ->resolveUsing(fn () => count($identity['anchors']))
+                ->onlyOnDetail()
+                ->help('Number of evidence anchors found in document');
+
+            $fields[] = Code::make('Evidence Anchors (first 5)')
+                ->resolveUsing(function () use ($identity) {
+                    $anchors = array_slice($identity['anchors'], 0, 5);
+
+                    return json_encode($anchors, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE);
+                })
+                ->json()
+                ->onlyOnDetail()
+                ->help('Key phrases and evidence found in the uploaded document');
+        }
+
+        // Show candidates if multiple options were considered
+        if (! empty($identity['candidates']) && count($identity['candidates']) > 1) {
+            $fields[] = Number::make('Candidates Considered')
+                ->resolveUsing(fn () => count($identity['candidates']))
+                ->onlyOnDetail()
+                ->help('Number of possible exam matches AI considered');
+
+            $fields[] = Code::make('All Candidates')
+                ->resolveUsing(function () use ($identity) {
+                    return json_encode($identity['candidates'], JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE);
+                })
+                ->json()
+                ->onlyOnDetail()
+                ->help('All possible exam matches with their scores');
+        }
 
         // Add disclaimer if auto-confirmed or auto-clarified
         if ($identity['auto_confirmed'] ?? false) {

@@ -15,6 +15,7 @@ class ExamExampleQuestion extends Model
 
     protected $fillable = [
         'exam_id', 'exam_category_id', 'question',
+        'description', 'duration_minutes', 'instructions', 'example_response', 'assessment_guide',
         'good_answer', 'average_answer', 'bad_answer', 'rubric_breakdown',
         'type', 'payload',
     ];
@@ -25,6 +26,7 @@ class ExamExampleQuestion extends Model
         'bad_answer' => 'json',
         'rubric_breakdown' => 'json',
         'payload' => 'json',
+        'example_response' => 'json',
         'type' => QuestionType::class,
     ];
 
@@ -48,7 +50,6 @@ class ExamExampleQuestion extends Model
 
             $payload = (array) ($model->payload ?? []);
 
-            // строгая валидация payload под тип
             QuestionPayloadValidator::validate($type, $payload);
 
             if (! in_array($val, QuestionType::all(), true)) {

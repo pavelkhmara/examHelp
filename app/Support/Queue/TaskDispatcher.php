@@ -37,9 +37,16 @@ class TaskDispatcher
                 ->latest('id')
                 ->first();
 
-            // Return existing task if it's still processing or already completed
-            // But allow retry if it's pending_confirmation or pending_clarification (waiting for user)
-            if ($existing && in_array($existing->status, ['queued', 'running', 'completed'], true)) {
+            // Return existing task ONLY if it's still in progress (queued or running)
+            // Allow re-running completed/failed tasks (user may want to refresh data)
+            // Allow re-running pending tasks after user provides input
+            if ($existing && in_array($existing->status, ['queued', 'running'], true)) {
+                Log::info('[TaskDispatcher] returning existing in-progress task', [
+                    'task_id' => $existing->id,
+                    'status' => $existing->status,
+                    'idempotency_key' => $idempotencyKey,
+                ]);
+
                 return $existing;
             }
         }
@@ -67,6 +74,8 @@ class TaskDispatcher
 
         $task = GenerationTask::create([
             'exam_id' => $examId,
+            'subject_type' => $subject ? get_class($subject) : null,
+            'subject_id' => $subject?->id ?? null,
             'type' => $type,
             'status' => 'queued',
             'request' => $request,

@@ -57,29 +57,5 @@ return [
         'enable_llm' => env('AI_EVALUATION_LLM', false),
     ],
 
-    'schema' => json_encode([
-        'exam_name' => 'string',
-        'sources' => [['url' => ['string'], 'title' => ['string'], 'publisher' => ['string']]],
-        'global_archetypes' => [
-            [
-                'id' => 'string',
-                'name' => 'string',
-                'stem_templates' => ['string'],
-                'skills_measured' => ['string'],
-                'common_distractors' => ['string'],
-                'difficulty_band' => 'medium|hard',
-                'step_duration' => '<minutes>',
-                'sequence_matters' => 'boolean',
-                'step_order' => 'integer|null',
-            ],
-        ],
-        'category_map' => [
-            '<category_name>' => [
-                'archetype_weights' => ['archetype_id' => 'string', 'weight' => '<percents>'],
-            ],
-        ],
-        'total_exam_duration' => '<minutes>',
-        'rationale' => 'string',
-    ], JSON_UNESCAPED_UNICODE),
-
+    // Schema has been moved to App\Services\LanguageApp\Prompts\PromptExamOverview::getSchemaArray()
 ];

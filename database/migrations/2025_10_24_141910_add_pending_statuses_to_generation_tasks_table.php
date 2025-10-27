@@ -1,6 +1,7 @@
 <?php
 
 use Illuminate\Database\Migrations\Migration;
+use Illuminate\Support\Facades\DB;
 
 return new class extends Migration
 {
@@ -9,9 +10,15 @@ return new class extends Migration
      */
     public function up(): void
     {
-        \Illuminate\Support\Facades\DB::statement(
-            "ALTER TABLE `generation_tasks` MODIFY COLUMN `status` ENUM('queued', 'running', 'completed', 'failed', 'pending_confirmation', 'pending_clarification') DEFAULT 'queued'"
-        );
+        $driver = DB::connection()->getDriverName();
+
+        if ($driver === 'mysql') {
+            DB::statement(
+                "ALTER TABLE `generation_tasks` MODIFY COLUMN `status` ENUM('queued', 'running', 'completed', 'failed', 'pending_confirmation', 'pending_clarification') DEFAULT 'queued'"
+            );
+        }
+        // SQLite doesn't support ENUM, and the field was already created as string in original migration
+        // No changes needed for SQLite - it already accepts any string value
     }
 
     /**
@@ -19,8 +26,13 @@ return new class extends Migration
      */
     public function down(): void
     {
-        \Illuminate\Support\Facades\DB::statement(
-            "ALTER TABLE `generation_tasks` MODIFY COLUMN `status` ENUM('queued', 'running', 'completed', 'failed') DEFAULT 'queued'"
-        );
+        $driver = DB::connection()->getDriverName();
+
+        if ($driver === 'mysql') {
+            DB::statement(
+                "ALTER TABLE `generation_tasks` MODIFY COLUMN `status` ENUM('queued', 'running', 'completed', 'failed') DEFAULT 'queued'"
+            );
+        }
+        // SQLite: no changes needed
     }
 };

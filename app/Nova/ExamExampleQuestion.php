@@ -7,9 +7,13 @@ use App\Nova\Filters\ExamFilter;
 use Laravel\Nova\Fields\Badge;
 use Laravel\Nova\Fields\BelongsTo;
 use Laravel\Nova\Fields\Code;
+use Laravel\Nova\Fields\Heading;
 use Laravel\Nova\Fields\ID;
+use Laravel\Nova\Fields\Number;
 use Laravel\Nova\Fields\Text;
+use Laravel\Nova\Fields\Textarea;
 use Laravel\Nova\Http\Requests\NovaRequest;
+use Laravel\Nova\Panel;
 
 class ExamExampleQuestion extends Resource
 {
@@ -24,16 +28,15 @@ class ExamExampleQuestion extends Resource
     public function fields(NovaRequest $request)
     {
         return [
-            ID::make()->sortable(),
+            // Index view fields
+            ID::make()->sortable()->onlyOnIndex(),
             BelongsTo::make('Exam', 'exam', Exam::class)
                 ->searchable()
                 ->sortable()
-                ->readonly(function ($request) {
-                    return ! $request->isResourceIndexRequest() && ! $request->isResourceDetailRequest();
-                }),
+                ->onlyOnIndex(),
             BelongsTo::make('Category', 'category', ExamCategory::class)
                 ->searchable()
-                ->nullable(),
+                ->onlyOnIndex(),
             Badge::make('Type', 'type')
                 ->map([
                     QuestionType::SINGLE_SELECT->value => 'info',
@@ -74,25 +77,102 @@ class ExamExampleQuestion extends Resource
                     QuestionType::ERROR_CORRECTION->value => 'Error Correction',
                     QuestionType::WRITING_PROMPT->value => 'Writing',
                     QuestionType::SPEAKING_PROMPT->value => 'Speaking',
-                ]),
-            Text::make('Question')->rules('required')->onlyOnForms(),
-            Text::make('Question Preview', 'question')->exceptOnForms()->onlyOnDetail(),
-            // Code::make('Good Answer')->json()
-            //     ->resolveUsing(fn ($v) => is_string($v) ? $v : json_encode($v, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE))
-            //     ->fillUsing(fn ($r, $m, $a, $ra) => $m->$a = json_decode($r->$ra ?: 'null', true))
-            //     ->hideFromIndex(),
-            // Code::make('Average Answer')->json()
-            //     ->resolveUsing(fn ($v) => is_string($v) ? $v : json_encode($v, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE))
-            //     ->fillUsing(fn ($r, $m, $a, $ra) => $m->$a = json_decode($r->$ra ?: 'null', true))
-            //     ->hideFromIndex(),
-            // Code::make('Bad Answer')->json()
-            //     ->resolveUsing(fn ($v) => is_string($v) ? $v : json_encode($v, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE))
-            //     ->fillUsing(fn ($r, $m, $a, $ra) => $m->$a = json_decode($r->$ra ?: 'null', true))
-            //     ->hideFromIndex(),
-            // Code::make('Rubric Breakdown')->json()
-            //     ->resolveUsing(fn ($v) => is_string($v) ? $v : json_encode($v, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE))
-            //     ->fillUsing(fn ($r, $m, $a, $ra) => $m->$a = json_decode($r->$ra ?: 'null', true))
-            //     ->hideFromIndex(),
+                ])
+                ->onlyOnIndex(),
+            Text::make('Question Preview', function () {
+                return mb_substr($this->question, 0, 100).(mb_strlen($this->question) > 100 ? '...' : '');
+            })->onlyOnIndex(),
+
+            // Detail view - beautiful document-like display
+            new Panel('📋 Question Overview', $this->getOverviewFields()),
+            new Panel('📝 Question Content', $this->getContentFields()),
+            new Panel('✅ Example Response & Assessment', $this->getAssessmentFields()),
+            new Panel('🔧 Technical Details', $this->getTechnicalFields()),
+        ];
+    }
+
+    private function getOverviewFields(): array
+    {
+        return [
+            Text::make('Type', function () {
+                return $this->type?->value ?? 'Unknown';
+            })->onlyOnDetail(),
+
+            BelongsTo::make('Category', 'category', ExamCategory::class)
+                ->onlyOnDetail(),
+
+            Number::make('Duration (minutes)', 'duration_minutes')
+                ->onlyOnDetail()
+                ->nullable()
+                ->help('Recommended time to complete this question'),
+
+            Textarea::make('Description', 'description')
+                ->onlyOnDetail()
+                ->readonly()
+                ->rows(2)
+                ->nullable()
+                ->help('What this question tests'),
+        ];
+    }
+
+    private function getContentFields(): array
+    {
+        return [
+            Heading::make('Instructions'),
+            Textarea::make('Instructions', 'instructions')
+                ->onlyOnDetail()
+                ->readonly()
+                ->rows(4)
+                ->nullable()
+                ->withMeta(['extraAttributes' => [
+                    'style' => 'font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; font-size: 14px; line-height: 1.6;',
+                ]]),
+
+            Heading::make('Question'),
+            Textarea::make('Question Text', 'question')
+                ->onlyOnDetail()
+                ->readonly()
+                ->rows(8)
+                ->withMeta(['extraAttributes' => [
+                    'style' => 'font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; font-size: 15px; line-height: 1.8; font-weight: 500;',
+                ]]),
+        ];
+    }
+
+    private function getAssessmentFields(): array
+    {
+        return [
+            Heading::make('Example Response'),
+            Code::make('Example Response', 'example_response')
+                ->json()
+                ->onlyOnDetail()
+                ->nullable()
+                ->help('Example of a correct/good response'),
+
+            Heading::make('Assessment Guide'),
+            Textarea::make('Assessment Guide', 'assessment_guide')
+                ->onlyOnDetail()
+                ->readonly()
+                ->rows(6)
+                ->nullable()
+                ->withMeta(['extraAttributes' => [
+                    'style' => 'font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; font-size: 14px; line-height: 1.6; background-color: #f9fafb;',
+                ]])
+                ->help('Guidelines for evaluating student responses'),
+        ];
+    }
+
+    private function getTechnicalFields(): array
+    {
+        return [
+            Code::make('Payload', 'payload')
+                ->json()
+                ->onlyOnDetail()
+                ->nullable()
+                ->help('Type-specific data (options, correct answers, etc.)'),
+
+            BelongsTo::make('Exam', 'exam', Exam::class)
+                ->onlyOnDetail(),
         ];
     }
 
