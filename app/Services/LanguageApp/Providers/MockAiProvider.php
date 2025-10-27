@@ -15,6 +15,12 @@ final class MockAiProvider implements AiProvider
 
     public function generate(array $payload, array $opts = []): array
     {
+        // Check if this is an identity guard request (has messages array with system/user roles)
+        if (isset($payload['messages']) && is_array($payload['messages'])) {
+            return $this->generateIdentityResponse($payload, $opts);
+        }
+
+        // Original overview generation logic
         $files = is_array($opts['files'] ?? null) ? $opts['files'] : [];
 
         $docSources = [];
@@ -94,6 +100,71 @@ final class MockAiProvider implements AiProvider
             'raw' => $raw,
             'body' => $body,
             'content' => $contentText,
+            'content_json' => $content,
+            'usage' => $body['usage'],
+        ];
+    }
+
+    /**
+     * Generate mock identity guard response
+     */
+    private function generateIdentityResponse(array $payload, array $opts): array
+    {
+        // Mock identity response for IELTS Academic
+        $content = [
+            'status' => 'certain',
+            'confidence' => 0.95,
+            'canonical' => [
+                'family' => 'IELTS',
+                'name' => 'IELTS Academic',
+                'provider' => 'Cambridge Assessment English / IDP / British Council',
+                'variant' => 'Academic',
+                'language_of_test' => 'English',
+            ],
+            'candidates' => [
+                [
+                    'family' => 'IELTS',
+                    'name' => 'IELTS Academic',
+                    'provider' => 'Cambridge/IDP/BC',
+                    'score' => 0.95,
+                ],
+            ],
+            'followups' => [],
+            'need_fields' => [],
+            'anchors' => [
+                [
+                    'page' => 1,
+                    'snippet' => 'IELTS Academic exam structure',
+                ],
+            ],
+        ];
+
+        $contentText = json_encode($content, JSON_UNESCAPED_UNICODE);
+        $body = [
+            'id' => 'mock-identity-resp-1',
+            'choices' => [
+                [
+                    'index' => 0,
+                    'message' => [
+                        'role' => 'assistant',
+                        'content' => $contentText,
+                    ],
+                    'finish_reason' => 'stop',
+                ],
+            ],
+            'usage' => [
+                'prompt_tokens' => 10,
+                'completion_tokens' => 30,
+                'total_tokens' => 40,
+            ],
+        ];
+        $raw = json_encode($body, JSON_UNESCAPED_UNICODE);
+
+        return [
+            'ok' => true,
+            'raw' => $raw,
+            'body' => $body,
+            'content' => $content,  // Already decoded for identity responses
             'content_json' => $content,
             'usage' => $body['usage'],
         ];
