@@ -17,9 +17,9 @@ use Illuminate\Validation\ValidationException;
  *     [
  *       "id" => "string",
  *       "name" => "string",
- *       "category" => "string",                 // primary category (по максимальному весу или явному полю)
- *       "category_weights" => {string: float},  // нормализованные ключи (lowercase)
- *       "step_duration" => ?int,                // минуты; из typical_length_or_time / ranges / null
+ *       "category" => "string",                 // primary section (по максимальному весу или явному полю) - sections are exam parts like listening, reading, writing, speaking
+ *       "category_weights" => {string: float},  // нормализованные ключи (lowercase) - NOTE: field name is category_weights for backwards compatibility, but represents SECTIONS
+ *       "step_duration" => ?int,                // минуты; task-level timing OR section-level timing (if only section duration available). Priority: step_duration > section_duration > inferred from ranges
  *
  *       // агрегированные логические блоки
  *       "stem_templates" => ["string", ...],    // инструкции/шаблоны/частые фразы
@@ -34,13 +34,13 @@ use Illuminate\Validation\ValidationException;
  *     ...
  *   ],
  *   "category_map" => [
- *     "<category_name>" => [
+ *     "<section_name>" => [                    // NOTE: field name is category_map for backwards compatibility, but represents SECTIONS
  *        "archetype_weights" => [
  *          ["archetype_id"=>"string","weight"=>float], ...
  *        ],
  *     ],
  *   ],
- *   "total_exam_duration" => ?int,              // сумма известных step_duration
+ *   "total_exam_duration" => ?int,              // сумма известных step_duration (total exam time)
  *   "rationale" => "string|null"
  * ]
  */
@@ -140,6 +140,7 @@ final class JsonSchemaExamOverview
                 'units', 'common_visuals', 'evidence', 'evidence_sources', 'difficulty', 'difficulty_band', 'difficulty_band_cefr',
                 'typical_answer_length_or_range', 'typical_length_or_time', 'numeric_ranges', 'numeric_ranges_and_constraints',
                 'typical_instructions', 'rationale', 'description',
+                'step_duration', 'section_duration', // Task #4: explicit duration fields (task-level or section-level)
             ];
             $other = [];
             foreach ($arc as $k => $v) {
@@ -286,7 +287,23 @@ final class JsonSchemaExamOverview
 
     private function inferStepDurationMinutes(array $arc): ?int
     {
-        // typical_length_or_time может быть числом, объектом или массивом; ищем minutes/seconds и т.п.
+        // PRIORITY 1: Direct step_duration field (task-level timing)
+        if (isset($arc['step_duration'])) {
+            $mins = $this->extractMinutes($arc['step_duration']);
+            if (!is_null($mins)) {
+                return $mins;
+            }
+        }
+
+        // PRIORITY 2: section_duration field (section-level timing, per Task #4 from task_prompt_2_25_10_25.md)
+        if (isset($arc['section_duration'])) {
+            $mins = $this->extractMinutes($arc['section_duration']);
+            if (!is_null($mins)) {
+                return $mins;
+            }
+        }
+
+        // PRIORITY 3: Infer from typical_length_or_time and similar fields
         $candidates = [
             'typical_length_or_time',
             'typical_answer_length_or_range',
@@ -304,7 +321,7 @@ final class JsonSchemaExamOverview
             }
         }
 
-        // иногда units/description намекают на "minutes" — но без числа надёжно не извлечь. Оставим null. :contentReference[oaicite:3]{index=3}
+        // иногда units/description намекают на "minutes" — но без числа надёжно не извлечь. Оставим null.
         return null;
     }
 

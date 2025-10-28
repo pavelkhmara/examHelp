@@ -84,23 +84,29 @@ class ConfirmIdentityAction extends Action
 
                 return Action::message('Identity confirmed! Research pipeline will continue.');
             } else {
-                // User rejected - mark uncertain and keep hold
+                // User rejected - re-run identity verification
                 $identity['status'] = 'uncertain';
                 $identity['confidence'] = 0.3;
                 $identity['user_rejected'] = true;
                 $identity['rejected_at'] = now()->toISOString();
                 $identity['hold'] = true;
+                $identity['user_provided_clarification'] = true; // Signal to job to re-run identity guard
                 if ($notes) {
                     $identity['rejection_notes'] = $notes;
+                    $identity['clarification_data'] = ['user_notes' => $notes];
                 }
 
                 $result = (array) ($task->result ?? []);
                 $result['identity'] = $identity;
                 $task->result = $result;
-                $task->status = 'pending';
+                $task->status = 'queued'; // Set to queued so job can pick it up
                 $task->save();
 
-                return Action::message('Identity rejected. Please run research again with corrected input.');
+                // Re-run the research job to verify identity again
+                \App\Jobs\RunExamResearchJob::dispatch($task->id)
+                    ->delay(now()->addSeconds(1));
+
+                return Action::message('Identity rejected. Re-running identity verification with your notes.');
             }
         }
 

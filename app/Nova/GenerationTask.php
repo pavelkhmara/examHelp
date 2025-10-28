@@ -33,7 +33,7 @@ class GenerationTask extends Resource
                 }),
             Text::make('Type')->sortable(),
             Select::make('Status')->options([
-                'queued' => 'queued', 'running' => 'running', 'completed' => 'completed', 'failed' => 'failed',
+                'queued' => 'queued', 'running' => 'running', 'completed' => 'completed', 'failed' => 'failed','pending_confirmation' => 'pending_confirmation','pending_clarification' => 'pending_clarification',
             ])->displayUsingLabels()->sortable(),
             Number::make('Attempts')->sortable(),
             Code::make('Request')->json()

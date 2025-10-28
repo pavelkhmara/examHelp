@@ -72,6 +72,11 @@ PROMPT;
             return 'none';
         }
 
-        return implode("\n- ", array_map(fn ($item) => "- $item", $items));
+        return implode("\n- ", array_map(function ($item) {
+            if (is_array($item)) {
+                return "- " . json_encode($item, JSON_UNESCAPED_UNICODE);
+            }
+            return "- $item";
+        }, $items));
     }
 }

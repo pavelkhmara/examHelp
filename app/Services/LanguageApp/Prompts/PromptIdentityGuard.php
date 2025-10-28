@@ -95,7 +95,15 @@ SYSTEM;
 
     public static function userPrompt(array $userInput, ?string $extractedText, array $markerPack = []): string
     {
-        $userJson = json_encode($userInput, JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT);
+        // Extract iteration context and web search data if present
+        $iterationContext = $userInput['iteration_context'] ?? null;
+        $webSearchData = $userInput['web_search_data'] ?? null;
+
+        // Clean user input for display (remove internal tracking fields)
+        $cleanUserInput = $userInput;
+        unset($cleanUserInput['iteration_context'], $cleanUserInput['web_search_data']);
+
+        $userJson = json_encode($cleanUserInput, JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT);
         $textSnippet = $extractedText
             ? (mb_strlen($extractedText) > 3000
                 ? mb_substr($extractedText, 0, 3000)."\n\n[...text truncated for brevity...]"
@@ -105,6 +113,67 @@ SYSTEM;
         $markerInfo = ! empty($markerPack)
             ? 'Marker Pack Available: '.json_encode(array_keys($markerPack), JSON_UNESCAPED_UNICODE)
             : '[No marker pack provided]';
+
+        // Build iteration context section
+        $iterationSection = '';
+        if ($iterationContext && is_array($iterationContext)) {
+            $iterationNumber = $iterationContext['iteration_number'] ?? 1;
+            $previousAttempts = $iterationContext['previous_attempts'] ?? [];
+
+            if (!empty($previousAttempts)) {
+                $iterationSection = "\n\n**PREVIOUS VERIFICATION ATTEMPTS:**\n";
+                $iterationSection .= "This is attempt #{$iterationNumber}. Previous attempts:\n\n";
+
+                foreach ($previousAttempts as $attempt) {
+                    $attemptNum = $attempt['attempt'] ?? '?';
+                    $confidence = round(($attempt['confidence'] ?? 0) * 100);
+                    $status = $attempt['status'] ?? 'unknown';
+                    $canonical = $attempt['canonical'] ?? [];
+                    $issues = $attempt['issues'] ?? [];
+
+                    $iterationSection .= "Attempt #{$attemptNum}: {$status}, confidence: {$confidence}%\n";
+
+                    if (!empty($canonical['family'])) {
+                        $iterationSection .= "  - Identified: " . ($canonical['family'] ?? 'unknown');
+                        if (!empty($canonical['variant'])) {
+                            $iterationSection .= " ({$canonical['variant']})";
+                        }
+                        $iterationSection .= "\n";
+                    }
+
+                    if (!empty($issues)) {
+                        $iterationSection .= "  - Issues: " . count($issues) . " questions needed clarification\n";
+                    }
+                }
+
+                $iterationSection .= "\nIMPORTANT: Use information from previous attempts to improve your analysis.\n";
+                $iterationSection .= "Focus on resolving issues identified in previous attempts.\n";
+            }
+        }
+
+        // Build web search section
+        $webSearchSection = '';
+        if ($webSearchData && is_array($webSearchData) && !empty($webSearchData)) {
+            $webSearchSection = "\n\n**WEB SEARCH RESULTS:**\n";
+            $webSearchSection .= "Additional information gathered from web search:\n\n";
+
+            foreach (array_slice($webSearchData, 0, 3) as $idx => $searchResult) {
+                $query = $searchResult['query'] ?? '';
+                $summary = $searchResult['result']['summary'] ?? '';
+
+                // Ensure summary is a string
+                if (is_array($summary)) {
+                    $summary = json_encode($summary, JSON_UNESCAPED_UNICODE);
+                }
+
+                if ($summary) {
+                    $webSearchSection .= "Search #{" . ($idx + 1) . "}: \"{$query}\"\n";
+                    $webSearchSection .= $summary . "\n\n";
+                }
+            }
+
+            $webSearchSection .= "IMPORTANT: Use this web search information to increase confidence and accuracy.\n";
+        }
 
         return <<<PROMPT
 **USER INPUT:**
@@ -119,6 +188,8 @@ SYSTEM;
 
 **MARKER PACK INFO:**
 {$markerInfo}
+{$iterationSection}
+{$webSearchSection}
 
 **YOUR TASK:**
 Analyze the provided information and determine the exam identity with maximum confidence.
