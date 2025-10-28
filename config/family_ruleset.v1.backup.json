@@ -1,0 +1,246 @@
+{
+  "IELTS": {
+    "family": "IELTS",
+    "provider": "Cambridge Assessment English / IDP / British Council",
+    "variants": ["Academic", "General Training"],
+    "languages": ["English"],
+    "sections": {
+      "required": ["Listening", "Reading", "Writing", "Speaking"],
+      "order_matters": true
+    },
+    "timing": {
+      "total_minutes": [165, 175],
+      "listening_minutes": [30, 30],
+      "listening_transfer_minutes": [10, 10],
+      "reading_minutes": [60, 60],
+      "writing_minutes": [60, 60],
+      "speaking_minutes": [11, 14]
+    },
+    "structure": {
+      "listening_parts": 4,
+      "listening_questions": 40,
+      "reading_passages": [3, 3],
+      "reading_questions": 40,
+      "writing_tasks": 2,
+      "speaking_parts": 3
+    },
+    "scoring": {
+      "scale": "0.0-9.0",
+      "increment": 0.5,
+      "band_score": true
+    },
+    "signatures": [
+      "Listening 30 minutes + 10 minutes transfer time",
+      "Reading 60 minutes / 40 questions",
+      "Writing Task 1 (150 words min) + Task 2 (250 words min, counts double)",
+      "Speaking: face-to-face interview",
+      "Academic vs General Training variant"
+    ],
+    "must_have": [
+      "Band scores from 0-9",
+      "Four skills tested",
+      "Speaking is face-to-face",
+      "Transfer time for Listening answers"
+    ],
+    "red_flags": [
+      "Computer-based only (both paper and computer-based exist)",
+      "Multiple choice only (various question types)",
+      "No speaking section",
+      "Scoring 0-120 (that's TOEFL)"
+    ]
+  },
+  "TOEFL": {
+    "family": "TOEFL iBT",
+    "provider": "ETS (Educational Testing Service)",
+    "variants": ["iBT", "iBT Home Edition", "Paper Edition"],
+    "languages": ["English"],
+    "sections": {
+      "required": ["Reading", "Listening", "Speaking", "Writing"],
+      "order_matters": false
+    },
+    "timing": {
+      "total_minutes": [115, 130],
+      "reading_minutes": [35, 36],
+      "listening_minutes": [36, 36],
+      "speaking_minutes": [16, 16],
+      "writing_minutes": [29, 29]
+    },
+    "structure": {
+      "reading_passages": [2, 2],
+      "reading_questions": 20,
+      "listening_lectures": [3, 4],
+      "listening_conversations": [2, 3],
+      "speaking_tasks": 4,
+      "writing_tasks": 2
+    },
+    "scoring": {
+      "scale": "0-120",
+      "per_section": "0-30",
+      "increment": 1
+    },
+    "signatures": [
+      "Reading 35 minutes (2 passages, 10 questions each)",
+      "Listening 36 minutes (lectures + conversations)",
+      "Speaking 4 tasks (1 independent, 3 integrated)",
+      "Writing: 1 integrated task + 1 independent essay",
+      "Integrated tasks present (combining multiple skills)"
+    ],
+    "must_have": [
+      "Scoring 0-120 total",
+      "Four sections scored 0-30 each",
+      "Integrated tasks (combining reading/listening/speaking or writing)",
+      "Computer-based by default"
+    ],
+    "red_flags": [
+      "Band scores 0-9 (that's IELTS)",
+      "Face-to-face speaking (TOEFL is computer-recorded)",
+      "Transfer time for answers (IELTS feature)",
+      "Paper-based only (iBT is primary format)"
+    ]
+  },
+  "Goethe-Zertifikat": {
+    "family": "Goethe-Zertifikat",
+    "provider": "Goethe-Institut",
+    "variants": ["A1", "A2", "B1", "B2", "C1", "C2"],
+    "languages": ["German"],
+    "sections": {
+      "required": ["Lesen", "Hören", "Schreiben", "Sprechen"],
+      "order_matters": false
+    },
+    "timing": {
+      "total_minutes": {
+        "A1": [80, 90],
+        "A2": [100, 110],
+        "B1": [140, 160],
+        "B2": [170, 190],
+        "C1": [210, 230],
+        "C2": [210, 240]
+      }
+    },
+    "structure": {
+      "parts_per_section": [3, 4],
+      "pair_or_group_speaking": true
+    },
+    "scoring": {
+      "scale": "0-100",
+      "passing_score": 60,
+      "per_section_minimum": 50
+    },
+    "signatures": [
+      "German language proficiency",
+      "CEFR levels A1-C2",
+      "Speaking in pairs or groups",
+      "Pass/Fail with percentage scores"
+    ],
+    "must_have": [
+      "German language",
+      "CEFR alignment",
+      "Four skills tested",
+      "Goethe-Institut as provider"
+    ],
+    "red_flags": [
+      "English language test",
+      "Band scores (not percentage-based)",
+      "Individual speaking interview only"
+    ]
+  },
+  "DELF-DALF": {
+    "family": "DELF/DALF",
+    "provider": "France Éducation international",
+    "variants": ["DELF A1", "DELF A2", "DELF B1", "DELF B2", "DALF C1", "DALF C2"],
+    "languages": ["French"],
+    "sections": {
+      "required": ["Compréhension orale", "Compréhension écrite", "Production écrite", "Production orale"],
+      "order_matters": false
+    },
+    "timing": {
+      "total_minutes": {
+        "A1": [60, 80],
+        "A2": [80, 100],
+        "B1": [105, 120],
+        "B2": [150, 170],
+        "C1": [240, 260],
+        "C2": [210, 240]
+      }
+    },
+    "structure": {
+      "parts_per_section": [2, 4]
+    },
+    "scoring": {
+      "scale": "0-100",
+      "passing_score": 50,
+      "per_section_minimum": 5
+    },
+    "signatures": [
+      "French language proficiency",
+      "CEFR levels A1-C2",
+      "DELF (A1-B2) and DALF (C1-C2)",
+      "Speaking examination with examiner"
+    ],
+    "must_have": [
+      "French language",
+      "CEFR alignment",
+      "Four competencies tested",
+      "France Éducation international certification"
+    ],
+    "red_flags": [
+      "English language test",
+      "Band scores instead of percentage",
+      "Computer-based only"
+    ]
+  },
+  "telc": {
+    "family": "telc",
+    "provider": "telc gGmbH",
+    "variants": ["Multiple languages and levels"],
+    "languages": ["German", "English", "Spanish", "French", "Italian", "Portuguese", "Russian", "Turkish", "Polish", "Czech"],
+    "sections": {
+      "required": ["Reading", "Listening", "Writing", "Speaking"],
+      "order_matters": false
+    },
+    "timing": {
+      "varies_by_level": true,
+      "total_minutes": [110, 180]
+    },
+    "structure": {
+      "parts_per_section": [2, 4],
+      "pair_speaking": true
+    },
+    "scoring": {
+      "scale": "0-100",
+      "passing_score": 60,
+      "certificate_levels": ["pass", "pass with distinction"]
+    },
+    "signatures": [
+      "Multiple language options",
+      "CEFR-aligned levels",
+      "Practical communication focus",
+      "Speaking in pairs"
+    ],
+    "must_have": [
+      "CEFR alignment",
+      "Four skills tested",
+      "telc certification"
+    ],
+    "red_flags": [
+      "Single language only (telc offers many)",
+      "No speaking component",
+      "Non-CEFR levels"
+    ]
+  },
+  "_meta": {
+    "version": "1.0",
+    "last_updated": "2025-10-24",
+    "confidence_thresholds": {
+      "certain": 0.90,
+      "probable": 0.80,
+      "uncertain": 0.80
+    },
+    "compliance_thresholds": {
+      "pass": 0.85,
+      "review": 0.70,
+      "fail": 0.70
+    },
+    "notes": "This ruleset defines invariants for major exam families. Red flags indicate features that contradict the family identity. Timing tolerances are ±5 minutes for detection purposes."
+  }
+}

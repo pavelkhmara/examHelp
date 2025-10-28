@@ -287,7 +287,7 @@ class IdentityGuardService extends AbstractAiService
     /**
      * Extract document text from document ID
      */
-    protected function extractDocumentText(?int $docId): ?string
+    protected function extractDocumentText(string|int|null $docId): ?string
     {
         if (! $docId) {
             return null;
@@ -359,7 +359,7 @@ class IdentityGuardService extends AbstractAiService
         Exam $exam,
         GenerationTask $task,
         array $user,
-        ?int $docId,
+        string|int|null $docId,
         ?string $extracted,
         array $res,
         array $aiResponse
@@ -388,7 +388,7 @@ class IdentityGuardService extends AbstractAiService
         Exam $exam,
         GenerationTask $task,
         array $user,
-        ?int $docId,
+        string|int|null $docId,
         string $error,
         array $res
     ): void {

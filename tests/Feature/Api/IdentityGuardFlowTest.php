@@ -230,7 +230,7 @@ class IdentityGuardFlowTest extends TestCase
         $this->assertTrue($identity['user_rejected']);
         $this->assertEquals('uncertain', $identity['status']);
         $this->assertEquals('This is actually TOEFL', $identity['rejection_notes']);
-        $this->assertEquals('pending', $task->status);
+        $this->assertEquals('queued', $task->status);
     }
 
     public function test_confirm_identity_requires_authentication(): void

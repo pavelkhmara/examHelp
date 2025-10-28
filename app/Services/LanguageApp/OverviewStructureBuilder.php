@@ -24,17 +24,37 @@ use Illuminate\Support\Str;
  */
 class OverviewStructureBuilder extends AbstractAiService
 {
+    /**
+     * @param DocumentStructureExtractor|null $documentExtractor Injected for structured document extraction (Task #1 from task_prompt_2_25_10_25.md)
+     */
+    public function __construct(
+        AiProvider $ai,
+        protected ?DocumentStructureExtractor $documentExtractor = null
+    ) {
+        parent::__construct($ai);
+    }
+
     public function runPipeline(Exam $exam, GenerationTask $task): array
     {
         Log::debug('OverviewStructureBuilder: starting pipeline', ['exam_id' => $exam->id, 'task_id' => $task->id]);
         $files = $this->buildFilesForExam($exam);
         $preferDocs = (bool) (config('ai.documents.prefer_documents') ?? true);
 
+        // FEATURE: Extract structured data from documents (Task #1 - easy to disable by setting to null)
+        $documentStructuredData = $this->extractDocumentStructure($exam);
+        if ($documentStructuredData) {
+            Log::info('Document structure extracted', [
+                'exam_id' => $exam->id,
+                'sections_found' => count($documentStructuredData['structure']['sections'] ?? []),
+            ]);
+        }
+
         // Retry loop for poor structure quality
         $maxRetries = 2;
         $retryAttempt = 0;
         $overview_normalized = null;
         $res1 = null;
+        $validationErrors = []; // Track validation errors for retry hints
 
         while ($retryAttempt <= $maxRetries) {
             // Log activity for overview stage
@@ -42,6 +62,46 @@ class OverviewStructureBuilder extends AbstractAiService
                 $task->addActivity('overview_started', 'Requesting exam overview from AI');
             } else {
                 $task->addActivity('overview_retry', "Retrying overview (attempt {$retryAttempt}/{$maxRetries}) - improving structure quality");
+            }
+
+            // Build retry hint including validation errors
+            $retryHint = null;
+            if ($retryAttempt > 0) {
+                $hints = [];
+
+                // Add quality hint
+                $hints[] = 'IMPORTANT: Previous attempt had poor category distribution. Please ensure EACH archetype has category_weights field with appropriate categories (e.g., listening, reading, writing, speaking, grammar). Do NOT put all archetypes in "unknown" category.';
+
+                // Add validation error hints with specific instructions
+                if (!empty($validationErrors)) {
+                    $hints[] = 'VALIDATION ERRORS from previous attempt:';
+                    foreach ($validationErrors as $error) {
+                        $hints[] = "  - {$error}";
+
+                        // Add specific instructions for step_duration errors
+                        if (stripos($error, 'step_duration') !== false) {
+                            $hints[] = '';
+                            $hints[] = 'HOW TO FIX step_duration ERRORS:';
+                            $hints[] = '1. If document specifies timing for each task → use that exact value';
+                            $hints[] = '2. If document only has section duration → CALCULATE step_duration:';
+                            $hints[] = '   Example: Section 30 min, 5 tasks → step_duration = 6 min per task';
+                            $hints[] = '3. If no timing info in document, use typical durations by task type:';
+                            $hints[] = '   - Multiple choice (10-20 items): 10-15 min';
+                            $hints[] = '   - Essay writing (150-200 words): 40-50 min';
+                            $hints[] = '   - Short writing (40-50 words): 15-20 min';
+                            $hints[] = '   - Listening comprehension: 5-10 min per passage';
+                            $hints[] = '   - Reading comprehension: 15-20 min per passage';
+                            $hints[] = '   - Speaking tasks: 5-10 min per part';
+                            $hints[] = '';
+                            $hints[] = 'CRITICAL: Do NOT leave step_duration as null, 0, or empty!';
+                            $hints[] = 'Every task MUST have a positive step_duration value.';
+                        }
+                    }
+                    $hints[] = '';
+                    $hints[] = 'Please FIX these validation errors in this attempt.';
+                }
+
+                $retryHint = implode("\n", $hints);
             }
 
             // 1) Overview
@@ -55,10 +115,14 @@ class OverviewStructureBuilder extends AbstractAiService
                 'context_policy' => $preferDocs
                     ? 'Prefer insights derived from provided exam documents over generic web sources when there is any conflict.'
                     : 'Use both files and web sources.',
-                'retry_hint' => $retryAttempt > 0
-                    ? 'IMPORTANT: Previous attempt had poor category distribution. Please ensure EACH archetype has category_weights field with appropriate categories (e.g., listening, reading, writing, speaking, grammar). Do NOT put all archetypes in "unknown" category.'
-                    : null,
+                'retry_hint' => $retryHint,
             ];
+
+            // FEATURE: Add structured document data if available (Task #1)
+            if ($documentStructuredData) {
+                $payload['document_structured_data'] = $documentStructuredData;
+                $payload['document_usage_instruction'] = 'Use the document_structured_data as high-confidence reference. Search online for better/additional info. If online sources contradict document data or provide less detail, prefer document data.';
+            }
 
             $opts = [
                 'web' => true,
@@ -76,9 +140,12 @@ class OverviewStructureBuilder extends AbstractAiService
             // RESPONSE validation
             $decoded = $this->decodeOverview($res1);
 
+            // Fill missing step_duration values before validation
+            $decoded = $this->fillMissingStepDurations($decoded);
+
             try {
                 $validator = new JsonSchemaExamOverview;
-                $overview_normalized = $validator->validate($res1['content'] ?? null);
+                $overview_normalized = $validator->validate($decoded);
                 $this->log($task, 'overview_validated', $payload, ['result' => $overview_normalized]);
 
                 $task->addActivity('overview_validated', 'Overview validated successfully');
@@ -95,6 +162,44 @@ class OverviewStructureBuilder extends AbstractAiService
                     $task->addActivity('overview_validated_soft', 'Overview validated with test fallback');
                 } else {
                     $task->addActivity('overview_validation_failed', 'Overview validation failed: '.$ve->getMessage());
+
+                    // If we can retry, add validation error to retry hint and continue
+                    if ($retryAttempt < $maxRetries) {
+                        $validationError = $ve->getMessage();
+                        $retryAttempt++;
+
+                        Log::warning('Overview validation failed, retrying with error hint', [
+                            'attempt' => $retryAttempt,
+                            'error' => $validationError,
+                        ]);
+
+                        $task->addActivity('decision_point_validation', "Условие: validation_failed И retry_attempt < {$maxRetries} (попытка {$retryAttempt}). Решение: RETRY Overview с инструкциями по исправлению ошибок валидации", [
+                            'condition' => 'validation_failed AND retry_attempt < maxRetries',
+                            'validation_error' => substr($validationError, 0, 200),
+                            'retry_attempt' => $retryAttempt,
+                            'max_retries' => $maxRetries,
+                            'decision' => 'retry_with_validation_hints',
+                        ]);
+
+                        $task->addActivity('overview_validation_retry', "Validation failed, retrying (attempt {$retryAttempt}/{$maxRetries})", [
+                            'error' => $validationError,
+                            'retry_attempt' => $retryAttempt,
+                        ]);
+
+                        // Store validation error for next iteration
+                        $validationErrors[] = $validationError;
+
+                        continue;
+                    }
+
+                    // Max retries reached, fail the task
+                    $task->addActivity('decision_point_validation', "Условие: validation_failed И retry_attempt >= {$maxRetries} (попытка {$retryAttempt}). Решение: ОШИБКА - validation_failed", [
+                        'condition' => 'validation_failed AND retry_attempt >= maxRetries',
+                        'validation_error' => substr($ve->getMessage(), 0, 200),
+                        'retry_attempt' => $retryAttempt,
+                        'max_retries' => $maxRetries,
+                        'decision' => 'fail_validation_error',
+                    ]);
 
                     return ['ok' => false, 'error' => 'validation_failed', 'errors' => [$ve->getMessage()]];
                 }
@@ -126,6 +231,14 @@ class OverviewStructureBuilder extends AbstractAiService
                     'quality_score' => $qualityScore,
                 ]);
 
+                $task->addActivity('decision_point_overview_quality', "Условие: quality_score < 0.5 И retry_attempt < {$maxRetries} (текущий: {$qualityScore}, попытка {$retryAttempt}). Решение: RETRY Overview с подсказками по улучшению", [
+                    'condition' => 'quality_score < 0.5 AND retry_attempt < maxRetries',
+                    'quality_score' => $qualityScore,
+                    'retry_attempt' => $retryAttempt,
+                    'max_retries' => $maxRetries,
+                    'decision' => 'retry_with_hints',
+                ]);
+
                 $task->addActivity('overview_quality_poor', "Quality too low ({$qualityScore} < 0.5), retrying...", [
                     'quality_score' => $qualityScore,
                     'retry_attempt' => $retryAttempt,
@@ -135,6 +248,21 @@ class OverviewStructureBuilder extends AbstractAiService
             }
 
             // Good quality or max retries reached - break and continue with pipeline
+            if ($qualityScore >= 0.5) {
+                $task->addActivity('decision_point_overview_quality', "Условие: quality_score >= 0.5 (текущий: {$qualityScore}). Решение: продолжить к ЭТАПУ 3 (Sanity Check)", [
+                    'condition' => 'quality_score >= 0.5',
+                    'quality_score' => $qualityScore,
+                    'decision' => 'continue_to_sanity_check',
+                ]);
+            } else {
+                $task->addActivity('decision_point_overview_quality', "Условие: retry_attempt >= {$maxRetries} (попытка {$retryAttempt}). Решение: продолжить с текущей структурой, несмотря на низкое качество", [
+                    'condition' => 'retry_attempt >= maxRetries',
+                    'quality_score' => $qualityScore,
+                    'retry_attempt' => $retryAttempt,
+                    'max_retries' => $maxRetries,
+                    'decision' => 'continue_despite_low_quality',
+                ]);
+            }
             break;
         }
 
@@ -649,5 +777,155 @@ class OverviewStructureBuilder extends AbstractAiService
                 'last_researched_at' => now()->toISOString(),
             ]),
         ]);
+    }
+
+    /**
+     * Fill missing step_duration values by calculating from section duration
+     *
+     * When documents specify section duration but not per-task timing,
+     * we distribute the time evenly among tasks in that section.
+     */
+    protected function fillMissingStepDurations(array $overview): array
+    {
+        $sections = $overview['sections'] ?? [];
+
+        foreach ($sections as $sectionIdx => &$section) {
+            $sectionDuration = $section['duration_minutes'] ?? null;
+            $tasks = $section['tasks'] ?? [];
+            $taskCount = count($tasks);
+
+            if (!$sectionDuration || $taskCount === 0) {
+                continue;
+            }
+
+            // Calculate how much time is already allocated
+            $tasksWithoutDuration = [];
+            $allocatedTime = 0;
+
+            foreach ($tasks as $idx => $task) {
+                if (isset($task['step_duration']) && $task['step_duration'] > 0) {
+                    $allocatedTime += $task['step_duration'];
+                } else {
+                    $tasksWithoutDuration[] = $idx;
+                }
+            }
+
+            // Distribute remaining time among tasks without duration
+            if (!empty($tasksWithoutDuration)) {
+                $remainingTime = $sectionDuration - $allocatedTime;
+                $timePerTask = $remainingTime > 0
+                    ? round($remainingTime / count($tasksWithoutDuration), 1)
+                    : round($sectionDuration / $taskCount, 1);
+
+                foreach ($tasksWithoutDuration as $idx) {
+                    $section['tasks'][$idx]['step_duration'] = max(1, $timePerTask);
+                }
+
+                Log::debug('Filled missing step_duration', [
+                    'section' => $section['section_name'] ?? "section_{$sectionIdx}",
+                    'section_duration' => $sectionDuration,
+                    'tasks_filled' => count($tasksWithoutDuration),
+                    'time_per_task' => $timePerTask,
+                ]);
+            }
+        }
+
+        $overview['sections'] = $sections;
+
+        // Also handle global_archetypes if present (fallback structure)
+        if (isset($overview['global_archetypes'])) {
+            foreach ($overview['global_archetypes'] as &$archetype) {
+                if (!isset($archetype['step_duration']) || $archetype['step_duration'] <= 0) {
+                    // Estimate based on task type or use default
+                    $archetype['step_duration'] = $this->estimateTaskDuration($archetype);
+                }
+            }
+        }
+
+        return $overview;
+    }
+
+    /**
+     * Estimate task duration based on task type and characteristics
+     */
+    protected function estimateTaskDuration(array $task): int
+    {
+        $taskType = $task['task_type'] ?? '';
+        $taskName = strtolower($task['task_name'] ?? '');
+
+        // Heuristics based on task type
+        if (str_contains($taskType, 'multiple_choice') || str_contains($taskType, 'true_false')) {
+            $questionCount = $task['question_count'] ?? 10;
+            return max(5, (int)($questionCount * 1.0)); // 1 min per question
+        }
+
+        if (str_contains($taskType, 'writing') || str_contains($taskName, 'writing') || str_contains($taskName, 'essay')) {
+            $wordCount = $task['word_count_target'] ?? 100;
+            if (is_string($wordCount)) {
+                preg_match('/\d+/', $wordCount, $matches);
+                $wordCount = (int)($matches[0] ?? 100);
+            }
+            return max(20, (int)($wordCount / 3)); // ~3 words per minute
+        }
+
+        if (str_contains($taskName, 'listening') || str_contains($taskType, 'listening')) {
+            return 10; // typical listening task
+        }
+
+        if (str_contains($taskName, 'reading') || str_contains($taskType, 'reading')) {
+            return 15; // typical reading task
+        }
+
+        if (str_contains($taskName, 'speaking') || str_contains($taskType, 'speaking')) {
+            return 5; // typical speaking task part
+        }
+
+        return 15; // generic default
+    }
+
+    /**
+     * Extract structured data from exam documents
+     *
+     * This implements Task #1 from task_prompt_2_25_10_25.md
+     * FEATURE: Easy to disable by removing this method call or setting $documentExtractor to null
+     *
+     * @param Exam $exam
+     * @return array|null Structured data or null if extraction fails/disabled
+     */
+    protected function extractDocumentStructure(Exam $exam): ?array
+    {
+        // Feature flag: if no extractor injected, feature is disabled
+        if (!$this->documentExtractor) {
+            return null;
+        }
+
+        // Get the most recent completed document
+        $document = $exam->documents()
+            ->where('status', 'completed')
+            ->whereNotNull('extracted_text')
+            ->orderByDesc('updated_at')
+            ->first();
+
+        if (!$document) {
+            return null;
+        }
+
+        try {
+            $structured = $this->documentExtractor->extract($document);
+
+            if (!$structured) {
+                return null;
+            }
+
+            // Format as hints for the prompt
+            return $this->documentExtractor->formatAsHints($structured);
+        } catch (\Throwable $e) {
+            Log::warning('Failed to extract document structure', [
+                'exam_id' => $exam->id,
+                'document_id' => $document->id,
+                'error' => $e->getMessage(),
+            ]);
+            return null;
+        }
     }
 }

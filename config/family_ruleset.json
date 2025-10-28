@@ -1,246 +1,1203 @@
 {
-  "IELTS": {
-    "family": "IELTS",
-    "provider": "Cambridge Assessment English / IDP / British Council",
-    "variants": ["Academic", "General Training"],
-    "languages": ["English"],
+  "version": "2",
+  "updated_at": "2025-10-28",
+  "merge_strategy": "deep_merge_prefer_specific",
+  "aliases": {
+    "FCE": "Cambridge English B2 First",
+    "B2 First": "Cambridge English B2 First",
+    "Goethe B1": "Goethe-Zertifikat B1",
+    "telc German B1": "telc Deutsch B1",
+    "TOEFL": "TOEFL iBT",
+    "A2 Key": "Cambridge English A2 Key",
+    "KET": "Cambridge English A2 Key",
+    "B1 Preliminary": "Cambridge English B1 Preliminary",
+    "PET": "Cambridge English B1 Preliminary",
+    "CAE": "Cambridge English C1 Advanced",
+    "CPE": "Cambridge English C2 Proficiency",
+    "C1 Advanced": "Cambridge English C1 Advanced",
+    "C2 Proficiency": "Cambridge English C2 Proficiency",
+    "Goethe B2": "Goethe-Zertifikat",
+    "Goethe C1": "Goethe-Zertifikat",
+    "TestDaF": "TestDaF",
+    "DSH": "DSH",
+    "ÖSD": "ÖSD",
+    "OSD": "ÖSD",
+    "telc Deutsch": "telc Deutsch",
+    "DELF": "DELF/DALF",
+    "DALF": "DELF/DALF",
+    "TCF": "TCF",
+    "TEF": "TEF",
+    "DELE": "DELE",
+    "SIELE": "SIELE",
+    "CILS": "CILS",
+    "CELI": "CELI",
+    "PLIDA": "PLIDA",
+    "Państwowy Certyfikat Języka Polskiego": "Państwowy Certyfikat Języka Polskiego",
+    "Polish State Certificate": "Państwowy Certyfikat Języka Polskiego",
+    "NT2": "Staatsexamen NT2",
+    "CAPLE": "CAPLE",
+    "CIPLE": "CAPLE",
+    "TISUS": "TISUS",
+    "Swedex": "SWEDEX",
+    "Norskprøve": "Norskprøve",
+    "Bergenstest": "Bergenstest (legacy)",
+    "Studieprøven": "Studieprøven",
+    "PD3": "Prøve i Dansk",
+    "YKI": "YKI",
+    "KPG": "KPG",
+    "TORFL": "TRKI/TORFL",
+    "TRKI": "TRKI/TORFL",
+    "CCE": "CCE (Czech for Foreigners)",
+    "ECL": "ECL"
+  },
+  "base_template": {
     "sections": {
-      "required": ["Listening", "Reading", "Writing", "Speaking"],
-      "order_matters": true
+      "required": [],
+      "order_matters": true,
+      "min_steps_per_section": {}
     },
     "timing": {
-      "total_minutes": [165, 175],
-      "listening_minutes": [30, 30],
-      "listening_transfer_minutes": [10, 10],
-      "reading_minutes": [60, 60],
-      "writing_minutes": [60, 60],
-      "speaking_minutes": [11, 14]
-    },
-    "structure": {
-      "listening_parts": 4,
-      "listening_questions": 40,
-      "reading_passages": [3, 3],
-      "reading_questions": 40,
-      "writing_tasks": 2,
-      "speaking_parts": 3
+      "total_minutes": [
+        0,
+        999
+      ],
+      "tolerance_minutes": 10
     },
     "scoring": {
-      "scale": "0.0-9.0",
-      "increment": 0.5,
-      "band_score": true
+      "scale": null,
+      "grading_model": "points|bands|levels"
     },
-    "signatures": [
-      "Listening 30 minutes + 10 minutes transfer time",
-      "Reading 60 minutes / 40 questions",
-      "Writing Task 1 (150 words min) + Task 2 (250 words min, counts double)",
-      "Speaking: face-to-face interview",
-      "Academic vs General Training variant"
-    ],
-    "must_have": [
-      "Band scores from 0-9",
-      "Four skills tested",
-      "Speaking is face-to-face",
-      "Transfer time for Listening answers"
-    ],
-    "red_flags": [
-      "Computer-based only (both paper and computer-based exist)",
-      "Multiple choice only (various question types)",
-      "No speaking section",
-      "Scoring 0-120 (that's TOEFL)"
-    ]
+    "signatures": [],
+    "cefr": null,
+    "validity": {
+      "valid_from": null,
+      "valid_to": null
+    },
+    "checks": {
+      "weights": {
+        "sections_required": 0.35,
+        "timing_exam_total": 0.25,
+        "timing_sections": 0.10,
+        "timing_steps": 0.05,
+        "scoring_scale": 0.15,
+        "signatures_present": 0.10
+      },
+      "timing_priorities": {
+        "comment": "Total exam duration (highest), section duration (medium), step duration (low)",
+        "exam_total_weight": 0.25,
+        "sections_weight": 0.10,
+        "steps_weight": 0.05
+      },
+      "threshold": 0.85
+    }
   },
-  "TOEFL": {
-    "family": "TOEFL iBT",
-    "provider": "ETS (Educational Testing Service)",
-    "variants": ["iBT", "iBT Home Edition", "Paper Edition"],
-    "languages": ["English"],
-    "sections": {
-      "required": ["Reading", "Listening", "Speaking", "Writing"],
-      "order_matters": false
-    },
-    "timing": {
-      "total_minutes": [115, 130],
-      "reading_minutes": [35, 36],
-      "listening_minutes": [36, 36],
-      "speaking_minutes": [16, 16],
-      "writing_minutes": [29, 29]
-    },
-    "structure": {
-      "reading_passages": [2, 2],
-      "reading_questions": 20,
-      "listening_lectures": [3, 4],
-      "listening_conversations": [2, 3],
-      "speaking_tasks": 4,
-      "writing_tasks": 2
-    },
-    "scoring": {
-      "scale": "0-120",
-      "per_section": "0-30",
-      "increment": 1
-    },
-    "signatures": [
-      "Reading 35 minutes (2 passages, 10 questions each)",
-      "Listening 36 minutes (lectures + conversations)",
-      "Speaking 4 tasks (1 independent, 3 integrated)",
-      "Writing: 1 integrated task + 1 independent essay",
-      "Integrated tasks present (combining multiple skills)"
-    ],
-    "must_have": [
-      "Scoring 0-120 total",
-      "Four sections scored 0-30 each",
-      "Integrated tasks (combining reading/listening/speaking or writing)",
-      "Computer-based by default"
-    ],
-    "red_flags": [
-      "Band scores 0-9 (that's IELTS)",
-      "Face-to-face speaking (TOEFL is computer-recorded)",
-      "Transfer time for answers (IELTS feature)",
-      "Paper-based only (iBT is primary format)"
-    ]
-  },
-  "Goethe-Zertifikat": {
-    "family": "Goethe-Zertifikat",
-    "provider": "Goethe-Institut",
-    "variants": ["A1", "A2", "B1", "B2", "C1", "C2"],
-    "languages": ["German"],
-    "sections": {
-      "required": ["Lesen", "Hören", "Schreiben", "Sprechen"],
-      "order_matters": false
-    },
-    "timing": {
-      "total_minutes": {
-        "A1": [80, 90],
-        "A2": [100, 110],
-        "B1": [140, 160],
-        "B2": [170, 190],
-        "C1": [210, 230],
-        "C2": [210, 240]
+  "families": {
+    "IELTS": {
+      "sections": {
+        "required": [
+          "Listening",
+          "Reading",
+          "Writing",
+          "Speaking"
+        ]
+      },
+      "timing": {
+        "total_minutes": [
+          160,
+          200
+        ],
+        "tolerance_minutes": 10
+      },
+      "scoring": {
+        "scale": "0-9 bands",
+        "grading_model": "bands"
+      },
+      "signatures": [
+        "band score",
+        "30 min + 10 min transfer",
+        {
+          "pattern": "Task\\s?1",
+          "flags": "i",
+          "weight": 0.1
+        },
+        {
+          "pattern": "Task\\s?2",
+          "flags": "i",
+          "weight": 0.1
+        }
+      ],
+      "variants": {
+        "Academic": {},
+        "General Training": {}
       }
     },
-    "structure": {
-      "parts_per_section": [3, 4],
-      "pair_or_group_speaking": true
+    "TOEFL iBT": {
+      "sections": {
+        "required": [
+          "Reading",
+          "Listening",
+          "Speaking",
+          "Writing"
+        ]
+      },
+      "timing": {
+        "total_minutes": [
+          120,
+          180
+        ],
+        "tolerance_minutes": 10
+      },
+      "scoring": {
+        "scale": "0-120",
+        "grading_model": "points"
+      },
+      "signatures": [
+        "integrated tasks",
+        "independent tasks",
+        "scaled score"
+      ]
     },
-    "scoring": {
-      "scale": "0-100",
-      "passing_score": 60,
-      "per_section_minimum": 50
-    },
-    "signatures": [
-      "German language proficiency",
-      "CEFR levels A1-C2",
-      "Speaking in pairs or groups",
-      "Pass/Fail with percentage scores"
-    ],
-    "must_have": [
-      "German language",
-      "CEFR alignment",
-      "Four skills tested",
-      "Goethe-Institut as provider"
-    ],
-    "red_flags": [
-      "English language test",
-      "Band scores (not percentage-based)",
-      "Individual speaking interview only"
-    ]
-  },
-  "DELF-DALF": {
-    "family": "DELF/DALF",
-    "provider": "France Éducation international",
-    "variants": ["DELF A1", "DELF A2", "DELF B1", "DELF B2", "DALF C1", "DALF C2"],
-    "languages": ["French"],
-    "sections": {
-      "required": ["Compréhension orale", "Compréhension écrite", "Production écrite", "Production orale"],
-      "order_matters": false
-    },
-    "timing": {
-      "total_minutes": {
-        "A1": [60, 80],
-        "A2": [80, 100],
-        "B1": [105, 120],
-        "B2": [150, 170],
-        "C1": [240, 260],
-        "C2": [210, 240]
+    "Goethe-Zertifikat B1": {
+      "sections": {
+        "required": [
+          "Lesen",
+          "Hören",
+          "Schreiben",
+          "Sprechen"
+        ]
+      },
+      "timing": {
+        "total_minutes": [
+          130,
+          200
+        ],
+        "tolerance_minutes": 10
+      },
+      "scoring": {
+        "scale": "0-100 per module",
+        "grading_model": "points"
+      },
+      "signatures": [
+        "Modular",
+        {
+          "pattern": "Brief|Schreiben",
+          "flags": "i",
+          "weight": 0.15
+        },
+        {
+          "pattern": "Mündliche\\s+Prüfung",
+          "flags": "i",
+          "weight": 0.15
+        }
+      ],
+      "levels": {
+        "B1": {}
       }
     },
-    "structure": {
-      "parts_per_section": [2, 4]
+    "telc Deutsch B1": {
+      "sections": {
+        "required": [
+          "Lesen",
+          "Hören",
+          "Schreiben",
+          "Sprechen"
+        ]
+      },
+      "timing": {
+        "total_minutes": [
+          140,
+          200
+        ],
+        "tolerance_minutes": 10
+      },
+      "scoring": {
+        "scale": "A1–C2 levels with points",
+        "grading_model": "levels"
+      },
+      "signatures": [
+        {
+          "pattern": "Teil\\s?1|Teil\\s?2",
+          "flags": "i",
+          "weight": 0.1
+        },
+        {
+          "pattern": "Monolog|Dialog",
+          "flags": "i",
+          "weight": 0.1
+        }
+      ],
+      "levels": {
+        "B1": {}
+      }
     },
-    "scoring": {
-      "scale": "0-100",
-      "passing_score": 50,
-      "per_section_minimum": 5
+    "Cambridge English B2 First": {
+      "sections": {
+        "required": [
+          "Reading and Use of English",
+          "Writing",
+          "Listening",
+          "Speaking"
+        ]
+      },
+      "timing": {
+        "total_minutes": [
+          200,
+          240
+        ],
+        "tolerance_minutes": 10
+      },
+      "scoring": {
+        "scale": "160–190 (CEFR B2)",
+        "grading_model": "points"
+      },
+      "signatures": [
+        "Use of English",
+        {
+          "pattern": "Part\\s?[1-7]",
+          "flags": "i",
+          "weight": 0.1
+        }
+      ]
     },
-    "signatures": [
-      "French language proficiency",
-      "CEFR levels A1-C2",
-      "DELF (A1-B2) and DALF (C1-C2)",
-      "Speaking examination with examiner"
-    ],
-    "must_have": [
-      "French language",
-      "CEFR alignment",
-      "Four competencies tested",
-      "France Éducation international certification"
-    ],
-    "red_flags": [
-      "English language test",
-      "Band scores instead of percentage",
-      "Computer-based only"
-    ]
-  },
-  "telc": {
-    "family": "telc",
-    "provider": "telc gGmbH",
-    "variants": ["Multiple languages and levels"],
-    "languages": ["German", "English", "Spanish", "French", "Italian", "Portuguese", "Russian", "Turkish", "Polish", "Czech"],
-    "sections": {
-      "required": ["Reading", "Listening", "Writing", "Speaking"],
-      "order_matters": false
+    "Cambridge English A2 Key": {
+      "sections": {
+        "required": [
+          "Reading and Writing",
+          "Listening",
+          "Speaking"
+        ]
+      },
+      "timing": {
+        "total_minutes": [
+          110,
+          150
+        ],
+        "tolerance_minutes": 10
+      },
+      "scoring": {
+        "scale": "120–139 (CEFR A2)",
+        "grading_model": "points"
+      },
+      "signatures": [
+        "Key English Test",
+        {
+          "pattern": "A2\\s?Key",
+          "flags": "i",
+          "weight": 0.1
+        }
+      ]
     },
-    "timing": {
-      "varies_by_level": true,
-      "total_minutes": [110, 180]
+    "Cambridge English B1 Preliminary": {
+      "sections": {
+        "required": [
+          "Reading and Writing",
+          "Listening",
+          "Speaking"
+        ]
+      },
+      "timing": {
+        "total_minutes": [
+          130,
+          180
+        ],
+        "tolerance_minutes": 10
+      },
+      "scoring": {
+        "scale": "140–159 (CEFR B1)",
+        "grading_model": "points"
+      },
+      "signatures": [
+        "Preliminary English Test",
+        {
+          "pattern": "B1\\s?Preliminary",
+          "flags": "i",
+          "weight": 0.1
+        }
+      ]
     },
-    "structure": {
-      "parts_per_section": [2, 4],
-      "pair_speaking": true
+    "Cambridge English C1 Advanced": {
+      "sections": {
+        "required": [
+          "Reading and Use of English",
+          "Writing",
+          "Listening",
+          "Speaking"
+        ],
+        "order_matters": true
+      },
+      "timing": {
+        "total_minutes": [
+          180,
+          240
+        ],
+        "tolerance_minutes": 15
+      },
+      "scoring": {
+        "scale": "180–199 (CEFR C1)",
+        "grading_model": "points"
+      },
+      "signatures": [
+        "Use of English",
+        {
+          "pattern": "Part\\s?[1-7]",
+          "flags": "i",
+          "weight": 0.1
+        }
+      ]
     },
-    "scoring": {
-      "scale": "0-100",
-      "passing_score": 60,
-      "certificate_levels": ["pass", "pass with distinction"]
+    "Cambridge English C2 Proficiency": {
+      "sections": {
+        "required": [
+          "Reading and Use of English",
+          "Writing",
+          "Listening",
+          "Speaking"
+        ],
+        "order_matters": true
+      },
+      "timing": {
+        "total_minutes": [
+          180,
+          240
+        ],
+        "tolerance_minutes": 15
+      },
+      "scoring": {
+        "scale": "200–230 (CEFR C2)",
+        "grading_model": "points"
+      },
+      "signatures": [
+        "Use of English",
+        {
+          "pattern": "Part\\s?[1-7]",
+          "flags": "i",
+          "weight": 0.1
+        }
+      ]
     },
-    "signatures": [
-      "Multiple language options",
-      "CEFR-aligned levels",
-      "Practical communication focus",
-      "Speaking in pairs"
-    ],
-    "must_have": [
-      "CEFR alignment",
-      "Four skills tested",
-      "telc certification"
-    ],
-    "red_flags": [
-      "Single language only (telc offers many)",
-      "No speaking component",
-      "Non-CEFR levels"
-    ]
-  },
-  "_meta": {
-    "version": "1.0",
-    "last_updated": "2025-10-24",
-    "confidence_thresholds": {
-      "certain": 0.90,
-      "probable": 0.80,
-      "uncertain": 0.80
+    "Goethe-Zertifikat": {
+      "sections": {
+        "required": [
+          "Lesen",
+          "Hören",
+          "Schreiben",
+          "Sprechen"
+        ]
+      },
+      "timing": {
+        "total_minutes": [
+          120,
+          240
+        ],
+        "tolerance_minutes": 15
+      },
+      "scoring": {
+        "scale": "Module A1–C2, 0–100 per module",
+        "grading_model": "points"
+      },
+      "levels": {
+        "A1": {},
+        "A2": {},
+        "B1": {},
+        "B2": {},
+        "C1": {},
+        "C2": {}
+      },
+      "signatures": [
+        "Modular",
+        {
+          "pattern": "Mündliche|Schriftlich",
+          "flags": "i",
+          "weight": 0.1
+        }
+      ]
     },
-    "compliance_thresholds": {
-      "pass": 0.85,
-      "review": 0.70,
-      "fail": 0.70
+    "telc Deutsch": {
+      "sections": {
+        "required": [
+          "Lesen",
+          "Hören",
+          "Schreiben",
+          "Sprechen"
+        ]
+      },
+      "timing": {
+        "total_minutes": [
+          140,
+          240
+        ],
+        "tolerance_minutes": 15
+      },
+      "scoring": {
+        "scale": "A1–C2 levels with points",
+        "grading_model": "levels"
+      },
+      "levels": {
+        "A1": {},
+        "A2": {},
+        "B1": {},
+        "B2": {},
+        "C1": {},
+        "C2": {}
+      },
+      "signatures": [
+        {
+          "pattern": "Teil\\s?[1-5]",
+          "flags": "i",
+          "weight": 0.1
+        }
+      ]
     },
-    "notes": "This ruleset defines invariants for major exam families. Red flags indicate features that contradict the family identity. Timing tolerances are ±5 minutes for detection purposes."
+    "TestDaF": {
+      "sections": {
+        "required": [
+          "Leseverstehen",
+          "Hörverstehen",
+          "Schriftlicher Ausdruck",
+          "Mündlicher Ausdruck"
+        ]
+      },
+      "timing": {
+        "total_minutes": [
+          160,
+          210
+        ],
+        "tolerance_minutes": 10
+      },
+      "scoring": {
+        "scale": "TDN 3–5 (approx. B2–C1)",
+        "grading_model": "levels"
+      },
+      "signatures": [
+        "Test Deutsch als Fremdsprache",
+        {
+          "pattern": "TDN\\s?[3-5]",
+          "flags": "i",
+          "weight": 0.1
+        }
+      ]
+    },
+    "DSH": {
+      "sections": {
+        "required": [
+          "Leseverstehen",
+          "Hörverstehen",
+          "Sprachbausteine/Grammatik",
+          "Schriftlicher Ausdruck",
+          "Mündliche Prüfung"
+        ]
+      },
+      "timing": {
+        "total_minutes": [
+          180,
+          300
+        ],
+        "tolerance_minutes": 15
+      },
+      "scoring": {
+        "scale": "DSH-1/2/3 (B2–C1+)",
+        "grading_model": "levels"
+      },
+      "signatures": [
+        "Deutsche Sprachprüfung für den Hochschulzugang"
+      ]
+    },
+    "ÖSD": {
+      "sections": {
+        "required": [
+          "Lesen",
+          "Hören",
+          "Schreiben",
+          "Sprechen"
+        ]
+      },
+      "timing": {
+        "total_minutes": [
+          120,
+          240
+        ],
+        "tolerance_minutes": 15
+      },
+      "scoring": {
+        "scale": "A1–C2",
+        "grading_model": "levels"
+      },
+      "levels": {
+        "A1": {},
+        "A2": {},
+        "B1": {},
+        "B2": {},
+        "C1": {},
+        "C2": {}
+      },
+      "signatures": [
+        "Österreichisches Sprachdiplom Deutsch"
+      ]
+    },
+    "DELF/DALF": {
+      "sections": {
+        "required": [
+          "Compréhension orale",
+          "Compréhension écrite",
+          "Production écrite",
+          "Production orale"
+        ]
+      },
+      "timing": {
+        "total_minutes": [
+          120,
+          240
+        ],
+        "tolerance_minutes": 15
+      },
+      "scoring": {
+        "scale": "A1–C2 (DELF A1–B2, DALF C1–C2), 0–100",
+        "grading_model": "points"
+      },
+      "levels": {
+        "A1": {},
+        "A2": {},
+        "B1": {},
+        "B2": {},
+        "C1": {},
+        "C2": {}
+      },
+      "signatures": [
+        "DELF",
+        "DALF"
+      ]
+    },
+    "TCF": {
+      "sections": {
+        "required": [
+          "Compréhension orale",
+          "Maîtrise des structures de la langue",
+          "Compréhension écrite"
+        ],
+        "min_steps_per_section": {
+          "Production": 2
+        }
+      },
+      "timing": {
+        "total_minutes": [
+          90,
+          200
+        ],
+        "tolerance_minutes": 10
+      },
+      "scoring": {
+        "scale": "A1–C2 (scores mapped)",
+        "grading_model": "points"
+      },
+      "signatures": [
+        "Test de connaissance du français"
+      ]
+    },
+    "TEF": {
+      "sections": {
+        "required": [
+          "Compréhension orale",
+          "Compréhension écrite",
+          "Expression écrite",
+          "Expression orale"
+        ]
+      },
+      "timing": {
+        "total_minutes": [
+          120,
+          240
+        ],
+        "tolerance_minutes": 15
+      },
+      "scoring": {
+        "scale": "A1–C2 (scores mapped)",
+        "grading_model": "points"
+      },
+      "signatures": [
+        "Test d'évaluation de français"
+      ]
+    },
+    "DELE": {
+      "sections": {
+        "required": [
+          "Comprensión de lectura",
+          "Comprensión auditiva",
+          "Expresión e interacción escritas",
+          "Expresión e interacción orales"
+        ]
+      },
+      "timing": {
+        "total_minutes": [
+          120,
+          240
+        ],
+        "tolerance_minutes": 15
+      },
+      "scoring": {
+        "scale": "A1–C2, puntos por prueba",
+        "grading_model": "points"
+      },
+      "levels": {
+        "A1": {},
+        "A2": {},
+        "B1": {},
+        "B2": {},
+        "C1": {},
+        "C2": {}
+      },
+      "signatures": [
+        "Instituto Cervantes"
+      ]
+    },
+    "SIELE": {
+      "sections": {
+        "required": [
+          "Comprensión de lectura",
+          "Comprensión auditiva",
+          "Expresión e interacción escritas",
+          "Expresión e interacción orales"
+        ]
+      },
+      "timing": {
+        "total_minutes": [
+          120,
+          180
+        ],
+        "tolerance_minutes": 10
+      },
+      "scoring": {
+        "scale": "0–1000 (mapeo A1–C1/C2)",
+        "grading_model": "points"
+      },
+      "signatures": [
+        "Servicio Internacional de Evaluación de la Lengua Española"
+      ]
+    },
+    "CILS": {
+      "sections": {
+        "required": [
+          "Ascolto",
+          "Lettura",
+          "Analisi delle strutture di comunicazione",
+          "Scrittura",
+          "Orale"
+        ]
+      },
+      "timing": {
+        "total_minutes": [
+          180,
+          240
+        ],
+        "tolerance_minutes": 15
+      },
+      "scoring": {
+        "scale": "A1–C2, punteggi per sezione",
+        "grading_model": "points"
+      },
+      "levels": {
+        "A1": {},
+        "A2": {},
+        "B1": {},
+        "B2": {},
+        "C1": {},
+        "C2": {}
+      },
+      "signatures": [
+        "Università per Stranieri di Siena"
+      ]
+    },
+    "CELI": {
+      "sections": {
+        "required": [
+          "Ascolto",
+          "Lettura",
+          "Strutture della lingua",
+          "Scrittura",
+          "Orale"
+        ]
+      },
+      "timing": {
+        "total_minutes": [
+          180,
+          240
+        ],
+        "tolerance_minutes": 15
+      },
+      "scoring": {
+        "scale": "A1–C2, punteggi",
+        "grading_model": "points"
+      },
+      "levels": {
+        "A1": {},
+        "A2": {},
+        "B1": {},
+        "B2": {},
+        "C1": {},
+        "C2": {}
+      },
+      "signatures": [
+        "Università per Stranieri di Perugia"
+      ]
+    },
+    "PLIDA": {
+      "sections": {
+        "required": [
+          "Ascolto",
+          "Lettura",
+          "Scrittura",
+          "Parlato"
+        ]
+      },
+      "timing": {
+        "total_minutes": [
+          150,
+          240
+        ],
+        "tolerance_minutes": 15
+      },
+      "scoring": {
+        "scale": "A1–C2",
+        "grading_model": "points"
+      },
+      "levels": {
+        "A1": {},
+        "A2": {},
+        "B1": {},
+        "B2": {},
+        "C1": {},
+        "C2": {}
+      },
+      "signatures": [
+        "Società Dante Alighieri"
+      ]
+    },
+    "Państwowy Certyfikat Języka Polskiego": {
+      "sections": {
+        "required": [
+          "Rozumienie ze słuchu",
+          "Rozumienie tekstów pisanych",
+          "Poprawność gramatyczna",
+          "Pisanie",
+          "Mówienie"
+        ]
+      },
+      "timing": {
+        "total_minutes": [
+          180,
+          300
+        ],
+        "tolerance_minutes": 20
+      },
+      "scoring": {
+        "scale": "A1–C2, punkty per część",
+        "grading_model": "points"
+      },
+      "levels": {
+        "A1": {},
+        "A2": {},
+        "B1": {},
+        "B2": {},
+        "C1": {},
+        "C2": {}
+      },
+      "signatures": [
+        {
+          "pattern": "Państwowy\\s+egzamin\\s+certyfikatowy",
+          "flags": "i",
+          "weight": 0.15
+        }
+      ]
+    },
+    "Staatsexamen NT2": {
+      "sections": {
+        "required": [
+          "Lezen",
+          "Luisteren",
+          "Schrijven",
+          "Spreken"
+        ]
+      },
+      "timing": {
+        "total_minutes": [
+          180,
+          240
+        ],
+        "tolerance_minutes": 15
+      },
+      "scoring": {
+        "scale": "Programma I (B1) / Programma II (B2)",
+        "grading_model": "levels"
+      },
+      "variants": {
+        "Programma I": {},
+        "Programma II": {}
+      },
+      "signatures": [
+        "Dienst Uitvoering Onderwijs",
+        {
+          "pattern": "NT2\\s?Programma\\s?(I|II)",
+          "flags": "i",
+          "weight": 0.15
+        }
+      ]
+    },
+    "CAPLE": {
+      "sections": {
+        "required": [
+          "Compreensão de Leitura",
+          "Compreensão Oral",
+          "Produção e Interação Escritas",
+          "Produção e Interação Orais"
+        ]
+      },
+      "timing": {
+        "total_minutes": [
+          150,
+          240
+        ],
+        "tolerance_minutes": 15
+      },
+      "scoring": {
+        "scale": "CIPLE(A2), DEPLE(B1), DIPLE(B2), DAPLE(C1), DUPLE(C2)",
+        "grading_model": "levels"
+      },
+      "levels": {
+        "A2": {},
+        "B1": {},
+        "B2": {},
+        "C1": {},
+        "C2": {}
+      },
+      "signatures": [
+        "Universidade de Lisboa",
+        "CAPLE"
+      ]
+    },
+    "TISUS": {
+      "sections": {
+        "required": [
+          "Läsförståelse",
+          "Skriftlig framställning",
+          "Muntlig produktion"
+        ]
+      },
+      "timing": {
+        "total_minutes": [
+          180,
+          240
+        ],
+        "tolerance_minutes": 15
+      },
+      "scoring": {
+        "scale": "Pass/Fail (≈ C1)",
+        "grading_model": "levels"
+      },
+      "signatures": [
+        "Test i svenska för universitets- och högskolestudier"
+      ]
+    },
+    "SWEDEX": {
+      "sections": {
+        "required": [
+          "Läsförståelse",
+          "Hörförståelse",
+          "Skriftlig produktion",
+          "Muntlig produktion"
+        ]
+      },
+      "timing": {
+        "total_minutes": [
+          120,
+          180
+        ],
+        "tolerance_minutes": 10
+      },
+      "scoring": {
+        "scale": "A2–C1",
+        "grading_model": "levels"
+      },
+      "levels": {
+        "A2": {},
+        "B1": {},
+        "B2": {},
+        "C1": {}
+      },
+      "signatures": [
+        "Folkuniversitetet"
+      ]
+    },
+    "Norskprøve": {
+      "sections": {
+        "required": [
+          "Leseforståelse",
+          "Lytteforståelse",
+          "Skriftlig framstilling",
+          "Muntlig kommunikasjon"
+        ]
+      },
+      "timing": {
+        "total_minutes": [
+          150,
+          240
+        ],
+        "tolerance_minutes": 15
+      },
+      "scoring": {
+        "scale": "A1–B2 adaptiv",
+        "grading_model": "levels"
+      },
+      "levels": {
+        "A1": {},
+        "A2": {},
+        "B1": {},
+        "B2": {}
+      },
+      "signatures": [
+        "Kompetanse Norge"
+      ]
+    },
+    "Bergenstest (legacy)": {
+      "sections": {
+        "required": [
+          "Leseforståelse",
+          "Lytteforståelse",
+          "Grammatikk/ordforråd",
+          "Skriftlig",
+          "Muntlig"
+        ]
+      },
+      "timing": {
+        "total_minutes": [
+          180,
+          300
+        ],
+        "tolerance_minutes": 15
+      },
+      "scoring": {
+        "scale": "Bestått/Ikke bestått (≈ B2-C1)",
+        "grading_model": "levels"
+      },
+      "validity": {
+        "valid_to": "2019-10-01"
+      },
+      "signatures": [
+        "Test i norsk – høyere nivå"
+      ]
+    },
+    "Prøve i Dansk": {
+      "sections": {
+        "required": [
+          "Læsning",
+          "Lytning",
+          "Skriftlig fremstilling",
+          "Mundtlig kommunikation"
+        ]
+      },
+      "timing": {
+        "total_minutes": [
+          150,
+          240
+        ],
+        "tolerance_minutes": 15
+      },
+      "scoring": {
+        "scale": "PD1(A2)–PD3(B2)",
+        "grading_model": "levels"
+      },
+      "levels": {
+        "PD1": {},
+        "PD2": {},
+        "PD3": {}
+      },
+      "signatures": [
+        "SIRI",
+        "Danskuddannelse"
+      ]
+    },
+    "Studieprøven": {
+      "sections": {
+        "required": [
+          "Læsning",
+          "Lytning",
+          "Skriftlig fremstilling",
+          "Mundtlig kommunikation"
+        ]
+      },
+      "timing": {
+        "total_minutes": [
+          210,
+          300
+        ],
+        "tolerance_minutes": 15
+      },
+      "scoring": {
+        "scale": "C1",
+        "grading_model": "levels"
+      },
+      "signatures": [
+        "C1 dansk"
+      ]
+    },
+    "YKI": {
+      "sections": {
+        "required": [
+          "Luetun ymmärtäminen",
+          "Kuullun ymmärtäminen",
+          "Kirjoittaminen",
+          "Puhuminen"
+        ]
+      },
+      "timing": {
+        "total_minutes": [
+          180,
+          240
+        ],
+        "tolerance_minutes": 15
+      },
+      "scoring": {
+        "scale": "Perustaso/Keskitaso/Ylin taso (≈ A1–C2)",
+        "grading_model": "levels"
+      },
+      "levels": {
+        "A1": {},
+        "A2": {},
+        "B1": {},
+        "B2": {},
+        "C1": {},
+        "C2": {}
+      },
+      "signatures": [
+        "Yleiset kielitutkinnot"
+      ]
+    },
+    "KPG": {
+      "sections": {
+        "required": [
+          "Κατανόηση προφορικού λόγου",
+          "Κατανόηση γραπτού λόγου",
+          "Παραγωγή γραπτού λόγου",
+          "Παραγωγή προφορικού λόγου"
+        ]
+      },
+      "timing": {
+        "total_minutes": [
+          180,
+          300
+        ],
+        "tolerance_minutes": 20
+      },
+      "scoring": {
+        "scale": "A1–C2",
+        "grading_model": "levels"
+      },
+      "levels": {
+        "A1": {},
+        "A2": {},
+        "B1": {},
+        "B2": {},
+        "C1": {},
+        "C2": {}
+      },
+      "signatures": [
+        "Κρατικό Πιστοποιητικό Γλωσσομάθειας"
+      ]
+    },
+    "TRKI/TORFL": {
+      "sections": {
+        "required": [
+          "Чтение",
+          "Аудирование",
+          "Лексика/Грамматика",
+          "Письмо",
+          "Говорение"
+        ]
+      },
+      "timing": {
+        "total_minutes": [
+          180,
+          300
+        ],
+        "tolerance_minutes": 20
+      },
+      "scoring": {
+        "scale": "A1–C2 (Элементарный–4-й уровень), баллы по разделам",
+        "grading_model": "points"
+      },
+      "levels": {
+        "A1": {},
+        "A2": {},
+        "B1": {},
+        "B2": {},
+        "C1": {},
+        "C2": {}
+      },
+      "signatures": [
+        "ТРКИ",
+        "TORFL"
+      ]
+    },
+    "CCE (Czech for Foreigners)": {
+      "sections": {
+        "required": [
+          "Čtení s porozuměním",
+          "Poslech s porozuměním",
+          "Gramaticko-lexikální test",
+          "Psaní",
+          "Ústní projev"
+        ]
+      },
+      "timing": {
+        "total_minutes": [
+          180,
+          240
+        ],
+        "tolerance_minutes": 15
+      },
+      "scoring": {
+        "scale": "A1–C1",
+        "grading_model": "levels"
+      },
+      "levels": {
+        "A1": {},
+        "A2": {},
+        "B1": {},
+        "B2": {},
+        "C1": {}
+      },
+      "signatures": [
+        "UJOP",
+        "Univerzita Karlova"
+      ]
+    },
+    "ECL": {
+      "sections": {
+        "required": [
+          "Reading",
+          "Listening",
+          "Writing",
+          "Speaking"
+        ]
+      },
+      "timing": {
+        "total_minutes": [
+          150,
+          240
+        ],
+        "tolerance_minutes": 15
+      },
+      "scoring": {
+        "scale": "A2–C1",
+        "grading_model": "levels"
+      },
+      "levels": {
+        "A2": {},
+        "B1": {},
+        "B2": {},
+        "C1": {}
+      },
+      "signatures": [
+        "European Consortium for the Certificate of Attainment in Modern Languages"
+      ]
+    }
   }
 }

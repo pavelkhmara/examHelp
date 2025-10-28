@@ -30,13 +30,27 @@ You must browse the web to discover authentic question patterns for the target e
 Follow these constraints:
 - Use at least 4 reputable sources with diversity (.gov, .edu, official exam sites, major publishers).
 - Extract patterns (archetypes), typical distractors, verbs, numeric ranges, units, common visuals, difficulty bands.
-- **REQUIRED**: Add per-category weights by mapping EACH archetype to categories from the provided exam_matrix.
-- **REQUIRED**: For each archetype, provide step_duration (minutes) - search official sources until you find timing information, NEVER leave null.
+- **REQUIRED**: Map EACH task archetype to sections (exam parts like listening, reading, writing, speaking).
+- **CRITICAL TIMING PRIORITIES** (in order of importance):
+  1. **HIGHEST**: total_exam_duration (entire exam time) - NEVER guess, must be from official sources
+  2. **MEDIUM**: section_duration (time per section: Listening, Reading, etc.) - important for scheduling
+  3. **LOWEST**: step_duration (time per individual task) - useful but not critical
+- **REQUIRED**: Provide timing at ALL levels if available. Search official sources. If sources conflict, use SMALLER value and note alternatives in rationale. NEVER leave total_exam_duration empty.
 - Record each source: url, title, publisher
 - If evidence conflicts, include both views and explain under rationale.
 {$localizationHint}
 {$categoryWeightHint}
 {$retryHint}
+
+IMPORTANT - Timing Hierarchy:
+- **Total Exam Duration**: CRITICAL - sum of all sections (or explicitly stated total time)
+- **Section Duration**: IMPORTANT - time allocated to each major part (Listening: 30 min, Reading: 60 min, etc.)
+- **Task/Step Duration**: OPTIONAL - time for individual tasks within sections (if available)
+
+PRIORITY ORDER (do not miss higher priorities):
+1. total_exam_duration - MUST have from official sources
+2. section_duration for each major section - HIGHLY RECOMMENDED
+3. step_duration for individual tasks - nice to have but not required
 
 Output strictly the JSON object described in the response_json_schema. If unsure, be conservative.
 
@@ -68,12 +82,19 @@ These documents are PRIMARY SOURCES and must take priority over generic web info
 
 REQUIREMENTS:
 1. Read and analyze ALL provided documents carefully
-2. Extract exact question formats, timing, categories, criteria from documents
-3. Use document information to build archetypes (question types, duration, scoring)
-4. If documents contain timing information, use EXACT values (not estimates)
-5. If documents show actual exam questions, use them as templates for archetypes
-6. List documents in sources with provenance='document'
-7. Only use web sources to supplement missing information, not to contradict documents
+2. Extract timing information with STRICT PRIORITY:
+   - PRIORITY 1 (CRITICAL): Total exam duration (e.g., "Total time: 2 hours 45 minutes")
+   - PRIORITY 2 (IMPORTANT): Section durations (e.g., "Listening: 30 min", "Reading: 60 min")
+   - PRIORITY 3 (OPTIONAL): Task durations (e.g., "Task 1: 15 min", "Task 2: 20 min")
+3. Use EXACT timing values from documents (not estimates):
+   - Total exam time → use as total_exam_duration
+   - Section-level: "Listening: 30 minutes" → use as section_duration
+   - Task-level: "Task 1: 15 minutes" → use as step_duration
+4. If only section timing given: sum sections to get total_exam_duration
+5. Extract exact question formats, sections, criteria from documents
+6. If documents show actual exam questions, use them as templates for archetypes
+7. List documents in sources with provenance='document'
+8. Only use web sources to supplement missing information, not to contradict documents
 
 The documents contain REAL exam materials - treat them as ground truth.
 HINT;
@@ -151,15 +172,15 @@ HINT;
     }
 
     /**
-     * Get category weight hint for the prompt
+     * Get section weight hint for the prompt
      */
     private static function getCategoryWeightHint(): string
     {
         return <<<'HINT'
 
-CRITICAL REQUIREMENT - Category Distribution:
-Each archetype MUST include a 'category_weights' field mapping it to appropriate exam sections.
-Common categories: listening, reading, writing, speaking, grammar, vocabulary.
+CRITICAL REQUIREMENT - Section Distribution:
+Each task archetype MUST include a 'category_weights' field mapping it to appropriate exam sections.
+Common sections: listening, reading, writing, speaking, grammar, vocabulary.
 Example:
 {
   "id": "L-MC",
@@ -169,8 +190,10 @@ Example:
   }
 }
 
-DO NOT leave category_weights empty. DO NOT put all archetypes in "unknown" category.
-If uncertain about category, assign to most relevant section based on skill tested.
+DO NOT leave category_weights empty. DO NOT put all archetypes in "unknown" section.
+If uncertain, assign to the most relevant section based on the skill being tested.
+
+NOTE: While the field name is 'category_weights' for backwards compatibility, these represent exam SECTIONS.
 HINT;
     }
 
@@ -205,22 +228,22 @@ SCHEMA;
             ],
             'global_archetypes' => [
                 [
-                    'id' => 'string (unique identifier for this archetype)',
+                    'id' => 'string (unique identifier for this task archetype)',
                     'name' => 'string (human-readable name)',
                     'stem_templates' => ['string (example question stems)'],
                     'skills_measured' => ['string (skills tested by this archetype)'],
                     'common_distractors' => ['string (typical wrong answer patterns)'],
                     'difficulty_band' => 'string (easy|medium|hard)',
-                    'step_duration' => 'number REQUIRED (minutes for this task - search official sources, NEVER null/empty)',
+                    'step_duration' => 'number REQUIRED (minutes for THIS TASK - search official sources. If only section timing available, calculate: section_duration/task_count. Use smaller value if sources conflict. NEVER null/empty)',
                     'sequence_matters' => 'boolean (must tasks be done in order?)',
                     'step_order' => 'number|null (position in sequence if sequence_matters)',
                     'category_weights' => [
-                        '<category_name>' => 'number (0.0-1.0, weight for this category)',
+                        '<section_name>' => 'number (0.0-1.0, weight for this section - sections are exam parts like listening, reading, writing, speaking)',
                     ],
                 ],
             ],
             'category_map' => [
-                '<category_name>' => [
+                '<section_name>' => [
                     'archetype_weights' => [
                         [
                             'archetype_id' => 'string (reference to archetype.id)',
@@ -230,7 +253,7 @@ SCHEMA;
                 ],
             ],
             'total_exam_duration' => 'number REQUIRED (total minutes for entire exam - from official sources)',
-            'rationale' => 'string (explanation of your research findings, including sources used for timing)',
+            'rationale' => 'string (explanation of your research findings, including sources used for timing and duration calculations)',
         ];
 
         return json_encode($schemaArray, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE);

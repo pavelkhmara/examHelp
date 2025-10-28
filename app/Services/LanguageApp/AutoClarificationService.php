@@ -59,7 +59,7 @@ class AutoClarificationService extends AbstractAiService
     /**
      * Extract document text from document ID
      */
-    protected function extractDocumentText(?int $documentId): ?string
+    protected function extractDocumentText(int|string|null $documentId): ?string
     {
         if (! $documentId) {
             return null;

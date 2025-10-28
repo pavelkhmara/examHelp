@@ -9,7 +9,8 @@ use App\Models\GenerationTask;
  * Main service for exam research pipeline
  *
  * This service delegates to specialized services for each stage:
- * - IdentityGuardService: Exam identity verification
+ * - IdentityGuardService: Exam identity verification (single attempt)
+ * - IterativeIdentityVerificationService: Multi-attempt iterative verification with web search
  * - ConfidenceBoostService: Confidence boosting
  * - SanityCheckerService: Structure validation
  * - OverviewStructureBuilder: Structure building
@@ -21,11 +22,13 @@ class ExamResearchService extends AbstractAiService
     public function __construct(
         AiProvider $ai,
         protected IdentityGuardService $identityGuard,
+        protected IterativeIdentityVerificationService $iterativeVerification,
         protected ConfidenceBoostService $confidenceBoost,
         protected SanityCheckerService $sanityChecker,
         protected OverviewStructureBuilder $structureBuilder,
         protected ExampleGenerationService $exampleGenerator,
-        protected AutoClarificationService $autoClarification
+        protected AutoClarificationService $autoClarification,
+        protected ?DocumentStructureExtractor $documentExtractor = null
     ) {
         parent::__construct($ai);
     }
@@ -39,11 +42,21 @@ class ExamResearchService extends AbstractAiService
     }
 
     /**
-     * Run identity guard - delegates to IdentityGuardService
+     * Run identity guard - delegates to IdentityGuardService (single attempt)
      */
     public function runIdentityGuard(Exam $exam, GenerationTask $task): array
     {
         return $this->identityGuard->runIdentityGuard($exam, $task);
+    }
+
+    /**
+     * Run iterative identity verification - delegates to IterativeIdentityVerificationService
+     * This method attempts to verify exam identity with up to 3 attempts,
+     * using web search and adaptive prompts to improve confidence
+     */
+    public function runIterativeIdentityVerification(Exam $exam, GenerationTask $task): array
+    {
+        return $this->iterativeVerification->runIterativeVerification($exam, $task);
     }
 
     /**

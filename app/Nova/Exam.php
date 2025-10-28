@@ -148,6 +148,15 @@ class Exam extends Resource
                 })
                     ->onlyOnDetail(),
 
+                Textarea::make('Structure Summary')
+                    ->resolveUsing(function () {
+                        return $this->buildStructureSummary();
+                    })
+                    ->readonly()
+                    ->rows(15)
+                    ->onlyOnDetail()
+                    ->help('Human-readable summary of exam structure'),
+
                 Code::make('Sections (compact)')
                     ->resolveUsing(function () {
                         $sections = $this->structure_sections ?? [];
@@ -414,6 +423,107 @@ class Exam extends Resource
                 ])
                 ->onlyOnDetail(),
         ]);
+    }
+
+    /**
+     * Build human-readable structure summary
+     */
+    private function buildStructureSummary(): string
+    {
+        $sections = $this->structure_sections ?? [];
+        $examStructure = $this->exam_structure ?? [];
+
+        if (empty($sections)) {
+            return 'No structure information available';
+        }
+
+        $lines = [];
+
+        // Header with exam title and level
+        $lines[] = "📋 EXAM: {$this->title} ({$this->level})";
+        $lines[] = str_repeat('=', 60);
+        $lines[] = '';
+
+        // Total duration
+        if ($this->total_exam_duration) {
+            $lines[] = "⏱ Total Duration: {$this->total_exam_duration} minutes";
+            $lines[] = '';
+        }
+
+        // Scoring scale (if available)
+        if (!empty($examStructure['scoring_scale'])) {
+            $lines[] = "📊 Scoring: {$examStructure['scoring_scale']}";
+            $lines[] = '';
+        }
+
+        // Categories summary
+        $lines[] = "📚 SECTIONS: {$this->categories_count} total";
+        $lines[] = str_repeat('-', 60);
+
+        // Iterate through sections
+        foreach ($sections as $idx => $section) {
+            $sectionNum = $idx + 1;
+            $sectionName = $section['name'] ?? $section['key'] ?? 'Unnamed Section';
+            $steps = $section['steps'] ?? [];
+            $stepCount = count($steps);
+
+            $lines[] = '';
+            $lines[] = "{$sectionNum}. {$sectionName}";
+
+            // Section duration (sum of all steps)
+            $sectionDuration = 0;
+            foreach ($steps as $step) {
+                $sectionDuration += $step['duration_min'] ?? 0;
+            }
+            if ($sectionDuration > 0) {
+                $lines[] = "   Duration: {$sectionDuration} min total";
+            }
+
+            $lines[] = "   Tasks: {$stepCount}";
+
+            // List each step/archetype
+            if (!empty($steps)) {
+                $lines[] = '';
+                foreach ($steps as $stepIdx => $step) {
+                    $stepNum = $stepIdx + 1;
+                    $stepName = $step['name'] ?? 'Unnamed Task';
+                    $stepDuration = $step['duration_min'] ?? null;
+                    $taskType = $step['task_type'] ?? null;
+
+                    $stepLine = "   {$sectionNum}.{$stepNum}. {$stepName}";
+
+                    $details = [];
+                    if ($stepDuration) {
+                        $details[] = "{$stepDuration} min";
+                    }
+                    if ($taskType) {
+                        $details[] = "type: {$taskType}";
+                    }
+
+                    if (!empty($details)) {
+                        $stepLine .= ' [' . implode(', ', $details) . ']';
+                    }
+
+                    $lines[] = $stepLine;
+
+                    // Add description if available
+                    if (!empty($step['description'])) {
+                        $desc = $step['description'];
+                        // Truncate long descriptions
+                        if (strlen($desc) > 100) {
+                            $desc = substr($desc, 0, 97) . '...';
+                        }
+                        $lines[] = "      → {$desc}";
+                    }
+                }
+            }
+        }
+
+        $lines[] = '';
+        $lines[] = str_repeat('=', 60);
+        $lines[] = "✓ Structure extracted successfully";
+
+        return implode("\n", $lines);
     }
 
     /**

@@ -15,6 +15,10 @@ use Illuminate\Support\Facades\Log;
  * Responsibilities:
  * - Boost confidence from 0.90-0.96 to >0.97 through family ruleset verification
  * - Returns updated identity result with new confidence and explanation
+ *
+ * IMPORTANT: This service only INCREASES confidence, never decreases it.
+ * If evidence is insufficient or contradictory, original confidence is returned unchanged.
+ * This is a "boost" mechanism, not a validator/penalty mechanism.
  */
 class ConfidenceBoostService extends AbstractAiService
 {
@@ -22,6 +26,7 @@ class ConfidenceBoostService extends AbstractAiService
      * Stage: confidence_boost
      * - Boosts confidence from 0.90-0.96 to >0.97 through family ruleset verification
      * - Returns updated identity result with new confidence and explanation
+     * - NEVER lowers confidence below original value (boost only, no penalties)
      */
     public function runConfidenceBoost(Exam $exam, GenerationTask $task, array $identityResult): array
     {
@@ -90,7 +95,7 @@ class ConfidenceBoostService extends AbstractAiService
     /**
      * Extract document text from document ID
      */
-    protected function extractDocumentText(?int $docId): ?string
+    protected function extractDocumentText(int|string|null $docId): ?string
     {
         if (! $docId) {
             return null;
@@ -145,15 +150,28 @@ class ConfidenceBoostService extends AbstractAiService
 
     /**
      * Merge boosted identity with original
+     * IMPORTANT: Confidence can only increase, never decrease (this is a "boost" not a penalty)
      */
     protected function mergeBoostedIdentity(array $identityResult, array $content): array
     {
+        $originalConfidence = $identityResult['confidence'];
+        $newConfidence = $content['confidence'] ?? $originalConfidence;
+
+        // Ensure confidence never goes down (this is a boost, not a validator)
+        if ($newConfidence < $originalConfidence) {
+            Log::warning('ConfidenceBoost tried to lower confidence, keeping original', [
+                'original' => $originalConfidence,
+                'attempted' => $newConfidence,
+            ]);
+            $newConfidence = $originalConfidence;
+        }
+
         $boostedIdentity = array_merge($identityResult, [
-            'confidence' => $content['confidence'] ?? $identityResult['confidence'],
+            'confidence' => $newConfidence,
             'status' => $content['status'] ?? $identityResult['status'],
             'confidence_boost' => [
-                'original_confidence' => $identityResult['confidence'],
-                'boosted_confidence' => $content['confidence'] ?? $identityResult['confidence'],
+                'original_confidence' => $originalConfidence,
+                'boosted_confidence' => $newConfidence,
                 'adjustment_reason' => $content['adjustment_reason'] ?? '',
                 'checks_performed' => $content['checks_performed'] ?? [],
                 'evidence_quality' => $content['evidence_quality'] ?? 'unknown',

@@ -47,6 +47,13 @@ class ExamResearchController extends Controller
             $userInput = [];
         }
 
+        // Extract without_confirmation from user_input if present (takes priority over top-level param)
+        $withoutConfirmationFromInput = null;
+        if (isset($userInput['without_confirmation'])) {
+            $withoutConfirmationFromInput = (bool) $userInput['without_confirmation'];
+            unset($userInput['without_confirmation']); // Remove from user_input to avoid duplication
+        }
+
         $documentId = $validated['document_id'] ?? null;
 
         // Если прислали файл — кладём его в storage и создаём ExamDocument
@@ -93,7 +100,8 @@ class ExamResearchController extends Controller
             'notes' => (string) ($validated['notes'] ?? ''),
             'user_input' => $userInput,
             'document_id' => $documentId,
-            'without_confirmation' => (bool) ($validated['without_confirmation'] ?? false),
+            // Priority: value from user_input > top-level param > false
+            'without_confirmation' => $withoutConfirmationFromInput ?? (bool) ($validated['without_confirmation'] ?? false),
         ];
 
         // Кладём таск в очередь через инстанс сервиса
@@ -211,7 +219,7 @@ class ExamResearchController extends Controller
             $result = (array) ($task->result ?? []);
             $result['identity'] = $identity;
             $task->result = $result;
-            $task->status = 'pending'; // Need more input
+            $task->status = 'queued'; // Need more input
             $task->save();
 
             return response()->json([
