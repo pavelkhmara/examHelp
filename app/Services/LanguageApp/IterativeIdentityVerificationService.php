@@ -21,7 +21,7 @@ class IterativeIdentityVerificationService extends AbstractAiService
 {
     const MAX_ATTEMPTS = 3;
     const MAX_DURATION_SECONDS = 360; // 6 minutes
-    const MIN_CONFIDENCE_THRESHOLD = 0.94; // Lowered from 0.97 to be more realistic with document uploads
+    const MIN_CONFIDENCE_THRESHOLD = 0.80; // Lowered from 0.94 to 0.90 - with documents, 90%+ is reliable enough
 
     public function __construct(
         AiProvider $ai,

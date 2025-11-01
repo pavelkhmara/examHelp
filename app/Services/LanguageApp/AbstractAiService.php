@@ -14,11 +14,12 @@ abstract class AbstractAiService
     ) {}
 
     /**
-     * @param  array  $opts  ['schema' => array|null, 'web' => bool, 'files' => array<int,\SplFileInfo|string>]
+     * @param  array  $opts  ['schema' => array|null, 'web' => bool, 'files' => array<int,\SplFileInfo|string>, 'model' => string|null]
      */
     protected function callAi(array $payload, array $opts = []): array
     {
-        Log::debug('AbstractAiService: calling AI', ['$payload' => $payload, 'options' => $opts]);
+        $modelAlias = $opts['model'] ?? null;
+        Log::debug('AbstractAiService: calling AI', ['$payload' => $payload, 'options' => $opts, 'model_requested' => $modelAlias]);
 
         $cfg = config('ai');
         $provider = $cfg['provider'];
@@ -75,6 +76,8 @@ abstract class AbstractAiService
         Log::debug('AbstractAiService.callAi', [
             'ok' => $res['ok'] ?? null,
             'usage' => $res['usage'] ?? null,
+            'model' => $res['model'] ?? 'unknown',
+            'model_alias' => $res['model_alias'] ?? null,
         ]);
         // $this->writeJsonToFile($payload['exam_slug'], $payload['exam_level'], $res);
 
@@ -147,6 +150,8 @@ abstract class AbstractAiService
             'exam_id' => $task->exam_id,
             'generation_task_id' => $task->id,
             'stage' => $stage,
+            'model' => $response['model'] ?? null,
+            'model_alias' => $response['model_alias'] ?? null,
             'request' => $request,
             'response' => $response['data'] ?? $response['json'] ?? $response['content'] ?? null,
             'prompt_tokens' => $response['usage']['prompt_tokens'] ?? 0,

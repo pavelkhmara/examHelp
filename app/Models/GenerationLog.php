@@ -8,7 +8,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 class GenerationLog extends Model
 {
     protected $fillable = [
-        'generation_task_id', 'stage', 'request', 'response',
+        'generation_task_id', 'stage', 'model', 'model_alias', 'request', 'response',
         'prompt_tokens', 'completion_tokens', 'total_tokens',
     ];
 

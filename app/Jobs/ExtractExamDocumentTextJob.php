@@ -100,13 +100,9 @@ class ExtractExamDocumentTextJob implements ShouldQueue
     protected function extract(string $mime, string $fullPath): string
     {
         if (str_contains($mime, 'pdf')) {
-            $bin = config('documents.pdftotext_bin'); // null = autodetect in PATH
+            $bin = config('documents.pdftotext_bin');
 
-            $pdf = new Pdf;
-            // if ($bin) {
-            //     $pdf->setPdftotextBinary($bin);
-            // }
-
+            $pdf = new Pdf($bin);
             $pdf->setPdf($fullPath);
 
             return $pdf->text();
