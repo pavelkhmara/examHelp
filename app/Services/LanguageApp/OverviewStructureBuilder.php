@@ -299,6 +299,11 @@ class OverviewStructureBuilder extends AbstractAiService
         // Add global_archetypes to structure for example generation
         $structure['global_archetypes'] = $overview_normalized['global_archetypes'] ?? [];
 
+        // Add section_archetypes if present
+        if (!empty($overview_normalized['section_archetypes'])) {
+            $structure['section_archetypes'] = $overview_normalized['section_archetypes'];
+        }
+
         Log::debug('OverviewStructureBuilder add exam-meta-structure', ['exam_structure' => $structure]);
 
         $meta = $exam->meta ?? [];
