@@ -8,6 +8,9 @@ use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Queue\SerializesModels;
 use Laravel\Nova\Actions\Action;
 use Laravel\Nova\Fields\ActionFields;
+use Laravel\Nova\Fields\Boolean;
+use Laravel\Nova\Fields\Select;
+use Laravel\Nova\Http\Requests\NovaRequest;
 
 class ResearchAction extends Action
 {
@@ -16,6 +19,23 @@ class ResearchAction extends Action
     public $name = 'Run Exam Research';
 
     public $standalone = true;
+
+    public function fields(NovaRequest $request)
+    {
+        return [
+            Boolean::make('Without Confirmation', 'without_confirmation')
+                ->help('Skip identity confirmation step and auto-approve exam identity')
+                ->default(true),
+
+            Select::make('Overview Model', 'overview_model')
+                ->options([
+                    'gpt-5-mini' => 'GPT-5 Mini (faster, cheaper)',
+                    'gpt-5' => 'GPT-5 (highest quality, slower)',
+                ])
+                ->default('gpt-5-mini')
+                ->help('AI model for exam overview generation'),
+        ];
+    }
 
     public function handle(ActionFields $fields, $models)
     {
@@ -50,7 +70,8 @@ class ResearchAction extends Action
                 'source' => 'nova_action',
                 'user_input' => $userInput,
                 'document_id' => $documentId,
-                'without_confirmation' => $userInput['without_confirmation'] ?? false,
+                'without_confirmation' => $fields->without_confirmation ?? true,
+                'overview_model' => $fields->overview_model ?? 'gpt-5-mini',
             ];
 
             // Enqueue research task with unique key (timestamp ensures no deduplication)

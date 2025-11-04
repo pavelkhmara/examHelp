@@ -473,10 +473,6 @@ class RunExamResearchJob implements ShouldQueue
             }
         }
 
-        // TEMPORARILY DISABLED: Example generation
-        // Stage 1 focuses on obtaining exam structure only. Example generation will be re-enabled in a future stage.
-        // See docs/backlog/stage2_example_generation.md for restoration plan.
-        /*
         // Generate example questions for each archetype
         try {
             \Illuminate\Support\Facades\Log::info('Starting example generation', [
@@ -520,6 +516,5 @@ class RunExamResearchJob implements ShouldQueue
             $task->result = $result;
             $task->save();
         }
-        */
     }
 }
