@@ -66,6 +66,9 @@ final class JsonSchemaExamOverview
         // --- sources: массив объектов с url,title,publisher (строки)
         $sources = $this->normalizeSources($data['sources'] ?? null);
 
+        // --- section_archetypes: section-level blueprints (optional, but recommended)
+        $sectionArchetypes = $this->normalizeSectionArchetypes($data['section_archetypes'] ?? null);
+
         // --- top-level category weights: либо category_weights, либо category_weights_summary.aggregated_weights
         $topWeights = null;
         if (isset($data['category_weights']) && is_array($data['category_weights'])) {
@@ -140,6 +143,30 @@ final class JsonSchemaExamOverview
             // category: выбираем primary по максимальному весу; если пусто — пробуем явное поле/секцию; иначе "unknown"
             $category = $this->inferPrimaryCategory($cw, $arc);
 
+            // question_type: REQUIRED (Gate E)
+            $questionType = $arc['question_type'] ?? null;
+            if (!$questionType || !is_string($questionType)) {
+                throw ValidationException::withMessages([
+                    "archetypes.$i.question_type" => "question_type is REQUIRED and must be a string from QuestionType enum for archetype '{$name}'"
+                ]);
+            }
+
+            // Validate question_type is from allowed enum
+            $allowedTypes = \App\Domain\Taxonomy\QuestionType::all();
+            if (!in_array($questionType, $allowedTypes, true)) {
+                throw ValidationException::withMessages([
+                    "archetypes.$i.question_type" => "question_type must be one of: " . implode(', ', $allowedTypes) . ". Got: {$questionType}"
+                ]);
+            }
+
+            // type_specific: REQUIRED (Gate E)
+            $typeSpecific = $arc['type_specific'] ?? null;
+            if (!is_array($typeSpecific) || empty($typeSpecific)) {
+                throw ValidationException::withMessages([
+                    "archetypes.$i.type_specific" => "type_specific is REQUIRED and must be a non-empty object for archetype '{$name}'"
+                ]);
+            }
+
             // step_duration: из типичных полей о времени (минуты) — typical_length_or_time / typical_answer_length_or_range /
             // numeric_ranges / units "minutes" / и т.п. (best-effort).
             $stepDuration = $this->inferStepDurationMinutes($arc);
@@ -172,6 +199,10 @@ final class JsonSchemaExamOverview
                 'typical_instructions', 'rationale', 'description',
                 'step_duration', 'section_duration', // Task #4: explicit duration fields (task-level or section-level)
                 'source_ids', // Source tracking
+                'question_type', // Gate E: REQUIRED question type from QuestionType enum
+                'type_specific', // Gate E: REQUIRED type-specific configuration object
+                'skills_measured', 'common_distractors', 'stem_templates', // Additional standard fields
+                'sequence_matters', 'step_order', // Sequencing fields
             ];
             $other = [];
             foreach ($arc as $k => $v) {
@@ -223,6 +254,10 @@ final class JsonSchemaExamOverview
                 'step_duration' => $stepDuration,
                 'source_ids' => $sourceIds,
 
+                // Gate E: REQUIRED fields
+                'question_type' => $questionType,
+                'type_specific' => $typeSpecific,
+
                 'stem_templates' => $stemTemplates,
                 'evidence' => $evidence,
                 'distractors' => $distractors,
@@ -243,10 +278,17 @@ final class JsonSchemaExamOverview
             ]);
         }
 
+        // Gate F: Validate that for every section in category_map, there is a corresponding section_archetype
+        // that lists those question types in allowed_question_types
+        if (!empty($sectionArchetypes) && !empty($categoryMap)) {
+            $this->validateGateF($categoryMap, $sectionArchetypes, $globalArchetypes);
+        }
+
         // Итог
         return [
             'exam_name' => $examName,
             'sources' => $sources,
+            'section_archetypes' => $sectionArchetypes,
             'global_archetypes' => $globalArchetypes,
             'category_map' => $categoryMap,
             'total_exam_duration' => $totalDuration,
@@ -615,5 +657,139 @@ final class JsonSchemaExamOverview
         }
 
         return array_keys($arr) !== range(0, count($arr) - 1);
+    }
+
+    /**
+     * Normalize section_archetypes (optional but recommended)
+     */
+    private function normalizeSectionArchetypes(?array $sectionArchetypes): array
+    {
+        if (!is_array($sectionArchetypes)) {
+            return [];
+        }
+
+        $normalized = [];
+        foreach ($sectionArchetypes as $i => $sa) {
+            if (!is_array($sa)) {
+                throw ValidationException::withMessages([
+                    "section_archetypes.$i" => 'must be an object'
+                ]);
+            }
+
+            // Required fields
+            $section = $sa['section'] ?? null;
+            if (!$section || !is_string($section)) {
+                throw ValidationException::withMessages([
+                    "section_archetypes.$i.section" => 'section is required and must be a string (listening|reading|grammar_lexis|writing|speaking)'
+                ]);
+            }
+
+            // Validate allowed_question_types array
+            $allowedQuestionTypes = $sa['allowed_question_types'] ?? [];
+            if (!is_array($allowedQuestionTypes)) {
+                throw ValidationException::withMessages([
+                    "section_archetypes.$i.allowed_question_types" => 'allowed_question_types must be an array'
+                ]);
+            }
+
+            // Validate that each allowed_question_type is from QuestionType enum
+            $validQuestionTypes = \App\Domain\Taxonomy\QuestionType::all();
+            foreach ($allowedQuestionTypes as $idx => $qt) {
+                if (!in_array($qt, $validQuestionTypes, true)) {
+                    throw ValidationException::withMessages([
+                        "section_archetypes.$i.allowed_question_types.$idx" => "question type must be from QuestionType enum. Got: {$qt}"
+                    ]);
+                }
+            }
+
+            // Source IDs (optional)
+            $sourceIds = [];
+            if (isset($sa['source_ids']) && is_array($sa['source_ids'])) {
+                foreach ($sa['source_ids'] as $idx => $sourceId) {
+                    if (!is_int($sourceId) && !is_numeric($sourceId)) {
+                        throw ValidationException::withMessages([
+                            "section_archetypes.$i.source_ids.$idx" => 'must be integer (source index)'
+                        ]);
+                    }
+                    $sourceIds[] = (int) $sourceId;
+                }
+            }
+
+            $normalized[] = [
+                'section' => strtolower($section),
+                'objectives' => $this->normalizeStringArray($sa['objectives'] ?? null, "section_archetypes.$i.objectives", true) ?? [],
+                'skills_subskills' => $this->normalizeStringArray($sa['skills_subskills'] ?? null, "section_archetypes.$i.skills_subskills", true) ?? [],
+                'allowed_question_types' => $allowedQuestionTypes,
+                'typical_stimuli' => $sa['typical_stimuli'] ?? null,
+                'item_counts' => $sa['item_counts'] ?? null,
+                'time_guidance_min' => $sa['time_guidance_min'] ?? null,
+                'scoring_focus' => $this->normalizeStringArray($sa['scoring_focus'] ?? null, "section_archetypes.$i.scoring_focus", true) ?? [],
+                'common_pitfalls' => $this->normalizeStringArray($sa['common_pitfalls'] ?? null, "section_archetypes.$i.common_pitfalls", true) ?? [],
+                'constraints' => $this->normalizeStringArray($sa['constraints'] ?? null, "section_archetypes.$i.constraints", true) ?? [],
+                'source_ids' => $sourceIds,
+            ];
+        }
+
+        return $normalized;
+    }
+
+    /**
+     * Gate F: Validate that for every section in category_map,
+     * there is a corresponding section_archetype that lists those question types
+     */
+    private function validateGateF(array $categoryMap, array $sectionArchetypes, array $globalArchetypes): void
+    {
+        // Build map: section name => allowed question types
+        $sectionAllowedTypes = [];
+        foreach ($sectionArchetypes as $sa) {
+            $sectionName = strtolower($sa['section']);
+            $sectionAllowedTypes[$sectionName] = $sa['allowed_question_types'] ?? [];
+        }
+
+        // For each section in category_map, check that all archetype question_types are allowed
+        foreach ($categoryMap as $sectionName => $data) {
+            $sectionNameLower = strtolower($sectionName);
+
+            // If no section_archetype for this section, log warning (not hard error for backward compatibility)
+            if (!isset($sectionAllowedTypes[$sectionNameLower])) {
+                if (!app()->environment('testing')) {
+                    \Illuminate\Support\Facades\Log::warning('Gate F: Missing section_archetype for section in category_map', [
+                        'section' => $sectionName,
+                        'message' => 'No section_archetype found for this section. Add section_archetype with allowed_question_types.',
+                    ]);
+                }
+                continue;
+            }
+
+            $allowedTypes = $sectionAllowedTypes[$sectionNameLower];
+            $archetypeWeights = $data['archetype_weights'] ?? [];
+
+            // Check each archetype in this section
+            foreach ($archetypeWeights as $aw) {
+                $archetypeId = $aw['archetype_id'] ?? null;
+
+                // Find the archetype in global_archetypes
+                $archetype = null;
+                foreach ($globalArchetypes as $ga) {
+                    if ($ga['id'] === $archetypeId) {
+                        $archetype = $ga;
+                        break;
+                    }
+                }
+
+                if (!$archetype) {
+                    continue; // Archetype not found, skip (should be caught by other validation)
+                }
+
+                $questionType = $archetype['question_type'] ?? null;
+
+                // Check if question_type is in allowed_question_types for this section
+                if ($questionType && !in_array($questionType, $allowedTypes, true)) {
+                    throw ValidationException::withMessages([
+                        "category_map.{$sectionName}" => "Gate F failed: Archetype '{$archetypeId}' has question_type '{$questionType}' which is NOT in section_archetype.allowed_question_types for section '{$sectionName}'. Allowed: " . implode(', ', $allowedTypes)
+                    ]);
+                }
+            }
+        }
     }
 }

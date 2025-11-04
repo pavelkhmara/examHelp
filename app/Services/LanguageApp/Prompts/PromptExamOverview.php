@@ -91,6 +91,32 @@ Example:
   ...
 }
 ```
+**SECTION ARCHETYPE MODEL (section_archetypes):**
+Provide a section-level blueprint per exam section (listening, reading, grammar_lexis, writing, speaking):
+For each section_archetype:
+{
+  "section": "listening|reading|grammar_lexis|writing|speaking",
+  "objectives": ["comprehension gist","detail","inference", ...],
+  "skills_subskills": ["note-taking","cohesion","pronunciation-range", ...],
+  "allowed_question_types": ["single_select","multi_select","gap_cloze", ...],  // must be from QuestionType enum
+  "typical_stimuli": { "text_length": "50–300 words", "audio_repeats": 2, "audio_total_min": "6–12" },
+  "item_counts": { "min": 5, "max": 40 },
+  "time_guidance_min": { "min": 10, "max": 60 }, // guidance only if official per-task timing absent
+  "scoring_focus": ["accuracy","rubric","partial","fuzzy"],
+  "common_pitfalls": ["distractor-synonyms","numbers-variants","false-negatives"],
+  "constraints": ["no negative marking unless official","show units for numeric"],
+  "source_ids": [ ... ] // who informed this section-level blueprint
+}
+This is type_specific for question_types:
+    - single_select|multi_select|true_false|yes_no_ng: options_count_range, distractor_blueprints, lexical_overlap_threshold, partial_rules (для multi)
+    - dropdown_cloze|gap_cloze|banked_cloze: slot_count_range, bank_size (для banked), allowed_variants_regex, normalization_rules
+    - matching: pair_count_range, shuffle_constraints, partial_scoring_rules
+    - order_sentences|order_words: item_count_range, accept_multiple_orders, syntactic_templates
+    - highlight_text: span_count_range, span_length_range, tokenization_hint
+    - short_answer|numeric: keywords|regex, tolerance|units, normalization
+    - listen_mcq|dictation: audio_repeats, audio_length_range, orthography_rules (для dictation)
+    - error_correction: mode: free_form|targeted, rubric_refs, allowed_tools
+    - writing_prompt|speaking_prompt: length_or_time_targets, rubric_criteria, genre/prompts, attempt_limits
 
 **RESEARCH PROCESS:**
 1. If documents are provided → analyze them first (document-first). Treat them as ground truth unless contradicted by a newer official source.
@@ -100,8 +126,25 @@ Example:
 5. For each extracted fact, record its source and whether it was direct evidence or a secondary confirmation.
 
 **CONSTRAINTS:**
-- Extract patterns (archetypes), typical distractors, verbs, numeric ranges, units, common visuals, difficulty bands.
-- **REQUIRED**: Map EACH task archetype to sections (exam parts like listening, reading, writing, speaking).
+- Extract patterns at TWO levels:
+  (A) section_archetypes (section-level patterns)
+  (B) question_archetypes (question-level patterns)
+- **CLASSIFY EVERY TASK** into one of our accepted question types (QuestionType enum keys below). 
+- Apply global_archetypes at the **question level**: for each question_archetype include `question_type` and a `type_specific` object with fields required for that type.
+- Keep section mapping via `category_map` (sections → weights per question_archetype).
+
+**ALLOWED QUESTION TYPES (use exact keys; do not invent):**
+single_select, multi_select, true_false, yes_no_ng, dropdown_cloze, gap_cloze, banked_cloze,
+matching, order_sentences, order_words, highlight_text, short_answer, numeric,
+listen_mcq, dictation, error_correction, writing_prompt, speaking_prompt
+
+**CLASSIFICATION & MAPPING RULES:**
+1) For every task, first pick `question_type` from the ALLOWED list.
+2) Build/choose an appropriate `question_archetype` (global_archetypes entry) with `question_type` and `type_specific`.
+3) Map that archetype to sections via `category_map` (e.g., reading → {L-MC: 0.4, gap_cloze: 0.2, ...}).
+4) Ensure `section_archetypes[section].allowed_question_types` includes the types you map for that section; otherwise flag inconsistency.
+
+
 - **CRITICAL TIMING PRIORITIES** (in order of importance):
   1. **HIGHEST**: total_exam_duration (entire exam time) - NEVER guess, must be from official sources
   2. **MEDIUM**: section_duration (time per section: Listening, Reading, etc.) - important for scheduling
@@ -122,13 +165,28 @@ PRIORITY ORDER (do not miss higher priorities):
 2. section_duration for each major section - HIGHLY RECOMMENDED
 3. step_duration for individual tasks - nice to have but not required
 
+### TIMEBOX POLICY (2.5-2.95 minutes)
+If time is short, ensure first:
+1) Canonical identity + **total_exam_duration** with citation.
+2) At least **1 section_archetype** per active section (listening, reading, grammar_lexis, writing, speaking) with key invariants.
+3) ≥ **3 question_archetypes** with proper `question_type` (from ALLOWED TYPES) and a non-empty `type_specific`.
+Then expand with section timings, thresholds, and additional archetypes.
+
+### QUALITY GATES (hard fail if not met)
+- Gate A: `total_exam_duration` is present and cited (prefer official).
+- Gate B: Domain diversity: ≤2 sources per domain; ≥4 sources in total (uploaded docs count).
+- Gate C: Every entry in `global_archetypes` has ≥1 `source_id`.
+- Gate D: If section timings exist, check sum(section_duration) ≈ total (±5 min) or flag inconsistency.
+- Gate E: 100% `global_archetypes` MUST include `question_type` ∈ **ALLOWED QUESTION TYPES** and a non-empty `type_specific`.
+- Gate F: For every section in `category_map`, there is a corresponding `section_archetype` that lists those question types in `allowed_question_types`.
+
 Output strictly the JSON object described in the response_json_schema. If unsure, be conservative.
 
 Task: Mine question archetypes and style for the exam using HIGH-QUALITY sources and track their usage.
 
 exam_name: {$examTitle}
 exam_description: {$contextNotes}
-timebox_minutes: 2,5
+timebox_minutes: 2.5
 
 {$documentsHint}
 
@@ -302,11 +360,38 @@ SCHEMA;
                     ],
                 ],
             ],
+            'section_archetypes' => [
+                [
+                    'section' => 'string (listening|reading|grammar_lexis|writing|speaking)',
+                    'objectives' => ['string (comprehension gist, detail, inference, etc.)'],
+                    'skills_subskills' => ['string (note-taking, cohesion, pronunciation-range, etc.)'],
+                    'allowed_question_types' => ['string (must be from QuestionType enum: single_select, multi_select, gap_cloze, etc.)'],
+                    'typical_stimuli' => [
+                        'text_length' => 'string (e.g., 50-300 words)',
+                        'audio_repeats' => 'number (e.g., 2)',
+                        'audio_total_min' => 'string (e.g., 6-12)',
+                    ],
+                    'item_counts' => [
+                        'min' => 'number',
+                        'max' => 'number',
+                    ],
+                    'time_guidance_min' => [
+                        'min' => 'number',
+                        'max' => 'number',
+                    ],
+                    'scoring_focus' => ['string (accuracy, rubric, partial, fuzzy)'],
+                    'common_pitfalls' => ['string (distractor-synonyms, numbers-variants, etc.)'],
+                    'constraints' => ['string (no negative marking unless official, show units for numeric, etc.)'],
+                    'source_ids' => ['number (indices of sources that informed this section blueprint)'],
+                ],
+            ],
             'global_archetypes' => [
                 [
                     'id' => 'string (unique identifier for this task archetype)',
                     'name' => 'string (human-readable name)',
                     'source_ids' => ['number (indices of sources in sources array that provided info for this archetype - 0-based indices) REQUIRED'],
+                    'question_type' => 'string REQUIRED (one of QuestionType enum keys: single_select, multi_select, true_false, yes_no_ng, dropdown_cloze, gap_cloze, banked_cloze, matching, order_sentences, order_words, highlight_text, short_answer, numeric, listen_mcq, dictation, error_correction, writing_prompt, speaking_prompt)',
+                    'type_specific' => 'object REQUIRED (object tailored to question_type with required fields for that type)',
                     'stem_templates' => ['string (example question stems)'],
                     'skills_measured' => ['string (skills tested by this archetype)'],
                     'common_distractors' => ['string (typical wrong answer patterns)'],
@@ -354,11 +439,28 @@ SCHEMA;
                     'data_types' => [['string']],
                 ],
             ]],
+            'section_archetypes' => [
+                [
+                    'section' => 'string',
+                    'objectives' => [['string']],
+                    'skills_subskills' => [['string']],
+                    'allowed_question_types' => [['string']],
+                    'typical_stimuli' => ['object'],
+                    'item_counts' => ['object'],
+                    'time_guidance_min' => ['object'],
+                    'scoring_focus' => [['string']],
+                    'common_pitfalls' => [['string']],
+                    'constraints' => [['string']],
+                    'source_ids' => [['number']],
+                ],
+            ],
             'global_archetypes' => [
                 [
                     'id' => 'string',
                     'name' => 'string',
                     'source_ids' => ['number'],
+                    'question_type' => 'string REQUIRED',
+                    'type_specific' => 'object REQUIRED',
                     'stem_templates' => ['string'],
                     'skills_measured' => ['string'],
                     'common_distractors' => ['string'],

@@ -20,6 +20,11 @@ class JsonSchemaExamOverviewTest extends TestCase
                 [
                     'id' => 'reading_true_false_notgiven',
                     'name' => 'Reading — True/False/Not Given',
+                    'question_type' => 'true_false',
+                    'type_specific' => [
+                        'options_count' => 3,
+                        'option_labels' => ['True', 'False', 'Not Given'],
+                    ],
                     'question_types' => ['True/False/Not Given', 'Matching'],
                     'typical_distractors' => ['Paraphrase traps'],
                     'verbs' => ['decide', 'select'],
@@ -71,6 +76,8 @@ class JsonSchemaExamOverviewTest extends TestCase
         {
           "id":"reading_true_false_notgiven",
           "name":"Reading — True/False/Not Given",
+          "question_type":"true_false",
+          "type_specific":{"options_count":3,"option_labels":["True","False","Not Given"]},
           "question_types":["True/False/Not Given","Matching"],
           "typical_distractors":["Paraphrase traps"],
           "verbs":["decide","select"],
@@ -81,6 +88,8 @@ class JsonSchemaExamOverviewTest extends TestCase
         {
           "id":"listening_mcq_single",
           "name":"Listening — MCQ single",
+          "question_type":"single_select",
+          "type_specific":{"options_count":4,"distractor_count":3},
           "pattern":"Short audio...",
           "verbs":["choose"],
           "numeric_ranges":["times (e.g., 8:30)","percentages (0–100)"],
@@ -98,6 +107,6 @@ class JsonSchemaExamOverviewTest extends TestCase
 
         $this->assertEquals('ielts', $out['exam_name']);
         $this->assertCount(2, $out['sources']);
-        $this->assertCount(2, $out['archetypes']);
+        $this->assertCount(2, $out['global_archetypes']);
     }
 }
