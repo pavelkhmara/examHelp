@@ -27,6 +27,11 @@ jobs:
           key: composer-${{ runner.os }}-${{ hashFiles('**/composer.lock') }}
           restore-keys: composer-${{ runner.os }}-
 
+      - name: Configure Nova auth
+        if: ${{ secrets.NOVA_USERNAME != '' && secrets.NOVA_LICENSE_KEY != '' }}
+        run: |
+          composer config http-basic.nova.laravel.com "${{ secrets.NOVA_USERNAME }}" "${{ secrets.NOVA_LICENSE_KEY }}"
+
       - name: Install deps
         run: composer install --no-interaction --prefer-dist --no-progress
 
