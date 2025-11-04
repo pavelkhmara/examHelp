@@ -37,10 +37,10 @@ class GenerationTask extends Resource
             ])->displayUsingLabels()->sortable(),
             Number::make('Attempts')->sortable(),
             Code::make('Request')->json()
-                ->resolveUsing(fn ($v) => is_string($v) ? $v : json_encode($v, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE))
+                ->resolveUsing(fn ($v) => is_string($v) ? $v : json_encode($v, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES))
                 ->hideFromIndex(),
             Code::make('Response')->json()
-                ->resolveUsing(fn ($v) => is_string($v) ? $v : json_encode($v, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE))
+                ->resolveUsing(fn ($v) => is_string($v) ? $v : json_encode($v, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES))
                 ->hideFromIndex(),
             Code::make('Activities')
                 ->resolveUsing(function ($activities) {

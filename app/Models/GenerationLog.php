@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Casts\AsArrayWithUnescapedSlashes;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
@@ -14,8 +15,8 @@ class GenerationLog extends Model
 
     protected $casts = [
         'exam_id' => 'string',
-        'request' => 'array',
-        'response' => 'array',
+        'request' => AsArrayWithUnescapedSlashes::class,
+        'response' => AsArrayWithUnescapedSlashes::class,
     ];
 
     public function exam(): BelongsTo

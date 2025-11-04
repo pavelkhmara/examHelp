@@ -93,7 +93,7 @@ You are an evidence-bound exam identity analyzer. Your task is to determine the 
 SYSTEM;
     }
 
-    public static function userPrompt(array $userInput, ?string $extractedText, array $markerPack = []): string
+    public static function userPrompt(array $userInput, ?string $extractedText, array $markerPack = [], ?array $existingIdentity = null, ?array $userMeta = null): string
     {
         // Extract iteration context and web search data if present
         $iterationContext = $userInput['iteration_context'] ?? null;
@@ -175,6 +175,27 @@ SYSTEM;
             $webSearchSection .= "IMPORTANT: Use this web search information to increase confidence and accuracy.\n";
         }
 
+        // Build existing identity section
+        $existingIdentitySection = '';
+        if ($existingIdentity && is_array($existingIdentity) && !empty($existingIdentity)) {
+            $existingIdentityJson = json_encode($existingIdentity, JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT);
+            $existingIdentitySection = "\n\n**EXISTING IDENTITY DATA:**\n";
+            $existingIdentitySection .= "The following identity information was already captured during exam creation:\n";
+            $existingIdentitySection .= "```json\n{$existingIdentityJson}\n```\n";
+            $existingIdentitySection .= "IMPORTANT: Use this as prior information. If document evidence contradicts this, ";
+            $existingIdentitySection .= "prefer document evidence but note the conflict in your reasoning.\n";
+        }
+
+        // Build user metadata section
+        $userMetaSection = '';
+        if ($userMeta && is_array($userMeta) && !empty($userMeta)) {
+            $userMetaJson = json_encode($userMeta, JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT);
+            $userMetaSection = "\n\n**USER METADATA (from initial analysis):**\n";
+            $userMetaSection .= "Additional information about the user and their exam preparation:\n";
+            $userMetaSection .= "```json\n{$userMetaJson}\n```\n";
+            $userMetaSection .= "IMPORTANT: This metadata can help you understand user's intent and target exam details.\n";
+        }
+
         return <<<PROMPT
 **USER INPUT:**
 ```json
@@ -188,6 +209,8 @@ SYSTEM;
 
 **MARKER PACK INFO:**
 {$markerInfo}
+{$existingIdentitySection}
+{$userMetaSection}
 {$iterationSection}
 {$webSearchSection}
 
@@ -236,7 +259,7 @@ PROMPT;
     /**
      * Helper: builds complete payload for AI provider
      */
-    public static function buildPayload(array $userInput, ?string $extractedText, array $markerPack = []): array
+    public static function buildPayload(array $userInput, ?string $extractedText, array $markerPack = [], ?array $existingIdentity = null, ?array $userMeta = null): array
     {
         return [
             'messages' => [
@@ -246,7 +269,7 @@ PROMPT;
                 ],
                 [
                     'role' => 'user',
-                    'content' => self::userPrompt($userInput, $extractedText, $markerPack),
+                    'content' => self::userPrompt($userInput, $extractedText, $markerPack, $existingIdentity, $userMeta),
                 ],
             ],
             'response_format' => [

@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Casts\AsArrayWithUnescapedSlashes;
 use App\Models\Concerns\HasUuid;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -29,7 +30,7 @@ class ExamDocument extends Model
     ];
 
     protected $casts = [
-        'meta' => 'array',
+        'meta' => AsArrayWithUnescapedSlashes::class,
     ];
 
     public function exam(): BelongsTo

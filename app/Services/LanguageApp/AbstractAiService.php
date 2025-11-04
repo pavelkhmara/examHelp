@@ -81,6 +81,9 @@ abstract class AbstractAiService
         ]);
         // $this->writeJsonToFile($payload['exam_slug'], $payload['exam_level'], $res);
 
+        // Add sent messages to result for logging
+        $res['sent_messages'] = $messages;
+
         return $res;
     }
 
@@ -146,13 +149,16 @@ abstract class AbstractAiService
 
     protected function log(GenerationTask $task, string $stage, array $request, array $response): void
     {
+        // Use sent_messages from response if available (full prompt), otherwise use request array
+        $loggedRequest = $response['sent_messages'] ?? $request;
+
         \App\Models\GenerationLog::create([
             'exam_id' => $task->exam_id,
             'generation_task_id' => $task->id,
             'stage' => $stage,
             'model' => $response['model'] ?? null,
             'model_alias' => $response['model_alias'] ?? null,
-            'request' => $request,
+            'request' => $loggedRequest,
             'response' => $response['data'] ?? $response['json'] ?? $response['content'] ?? null,
             'prompt_tokens' => $response['usage']['prompt_tokens'] ?? 0,
             'completion_tokens' => $response['usage']['completion_tokens'] ?? 0,

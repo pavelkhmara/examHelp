@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Casts\AsArrayWithUnescapedSlashes;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
@@ -11,7 +12,7 @@ class ExamCategory extends Model
 
     protected $fillable = ['exam_id', 'key', 'name', 'meta', 'description', 'order'];
 
-    protected $casts = ['meta' => 'array'];
+    protected $casts = ['meta' => AsArrayWithUnescapedSlashes::class];
 
     public function exam()
     {

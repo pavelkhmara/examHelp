@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "de364a56ee4ecefa5dfc8606b7d74108",
+    "content-hash": "d87f8bbad5f3e8be6029faae329a00df",
     "packages": [
         {
             "name": "blade-ui-kit/blade-heroicons",
@@ -3286,6 +3286,51 @@
                 }
             ],
             "time": "2025-09-03T16:03:54+00:00"
+        },
+        {
+            "name": "owenmelbz/nova-radio-field",
+            "version": "1.0.1",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/OwenMelbz/nova-radio-field.git",
+                "reference": "28bb17d59af3c5ab944e78db7c0ae974ce42c903"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/OwenMelbz/nova-radio-field/zipball/28bb17d59af3c5ab944e78db7c0ae974ce42c903",
+                "reference": "28bb17d59af3c5ab944e78db7c0ae974ce42c903",
+                "shasum": ""
+            },
+            "require": {
+                "php": ">=7.1.0"
+            },
+            "type": "library",
+            "extra": {
+                "laravel": {
+                    "providers": [
+                        "OwenMelbz\\RadioField\\FieldServiceProvider"
+                    ]
+                }
+            },
+            "autoload": {
+                "psr-4": {
+                    "OwenMelbz\\RadioField\\": "src/"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "description": "A Laravel Nova radio button field type with the ability to toggle other field visibility.",
+            "keywords": [
+                "laravel",
+                "nova"
+            ],
+            "support": {
+                "issues": "https://github.com/OwenMelbz/nova-radio-field/issues",
+                "source": "https://github.com/OwenMelbz/nova-radio-field/tree/1.0.1"
+            },
+            "time": "2021-07-27T16:26:18+00:00"
         },
         {
             "name": "phpoption/phpoption",

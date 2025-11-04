@@ -104,6 +104,7 @@ final class MockAiProvider implements AiProvider
             'usage' => $body['usage'],
             'model' => 'mock_model',
             'model_alias' => $opts['model'] ?? null,
+            'sent_messages' => $payload['messages'] ?? [],  // For logging
         ];
     }
 
@@ -176,6 +177,7 @@ final class MockAiProvider implements AiProvider
             'usage' => $body['usage'],
             'model' => 'mock_model',
             'model_alias' => $opts['model'] ?? null,
+            'sent_messages' => $payload['messages'] ?? [],  // For logging
         ];
     }
 

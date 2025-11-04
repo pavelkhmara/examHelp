@@ -143,6 +143,7 @@ final class OpenAiProvider implements AiProvider
             'usage' => $body['usage'] ?? ['prompt_tokens' => 0, 'completion_tokens' => 0, 'total_tokens' => 0],
             'model' => $model,                 // Модель использованная для запроса (для логов)
             'model_alias' => $opts['model'] ?? null, // Алиас модели (thinking, default, etc.)
+            'sent_messages' => $messages,      // Final messages sent to AI (for logging)
         ];
     }
 

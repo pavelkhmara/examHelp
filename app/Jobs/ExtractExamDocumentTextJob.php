@@ -99,6 +99,11 @@ class ExtractExamDocumentTextJob implements ShouldQueue
 
     protected function extract(string $mime, string $fullPath): string
     {
+        // Plain text files - just read the content
+        if (str_contains($mime, 'text/plain') || str_contains($mime, 'text/')) {
+            return file_get_contents($fullPath);
+        }
+
         if (str_contains($mime, 'pdf')) {
             $bin = config('documents.pdftotext_bin');
 

@@ -11,7 +11,14 @@ use Illuminate\Validation\ValidationException;
  * [
  *   "exam_name" => "string",
  *   "sources" => [
- *     ["url"=>"string","title"=>"string","publisher"=>"string"], ...
+ *     [
+ *       "url" => "string",
+ *       "title" => "string",
+ *       "publisher" => "string",
+ *       "tier" => ?int (1=official, 2=trusted, 3=supplementary),
+ *       "contribution" => ?string (what was taken from this source),
+ *       "source_usage" => ?array (archetype_ids, data_types)
+ *     ], ...
  *   ],
  *   "global_archetypes" => [
  *     [
@@ -20,6 +27,7 @@ use Illuminate\Validation\ValidationException;
  *       "category" => "string",                 // primary section (по максимальному весу или явному полю) - sections are exam parts like listening, reading, writing, speaking
  *       "category_weights" => {string: float},  // нормализованные ключи (lowercase) - NOTE: field name is category_weights for backwards compatibility, but represents SECTIONS
  *       "step_duration" => ?int,                // минуты; task-level timing OR section-level timing (if only section duration available). Priority: step_duration > section_duration > inferred from ranges
+ *       "source_ids" => [int, ...],             // indices of sources that contributed to this archetype
  *
  *       // агрегированные логические блоки
  *       "stem_templates" => ["string", ...],    // инструкции/шаблоны/частые фразы
@@ -96,6 +104,28 @@ final class JsonSchemaExamOverview
             $id = $this->mustString($arc, 'id', "archetypes.$i.id");
             $name = $this->mustString($arc, 'name', "archetypes.$i.name");
 
+            // source_ids: array of integers (indices in sources array)
+            $sourceIds = [];
+            if (isset($arc['source_ids']) && is_array($arc['source_ids'])) {
+                foreach ($arc['source_ids'] as $idx => $sourceId) {
+                    if (!is_int($sourceId) && !is_numeric($sourceId)) {
+                        throw ValidationException::withMessages([
+                            "archetypes.$i.source_ids.$idx" => 'must be integer (source index)'
+                        ]);
+                    }
+                    $sourceIds[] = (int) $sourceId;
+                }
+            } else {
+                // Warn if source_ids missing (not a hard error for backward compatibility)
+                if (!app()->environment('testing')) {
+                    \Illuminate\Support\Facades\Log::warning('Archetype missing source_ids', [
+                        'archetype_id' => $id,
+                        'archetype_name' => $name,
+                        'message' => 'Cannot track which sources contributed to this archetype',
+                    ]);
+                }
+            }
+
             // category_weights на уровне архетипа: допускаем разные ключи и любой регистр
             $cw = null;
             if (isset($arc['category_weights']) && is_array($arc['category_weights'])) {
@@ -141,6 +171,7 @@ final class JsonSchemaExamOverview
                 'typical_answer_length_or_range', 'typical_length_or_time', 'numeric_ranges', 'numeric_ranges_and_constraints',
                 'typical_instructions', 'rationale', 'description',
                 'step_duration', 'section_duration', // Task #4: explicit duration fields (task-level or section-level)
+                'source_ids', // Source tracking
             ];
             $other = [];
             foreach ($arc as $k => $v) {
@@ -190,6 +221,7 @@ final class JsonSchemaExamOverview
                 'category' => $category,
                 'category_weights' => $cw,
                 'step_duration' => $stepDuration,
+                'source_ids' => $sourceIds,
 
                 'stem_templates' => $stemTemplates,
                 'evidence' => $evidence,
@@ -239,17 +271,78 @@ final class JsonSchemaExamOverview
         if (! is_array($src)) {
             throw ValidationException::withMessages(['sources' => 'sources must be an array']);
         }
+
         $out = [];
+        $tier1Count = 0;
+        $tier2Count = 0;
+        $tier3Count = 0;
+
         foreach ($src as $i => $s) {
             if (! is_array($s)) {
                 throw ValidationException::withMessages(["sources.$i" => 'must be object']);
             }
+
+            // Required fields
             foreach (['url', 'title', 'publisher'] as $f) {
                 if (! isset($s[$f]) || ! is_string($s[$f]) || $s[$f] === '') {
                     throw ValidationException::withMessages(["sources.$i.$f" => 'must be non-empty string']);
                 }
             }
-            $out[] = ['url' => $s['url'], 'title' => $s['title'], 'publisher' => $s['publisher']];
+
+            // New quality tracking fields
+            $tier = isset($s['tier']) ? (int) $s['tier'] : null;
+            $contribution = isset($s['contribution']) && is_string($s['contribution']) ? $s['contribution'] : null;
+            $sourceUsage = isset($s['source_usage']) && is_array($s['source_usage']) ? $s['source_usage'] : null;
+
+            // Validate tier if provided
+            if ($tier !== null && ($tier < 1 || $tier > 3)) {
+                throw ValidationException::withMessages(["sources.$i.tier" => 'tier must be 1 (official), 2 (trusted), or 3 (supplementary)']);
+            }
+
+            // Count sources by tier for quality check
+            if ($tier === 1) $tier1Count++;
+            elseif ($tier === 2) $tier2Count++;
+            elseif ($tier === 3) $tier3Count++;
+
+            // Warn if contribution is missing (not a hard error in case of old data)
+            if (!$contribution && !app()->environment('testing')) {
+                \Illuminate\Support\Facades\Log::warning('Source missing contribution field', [
+                    'source_index' => $i,
+                    'source_title' => $s['title'],
+                    'source_url' => $s['url'],
+                ]);
+            }
+
+            $out[] = [
+                'url' => $s['url'],
+                'title' => $s['title'],
+                'publisher' => $s['publisher'],
+                'tier' => $tier,
+                'contribution' => $contribution,
+                'source_usage' => $sourceUsage,
+            ];
+        }
+
+        // Quality check: require at least 4 sources total (unless testing)
+        if (count($out) < 4 && !app()->environment('testing')) {
+            throw ValidationException::withMessages([
+                'sources' => 'At least 4 high-quality sources required. Found: ' . count($out)
+            ]);
+        }
+
+        // Quality check: require at least 2 TIER 1 sources (unless testing)
+        if ($tier1Count < 2 && !app()->environment('testing')) {
+            \Illuminate\Support\Facades\Log::warning('Insufficient TIER 1 sources', [
+                'tier1_count' => $tier1Count,
+                'required' => 2,
+                'message' => 'Research quality may be compromised - prefer official sources',
+            ]);
+
+            // For now, just warn - don't fail validation
+            // In the future, this could be a hard requirement:
+            // throw ValidationException::withMessages([
+            //     'sources' => "At least 2 TIER 1 (official) sources required. Found: {$tier1Count}"
+            // ]);
         }
 
         return $out;

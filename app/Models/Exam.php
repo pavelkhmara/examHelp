@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Casts\AsArrayWithUnescapedSlashes;
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -18,13 +19,18 @@ class Exam extends Model
     protected $fillable = [
         'id',
         'slug', 'title', 'description', 'level', 'is_active',
+        'user_input', 'user_meta', 'identity', 'system_analysis', 'analysis_status',
         'sources', 'meta', 'research_status',
         'categories_count', 'examples_count',
+        'document_upload',
     ];
 
     protected $casts = [
-        'sources' => 'array',
-        'meta' => 'array',
+        'user_meta' => AsArrayWithUnescapedSlashes::class,
+        'identity' => AsArrayWithUnescapedSlashes::class,
+        'system_analysis' => AsArrayWithUnescapedSlashes::class,
+        'sources' => AsArrayWithUnescapedSlashes::class,
+        'meta' => AsArrayWithUnescapedSlashes::class,
         'is_active' => 'boolean',
     ];
 
