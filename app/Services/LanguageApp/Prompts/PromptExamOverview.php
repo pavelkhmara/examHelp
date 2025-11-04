@@ -26,9 +26,80 @@ Information from user about exam: {$userInput}
 
 {$documentPriorityHint}
 
-You must browse the web to discover authentic question patterns for the target exam.
-Follow these constraints:
-- Use at least 4 reputable sources with diversity (.gov, .edu, official exam sites, major publishers).
+**CRITICAL - SOURCE QUALITY REQUIREMENTS:**
+Prefer pages that contain the exact answers (explicit timings, task lists, rubrics) even if they are not on .gov/.edu, as long as the information is directly verifiable (official PDF links, scans, or clearly quoted with anchors).
+Authority matters, but concrete, checkable evidence wins tie-breaks.
+
+
+**MINIMUM SOURCE REQUIREMENTS:**
+- At least 5 high-quality sources (minimum 4 web + documents if provided)If a primary/official document fully specifies timing + sections, 3 sources are sufficient.
+- Ensure diversity: max 2 from the same publisher/domain.
+- Include ≥1 primary-evidence page (contains exact timings/sections or direct excerpts of official docs). If none exist, state `no_primary_evidence_found` and pick the highest evidence-weighted sources instead (see below).
+
+**EVIDENCE WEIGHTING (use to choose sources):**
+Score each candidate page 0–1 on:
+- Specificity (0.4): exact numbers, task names, rubrics, sample items on page.
+- Verifiability (0.3): direct quotes with anchors, screenshots, or official PDF links.
+- Authority (0.2): official provider/certifying body, .gov/.edu, or accredited test centre.
+- Recency (0.1): most recent official version / publication date.
+
+Prefer higher total score. You may select a non-official page over an official one if it scores higher due to direct, verifiable details.
+
+**Authority hints (non-binding):**
+Official provider and government portals usually score high on Authority, but do not override lack of Specificity/Verifiability.
+
+**DO NOT USE:**
+- Generic educational websites without clear attribution
+- Commercial prep sites without official credentials
+- User-generated content (forums, Reddit, Quora)
+- Sites that cannot be verified
+
+**SOURCE CONTRIBUTION TRACKING (CRITICAL):**
+For EACH source you use, you MUST specify:
+1. What specific information was taken from this source
+2. Which archetypes or exam structure elements came from this source
+3. How this source improved the research quality
+4. Add to the contribution note whether the page provided **direct evidence** (e.g., quoted timing with anchor, official PDF) or **secondary confirmation**.
+   In `source_usage.data_types`, include tags like `"direct_quote"`, `"official_pdf"`, or `"screenshot_excerpt"` when applicable.
+
+**FORMAT for source contribution:**
+```json
+{
+  "url": "https://www.ielts.org/for-test-takers/how-ielts-is-scored",
+  "title": "How IELTS is Scored - Official Guide",
+  "publisher": "IELTS.org (Official)",
+  "tier": 1,
+  "contribution": "Provided official band score descriptions (0-9 scale), speaking assessment criteria (fluency, lexical resource, grammatical range, pronunciation), and typical score distributions. Used for archetypes: SPK-1, SPK-2, SPK-3.",
+  "source_usage": {
+    "archetype_ids": ["SPK-1", "SPK-2", "SPK-3"],
+    "data_types": ["scoring_criteria", "band_descriptions", "assessment_rubric"]
+  }
+}
+```
+
+**ARCHETYPE SOURCE TRACKING (REQUIRED):**
+For EACH global_archetype, you MUST include:
+- `source_ids`: array of integers (indices of sources in 'sources' array, 0-based)
+- Indicate which sources provided information for this archetype
+
+Example:
+```json
+{
+  "id": "L-MC",
+  "name": "Listening Multiple Choice",
+  "source_ids": [0, 2, 3],  // This archetype uses sources at indices 0, 2, and 3
+  ...
+}
+```
+
+**RESEARCH PROCESS:**
+1. If documents are provided → analyze them first (document-first). Treat them as ground truth unless contradicted by a newer official source.
+2. Run an evidence-first web search. Shortlist pages with the highest Evidence Weighting score.
+3. Use high-authority overviews (provider, .gov/.edu) to confirm structure and resolve ambiguities.
+4. On conflicts, prefer the page with direct, verifiable evidence (quotes/artifacts). Record the alternative view in rationale.
+5. For each extracted fact, record its source and whether it was direct evidence or a secondary confirmation.
+
+**CONSTRAINTS:**
 - Extract patterns (archetypes), typical distractors, verbs, numeric ranges, units, common visuals, difficulty bands.
 - **REQUIRED**: Map EACH task archetype to sections (exam parts like listening, reading, writing, speaking).
 - **CRITICAL TIMING PRIORITIES** (in order of importance):
@@ -36,7 +107,6 @@ Follow these constraints:
   2. **MEDIUM**: section_duration (time per section: Listening, Reading, etc.) - important for scheduling
   3. **LOWEST**: step_duration (time per individual task) - useful but not critical
 - **REQUIRED**: Provide timing at ALL levels if available. Search official sources. If sources conflict, use SMALLER value and note alternatives in rationale. NEVER leave total_exam_duration empty.
-- Record each source: url, title, publisher
 - If evidence conflicts, include both views and explain under rationale.
 {$localizationHint}
 {$categoryWeightHint}
@@ -54,7 +124,7 @@ PRIORITY ORDER (do not miss higher priorities):
 
 Output strictly the JSON object described in the response_json_schema. If unsure, be conservative.
 
-Task: Mine question archetypes and style for the exam.
+Task: Mine question archetypes and style for the exam using HIGH-QUALITY sources and track their usage.
 
 exam_name: {$examTitle}
 exam_description: {$contextNotes}
@@ -221,15 +291,22 @@ SCHEMA;
             'exam_name' => 'string',
             'sources' => [
                 [
-                    'url' => 'string',
-                    'title' => 'string',
-                    'publisher' => 'string',
+                    'url' => 'string (full URL to source)',
+                    'title' => 'string (document/page title)',
+                    'publisher' => 'string (organization or website name)',
+                    'tier' => 'number (1=official, 2=trusted publisher, 3=supplementary)',
+                    'contribution' => 'string REQUIRED (specific information taken from this source, which archetypes it helped create, how it improved research quality)',
+                    'source_usage' => [
+                        'archetype_ids' => ['string (IDs of archetypes that used this source)'],
+                        'data_types' => ['string (types of data: timing, scoring, format, criteria, etc.)'],
+                    ],
                 ],
             ],
             'global_archetypes' => [
                 [
                     'id' => 'string (unique identifier for this task archetype)',
                     'name' => 'string (human-readable name)',
+                    'source_ids' => ['number (indices of sources in sources array that provided info for this archetype - 0-based indices) REQUIRED'],
                     'stem_templates' => ['string (example question stems)'],
                     'skills_measured' => ['string (skills tested by this archetype)'],
                     'common_distractors' => ['string (typical wrong answer patterns)'],
@@ -253,7 +330,7 @@ SCHEMA;
                 ],
             ],
             'total_exam_duration' => 'number REQUIRED (total minutes for entire exam - from official sources)',
-            'rationale' => 'string (explanation of your research findings, including sources used for timing and duration calculations)',
+            'rationale' => 'string (explanation of your research findings, including sources used for timing and duration calculations, source quality assessment)',
         ];
 
         return json_encode($schemaArray, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE);
@@ -266,11 +343,22 @@ SCHEMA;
     {
         return [
             'exam_name' => 'string',
-            'sources' => [['url' => ['string'], 'title' => ['string'], 'publisher' => ['string']]],
+            'sources' => [[
+                'url' => ['string'],
+                'title' => ['string'],
+                'publisher' => ['string'],
+                'tier' => ['number'],
+                'contribution' => ['string'],
+                'source_usage' => [
+                    'archetype_ids' => [['string']],
+                    'data_types' => [['string']],
+                ],
+            ]],
             'global_archetypes' => [
                 [
                     'id' => 'string',
                     'name' => 'string',
+                    'source_ids' => ['number'],
                     'stem_templates' => ['string'],
                     'skills_measured' => ['string'],
                     'common_distractors' => ['string'],

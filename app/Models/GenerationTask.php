@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Casts\AsArrayWithUnescapedSlashes;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\MorphTo;
@@ -16,10 +17,10 @@ class GenerationTask extends Model
     ];
 
     protected $casts = [
-        'request' => 'array',
-        'response' => 'array',
-        'result' => 'array',
-        'activities' => 'array',
+        'request' => AsArrayWithUnescapedSlashes::class,
+        'response' => AsArrayWithUnescapedSlashes::class,
+        'result' => AsArrayWithUnescapedSlashes::class,
+        'activities' => AsArrayWithUnescapedSlashes::class,
     ];
 
     public function exam(): BelongsTo

@@ -21,6 +21,12 @@ return [
         ],
     ],
 
+    // Model aliases and specific use cases
+    'models' => [
+        'default' => env('AI_MODEL', 'gpt-5-mini'),
+        'thinking' => env('AI_MODEL_THINKING', 'gpt-5'), // GPT-5 for complex reasoning tasks (overview)
+    ],
+
     'mock' => [
         'base_url' => '/',
         'api_key' => 'api_key',

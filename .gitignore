@@ -29,3 +29,8 @@ context-pack*
 repo-context.md
 /files
 repo-*
+/scripts
+
+CLAUDE.md
+.claude/*
+/.claude/*

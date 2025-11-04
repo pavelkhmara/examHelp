@@ -5,9 +5,12 @@ namespace App\Nova;
 use App\Nova\Actions\ConfirmIdentityAction;
 use App\Nova\Actions\ProvideAnswersAction;
 use App\Nova\Actions\ResearchAction;
+use App\Nova\Actions\ConfirmExamIdentity;
+use App\Nova\Fields\CollapsiblePanel;
 use Laravel\Nova\Fields\Badge;
 use Laravel\Nova\Fields\Boolean;
 use Laravel\Nova\Fields\Code;
+use Laravel\Nova\Fields\File;
 use Laravel\Nova\Fields\HasMany;
 use Laravel\Nova\Fields\ID;
 use Laravel\Nova\Fields\Number;
@@ -53,25 +56,108 @@ class Exam extends Resource
     {
         $fields = [
             ID::make()->sortable()->hideFromIndex(),
-            Text::make('ID', 'id')->onlyOnIndex(),
+            // Text::make('ID', 'id')->onlyOnIndex(),
 
-            // Явный индикатор когда идет обработка (только на detail page)
-            // Badge::make('⚠️ Processing', function () {
-            //     return in_array($this->research_status, ['queued', 'running', 'running_overview'], true)
-            //         ? 'REFRESH PAGE TO SEE UPDATES'
-            //         : null;
-            // })
-            //     ->map(['REFRESH PAGE TO SEE UPDATES' => 'warning'])
-            //     ->onlyOnDetail()
-            //     ->exceptOnForms(),
-            // ->hideWhenNull(),
+            // === CREATION FORM FIELDS ===
+            // Title (required)
+            Text::make('Title')
+                ->rules('required')
+                ->sortable()
+                ->displayUsing(function ($value) {
+                    return \Illuminate\Support\Str::limit($value, 50);
+                })
+                ->help('Name of the exam'),
 
-            Text::make('Slug')->rules('required')->sortable(),
-            Text::make('Title')->rules('required')->sortable(),
-            Select::make('Level')->options([
-                'A1' => 'A1', 'A2' => 'A2', 'B1' => 'B1', 'B2' => 'B2', 'C1' => 'C1', 'C2' => 'C2',
-            ])->displayUsingLabels()->sortable(),
-            Boolean::make('Is Active'),
+            // Is Active & Level in one row
+            Boolean::make('Is Active')
+                ->default(true)
+                ->help('Active exams are visible to users')
+                ->hideFromIndex(),
+
+            Select::make('Level')
+                ->options([
+                    'A1' => 'A1', 'A2' => 'A2', 'B1' => 'B1', 'B2' => 'B2', 'C1' => 'C1', 'C2' => 'C2',
+                ])
+                ->default('B1')
+                ->displayUsingLabels()
+                ->sortable()
+                ->help('CEFR level of the exam'),
+
+            // Exam Family (from family_ruleset.json)
+            Select::make('Exam Family', 'identity->exam_family')
+                ->options($this->getExamFamilyOptions())
+                ->displayUsingLabels()
+                ->nullable()
+                ->hideFromIndex()
+                ->help('Select the exam family from our database, or choose "Unknown"'),
+
+            // User Input
+            Textarea::make('User Input', 'user_input')
+                ->nullable()
+                ->rows(6)
+                ->hideFromIndex()
+                ->help('Strictly user information as-is, including in user\'s language. Can be plain text or JSON.'),
+
+            // Single document upload (for multiple documents, use the "Documents" relationship below)
+            File::make('Upload Document', 'document_upload')
+                ->disk('local')
+                ->path('documents')
+                ->nullable()
+                ->onlyOnForms()
+                ->help('Upload a single exam document (max 10MB). Supported: PDF, DOCX, TXT, ZIP. ZIP files will be automatically extracted.')
+                ->acceptedTypes('.pdf,.doc,.docx,.txt,.zip')
+                ->prunable(),
+
+            // Provider
+            Text::make('Provider', 'identity->provider')
+                ->nullable()
+                ->hideFromIndex()
+                ->help('Exam provider (e.g., British Council, ETS, Goethe-Institut)'),
+
+            // Exam Code
+            Text::make('Exam Code', 'identity->exam_code')
+                ->nullable()
+                ->hideFromIndex()
+                ->help('Official exam code for identification'),
+
+            // Slug (auto-generated if empty)
+            Text::make('Slug')
+                ->nullable()
+                ->sortable()
+                ->creationRules('max:20')
+                ->help('Leave empty to auto-generate (max 20 characters)')
+                ->hideFromIndex(),
+
+            // Description
+            Textarea::make('Description')
+                ->nullable()
+                ->rows(4)
+                ->hideFromIndex()
+                ->help('Optional description of the exam'),
+
+            // === STATUS BADGES (shown on index and detail) ===
+            // Badge::make('Analysis Status', 'analysis_status')
+            //     ->map([
+            //         'pending' => 'info',
+            //         'running' => 'warning',
+            //         'completed' => 'success',
+            //         'failed' => 'danger',
+            //     ])
+            //     ->labels([
+            //         'pending' => 'Analyzing...',
+            //         'running' => 'In Progress',
+            //         'completed' => 'Analyzed',
+            //         'failed' => 'Failed',
+            //     ])
+            //     ->sortable()
+            //     ->exceptOnForms()
+            //     ->help(function () {
+            //         if ($this->analysis_status === 'running') {
+            //             return '🔄 <strong>AI is analyzing metadata. Refresh to see updates.</strong>';
+            //         }
+            //         return null;
+            //     }),
+
             Badge::make('Research Status', 'research_status')
                 ->map([
                     'queued' => 'info',
@@ -95,15 +181,17 @@ class Exam extends Resource
 
                     return null;
                 }),
+
+            Text::make('Created At', 'created_at')
+                ->displayUsing(function ($value) {
+                    return $value ? $value->format('Y-m-d H:i') : null;
+                })
+                ->onlyOnIndex(),
+
+            Number::make('Categories', 'categories_count')->default(0)->onlyOnIndex(),
+            Number::make('Examples', 'examples_count')->default(0)->onlyOnIndex(),
         ];
 
-        // Показываем счетчики только если есть данные
-        if ($this->categories_count > 0) {
-            $fields[] = Number::make('Categories', 'categories_count')->onlyOnIndex();
-        }
-        if ($this->examples_count > 0) {
-            $fields[] = Number::make('Examples', 'examples_count')->onlyOnIndex();
-        }
 
         return array_merge($fields, $this->getConditionalFields());
     }
@@ -117,9 +205,34 @@ class Exam extends Resource
         $task = $this->generationTasks()->latest()->first();
         $identity = $task ? ($task->result['identity'] ?? null) : null;
 
+        // ============== STAGE 0: Initial Metadata Analysis ==============
+        if ($this->analysis_status === 'completed' && (!empty($this->user_meta) || !empty($this->system_analysis))) {
+            $fields[] = CollapsiblePanel::make('🤖 Initial Metadata Analysis', 'metadata_analysis_html')
+                ->heading('🤖 Initial Metadata Analysis')
+                ->content($this->buildMetadataAnalysisHtml())
+                ->collapsed(true)
+                ->onlyOnDetail();
+        }
+
+        // Documents relationship
+        $fields[] = HasMany::make('Documents', 'documents', ExamDocument::class);
+
         // ============== STAGE 1: Identity Verification ==============
         if ($task && $identity) {
-            $fields[] = new Panel('🔍 Stage 1: Identity Verification', $this->buildIdentityFields($task, $identity));
+            $identityFields = $this->buildIdentityFields($task, $identity);
+
+            // Add issues/warnings/red_flags if present
+            $issuesHtml = $this->buildIssuesHtml($identity, 'identity');
+            if ($issuesHtml) {
+                array_unshift($identityFields,
+                    \Laravel\Nova\Fields\Text::make('Issues & Warnings', 'identity_issues')
+                        ->asHtml()
+                        ->resolveUsing(fn() => $issuesHtml)
+                        ->onlyOnDetail()
+                );
+            }
+
+            $fields[] = new Panel('🔍 Stage 1: Identity Verification', $identityFields);
 
             // Показываем вопросы, если они есть
             if (! empty($identity['followups']) || ! empty($identity['need_fields'])) {
@@ -127,18 +240,18 @@ class Exam extends Resource
             }
 
             // Показываем "Why We Trust" только если identity есть
-            $fields[] = new Panel('📋 Trust Reasons', [
-                Code::make('Why We Trust This Identity')
-                    ->resolveUsing(function () use ($identity) {
-                        return $this->buildTrustReasons($identity);
-                    })
-                    ->onlyOnDetail(),
-            ]);
+            // $fields[] = new Panel('📋 Trust Reasons', [
+            //     Code::make('Why We Trust This Identity')
+            //         ->resolveUsing(function () use ($identity) {
+            //             return $this->buildTrustReasons($identity);
+            //         })
+            //         ->onlyOnDetail(),
+            // ]);
         }
 
         // ============== STAGE 2: Overview & Structure ==============
         if ($this->research_status === 'completed' && ! empty($this->structure_sections)) {
-            $fields[] = new Panel('📚 Stage 2: Exam Structure', [
+            $structureFields = [
                 Number::make('Categories Count', 'categories_count')->onlyOnDetail(),
                 Number::make('Total Exam Duration (min)', 'total_exam_duration')->onlyOnDetail(),
                 Number::make('Total Tokens Used', function () {
@@ -172,16 +285,29 @@ class Exam extends Resource
                             ];
                         }, $sections);
 
-                        return json_encode($compact, JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT);
+                        return json_encode($compact, JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES);
                     })
                     ->json()
                     ->onlyOnDetail(),
 
                 Code::make('Full Structure JSON')
                     ->json(JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT)
-                    ->resolveUsing(fn () => json_encode($this->exam_structure ?? [], JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT))
+                    ->resolveUsing(fn () => json_encode($this->exam_structure ?? [], JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES))
                     ->onlyOnDetail(),
-            ]);
+            ];
+
+            // Add issues/warnings/notes if present in exam_structure
+            $structureIssuesHtml = $this->buildIssuesHtml($this->exam_structure ?? [], 'structure');
+            if ($structureIssuesHtml) {
+                array_unshift($structureFields,
+                    \Laravel\Nova\Fields\Text::make('Issues & Notes', 'structure_issues')
+                        ->asHtml()
+                        ->resolveUsing(fn() => $structureIssuesHtml)
+                        ->onlyOnDetail()
+                );
+            }
+
+            $fields[] = new Panel('📚 Stage 2: Exam Structure', $structureFields);
         }
 
         // ============== STAGE 3: Categories ==============
@@ -197,7 +323,7 @@ class Exam extends Resource
             $fields[] = new Panel('📚 Sources', [
                 Code::make('Sources JSON')
                     ->json(JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT)
-                    ->resolveUsing(fn () => json_encode($this->sources ?? [], JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT))
+                    ->resolveUsing(fn () => json_encode($this->sources ?? [], JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES))
                     ->onlyOnDetail(),
             ]);
         }
@@ -210,6 +336,145 @@ class Exam extends Resource
 
         return $fields;
     }
+
+    /**
+     * Build metadata analysis as HTML content for collapsible panel
+     */
+    private function buildMetadataAnalysisHtml(): string
+    {
+        $html = '<div class="space-y-4">';
+
+        // Changes section (if any)
+        if (!empty($this->system_analysis['changes'])) {
+            $changes = $this->system_analysis['changes'];
+            $html .= '<div class="mb-4 p-3 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded">';
+            $html .= '<h4 class="text-lg font-semibold text-blue-900 dark:text-blue-100 mb-3">🔄 Changes Detected</h4>';
+            $html .= '<div class="space-y-2">';
+
+            foreach ($changes as $change) {
+                $field = $change['field'] ?? '';
+                $label = $change['label'] ?? $field;
+                $type = $change['type'] ?? 'unknown';
+                $oldValue = $change['old_value'] ?? null;
+                $newValue = $change['new_value'] ?? null;
+
+                if ($type === 'added') {
+                    $html .= '<div class="text-sm text-blue-700 dark:text-blue-300">';
+                    $html .= '<span class="font-semibold">➕ ' . htmlspecialchars($label) . ':</span> ';
+                    $html .= 'set to <span class="font-mono bg-blue-100 dark:bg-blue-900 px-1 rounded">' . htmlspecialchars($this->formatValueForDisplay($newValue)) . '</span>';
+                    $html .= '</div>';
+                } elseif ($type === 'changed') {
+                    $html .= '<div class="text-sm text-blue-700 dark:text-blue-300">';
+                    $html .= '<span class="font-semibold">🔄 ' . htmlspecialchars($label) . ':</span> ';
+                    $html .= 'changed from <span class="font-mono bg-gray-100 dark:bg-gray-800 px-1 rounded line-through">' . htmlspecialchars($this->formatValueForDisplay($oldValue)) . '</span> ';
+                    $html .= 'to <span class="font-mono bg-blue-100 dark:bg-blue-900 px-1 rounded">' . htmlspecialchars($this->formatValueForDisplay($newValue)) . '</span>';
+                    $html .= '</div>';
+                } elseif ($type === 'removed') {
+                    $html .= '<div class="text-sm text-yellow-700 dark:text-yellow-300">';
+                    $html .= '<span class="font-semibold">➖ ' . htmlspecialchars($label) . ':</span> ';
+                    $html .= 'removed (was: <span class="font-mono bg-gray-100 dark:bg-gray-800 px-1 rounded">' . htmlspecialchars($this->formatValueForDisplay($oldValue)) . '</span>)';
+                    $html .= '</div>';
+                }
+            }
+
+            $html .= '</div></div>';
+        }
+
+        // User Meta
+        if (!empty($this->user_meta)) {
+            $userMeta = $this->user_meta;
+            $html .= '<div class="border-b border-gray-200 dark:border-gray-700 pb-4">';
+            $html .= '<h4 class="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-3">User Information</h4>';
+            $html .= '<dl class="grid grid-cols-1 gap-3">';
+
+            if (isset($userMeta['user_language'])) {
+                $html .= '<div><dt class="text-sm font-medium text-gray-500 dark:text-gray-400">User Language:</dt>';
+                $html .= '<dd class="text-sm text-gray-900 dark:text-gray-100">' . htmlspecialchars($userMeta['user_language']) . '</dd></div>';
+            }
+
+            if (isset($userMeta['user_gender'])) {
+                $html .= '<div><dt class="text-sm font-medium text-gray-500 dark:text-gray-400">User Gender:</dt>';
+                $html .= '<dd class="text-sm text-gray-900 dark:text-gray-100">' . htmlspecialchars($userMeta['user_gender']) . '</dd></div>';
+            }
+
+            if (isset($userMeta['exam_language'])) {
+                $html .= '<div><dt class="text-sm font-medium text-gray-500 dark:text-gray-400">Exam Language:</dt>';
+                $html .= '<dd class="text-sm text-gray-900 dark:text-gray-100">' . htmlspecialchars($userMeta['exam_language']) . '</dd></div>';
+            }
+
+            if (isset($userMeta['target_score'])) {
+                $html .= '<div><dt class="text-sm font-medium text-gray-500 dark:text-gray-400">Target Score:</dt>';
+                $html .= '<dd class="text-sm text-gray-900 dark:text-gray-100">' . htmlspecialchars($userMeta['target_score']) . '</dd></div>';
+            }
+
+            if (isset($userMeta['exam_purpose'])) {
+                $html .= '<div><dt class="text-sm font-medium text-gray-500 dark:text-gray-400">Exam Purpose:</dt>';
+                $html .= '<dd class="text-sm text-gray-900 dark:text-gray-100">' . htmlspecialchars($userMeta['exam_purpose']) . '</dd></div>';
+            }
+
+            if (isset($userMeta['needs_certificate'])) {
+                $needs = $userMeta['needs_certificate'] ? 'Yes' : 'No';
+                $html .= '<div><dt class="text-sm font-medium text-gray-500 dark:text-gray-400">Needs Certificate:</dt>';
+                $html .= '<dd class="text-sm text-gray-900 dark:text-gray-100">' . $needs . '</dd></div>';
+            }
+
+            $html .= '</dl>';
+            $html .= '<details class="mt-3"><summary class="text-sm text-gray-600 dark:text-gray-400 cursor-pointer hover:text-gray-900 dark:hover:text-gray-200">View Full JSON</summary>';
+            $html .= '<pre class="mt-2 text-xs bg-gray-500 dark:bg-gray-900 text-white p-3 rounded overflow-auto">' . htmlspecialchars(json_encode($this->user_meta, JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES)) . '</pre>';
+            $html .= '</details></div>';
+        }
+
+        // System Analysis
+        if (!empty($this->system_analysis)) {
+            $analysis = $this->system_analysis;
+            $html .= '<div class="pt-2">';
+            $html .= '<h4 class="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-3">System Analysis</h4>';
+
+            // Warnings
+            if (!empty($analysis['warning'])) {
+                $html .= '<div class="mb-3 p-3 bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded">';
+                $html .= '<p class="text-sm font-semibold text-yellow-800 dark:text-yellow-200 mb-2">⚠ Warnings (' . count($analysis['warning']) . '):</p>';
+                $html .= '<ul class="list-disc list-inside text-sm text-yellow-700 dark:text-yellow-300 space-y-1">';
+                foreach ($analysis['warning'] as $warning) {
+                    $html .= '<li>' . htmlspecialchars($warning) . '</li>';
+                }
+                $html .= '</ul></div>';
+            }
+
+            // Critical issues
+            if (!empty($analysis['critical'])) {
+                $html .= '<div class="mb-3 p-3 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded">';
+                $html .= '<p class="text-sm font-semibold text-red-800 dark:text-red-200 mb-2">❌ Critical Issues (' . count($analysis['critical']) . '):</p>';
+                $html .= '<ul class="list-disc list-inside text-sm text-red-700 dark:text-red-300 space-y-1">';
+                foreach ($analysis['critical'] as $critical) {
+                    $html .= '<li>' . htmlspecialchars($critical) . '</li>';
+                }
+                $html .= '</ul></div>';
+            }
+
+            // Info
+            if (!empty($analysis['info'])) {
+                $html .= '<div class="mb-3 p-3 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded">';
+                $html .= '<p class="text-sm font-semibold text-blue-800 dark:text-blue-200 mb-2">ℹ Information:</p>';
+                $html .= '<ul class="list-disc list-inside text-sm text-blue-700 dark:text-blue-300 space-y-1">';
+                foreach (array_slice($analysis['info'], 0, 5) as $info) {
+                    $html .= '<li>' . htmlspecialchars($info) . '</li>';
+                }
+                if (count($analysis['info']) > 5) {
+                    $html .= '<li class="text-xs italic">... and ' . (count($analysis['info']) - 5) . ' more</li>';
+                }
+                $html .= '</ul></div>';
+            }
+
+            $html .= '<details class="mt-3"><summary class="text-sm text-gray-600 dark:text-gray-400 cursor-pointer hover:text-gray-900 dark:hover:text-gray-200">View Full JSON</summary>';
+            $html .= '<pre class="mt-2 text-xs bg-gray-500 dark:bg-gray-900 text-white p-3 rounded overflow-auto">' . htmlspecialchars(json_encode($this->system_analysis, JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES)) . '</pre>';
+            $html .= '</details></div>';
+        }
+
+        $html .= '</div>';
+        return $html;
+    }
+
 
     /**
      * Построить поля Identity Verification
@@ -241,11 +506,13 @@ class Exam extends Resource
                 ->resolveUsing(fn () => $identity['status'] ?? 'unknown')
                 ->map([
                     'certain' => 'success',
+                    'confirmed' => 'success',
                     'uncertain' => 'warning',
                     'unknown' => 'danger',
                 ])
                 ->labels([
                     'certain' => '✓ Certain',
+                    'confirmed' => '✓ Confirmed',
                     'uncertain' => '? Uncertain',
                     'unknown' => 'Unknown',
                 ])
@@ -285,33 +552,33 @@ class Exam extends Resource
         ];
 
         // Show user input (what user provided)
-        if (! empty($task->request['user_input'])) {
-            $fields[] = Code::make('User Input')
-                ->resolveUsing(function () use ($task) {
-                    return json_encode($task->request['user_input'], JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE);
-                })
-                ->json()
-                ->onlyOnDetail()
-                ->help('Information provided by the user');
-        }
+        // if (! empty($task->request['user_input'])) {
+        //     $fields[] = Code::make('User Input')
+        //         ->resolveUsing(function () use ($task) {
+        //             return json_encode($task->request['user_input'], JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE);
+        //         })
+        //         ->json()
+        //         ->onlyOnDetail()
+        //         ->help('Information provided by the user');
+        // }
 
         // Show evidence from document
-        if (! empty($identity['anchors'])) {
-            $fields[] = Number::make('Evidence Count')
-                ->resolveUsing(fn () => count($identity['anchors']))
-                ->onlyOnDetail()
-                ->help('Number of evidence anchors found in document');
+        // if (! empty($identity['anchors'])) {
+        //     $fields[] = Number::make('Evidence Count')
+        //         ->resolveUsing(fn () => count($identity['anchors']))
+        //         ->onlyOnDetail()
+        //         ->help('Number of evidence anchors found in document');
 
-            $fields[] = Code::make('Evidence Anchors (first 5)')
-                ->resolveUsing(function () use ($identity) {
-                    $anchors = array_slice($identity['anchors'], 0, 5);
+        //     $fields[] = Code::make('Evidence Anchors (first 5)')
+        //         ->resolveUsing(function () use ($identity) {
+        //             $anchors = array_slice($identity['anchors'], 0, 5);
 
-                    return json_encode($anchors, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE);
-                })
-                ->json()
-                ->onlyOnDetail()
-                ->help('Key phrases and evidence found in the uploaded document');
-        }
+        //             return json_encode($anchors, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE);
+        //         })
+        //         ->json()
+        //         ->onlyOnDetail()
+        //         ->help('Key phrases and evidence found in the uploaded document');
+        // }
 
         // Show candidates if multiple options were considered
         if (! empty($identity['candidates']) && count($identity['candidates']) > 1) {
@@ -322,7 +589,7 @@ class Exam extends Resource
 
             $fields[] = Code::make('All Candidates')
                 ->resolveUsing(function () use ($identity) {
-                    return json_encode($identity['candidates'], JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE);
+                    return json_encode($identity['candidates'], JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
                 })
                 ->json()
                 ->onlyOnDetail()
@@ -359,7 +626,7 @@ class Exam extends Resource
 
             if (! empty($identity['auto_clarified_data'])) {
                 $fields[] = Code::make('AI-Inferred Data')
-                    ->resolveUsing(fn () => json_encode($identity['auto_clarified_data'], JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE))
+                    ->resolveUsing(fn () => json_encode($identity['auto_clarified_data'], JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES))
                     ->json()
                     ->onlyOnDetail()
                     ->help('Data that was automatically inferred by AI');
@@ -376,7 +643,7 @@ class Exam extends Resource
 
         $fields[] = Code::make('Identified Exam')
             ->resolveUsing(function () use ($identity) {
-                return json_encode($identity['canonical'] ?? [], JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE);
+                return json_encode($identity['canonical'] ?? [], JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
             })
             ->json()
             ->onlyOnDetail();
@@ -610,17 +877,267 @@ class Exam extends Resource
         return implode("\n", $reasons);
     }
 
+    /**
+     * Build HTML for issues, warnings, red_flags, notes from AI response
+     */
+    private function buildIssuesHtml(array $data, string $context = 'general'): ?string
+    {
+        $hasContent = false;
+        $html = '<div class="space-y-2">';
+
+        // Red flags (critical issues)
+        if (!empty($data['red_flags']) && is_array($data['red_flags'])) {
+            $hasContent = true;
+            $html .= '<div class="p-3 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded">';
+            $html .= '<p class="text-sm font-semibold text-red-800 dark:text-red-200 mb-2">🚩 Red Flags:</p>';
+            $html .= '<ul class="list-disc list-inside text-sm text-red-700 dark:text-red-300 space-y-1">';
+            foreach ($data['red_flags'] as $flag) {
+                $html .= '<li>' . htmlspecialchars(is_string($flag) ? $flag : json_encode($flag)) . '</li>';
+            }
+            $html .= '</ul></div>';
+        }
+
+        // Issues
+        if (!empty($data['issues']) && is_array($data['issues'])) {
+            $hasContent = true;
+            $html .= '<div class="p-3 bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded">';
+            $html .= '<p class="text-sm font-semibold text-yellow-800 dark:text-yellow-200 mb-2">⚠ Issues:</p>';
+            $html .= '<ul class="list-disc list-inside text-sm text-yellow-700 dark:text-yellow-300 space-y-1">';
+            foreach ($data['issues'] as $issue) {
+                $html .= '<li>' . htmlspecialchars(is_string($issue) ? $issue : json_encode($issue)) . '</li>';
+            }
+            $html .= '</ul></div>';
+        }
+
+        // Warnings
+        if (!empty($data['warnings']) && is_array($data['warnings'])) {
+            $hasContent = true;
+            $html .= '<div class="p-3 bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded">';
+            $html .= '<p class="text-sm font-semibold text-yellow-800 dark:text-yellow-200 mb-2">⚠ Warnings:</p>';
+            $html .= '<ul class="list-disc list-inside text-sm text-yellow-700 dark:text-yellow-300 space-y-1">';
+            foreach ($data['warnings'] as $warning) {
+                $html .= '<li>' . htmlspecialchars(is_string($warning) ? $warning : json_encode($warning)) . '</li>';
+            }
+            $html .= '</ul></div>';
+        }
+
+        // Notes
+        if (!empty($data['notes']) && is_array($data['notes'])) {
+            $hasContent = true;
+            $html .= '<div class="p-3 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded">';
+            $html .= '<p class="text-sm font-semibold text-blue-800 dark:text-blue-200 mb-2">📝 Notes:</p>';
+            $html .= '<ul class="list-disc list-inside text-sm text-blue-700 dark:text-blue-300 space-y-1">';
+            foreach ($data['notes'] as $note) {
+                $html .= '<li>' . htmlspecialchars(is_string($note) ? $note : json_encode($note)) . '</li>';
+            }
+            $html .= '</ul></div>';
+        }
+
+        // Single note (string)
+        if (!empty($data['note']) && is_string($data['note'])) {
+            $hasContent = true;
+            $html .= '<div class="p-3 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded">';
+            $html .= '<p class="text-sm text-blue-700 dark:text-blue-300">' . htmlspecialchars($data['note']) . '</p>';
+            $html .= '</div>';
+        }
+
+        // Rationale (for structure)
+        if ($context === 'structure' && !empty($data['rationale']) && is_string($data['rationale'])) {
+            $hasContent = true;
+            $html .= '<div class="p-3 bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded">';
+            $html .= '<p class="text-sm font-semibold text-gray-800 dark:text-gray-200 mb-2">📋 Rationale:</p>';
+            $html .= '<p class="text-sm text-gray-700 dark:text-gray-300">' . nl2br(htmlspecialchars($data['rationale'])) . '</p>';
+            $html .= '</div>';
+        }
+
+        $html .= '</div>';
+
+        return $hasContent ? $html : null;
+    }
+
+    /**
+     * Format a value for display in HTML
+     */
+    private function formatValueForDisplay($value): string
+    {
+        if (is_bool($value)) {
+            return $value ? 'Yes' : 'No';
+        }
+
+        if (is_array($value)) {
+            return json_encode($value, JSON_UNESCAPED_UNICODE);
+        }
+
+        return (string) $value;
+    }
+
+    /**
+     * Get exam family options from family_ruleset.json
+     */
+    private function getExamFamilyOptions(): array
+    {
+        $rulesetPath = config_path('family_ruleset.json');
+
+        if (!file_exists($rulesetPath)) {
+            return ['Unknown' => 'Unknown'];
+        }
+
+        $json = file_get_contents($rulesetPath);
+        $data = json_decode($json, true);
+
+        if (!isset($data['families'])) {
+            return ['Unknown' => 'Unknown'];
+        }
+
+        $families = array_keys($data['families']);
+        $options = array_combine($families, $families);
+
+        // Add "Unknown" option at the beginning
+        return ['Unknown' => 'Unknown'] + $options;
+    }
+
+    public function cards(NovaRequest $request)
+    {
+        // In Nova, cards() is called before model is loaded to this resource instance
+        // So we need to get the model from the request
+        if (!$request->resourceId) {
+            return [];
+        }
+
+        $exam = \App\Models\Exam::find($request->resourceId);
+
+        if (!$exam) {
+            return [];
+        }
+
+        \Illuminate\Support\Facades\Log::info('Exam::cards() called', [
+            'exam_id' => $exam->id,
+            'request_resource_id' => $request->resourceId,
+        ]);
+
+        $cards = [];
+
+        // Show Identity Clarifier Card if task is pending
+        $task = $exam->generationTasks()->latest()->first();
+
+        \Illuminate\Support\Facades\Log::info('Task check', [
+            'task_id' => $task?->id,
+            'task_status' => $task?->status,
+            'will_show_card' => $task && in_array($task->status, ['pending_confirmation', 'pending_clarification'], true),
+        ]);
+
+        if ($task && in_array($task->status, ['pending_confirmation', 'pending_clarification'], true)) {
+            $card = new \App\Nova\Cards\IdentityClarifierCard();
+            $card->withMeta(['examId' => $exam->id]);
+            $card->onlyOnDetail(); // Explicitly show only on detail page
+            $cards[] = $card;
+
+            \Illuminate\Support\Facades\Log::info('Identity Clarifier Card added', [
+                'component' => $card->component(),
+                'meta' => $card->meta(),
+            ]);
+        }
+
+        return $cards;
+    }
+
     public function actions(NovaRequest $request)
     {
         return [
             new ResearchAction,
             new ConfirmIdentityAction,
             new ProvideAnswersAction,
+            // (new ConfirmExamIdentity)
+            // ->canSee(function () {
+            //     $st = data_get($this->resource->identity, 'status');
+            //     $has = filled(data_get($this->resource->identity, 'candidates'));
+            //     return $has && $st !== 'confirmed';
+            // })
+            // ->canRun(fn () => true),
         ];
     }
 
     public function filters(NovaRequest $request)
     {
         return [];
+    }
+
+    /**
+     * Handle single document upload after exam creation
+     */
+    public static function afterCreate(NovaRequest $request, $model)
+    {
+        static::handleSingleDocumentUpload($request, $model);
+    }
+
+    /**
+     * Handle single document upload after exam update
+     */
+    public static function afterUpdate(NovaRequest $request, $model)
+    {
+        static::handleSingleDocumentUpload($request, $model);
+    }
+
+    /**
+     * Process single uploaded document and create ExamDocument record
+     */
+    protected static function handleSingleDocumentUpload(NovaRequest $request, $model)
+    {
+        if (!$request->hasFile('document_upload')) {
+            return;
+        }
+
+        $file = $request->file('document_upload');
+
+        // Validate file size (10MB)
+        if ($file->getSize() > 10 * 1024 * 1024) {
+            \Illuminate\Support\Facades\Log::warning("File exceeds 10MB limit, skipping", [
+                'filename' => $file->getClientOriginalName(),
+                'size' => $file->getSize(),
+            ]);
+            return;
+        }
+
+        // Store file in documents directory
+        $path = $file->store('documents', 'local');
+
+        // Check if file is a ZIP archive
+        $mimeType = $file->getMimeType();
+        $extension = strtolower($file->getClientOriginalExtension());
+        $isZip = $mimeType === 'application/zip' || $extension === 'zip';
+
+        if ($isZip) {
+            // Dispatch ZIP extraction job
+            \App\Jobs\UnzipAndAttachDocumentsJob::dispatch($model->id, $path, 'local');
+
+            \Illuminate\Support\Facades\Log::info("ZIP file uploaded, dispatched extraction job", [
+                'exam_id' => $model->id,
+                'original_name' => $file->getClientOriginalName(),
+                'path' => $path,
+                'size' => $file->getSize(),
+            ]);
+        } else {
+            // Create ExamDocument record for non-ZIP files
+            $document = $model->documents()->create([
+                'original_name' => $file->getClientOriginalName(),
+                'disk' => 'local',
+                'path' => $path,
+                'mime' => $mimeType,
+                'size' => $file->getSize(),
+                'status' => 'uploaded',
+            ]);
+
+            \Illuminate\Support\Facades\Log::info("ExamDocument created via Nova", [
+                'exam_id' => $model->id,
+                'document_id' => $document->id,
+                'original_name' => $document->original_name,
+                'size' => $document->size,
+            ]);
+
+            // Dispatch extraction job (always enabled unless explicitly faked)
+            if (!config('doc.extractor.fake', false)) {
+                \App\Jobs\ExtractExamDocumentTextJob::dispatch($document->id);
+            }
+        }
     }
 }

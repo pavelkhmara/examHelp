@@ -43,7 +43,15 @@ final class OpenAiProvider implements AiProvider
 
         $cfg = config('ai');
         $openai_cfg = $cfg['openai'];
-        $model = $this->model ?? $openai_cfg['model'];
+
+        // Support model override from opts or resolve alias
+        $requestedModel = $opts['model'] ?? null;
+        if ($requestedModel && isset($cfg['models'][$requestedModel])) {
+            // Resolve alias (e.g., 'thinking' -> 'gpt-5')
+            $model = $cfg['models'][$requestedModel];
+        } else {
+            $model = $requestedModel ?? $this->model ?? $openai_cfg['model'];
+        }
 
         $baseMessages = $payload['messages'] ?? $payload['input'] ?? $payload;
 
@@ -133,6 +141,9 @@ final class OpenAiProvider implements AiProvider
             'content_text' => $contentText,         // строка JSON внутри message.content
             'content' => $content,             // ДЕКОДИРОВАННЫЙ overview-объект — используем дальше в сервисе
             'usage' => $body['usage'] ?? ['prompt_tokens' => 0, 'completion_tokens' => 0, 'total_tokens' => 0],
+            'model' => $model,                 // Модель использованная для запроса (для логов)
+            'model_alias' => $opts['model'] ?? null, // Алиас модели (thinking, default, etc.)
+            'sent_messages' => $messages,      // Final messages sent to AI (for logging)
         ];
     }
 

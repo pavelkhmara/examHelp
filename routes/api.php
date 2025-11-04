@@ -69,6 +69,15 @@ Route::middleware('auth:sanctum')->group(function () {
         ->name('exams.research.confirm-identity');
 });
 
+// Nova-specific endpoints - use web middleware (session-based auth like Nova itself)
+Route::middleware(['web'])->group(function () {
+    Route::post('/exams/{examId}/research/{taskId}/clarify', [ExamResearchController::class, 'clarify'])
+        ->name('exams.research.clarify');
+
+    Route::get('/exams/{examId}/pending-task', [ExamResearchController::class, 'getPendingTask'])
+        ->name('exams.pending-task');
+});
+
 Route::post('/exams/{id}/research', [ExamResearchController::class, 'research'])
     ->withoutMiddleware([\Illuminate\Auth\Middleware\Authenticate::class, 'auth:sanctum']);
 

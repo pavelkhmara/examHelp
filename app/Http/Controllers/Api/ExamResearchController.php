@@ -230,4 +230,195 @@ class ExamResearchController extends Controller
             ]);
         }
     }
+
+    /**
+     * Universal clarification endpoint for identity verification
+     *
+     * POST /api/exams/{examId}/research/{taskId}/clarify
+     */
+    public function clarify(Request $request, string $examId, int $taskId)
+    {
+        /** @var Exam $exam */
+        $exam = Exam::query()->findOrFail($examId);
+
+        /** @var \App\Models\GenerationTask $task */
+        $task = \App\Models\GenerationTask::query()->findOrFail($taskId);
+
+        // Verify task belongs to this exam
+        if ($task->exam_id !== $exam->id) {
+            abort(400, 'Task does not belong to this exam');
+        }
+
+        $validated = $request->validate([
+            'clarification_type' => ['required', 'in:select_candidate,answer_questions,provide_fields'],
+            'selected_candidate' => ['required_if:clarification_type,select_candidate', 'array'],
+            'answers' => ['required_if:clarification_type,answer_questions', 'array'],
+            'user_input_updates' => ['required_if:clarification_type,provide_fields', 'array'],
+            'notes' => ['nullable', 'string', 'max:1000'],
+        ]);
+
+        $identity = $task->result['identity'] ?? [];
+
+        switch ($validated['clarification_type']) {
+            case 'select_candidate':
+                // User selected from candidates - set as canonical and confirm
+                $selectedCandidate = $validated['selected_candidate'];
+
+                $identity['canonical'] = $selectedCandidate;
+                $identity['confidence'] = 1.0;
+                $identity['user_confirmed'] = true;
+                $identity['user_selected_candidate'] = true;
+                $identity['hold'] = false;
+                $identity['status'] = 'certain';
+                $identity['confirmed_at'] = now()->toISOString();
+
+                if (! empty($validated['notes'])) {
+                    $identity['confirmation_notes'] = $validated['notes'];
+                }
+
+                $result = (array) ($task->result ?? []);
+                $result['identity'] = $identity;
+                $task->result = $result;
+                $task->status = 'queued';
+                $task->save();
+
+                // Continue the pipeline
+                \App\Jobs\RunExamResearchJob::dispatch($task->id)
+                    ->delay(now()->addSeconds(1));
+
+                return response()->json([
+                    'status' => 'confirmed',
+                    'message' => 'Exam variant selected. Research pipeline will continue.',
+                    'continue' => true,
+                    'task_id' => $task->id,
+                    'identity' => $identity,
+                ]);
+
+            case 'answer_questions':
+                // Merge answers into user_input and re-run identity guard
+                $currentInput = $task->request['user_input'] ?? [];
+                $updates = $validated['answers'];
+                $mergedInput = array_merge($currentInput, $updates);
+
+                $request_data = (array) ($task->request ?? []);
+                $request_data['user_input'] = $mergedInput;
+                $task->request = $request_data;
+
+                $identity['user_provided_clarification'] = true;
+                $identity['clarification_provided_at'] = now()->toISOString();
+                $identity['clarification_data'] = $updates;
+
+                if (! empty($validated['notes'])) {
+                    $identity['clarification_notes'] = $validated['notes'];
+                }
+
+                $result = (array) ($task->result ?? []);
+                $result['identity'] = $identity;
+                $task->result = $result;
+                $task->status = 'queued';
+                $task->save();
+
+                // Re-run identity verification with updated data
+                \App\Jobs\RunExamResearchJob::dispatch($task->id)
+                    ->delay(now()->addSeconds(1));
+
+                return response()->json([
+                    'status' => 'clarified',
+                    'message' => 'Answers provided. Re-running identity verification.',
+                    'task_id' => $task->id,
+                ]);
+
+            case 'provide_fields':
+                // Same as answer_questions but with different field name
+                $currentInput = $task->request['user_input'] ?? [];
+                $updates = $validated['user_input_updates'];
+                $mergedInput = array_merge($currentInput, $updates);
+
+                $request_data = (array) ($task->request ?? []);
+                $request_data['user_input'] = $mergedInput;
+                $task->request = $request_data;
+
+                $identity['user_provided_clarification'] = true;
+                $identity['clarification_provided_at'] = now()->toISOString();
+                $identity['clarification_data'] = $updates;
+
+                if (! empty($validated['notes'])) {
+                    $identity['clarification_notes'] = $validated['notes'];
+                }
+
+                $result = (array) ($task->result ?? []);
+                $result['identity'] = $identity;
+                $task->result = $result;
+                $task->status = 'queued';
+                $task->save();
+
+                // Re-run identity verification with updated data
+                \App\Jobs\RunExamResearchJob::dispatch($task->id)
+                    ->delay(now()->addSeconds(1));
+
+                return response()->json([
+                    'status' => 'clarified',
+                    'message' => 'Information provided. Re-running identity verification.',
+                    'task_id' => $task->id,
+                ]);
+        }
+    }
+
+    /**
+     * Get pending task for an exam (used by Nova Resource Tool)
+     *
+     * GET /api/exams/{examId}/pending-task
+     */
+    public function getPendingTask(string $examId)
+    {
+        \Illuminate\Support\Facades\Log::info('getPendingTask called', [
+            'examId' => $examId,
+            'user_id' => auth()->id() ?? 'not authenticated',
+        ]);
+
+        try {
+            /** @var Exam $exam */
+            $exam = Exam::query()->findOrFail($examId);
+
+            \Illuminate\Support\Facades\Log::info('Exam found', ['exam_id' => $exam->id]);
+
+            $task = \App\Models\GenerationTask::query()
+                ->where('exam_id', $exam->id)
+                ->whereIn('status', ['pending_confirmation', 'pending_clarification'])
+                ->latest()
+                ->first();
+
+            if (! $task) {
+                \Illuminate\Support\Facades\Log::info('No pending task found');
+                return response()->json([
+                    'task' => null,
+                    'needs_clarification' => false,
+                ]);
+            }
+
+            \Illuminate\Support\Facades\Log::info('Returning pending task', [
+                'task_id' => $task->id,
+                'status' => $task->status,
+            ]);
+
+            return response()->json([
+                'task' => [
+                    'id' => $task->id,
+                    'status' => $task->status,
+                    'type' => $task->type,
+                    'result' => $task->result,
+                    'created_at' => $task->created_at?->toISOString(),
+                    'updated_at' => $task->updated_at?->toISOString(),
+                ],
+                'needs_clarification' => true,
+            ]);
+        } catch (\Throwable $e) {
+            \Illuminate\Support\Facades\Log::error('getPendingTask error', [
+                'examId' => $examId,
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString(),
+            ]);
+            throw $e;
+        }
+    }
 }

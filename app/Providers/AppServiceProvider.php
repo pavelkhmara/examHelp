@@ -36,6 +36,7 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
-        //
+        // Register Exam observer
+        \App\Models\Exam::observe(\App\Observers\ExamObserver::class);
     }
 }

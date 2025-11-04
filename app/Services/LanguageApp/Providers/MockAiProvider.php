@@ -102,6 +102,9 @@ final class MockAiProvider implements AiProvider
             'content' => $contentText,
             'content_json' => $content,
             'usage' => $body['usage'],
+            'model' => 'mock_model',
+            'model_alias' => $opts['model'] ?? null,
+            'sent_messages' => $payload['messages'] ?? [],  // For logging
         ];
     }
 
@@ -172,6 +175,9 @@ final class MockAiProvider implements AiProvider
             'content' => $content,  // Already decoded for identity responses
             'content_json' => $content,
             'usage' => $body['usage'],
+            'model' => 'mock_model',
+            'model_alias' => $opts['model'] ?? null,
+            'sent_messages' => $payload['messages'] ?? [],  // For logging
         ];
     }
 

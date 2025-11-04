@@ -59,9 +59,9 @@ class OverviewStructureBuilder extends AbstractAiService
         while ($retryAttempt <= $maxRetries) {
             // Log activity for overview stage
             if ($retryAttempt === 0) {
-                $task->addActivity('overview_started', 'Requesting exam overview from AI');
+                $task->addActivity('overview_started', 'Requesting exam overview from AI (Model: Thinking - GPT-5)');
             } else {
-                $task->addActivity('overview_retry', "Retrying overview (attempt {$retryAttempt}/{$maxRetries}) - improving structure quality");
+                $task->addActivity('overview_retry', "Retrying overview (attempt {$retryAttempt}/{$maxRetries}) - improving structure quality (Model: Thinking - GPT-5)");
             }
 
             // Build retry hint including validation errors
@@ -127,6 +127,7 @@ class OverviewStructureBuilder extends AbstractAiService
             $opts = [
                 'web' => true,
                 'files' => $files,
+                'model' => 'thinking', // Use GPT-5 (thinking) for complex reasoning task
             ];
 
             $res1 = $this->callAi($payload, $opts);
@@ -148,7 +149,7 @@ class OverviewStructureBuilder extends AbstractAiService
                 $overview_normalized = $validator->validate($decoded);
                 $this->log($task, 'overview_validated', $payload, ['result' => $overview_normalized]);
 
-                $task->addActivity('overview_validated', 'Overview validated successfully');
+                $task->addActivity('overview_validated', 'Overview validated successfully (Model: Thinking - GPT-5)');
             } catch (\Throwable $ve) {
                 if (app()->environment('testing')) {
                     // Soft fallback in tests

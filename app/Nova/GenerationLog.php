@@ -33,10 +33,10 @@ class GenerationLog extends Resource
             BelongsTo::make('Task', 'task', GenerationTask::class)->searchable(),
             Text::make('Stage')->sortable(),
             Code::make('Request')->json()
-                ->resolveUsing(fn ($v) => is_string($v) ? $v : json_encode($v, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE))
+                ->resolveUsing(fn ($v) => is_string($v) ? $v : json_encode($v, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES))
                 ->hideFromIndex(),
             Code::make('Response')->json()
-                ->resolveUsing(fn ($v) => is_string($v) ? $v : json_encode($v, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE))
+                ->resolveUsing(fn ($v) => is_string($v) ? $v : json_encode($v, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES))
                 ->hideFromIndex(),
             Number::make('Prompt Tokens'),
             Number::make('Completion Tokens'),

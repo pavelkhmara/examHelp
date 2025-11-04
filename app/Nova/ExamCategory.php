@@ -54,13 +54,13 @@ class ExamCategory extends Resource
                 // Шаги внутри категории с порядком и длительностью
                 Code::make('Steps')
                     ->json(JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT)
-                    ->resolveUsing(fn () => json_encode(data_get($this->meta, 'steps', []), JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT))
+                    ->resolveUsing(fn () => json_encode(data_get($this->meta, 'steps', []), JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES))
                     ->onlyOnDetail(),
 
                 // Краткие сведения по архетипам (id/name/weights/duration)
                 Code::make('Archetypes')
                     ->json(JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT)
-                    ->resolveUsing(fn () => json_encode(data_get($this->meta, 'archetypes', []), JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT))
+                    ->resolveUsing(fn () => json_encode(data_get($this->meta, 'archetypes', []), JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES))
                     ->onlyOnDetail(),
 
                 // Сводные числа

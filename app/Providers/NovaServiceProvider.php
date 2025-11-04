@@ -12,6 +12,7 @@ use App\Nova\Menu\CustomMenu;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Vite;
 use Laravel\Nova\Menu\Menu;
 use Laravel\Nova\Menu\MenuItem;
 use Laravel\Nova\Menu\MenuSection;
@@ -78,6 +79,22 @@ class NovaServiceProvider extends NovaApplicationServiceProvider
 
         Nova::mainMenu(function (Request $request) {
             return (new CustomMenu)->menu($request);
+        });
+
+        // Register custom Vue components for Nova tools
+        Nova::serving(function () {
+            // Load Vite-built assets for custom Nova tools
+            // Get asset path from manifest.json dynamically
+            $manifest = json_decode(file_get_contents(public_path('build/manifest.json')), true);
+            $jsFile = $manifest['resources/js/app.js']['file'] ?? null;
+            $cssFile = $manifest['resources/js/app.js']['css'][0] ?? null;
+
+            if ($jsFile) {
+                Nova::script('identity-clarifier-app', asset('build/' . $jsFile));
+            }
+            if ($cssFile) {
+                Nova::style('identity-clarifier-css', asset('build/' . $cssFile));
+            }
         });
     }
 

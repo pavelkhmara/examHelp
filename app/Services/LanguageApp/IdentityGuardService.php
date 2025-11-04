@@ -38,8 +38,12 @@ class IdentityGuardService extends AbstractAiService
         // Load marker pack (placeholder for now - could be expanded later)
         $markerPack = [];
 
-        // Build AI payload using PromptIdentityGuard
-        $aiPayload = PromptIdentityGuard::buildPayload($user, $extracted, $markerPack);
+        // Get existing identity and user_meta from exam
+        $existingIdentity = $exam->identity;
+        $userMeta = $exam->user_meta;
+
+        // Build AI payload using PromptIdentityGuard with existing data
+        $aiPayload = PromptIdentityGuard::buildPayload($user, $extracted, $markerPack, $existingIdentity, $userMeta);
 
         try {
             // Call AI provider
