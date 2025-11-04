@@ -27,6 +27,7 @@ class ExamResearchController extends Controller
             'document_id' => ['nullable', 'string', Rule::exists('exam_documents', 'id')],
             'document' => ['nullable', 'file', 'mimes:pdf,doc,docx,txt', 'max:10240'], // 10MB
             'without_confirmation' => ['nullable', 'boolean'], // Skip user confirmation, use AI auto-clarification
+            'overview_model' => ['nullable', 'string', 'in:gpt-5-mini,gpt-5'], // AI model for overview generation
         ]);
 
         // Если пришли одновременно и файл, и id — это ошибка UX
@@ -102,6 +103,7 @@ class ExamResearchController extends Controller
             'document_id' => $documentId,
             // Priority: value from user_input > top-level param > false
             'without_confirmation' => $withoutConfirmationFromInput ?? (bool) ($validated['without_confirmation'] ?? false),
+            'overview_model' => $validated['overview_model'] ?? 'gpt-5-mini', // Default to gpt-5-mini for speed/cost
         ];
 
         // Кладём таск в очередь через инстанс сервиса
@@ -373,7 +375,7 @@ class ExamResearchController extends Controller
     {
         \Illuminate\Support\Facades\Log::info('getPendingTask called', [
             'examId' => $examId,
-            'user_id' => auth()->id() ?? 'not authenticated',
+            // 'user_id' => auth()->id() ?? 'not authenticated',
         ]);
 
         try {

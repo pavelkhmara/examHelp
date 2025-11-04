@@ -124,10 +124,16 @@ class OverviewStructureBuilder extends AbstractAiService
                 $payload['document_usage_instruction'] = 'Use the document_structured_data as high-confidence reference. Search online for better/additional info. If online sources contradict document data or provide less detail, prefer document data.';
             }
 
+            // Determine AI model for overview generation
+            // Options: 'gpt-5-mini' (fast, cheaper) or 'gpt-5' (highest quality)
+            // If gpt-5 is selected, use 'thinking' alias which maps to AI_MODEL_THINKING
+            $overviewModel = $task->request['overview_model'] ?? 'gpt-5-mini';
+            $modelAlias = ($overviewModel === 'gpt-5') ? 'thinking' : null;
+
             $opts = [
                 'web' => true,
                 'files' => $files,
-                'model' => 'thinking', // Use GPT-5 (thinking) for complex reasoning task
+                'model' => $modelAlias, // Use 'thinking' for GPT-5, null for default (gpt-5-mini)
             ];
 
             $res1 = $this->callAi($payload, $opts);
