@@ -197,6 +197,17 @@ class IdentityGuardService extends AbstractAiService
             $provider = 'telc gGmbH';
         }
 
+        // Build candidates array if family was identified
+        $candidates = [];
+        if ($family) {
+            $candidates[] = [
+                'name' => $family,
+                'family' => $family,
+                'provider' => $provider,
+                'score' => 0.70, // Moderate confidence from fallback heuristics
+            ];
+        }
+
         if (! empty($need)) {
             return [
                 'status' => 'uncertain',
@@ -208,7 +219,7 @@ class IdentityGuardService extends AbstractAiService
                     'variant' => null,
                     'language_of_test' => $lang,
                 ],
-                'candidates' => [],
+                'candidates' => $candidates,
                 'followups' => [
                     'Please provide missing fields: '.implode(', ', $need),
                 ],
@@ -227,7 +238,7 @@ class IdentityGuardService extends AbstractAiService
                 'variant' => null,
                 'language_of_test' => $lang,
             ],
-            'candidates' => [],
+            'candidates' => $candidates,
             'followups' => [],
             'need_fields' => [],
             'anchors' => [],

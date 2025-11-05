@@ -20,7 +20,7 @@ class ResetAndRestartResearch extends Action
 
     public $name = '🔄 Reset & Restart Research';
 
-    public $standalone = true;
+    public $standalone = false; // Not standalone - requires resource context
 
     public function fields(NovaRequest $request)
     {
@@ -45,6 +45,16 @@ class ResetAndRestartResearch extends Action
 
     public function handle(ActionFields $fields, $models)
     {
+        Log::info('🔵 [ResetAndRestartResearch] BUTTON CLICKED - Action started', [
+            'timestamp' => now()->toDateTimeString(),
+            'models_count' => $models->count(),
+            'fields' => [
+                'cancel_active_tasks' => $fields->cancel_active_tasks ?? null,
+                'without_confirmation' => $fields->without_confirmation ?? null,
+                'overview_model' => $fields->overview_model ?? null,
+            ],
+        ]);
+
         try {
             /** @var TaskDispatcher $tasks */
             $tasks = app(TaskDispatcher::class);
@@ -76,6 +86,25 @@ class ResetAndRestartResearch extends Action
                                 $userInput = $decoded;
                             }
                         }
+                    }
+
+                    // Auto-fill user_input from exam data if empty and without_confirmation is true
+                    // This helps Identity Guard identify the exam even when user_input is not explicitly set
+                    if (empty($userInput) && ($fields->without_confirmation ?? true)) {
+                        $userInput = [
+                            'exam_name' => $exam->title,
+                            'slug' => $exam->slug,
+                            'level' => $exam->level,
+                            'description' => $exam->description,
+                            'auto_filled' => true,
+                            'source' => 'reset_restart_auto_fill',
+                        ];
+
+                        Log::info('[ResetAndRestartResearch] Auto-filled user_input from exam data', [
+                            'exam_id' => $exam->id,
+                            'exam_title' => $exam->title,
+                            'without_confirmation' => $fields->without_confirmation ?? true,
+                        ]);
                     }
 
                     // Step 3: Get last uploaded document if exists
