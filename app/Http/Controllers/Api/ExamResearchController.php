@@ -403,12 +403,23 @@ class ExamResearchController extends Controller
                 'status' => $task->status,
             ]);
 
+            // Normalize result structure for frontend compatibility
+            // Frontend expects result.identity, but backend stores result.verification_attempts[0].identity_result
+            $result = $task->result;
+            if (is_array($result) && isset($result['verification_attempts']) && is_array($result['verification_attempts']) && !empty($result['verification_attempts'])) {
+                // Extract identity from latest verification attempt
+                $latestAttempt = end($result['verification_attempts']);
+                if (isset($latestAttempt['identity_result'])) {
+                    $result['identity'] = $latestAttempt['identity_result'];
+                }
+            }
+
             return response()->json([
                 'task' => [
                     'id' => $task->id,
                     'status' => $task->status,
                     'type' => $task->type,
-                    'result' => $task->result,
+                    'result' => $result,
                     'created_at' => $task->created_at?->toISOString(),
                     'updated_at' => $task->updated_at?->toISOString(),
                 ],

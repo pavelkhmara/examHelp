@@ -61,11 +61,14 @@ class TaskDispatcher
                 ->latest('id')
                 ->first();
 
-            if ($recent && ! $idempotencyKey) {
-                Log::info('[TaskDispatcher] skipping duplicate task', [
+            if ($recent) {
+                Log::info('[TaskDispatcher] skipping duplicate task - task already in progress', [
                     'type' => $type,
                     'exam_id' => $examId,
                     'existing_task_id' => $recent->id,
+                    'existing_status' => $recent->status,
+                    'created_at' => $recent->created_at,
+                    'idempotency_key_provided' => $idempotencyKey !== null,
                 ]);
 
                 return $recent;
