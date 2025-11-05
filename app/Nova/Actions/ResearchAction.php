@@ -44,6 +44,7 @@ class ResearchAction extends Action
 
         $createdCount = 0;
         $existingCount = 0;
+        $debugInfo = []; // Debug information to show in message
 
         /** @var \App\Models\Exam $exam */
         foreach ($models as $exam) {
@@ -90,6 +91,15 @@ class ResearchAction extends Action
                 queue: null
             );
 
+            // Store debug info
+            $debugInfo[] = sprintf(
+                'Task #%d (type:%s, status:%s, created:%s)',
+                $task->id,
+                $task->type,
+                $task->status,
+                $task->created_at->format('H:i:s')
+            );
+
             // Check if this is a newly created task or existing one
             // If the returned task's idempotency_key matches our request key, it's new
             // Otherwise, TaskDispatcher returned an existing task
@@ -102,6 +112,19 @@ class ResearchAction extends Action
                     'task_id' => $task->id,
                     'task_status' => $task->status,
                 ]);
+
+                // ALWAYS dispatch job for new tasks (safety measure)
+                try {
+                    dispatch(new \App\Jobs\RunExamResearchJob($task->id));
+                    \Illuminate\Support\Facades\Log::info('[ResearchAction] Job dispatched for new task', [
+                        'task_id' => $task->id,
+                    ]);
+                } catch (\Throwable $e) {
+                    \Illuminate\Support\Facades\Log::error('[ResearchAction] Failed to dispatch job for new task', [
+                        'task_id' => $task->id,
+                        'error' => $e->getMessage(),
+                    ]);
+                }
             } else {
                 $existingCount++;
                 \Illuminate\Support\Facades\Log::info('[ResearchAction] Existing task returned (not creating new)', [
@@ -137,17 +160,19 @@ class ResearchAction extends Action
             }
         }
 
-        // Return appropriate message
+        // Return appropriate message with debug info
+        $debugSummary = implode(' | ', $debugInfo);
+
         if ($existingCount > 0 && $createdCount === 0) {
             // Get status of the existing task for better UX
             $existingTask = $task ?? null; // Last task from the loop
             $statusInfo = $existingTask ? " (status: {$existingTask->status})" : '';
 
-            return Action::message("ℹ️ A research task is already running for this exam{$statusInfo}. Please wait for it to complete or use \"Reset & Restart Research\" to force a new run. Check Laravel logs for details.");
+            return Action::message("ℹ️ A research task is already running for this exam{$statusInfo}. Please wait for it to complete or use \"Reset & Restart Research\" to force a new run. DEBUG: {$debugSummary}");
         } elseif ($existingCount > 0) {
-            return Action::message("✅ {$createdCount} new task(s) started! {$existingCount} exam(s) already have tasks running. 🔄 Refresh to see progress.");
+            return Action::message("✅ {$createdCount} new task(s) started! {$existingCount} exam(s) already have tasks running. DEBUG: {$debugSummary}");
         } else {
-            return Action::message('✅ Research task started! 🔄 Refresh this page to see progress.');
+            return Action::message("✅ Research task started! DEBUG: {$debugSummary}. Check Nova -> Generation Tasks.");
         }
     }
 }
