@@ -46,10 +46,11 @@ services:
     ports:
       - "56379:6379"
 
-  queue-worker:
+  queue-worker-1:
     build:
       context: .
       dockerfile: Dockerfile
+    container_name: examhelp-queue-worker-1
     env_file:
       - .env
     working_dir: /var/www/html
@@ -57,7 +58,43 @@ services:
       - ./:/var/www/html
       - vendor:/var/www/html/vendor
       - cache:/var/www/html/bootstrap/cache
-    command: sh -lc "php artisan queue:work --tries=2 --backoff=3 --timeout=120"
+    command: sh -lc "php artisan queue:work --tries=2 --backoff=3 --timeout=120 --name=worker-1"
+    depends_on:
+      - app
+      - redis
+    restart: unless-stopped
+
+  queue-worker-2:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: examhelp-queue-worker-2
+    env_file:
+      - .env
+    working_dir: /var/www/html
+    volumes:
+      - ./:/var/www/html
+      - vendor:/var/www/html/vendor
+      - cache:/var/www/html/bootstrap/cache
+    command: sh -lc "php artisan queue:work --tries=2 --backoff=3 --timeout=120 --name=worker-2"
+    depends_on:
+      - app
+      - redis
+    restart: unless-stopped
+
+  queue-worker-3:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: examhelp-queue-worker-3
+    env_file:
+      - .env
+    working_dir: /var/www/html
+    volumes:
+      - ./:/var/www/html
+      - vendor:/var/www/html/vendor
+      - cache:/var/www/html/bootstrap/cache
+    command: sh -lc "php artisan queue:work --tries=2 --backoff=3 --timeout=120 --name=worker-3"
     depends_on:
       - app
       - redis

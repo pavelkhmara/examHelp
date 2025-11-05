@@ -4,6 +4,16 @@ return [
     // openai | gateway | mock
     'provider' => env('AI_PROVIDER', 'mock'),
 
+    // Async processing configuration
+    'async_enabled' => (bool) env('AI_ASYNC_ENABLED', false),
+    'parallel_max' => (int) env('AI_PARALLEL_MAX', 5), // Max parallel AI requests
+
+    // Rate limiting configuration
+    'rate_limit_enabled' => (bool) env('AI_RATE_LIMIT_ENABLED', true),
+    'rate_limit_rpm' => (int) env('AI_RATE_LIMIT_RPM', 60), // Requests per minute
+    'rate_limit_retries' => (int) env('AI_RATE_LIMIT_RETRIES', 3),
+    'rate_limit_retry_delay_ms' => (int) env('AI_RATE_LIMIT_RETRY_DELAY_MS', 1000),
+
     'openai' => [
         'base_url' => rtrim(env('AI_BASE_URL', 'https://api.openai.com/v1'), '/'),
         'api_key' => env('AI_API_KEY'),

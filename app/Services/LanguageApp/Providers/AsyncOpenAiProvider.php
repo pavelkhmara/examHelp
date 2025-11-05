@@ -2,13 +2,19 @@
 
 namespace App\Services\LanguageApp\Providers;
 
-use App\Services\LanguageApp\AiProvider;
 use App\Services\LanguageApp\AiRateLimiter;
+use App\Services\LanguageApp\AsyncAiProvider;
 use GuzzleHttp\Client;
 use GuzzleHttp\Exception\GuzzleException;
+use GuzzleHttp\Promise\PromiseInterface;
+use GuzzleHttp\Promise\Utils;
 use Illuminate\Support\Facades\Log;
+use Psr\Http\Message\ResponseInterface;
 
-final class OpenAiProvider implements AiProvider
+/**
+ * Async OpenAI Provider using Guzzle Promises for non-blocking requests
+ */
+final class AsyncOpenAiProvider implements AsyncAiProvider
 {
     private ?AiRateLimiter $rateLimiter = null;
 
@@ -26,31 +32,14 @@ final class OpenAiProvider implements AiProvider
                 retryDelayMs: config('ai.rate_limit_retry_delay_ms', 1000)
             );
         }
-        // $this->http = new \GuzzleHttp\Client([
-        //     'base_uri'        => rtrim(config('ai.openai.base_url'), '/').'/',
-        //     'headers'         => ['Authorization' => 'Bearer '.config('ai.openai.api_key')],
-        //     'timeout'         => 90,           // общий таймаут
-        //     'connect_timeout' => 10,           // соединение
-        //     'read_timeout'    => 80,
-        // ]);
-
-        // $handler = \GuzzleHttp\HandlerStack::create();
-        // $handler->push(\GuzzleHttp\Middleware::retry(
-        //     function ($retries, $request, $response, $exception) {
-        //         if ($retries >= 2) return false;
-        //         if ($exception instanceof \GuzzleHttp\Exception\ConnectException) return true;
-        //         if ($exception instanceof \GuzzleHttp\Exception\RequestException && $exception->getHandlerContext()['errno'] === 28) return true; // cURL 28
-        //         if ($response && in_array($response->getStatusCode(), [429, 500, 502, 503, 504])) return true;
-        //         return false;
-        //     },
-        //     function ($retries) { return 1000 * (2 ** $retries); } // 1s, 2s
-        // ));
-        // $this->http = new \GuzzleHttp\Client(['handler' => $handler] + $this->http->getConfig());
     }
 
-    public function generate(array $payload, array $opts = []): array
+    /**
+     * Generate AI response asynchronously using Guzzle promises
+     */
+    public function generateAsync(array $payload, array $opts = []): PromiseInterface
     {
-        Log::debug('OpenAiProvider: generate start', ['payload' => $payload, 'options' => $opts]);
+        Log::debug('AsyncOpenAiProvider: generateAsync start', ['payload' => $payload, 'options' => $opts]);
 
         $cfg = config('ai');
         $openai_cfg = $cfg['openai'];
@@ -58,7 +47,6 @@ final class OpenAiProvider implements AiProvider
         // Support model override from opts or resolve alias
         $requestedModel = $opts['model'] ?? null;
         if ($requestedModel && isset($cfg['models'][$requestedModel])) {
-            // Resolve alias (e.g., 'thinking' -> 'gpt-5')
             $model = $cfg['models'][$requestedModel];
         } else {
             $model = $requestedModel ?? $this->model ?? $openai_cfg['model'];
@@ -80,10 +68,10 @@ final class OpenAiProvider implements AiProvider
             ];
         }
 
-        // 2. Add baseMessages (user/assistant)
+        // 2. Add baseMessages
         $messages = array_merge($messages, $baseMessages);
 
-        // 3. System message for JSON schema (if exist)
+        // 3. System message for JSON schema
         $responseJsonSchema = $cfg['response_json_schema'] ?? null;
         if ($responseJsonSchema) {
             $messages[] = [
@@ -106,31 +94,69 @@ final class OpenAiProvider implements AiProvider
             $body['response_format']['response_json_schema'] = $responseJsonSchema;
         }
 
-        Log::debug('OpenAiProvider: final request body', ['body' => $body]);
+        Log::debug('AsyncOpenAiProvider: sending async request', ['model' => $model, 'messages_count' => count($messages)]);
 
         // Check rate limit before sending
         if ($this->rateLimiter && ! $this->rateLimiter->attemptWithRetry('openai')) {
             throw new \RuntimeException('OpenAI rate limit exceeded. Please try again later.');
         }
 
-        try {
-            $res = $this->http->post('chat/completions', [
-                'headers' => [
-                    'Authorization' => 'Bearer '.$this->apiKey,
-                    'Content-Type' => 'application/json',
-                ],
-                'json' => $body,
-            ]);
-        } catch (GuzzleException $e) {
-            throw new \RuntimeException('AI HTTP error: '.$e->getMessage());
+        // Send async request and return promise
+        $promise = $this->http->postAsync('chat/completions', [
+            'headers' => [
+                'Authorization' => 'Bearer '.$this->apiKey,
+                'Content-Type' => 'application/json',
+            ],
+            'json' => $body,
+        ]);
 
-            return ['ok' => false, 'data' => null, 'usage' => [], 'raw' => ['error' => $e->getMessage()]];
+        // Transform promise to handle response parsing
+        return $promise->then(
+            function (ResponseInterface $response) use ($model, $opts, $messages) {
+                return $this->parseResponse($response, $model, $opts, $messages);
+            },
+            function (\Exception $e) {
+                Log::error('AsyncOpenAiProvider: request failed', ['error' => $e->getMessage()]);
+                throw new \RuntimeException('AI HTTP error: '.$e->getMessage());
+            }
+        );
+    }
+
+    /**
+     * Generate multiple AI responses in parallel
+     */
+    public function generateBatch(array $requests): PromiseInterface
+    {
+        Log::debug('AsyncOpenAiProvider: generateBatch start', ['count' => count($requests)]);
+
+        $promises = [];
+        foreach ($requests as $request) {
+            $key = $request['key'] ?? uniqid('batch_', true);
+            $payload = $request['payload'] ?? [];
+            $opts = $request['opts'] ?? [];
+
+            $promises[$key] = $this->generateAsync($payload, $opts);
         }
 
-        $status = $res->getStatusCode();
-        $raw = (string) $res->getBody();
+        // Wait for all promises to resolve
+        return Utils::all($promises)->then(
+            function (array $results) {
+                Log::debug('AsyncOpenAiProvider: batch completed', ['count' => count($results)]);
 
-        Log::debug('AiProviderFactory: response status ►', ['status' => $status]);
+                return $results;
+            }
+        );
+    }
+
+    /**
+     * Parse HTTP response and extract AI content
+     */
+    private function parseResponse(ResponseInterface $response, string $model, array $opts, array $messages): array
+    {
+        $status = $response->getStatusCode();
+        $raw = (string) $response->getBody();
+
+        Log::debug('AsyncOpenAiProvider: response received', ['status' => $status]);
 
         if ($status < 200 || $status >= 300) {
             throw new \RuntimeException('AI non-2xx status: '.$status.' body: '.self::clip($raw));
@@ -144,7 +170,7 @@ final class OpenAiProvider implements AiProvider
         $contentText = $body['choices'][0]['message']['content'];
         $content = json_decode($contentText, true);
 
-        Log::debug('AiProviderFactory: response FULL ►', ['body' => $body, 'content' => $content, 'contentText' => $contentText]);
+        Log::debug('AsyncOpenAiProvider: response parsed', ['content_length' => strlen($contentText)]);
 
         if (! is_array($content)) {
             throw new \RuntimeException('AI returned non-JSON content: '.self::clip($contentText));
@@ -152,14 +178,14 @@ final class OpenAiProvider implements AiProvider
 
         return [
             'ok' => true,
-            'raw' => $raw,                 // сырое тело HTTP-ответа провайдера
-            'body' => $body,                // декодированный top-level JSON провайдера
-            'content_text' => $contentText,         // строка JSON внутри message.content
-            'content' => $content,             // ДЕКОДИРОВАННЫЙ overview-объект — используем дальше в сервисе
+            'raw' => $raw,
+            'body' => $body,
+            'content_text' => $contentText,
+            'content' => $content,
             'usage' => $body['usage'] ?? ['prompt_tokens' => 0, 'completion_tokens' => 0, 'total_tokens' => 0],
-            'model' => $model,                 // Модель использованная для запроса (для логов)
-            'model_alias' => $opts['model'] ?? null, // Алиас модели (thinking, default, etc.)
-            'sent_messages' => $messages,      // Final messages sent to AI (for logging)
+            'model' => $model,
+            'model_alias' => $opts['model'] ?? null,
+            'sent_messages' => $messages,
         ];
     }
 
