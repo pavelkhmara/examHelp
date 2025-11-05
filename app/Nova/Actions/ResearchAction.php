@@ -42,6 +42,9 @@ class ResearchAction extends Action
         /** @var TaskDispatcher $tasks */
         $tasks = app(TaskDispatcher::class);
 
+        $createdCount = 0;
+        $existingCount = 0;
+
         /** @var \App\Models\Exam $exam */
         foreach ($models as $exam) {
             // Parse user_input from exam
@@ -75,7 +78,7 @@ class ResearchAction extends Action
             ];
 
             // Enqueue research task with unique key (timestamp ensures no deduplication)
-            $tasks->enqueue(
+            $task = $tasks->enqueue(
                 type: 'research',
                 subject: $exam,
                 request: $payload,
@@ -83,8 +86,25 @@ class ResearchAction extends Action
                 idempotencyKey: "exam:{$exam->id}:research:nova:" . time(),
                 queue: null
             );
+
+            // Check if this is a newly created task or existing one
+            // A task is considered "new" if it was created within the last 10 seconds
+            $isNew = $task->created_at->gt(now()->subSeconds(10));
+
+            if ($isNew) {
+                $createdCount++;
+            } else {
+                $existingCount++;
+            }
         }
 
-        return Action::message('✅ Research task started! 🔄 Refresh this page to see progress.');
+        // Return appropriate message
+        if ($existingCount > 0 && $createdCount === 0) {
+            return Action::message('ℹ️ A research task is already running for this exam. Please wait for it to complete or use "Reset & Restart Research" to force a new run.');
+        } elseif ($existingCount > 0) {
+            return Action::message("✅ {$createdCount} new task(s) started! {$existingCount} exam(s) already have tasks running. 🔄 Refresh to see progress.");
+        } else {
+            return Action::message('✅ Research task started! 🔄 Refresh this page to see progress.');
+        }
     }
 }
