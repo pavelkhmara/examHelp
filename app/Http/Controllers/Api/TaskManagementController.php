@@ -257,6 +257,11 @@ class TaskManagementController extends Controller
     public function forceStartResearch(string $examId, Request $request)
     {
         try {
+            Log::info('[TaskManagement] forceStartResearch called', [
+                'exam_id' => $examId,
+                'request_data' => $request->all(),
+            ]);
+
             $exam = \App\Models\Exam::query()->findOrFail($examId);
 
             $validated = $request->validate([
@@ -264,6 +269,8 @@ class TaskManagementController extends Controller
                 'overview_model' => ['nullable', 'string', 'in:gpt-5-mini,gpt-5'],
                 'cancel_active' => ['nullable', 'boolean'],
             ]);
+
+            Log::info('[TaskManagement] Validation passed', ['validated' => $validated]);
 
             // Cancel active tasks first if requested
             if ($validated['cancel_active'] ?? true) {
@@ -302,32 +309,55 @@ class TaskManagementController extends Controller
             }
 
             // Create task directly in DB
-            $task = GenerationTask::create([
-                'exam_id' => $exam->id,
-                'subject_type' => get_class($exam),
-                'subject_id' => $exam->id,
-                'type' => 'research',
-                'status' => 'queued',
-                'request' => [
+            try {
+                $task = GenerationTask::create([
                     'exam_id' => $exam->id,
-                    'source' => 'force_start_api',
-                    'user_input' => $userInput,
-                    'document_id' => $documentId,
-                    'without_confirmation' => $validated['without_confirmation'] ?? true,
-                    'overview_model' => $validated['overview_model'] ?? 'gpt-5-mini',
-                    'force_restart' => true,
-                ],
-                'attempts' => 0,
-                'result' => null,
-                'error' => null,
-                'idempotency_key' => "exam:{$exam->id}:research:force_start:" . now()->timestamp . ':' . uniqid(),
-            ]);
+                    'subject_type' => get_class($exam),
+                    'subject_id' => $exam->id,
+                    'type' => 'research',
+                    'status' => 'queued',
+                    'request' => [
+                        'exam_id' => $exam->id,
+                        'source' => 'force_start_api',
+                        'user_input' => $userInput,
+                        'document_id' => $documentId,
+                        'without_confirmation' => $validated['without_confirmation'] ?? true,
+                        'overview_model' => $validated['overview_model'] ?? 'gpt-5-mini',
+                        'force_restart' => true,
+                    ],
+                    'attempts' => 0,
+                    'result' => null,
+                    'error' => null,
+                    'idempotency_key' => "exam:{$exam->id}:research:force_start:" . now()->timestamp . ':' . uniqid(),
+                ]);
 
-            $task->addActivity(
-                'task_force_started',
-                'Task created via force-start API',
-                ['api' => true, 'force' => true]
-            );
+                Log::info('[TaskManagement] Task created', ['task_id' => $task->id]);
+            } catch (\Throwable $e) {
+                Log::error('[TaskManagement] Failed to create task', [
+                    'error' => $e->getMessage(),
+                    'trace' => $e->getTraceAsString(),
+                ]);
+
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Failed to create task: ' . $e->getMessage(),
+                    'error_details' => $e->getMessage(),
+                ], 500);
+            }
+
+            try {
+                $task->addActivity(
+                    'task_force_started',
+                    'Task created via force-start API',
+                    ['api' => true, 'force' => true]
+                );
+            } catch (\Throwable $e) {
+                Log::warning('[TaskManagement] Failed to add activity log', [
+                    'task_id' => $task->id,
+                    'error' => $e->getMessage(),
+                ]);
+                // Don't fail the whole request if activity log fails
+            }
 
             // Dispatch job directly
             try {
@@ -341,11 +371,18 @@ class TaskManagementController extends Controller
                     'queue_driver' => config('queue.default'),
                 ]);
 
-                $task->addActivity(
-                    'job_dispatched',
-                    'Job dispatched successfully',
-                    ['queue_driver' => config('queue.default')]
-                );
+                try {
+                    $task->addActivity(
+                        'job_dispatched',
+                        'Job dispatched successfully',
+                        ['queue_driver' => config('queue.default')]
+                    );
+                } catch (\Throwable $e) {
+                    Log::warning('[TaskManagement] Failed to add dispatch activity log', [
+                        'task_id' => $task->id,
+                        'error' => $e->getMessage(),
+                    ]);
+                }
             } catch (\Throwable $e) {
                 Log::error('[TaskManagement] Failed to dispatch job', [
                     'task_id' => $task->id,
@@ -353,11 +390,18 @@ class TaskManagementController extends Controller
                     'trace' => $e->getTraceAsString(),
                 ]);
 
-                $task->addActivity(
-                    'job_dispatch_failed',
-                    'Failed to dispatch job: ' . $e->getMessage(),
-                    ['error' => $e->getMessage()]
-                );
+                try {
+                    $task->addActivity(
+                        'job_dispatch_failed',
+                        'Failed to dispatch job: ' . $e->getMessage(),
+                        ['error' => $e->getMessage()]
+                    );
+                } catch (\Throwable $activityError) {
+                    Log::warning('[TaskManagement] Failed to log dispatch failure', [
+                        'task_id' => $task->id,
+                        'error' => $activityError->getMessage(),
+                    ]);
+                }
 
                 return response()->json([
                     'success' => false,

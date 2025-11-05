@@ -86,15 +86,15 @@
                         </button>
                     </div>
 
-                    <!-- Results -->
-                    <div x-show="result" x-cloak class="mt-6">
-                        <!-- Error -->
-                        <div x-show="error" x-cloak class="p-4 bg-red-50 border border-red-200 rounded-md mb-4">
-                            <p class="text-sm text-red-800" x-text="error"></p>
-                        </div>
+                    <!-- Error -->
+                    <div x-show="error" x-cloak class="mt-6 p-4 bg-red-50 border border-red-200 rounded-md mb-4">
+                        <p class="text-sm text-red-800" x-text="error"></p>
+                    </div>
 
+                    <!-- Results -->
+                    <div x-show="result && !error" x-cloak class="mt-6">
                         <!-- Success -->
-                        <div x-show="!error && result" x-cloak>
+                        <div>
                             <!-- Exam Info -->
                             <div class="bg-blue-50 border-l-4 border-blue-500 p-4 mb-4">
                                 <h3 class="font-semibold text-blue-900">Exam Information</h3>
@@ -632,7 +632,9 @@
                 loading: false,
 
                 async diagnose() {
-                    if (!this.examId.trim()) {
+                    const trimmedId = this.examId.trim();
+
+                    if (!trimmedId) {
                         this.error = 'Please enter an exam ID';
                         return;
                     }
@@ -642,7 +644,7 @@
                     this.result = null;
 
                     try {
-                        const response = await fetch(`/diagnostics-dashboard/exam/${this.examId}`);
+                        const response = await fetch(`/diagnostics-dashboard/exam/${encodeURIComponent(trimmedId)}`);
                         const data = await response.json();
 
                         if (!response.ok || !data.success) {
