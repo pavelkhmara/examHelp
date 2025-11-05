@@ -77,30 +77,52 @@ class ResearchAction extends Action
                 'overview_model' => $fields->overview_model ?? 'gpt-5-mini',
             ];
 
-            // Enqueue research task with unique key (timestamp ensures no deduplication)
+            // Generate unique idempotency key for this request
+            $requestIdempotencyKey = "exam:{$exam->id}:research:nova:" . time() . ':' . uniqid();
+
+            // Enqueue research task
             $task = $tasks->enqueue(
                 type: 'research',
                 subject: $exam,
                 request: $payload,
                 jobClass: \App\Jobs\RunExamResearchJob::class,
-                idempotencyKey: "exam:{$exam->id}:research:nova:" . time(),
+                idempotencyKey: $requestIdempotencyKey,
                 queue: null
             );
 
             // Check if this is a newly created task or existing one
-            // A task is considered "new" if it was created within the last 10 seconds
-            $isNew = $task->created_at->gt(now()->subSeconds(10));
+            // If the returned task's idempotency_key matches our request key, it's new
+            // Otherwise, TaskDispatcher returned an existing task
+            $isNew = ($task->idempotency_key === $requestIdempotencyKey);
 
             if ($isNew) {
                 $createdCount++;
+                \Illuminate\Support\Facades\Log::info('[ResearchAction] New task created', [
+                    'exam_id' => $exam->id,
+                    'task_id' => $task->id,
+                    'task_status' => $task->status,
+                ]);
             } else {
                 $existingCount++;
+                \Illuminate\Support\Facades\Log::info('[ResearchAction] Existing task returned (not creating new)', [
+                    'exam_id' => $exam->id,
+                    'task_id' => $task->id,
+                    'task_status' => $task->status,
+                    'task_created_at' => $task->created_at,
+                    'task_age_seconds' => now()->diffInSeconds($task->created_at),
+                    'requested_key' => $requestIdempotencyKey,
+                    'returned_key' => $task->idempotency_key,
+                ]);
             }
         }
 
         // Return appropriate message
         if ($existingCount > 0 && $createdCount === 0) {
-            return Action::message('ℹ️ A research task is already running for this exam. Please wait for it to complete or use "Reset & Restart Research" to force a new run.');
+            // Get status of the existing task for better UX
+            $existingTask = $task ?? null; // Last task from the loop
+            $statusInfo = $existingTask ? " (status: {$existingTask->status})" : '';
+
+            return Action::message("ℹ️ A research task is already running for this exam{$statusInfo}. Please wait for it to complete or use \"Reset & Restart Research\" to force a new run. Check Laravel logs for details.");
         } elseif ($existingCount > 0) {
             return Action::message("✅ {$createdCount} new task(s) started! {$existingCount} exam(s) already have tasks running. 🔄 Refresh to see progress.");
         } else {
