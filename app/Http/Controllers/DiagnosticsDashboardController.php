@@ -99,6 +99,125 @@ class DiagnosticsDashboardController extends Controller
     }
 
     /**
+     * Diagnose a specific exam
+     * GET /diagnostics-dashboard/exam/{examId}
+     */
+    public function diagnoseExam(string $examId)
+    {
+        $exam = Exam::find($examId);
+
+        if (!$exam) {
+            return response()->json([
+                'success' => false,
+                'error' => 'Exam not found',
+                'exam_id' => $examId,
+            ], 404);
+        }
+
+        // Get all tasks for this exam
+        $tasks = GenerationTask::where('exam_id', $exam->id)
+            ->orderBy('created_at', 'desc')
+            ->get();
+
+        // Get research tasks only
+        $researchTasks = $tasks->where('type', 'research');
+
+        // Group by status
+        $tasksByStatus = $researchTasks->groupBy('status')
+            ->map(function ($group) {
+                return $group->count();
+            })
+            ->toArray();
+
+        // Get active tasks
+        $activeTasks = $researchTasks->whereIn('status', ['queued', 'running'])
+            ->map(function ($task) {
+                $stuckMinutes = now()->diffInMinutes($task->updated_at);
+                return [
+                    'id' => $task->id,
+                    'status' => $task->status,
+                    'created_at' => $task->created_at->toISOString(),
+                    'created_ago' => $task->created_at->diffForHumans(),
+                    'updated_at' => $task->updated_at->toISOString(),
+                    'updated_ago' => $task->updated_at->diffForHumans(),
+                    'stuck_minutes' => $stuckMinutes,
+                    'is_stuck' => $stuckMinutes > 60,
+                    'idempotency_key' => $task->idempotency_key,
+                ];
+            })
+            ->values();
+
+        // Get recent tasks (last 5)
+        $recentTasks = $tasks->take(5)->map(function ($task) {
+            $duration = $task->updated_at->diffInMinutes($task->created_at);
+            return [
+                'id' => $task->id,
+                'type' => $task->type,
+                'status' => $task->status,
+                'created_at' => $task->created_at->toISOString(),
+                'created_ago' => $task->created_at->diffForHumans(),
+                'updated_at' => $task->updated_at->toISOString(),
+                'duration_minutes' => $duration,
+                'attempts' => $task->attempts,
+                'error' => $task->error,
+                'idempotency_key' => $task->idempotency_key,
+            ];
+        });
+
+        // Determine issue and suggestions
+        $issue = null;
+        $suggestions = [];
+
+        if ($tasks->isEmpty()) {
+            $issue = 'no_tasks';
+            $suggestions = [
+                'No tasks found for this exam. This explains why nothing happens when you click "Run Exam Research".',
+                'The action likely tries to return an existing task, but there are none.',
+                'Use the "Force Start" button below to create a new task.',
+            ];
+        } elseif ($activeTasks->count() > 0) {
+            $issue = 'active_tasks_blocking';
+            $suggestions = [
+                "Found {$activeTasks->count()} active task(s). This explains why new tasks are not created.",
+                'TaskDispatcher prevents duplicate tasks when one is already running.',
+                'Wait for the task to complete, or cancel stuck tasks and force start a new one.',
+            ];
+
+            foreach ($activeTasks as $task) {
+                if ($task['is_stuck']) {
+                    $suggestions[] = "Task #{$task['id']} appears to be STUCK (last updated {$task['stuck_minutes']} minutes ago). Consider cancelling it.";
+                }
+            }
+        }
+
+        return response()->json([
+            'success' => true,
+            'exam' => [
+                'id' => $exam->id,
+                'title' => $exam->title,
+                'slug' => $exam->slug,
+                'research_status' => $exam->research_status,
+                'analysis_status' => $exam->analysis_status,
+                'created_at' => $exam->created_at->toISOString(),
+                'created_ago' => $exam->created_at->diffForHumans(),
+            ],
+            'tasks' => [
+                'total' => $tasks->count(),
+                'research_total' => $researchTasks->count(),
+                'by_status' => $tasksByStatus,
+            ],
+            'active_tasks' => $activeTasks,
+            'recent_tasks' => $recentTasks,
+            'issue' => $issue,
+            'suggestions' => $suggestions,
+            'system' => [
+                'queue_driver' => config('queue.default'),
+                'environment' => app()->environment(),
+            ],
+        ]);
+    }
+
+    /**
      * Get queue information
      */
     private function getQueueInfo(): array

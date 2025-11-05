@@ -64,6 +64,194 @@
                 </div>
             </div>
 
+            <!-- Exam Diagnostics Tool -->
+            <div class="bg-white rounded-lg shadow mb-8" x-data="examDiagnostics()">
+                <div class="px-6 py-4 border-b border-gray-200">
+                    <h2 class="text-lg font-semibold text-gray-900">🔍 Exam Diagnostics</h2>
+                    <p class="text-sm text-gray-600 mt-1">Search for a specific exam to see detailed task status and troubleshooting info</p>
+                </div>
+                <div class="p-6">
+                    <!-- Search Form -->
+                    <div class="flex gap-2 mb-4">
+                        <input type="text"
+                               x-model="examId"
+                               @keyup.enter="diagnose"
+                               placeholder="Enter Exam ID (UUID)"
+                               class="flex-1 px-4 py-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500">
+                        <button @click="diagnose"
+                                :disabled="loading || !examId"
+                                class="px-6 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed">
+                            <span x-show="!loading">Diagnose</span>
+                            <span x-show="loading" x-cloak>Analyzing...</span>
+                        </button>
+                    </div>
+
+                    <!-- Results -->
+                    <div x-show="result" x-cloak class="mt-6">
+                        <!-- Error -->
+                        <div x-show="error" x-cloak class="p-4 bg-red-50 border border-red-200 rounded-md mb-4">
+                            <p class="text-sm text-red-800" x-text="error"></p>
+                        </div>
+
+                        <!-- Success -->
+                        <div x-show="!error && result" x-cloak>
+                            <!-- Exam Info -->
+                            <div class="bg-blue-50 border-l-4 border-blue-500 p-4 mb-4">
+                                <h3 class="font-semibold text-blue-900">Exam Information</h3>
+                                <div class="mt-2 text-sm text-blue-800">
+                                    <p><strong>Title:</strong> <span x-text="result.exam?.title"></span></p>
+                                    <p><strong>ID:</strong> <code class="bg-blue-100 px-1 rounded" x-text="result.exam?.id"></code></p>
+                                    <p><strong>Research Status:</strong> <span x-text="result.exam?.research_status"></span></p>
+                                    <p><strong>Created:</strong> <span x-text="result.exam?.created_ago"></span></p>
+                                </div>
+                                <div class="mt-3">
+                                    <a :href="`/nova/resources/exams/${result.exam?.id}`"
+                                       target="_blank"
+                                       class="inline-flex items-center px-3 py-1 bg-blue-600 text-white text-sm rounded hover:bg-blue-700">
+                                        Open in Nova →
+                                    </a>
+                                </div>
+                            </div>
+
+                            <!-- Task Statistics -->
+                            <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-4">
+                                <div class="bg-gray-50 p-3 rounded border border-gray-200">
+                                    <p class="text-xs text-gray-500">Total Tasks</p>
+                                    <p class="text-2xl font-bold text-gray-900" x-text="result.tasks?.total || 0"></p>
+                                </div>
+                                <div class="bg-gray-50 p-3 rounded border border-gray-200">
+                                    <p class="text-xs text-gray-500">Research Tasks</p>
+                                    <p class="text-2xl font-bold text-gray-900" x-text="result.tasks?.research_total || 0"></p>
+                                </div>
+                                <div class="bg-green-50 p-3 rounded border border-green-200">
+                                    <p class="text-xs text-green-600">Completed</p>
+                                    <p class="text-2xl font-bold text-green-700" x-text="result.tasks?.by_status?.completed || 0"></p>
+                                </div>
+                                <div class="bg-red-50 p-3 rounded border border-red-200">
+                                    <p class="text-xs text-red-600">Failed</p>
+                                    <p class="text-2xl font-bold text-red-700" x-text="result.tasks?.by_status?.failed || 0"></p>
+                                </div>
+                            </div>
+
+                            <!-- Issue & Suggestions -->
+                            <div x-show="result.issue" x-cloak class="mb-4">
+                                <div :class="result.issue === 'no_tasks' ? 'bg-yellow-50 border-yellow-500' : 'bg-orange-50 border-orange-500'"
+                                     class="border-l-4 p-4 rounded-md">
+                                    <h4 class="font-semibold" :class="result.issue === 'no_tasks' ? 'text-yellow-900' : 'text-orange-900'">
+                                        ⚠️ Issue Detected
+                                    </h4>
+                                    <ul class="mt-2 space-y-1 text-sm" :class="result.issue === 'no_tasks' ? 'text-yellow-800' : 'text-orange-800'">
+                                        <template x-for="suggestion in result.suggestions" :key="suggestion">
+                                            <li class="flex items-start">
+                                                <span class="mr-2">•</span>
+                                                <span x-text="suggestion"></span>
+                                            </li>
+                                        </template>
+                                    </ul>
+                                </div>
+                            </div>
+
+                            <!-- Active Tasks -->
+                            <div x-show="result.active_tasks?.length > 0" x-cloak class="mb-4">
+                                <h4 class="font-semibold text-gray-900 mb-2">🔄 Active Tasks</h4>
+                                <div class="space-y-2">
+                                    <template x-for="task in result.active_tasks" :key="task.id">
+                                        <div class="bg-orange-50 border border-orange-200 p-3 rounded">
+                                            <div class="flex items-center justify-between">
+                                                <div class="flex-1">
+                                                    <p class="text-sm font-medium">
+                                                        Task #<span x-text="task.id"></span>
+                                                        <span class="ml-2 px-2 py-0.5 text-xs rounded bg-orange-100" x-text="task.status"></span>
+                                                        <span x-show="task.is_stuck" x-cloak class="ml-2 px-2 py-0.5 text-xs rounded bg-red-100 text-red-800">STUCK!</span>
+                                                    </p>
+                                                    <p class="text-xs text-gray-600 mt-1">
+                                                        Created <span x-text="task.created_ago"></span> •
+                                                        Last updated <span x-text="task.updated_ago"></span>
+                                                        (<span x-text="task.stuck_minutes"></span> minutes ago)
+                                                    </p>
+                                                </div>
+                                                <div class="flex space-x-2">
+                                                    <button @click="cancelTask(task.id)"
+                                                            class="px-3 py-1 bg-red-600 text-white text-xs rounded hover:bg-red-700">
+                                                        Cancel
+                                                    </button>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </template>
+                                </div>
+                            </div>
+
+                            <!-- Recent Tasks -->
+                            <div x-show="result.recent_tasks?.length > 0" x-cloak>
+                                <h4 class="font-semibold text-gray-900 mb-2">📋 Recent Tasks (Last 5)</h4>
+                                <div class="space-y-2">
+                                    <template x-for="task in result.recent_tasks" :key="task.id">
+                                        <div class="bg-gray-50 border border-gray-200 p-3 rounded">
+                                            <div class="flex items-center justify-between">
+                                                <div class="flex-1">
+                                                    <p class="text-sm font-medium">
+                                                        Task #<span x-text="task.id"></span> - <span x-text="task.type"></span>
+                                                        <span class="ml-2 px-2 py-0.5 text-xs rounded"
+                                                              :class="{
+                                                                  'bg-green-100 text-green-800': task.status === 'completed',
+                                                                  'bg-red-100 text-red-800': task.status === 'failed',
+                                                                  'bg-blue-100 text-blue-800': task.status === 'running',
+                                                                  'bg-gray-100 text-gray-800': task.status === 'queued',
+                                                                  'bg-yellow-100 text-yellow-800': task.status.includes('pending')
+                                                              }"
+                                                              x-text="task.status"></span>
+                                                    </p>
+                                                    <p class="text-xs text-gray-600 mt-1">
+                                                        Created <span x-text="task.created_ago"></span> •
+                                                        Duration: <span x-text="task.duration_minutes"></span> min •
+                                                        Attempts: <span x-text="task.attempts"></span>
+                                                    </p>
+                                                    <p x-show="task.error" x-cloak class="text-xs text-red-600 mt-1 font-mono" x-text="task.error?.substring(0, 150)"></p>
+                                                </div>
+                                                <div>
+                                                    <a :href="`/nova/resources/generation-tasks/${task.id}`"
+                                                       target="_blank"
+                                                       class="px-3 py-1 bg-gray-600 text-white text-xs rounded hover:bg-gray-700">
+                                                        View
+                                                    </a>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </template>
+                                </div>
+                            </div>
+
+                            <!-- Actions -->
+                            <div class="mt-6 p-4 bg-gray-50 rounded-md border border-gray-200">
+                                <h4 class="font-semibold text-gray-900 mb-3">🔧 Quick Actions</h4>
+                                <div class="flex gap-2">
+                                    <button @click="forceStartResearch(result.exam?.id)"
+                                            class="px-4 py-2 bg-green-600 text-white text-sm rounded hover:bg-green-700">
+                                        🚀 Force Start Research
+                                    </button>
+                                    <button @click="cancelAllTasks(result.exam?.id)"
+                                            x-show="result.active_tasks?.length > 0"
+                                            x-cloak
+                                            class="px-4 py-2 bg-red-600 text-white text-sm rounded hover:bg-red-700">
+                                        ❌ Cancel All Active Tasks
+                                    </button>
+                                    <button @click="diagnose"
+                                            class="px-4 py-2 bg-gray-600 text-white text-sm rounded hover:bg-gray-700">
+                                        🔄 Refresh
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Example IDs hint -->
+                    <div x-show="!result" class="mt-4 text-xs text-gray-500">
+                        <p>💡 Tip: Copy an exam ID from Nova or use the example: <code class="bg-gray-100 px-1 rounded">a0470751-3473-41c7-a796-d69ad7f6b851</code></p>
+                    </div>
+                </div>
+            </div>
+
             <!-- Statistics Cards -->
             <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
                 <div class="bg-white rounded-lg shadow p-6">
@@ -436,6 +624,128 @@
     </div>
 
     <script>
+        function examDiagnostics() {
+            return {
+                examId: '',
+                result: null,
+                error: null,
+                loading: false,
+
+                async diagnose() {
+                    if (!this.examId.trim()) {
+                        this.error = 'Please enter an exam ID';
+                        return;
+                    }
+
+                    this.loading = true;
+                    this.error = null;
+                    this.result = null;
+
+                    try {
+                        const response = await fetch(`/diagnostics-dashboard/exam/${this.examId}`);
+                        const data = await response.json();
+
+                        if (!response.ok || !data.success) {
+                            this.error = data.error || 'Failed to diagnose exam';
+                            return;
+                        }
+
+                        this.result = data;
+                    } catch (error) {
+                        this.error = `Error: ${error.message}`;
+                    } finally {
+                        this.loading = false;
+                    }
+                },
+
+                async cancelTask(taskId) {
+                    if (!confirm(`Cancel task #${taskId}?`)) return;
+
+                    try {
+                        const response = await fetch(`/api/tasks/${taskId}/cancel`, {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json',
+                                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
+                            },
+                            body: JSON.stringify({
+                                reason: 'Cancelled via Exam Diagnostics'
+                            })
+                        });
+
+                        const data = await response.json();
+
+                        if (data.success) {
+                            alert('Task cancelled successfully!');
+                            this.diagnose(); // Refresh
+                        } else {
+                            alert(`Error: ${data.message}`);
+                        }
+                    } catch (error) {
+                        alert(`Error: ${error.message}`);
+                    }
+                },
+
+                async cancelAllTasks(examId) {
+                    if (!confirm(`Cancel ALL active tasks for exam ${examId}?`)) return;
+
+                    try {
+                        const response = await fetch(`/api/exams/${examId}/tasks/cancel-all`, {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json',
+                                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
+                            },
+                            body: JSON.stringify({
+                                reason: 'Cancelled via Exam Diagnostics'
+                            })
+                        });
+
+                        const data = await response.json();
+
+                        if (data.success) {
+                            alert(`Cancelled ${data.cancelled_count} task(s)!`);
+                            this.diagnose(); // Refresh
+                        } else {
+                            alert(`Error: ${data.message}`);
+                        }
+                    } catch (error) {
+                        alert(`Error: ${error.message}`);
+                    }
+                },
+
+                async forceStartResearch(examId) {
+                    if (!confirm(`Force start research for exam ${examId}?\n\nThis will:\n1. Cancel all active tasks\n2. Create new research task\n3. Start pipeline immediately`)) return;
+
+                    try {
+                        const response = await fetch(`/api/exams/${examId}/research/force-start`, {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json',
+                                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
+                            },
+                            body: JSON.stringify({
+                                without_confirmation: true,
+                                overview_model: 'gpt-5-mini',
+                                cancel_active: true
+                            })
+                        });
+
+                        const data = await response.json();
+
+                        if (data.success) {
+                            alert(`✅ Success!\n\nNew task created: #${data.task.id}\nQueue driver: ${data.queue_driver}\n\nRefreshing diagnostics...`);
+                            this.diagnose(); // Refresh
+                        } else {
+                            alert(`❌ Error: ${data.message}`);
+                        }
+                    } catch (error) {
+                        alert(`❌ Error: ${error.message}`);
+                    }
+                }
+            }
+        }
+
         function diagnostics() {
             return {
                 async cancelTask(taskId) {

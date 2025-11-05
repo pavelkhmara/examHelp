@@ -23,3 +23,5 @@ Route::get('/login', function () {
 // Diagnostics Dashboard
 Route::get('/diagnostics-dashboard', [\App\Http\Controllers\DiagnosticsDashboardController::class, 'index'])
     ->name('diagnostics.dashboard');
+Route::get('/diagnostics-dashboard/exam/{examId}', [\App\Http\Controllers\DiagnosticsDashboardController::class, 'diagnoseExam'])
+    ->name('diagnostics.exam');
