@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\Api\DiagnosticsController;
 use App\Http\Controllers\Api\DocumentController;
 use App\Http\Controllers\Api\EvaluationController;
 use App\Http\Controllers\Api\ExamController;
@@ -253,4 +254,21 @@ Route::prefix('debug')->group(function () {
 
         return response()->json($jsonData, $status, [], JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE);
     });
+});
+
+// ===== DIAGNOSTICS routes (public, read-only) =====
+Route::prefix('diagnostics')->group(function () {
+    Route::get('/health', [DiagnosticsController::class, 'health']);
+    Route::get('/stats', [DiagnosticsController::class, 'stats']);
+    Route::get('/activity', [DiagnosticsController::class, 'activity']);
+    Route::get('/actions', [DiagnosticsController::class, 'actions']);
+
+    Route::get('/exams', [DiagnosticsController::class, 'exams']);
+    Route::get('/exams/{examId}', [DiagnosticsController::class, 'exam']);
+    Route::get('/exams/{examId}/tasks', [DiagnosticsController::class, 'examTasks']);
+    Route::get('/exams/{examId}/logs', [DiagnosticsController::class, 'examLogs']);
+    Route::get('/exams/{examId}/categories', [DiagnosticsController::class, 'examCategories']);
+    Route::get('/exams/{examId}/examples', [DiagnosticsController::class, 'examExamples']);
+
+    Route::get('/tasks/{taskId}', [DiagnosticsController::class, 'task']);
 });
