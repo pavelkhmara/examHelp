@@ -256,127 +256,141 @@ class TaskManagementController extends Controller
      */
     public function forceStartResearch(string $examId, Request $request)
     {
-        $exam = \App\Models\Exam::query()->findOrFail($examId);
+        try {
+            $exam = \App\Models\Exam::query()->findOrFail($examId);
 
-        $validated = $request->validate([
-            'without_confirmation' => ['boolean'],
-            'overview_model' => ['string', 'in:gpt-5-mini,gpt-5'],
-            'cancel_active' => ['boolean'],
-        ]);
-
-        // Cancel active tasks first if requested
-        if ($validated['cancel_active'] ?? true) {
-            $cancelled = GenerationTask::query()
-                ->where('exam_id', $exam->id)
-                ->whereIn('status', ['queued', 'running', 'pending_confirmation', 'pending_clarification'])
-                ->update([
-                    'status' => 'cancelled',
-                    'error' => 'Cancelled via force-start API',
-                ]);
-
-            Log::info('[TaskManagement] Cancelled active tasks before force-start', [
-                'exam_id' => $exam->id,
-                'cancelled_count' => $cancelled,
+            $validated = $request->validate([
+                'without_confirmation' => ['nullable', 'boolean'],
+                'overview_model' => ['nullable', 'string', 'in:gpt-5-mini,gpt-5'],
+                'cancel_active' => ['nullable', 'boolean'],
             ]);
-        }
 
-        // Parse user_input from exam
-        $userInput = [];
-        if (!empty($exam->user_input)) {
-            if (is_array($exam->user_input)) {
-                $userInput = $exam->user_input;
-            } elseif (is_string($exam->user_input)) {
-                $decoded = json_decode($exam->user_input, true);
-                if (json_last_error() === JSON_ERROR_NONE && is_array($decoded)) {
-                    $userInput = $decoded;
+            // Cancel active tasks first if requested
+            if ($validated['cancel_active'] ?? true) {
+                $cancelled = GenerationTask::query()
+                    ->where('exam_id', $exam->id)
+                    ->whereIn('status', ['queued', 'running', 'pending_confirmation', 'pending_clarification'])
+                    ->update([
+                        'status' => 'cancelled',
+                        'error' => 'Cancelled via force-start API',
+                    ]);
+
+                Log::info('[TaskManagement] Cancelled active tasks before force-start', [
+                    'exam_id' => $exam->id,
+                    'cancelled_count' => $cancelled,
+                ]);
+            }
+
+            // Parse user_input from exam
+            $userInput = [];
+            if (!empty($exam->user_input)) {
+                if (is_array($exam->user_input)) {
+                    $userInput = $exam->user_input;
+                } elseif (is_string($exam->user_input)) {
+                    $decoded = json_decode($exam->user_input, true);
+                    if (json_last_error() === JSON_ERROR_NONE && is_array($decoded)) {
+                        $userInput = $decoded;
+                    }
                 }
             }
-        }
 
-        // Get last document
-        $documentId = null;
-        $lastDoc = $exam->documents()->latest()->first();
-        if ($lastDoc) {
-            $documentId = $lastDoc->id;
-        }
-
-        // Create task directly in DB
-        $task = GenerationTask::create([
-            'exam_id' => $exam->id,
-            'subject_type' => get_class($exam),
-            'subject_id' => $exam->id,
-            'type' => 'research',
-            'status' => 'queued',
-            'request' => [
-                'exam_id' => $exam->id,
-                'source' => 'force_start_api',
-                'user_input' => $userInput,
-                'document_id' => $documentId,
-                'without_confirmation' => $validated['without_confirmation'] ?? true,
-                'overview_model' => $validated['overview_model'] ?? 'gpt-5-mini',
-                'force_restart' => true,
-            ],
-            'attempts' => 0,
-            'result' => null,
-            'error' => null,
-            'idempotency_key' => "exam:{$exam->id}:research:force_start:" . now()->timestamp . ':' . uniqid(),
-        ]);
-
-        $task->addActivity(
-            'task_force_started',
-            'Task created via force-start API',
-            ['api' => true, 'force' => true]
-        );
-
-        // Dispatch job directly
-        try {
-            $job = new \App\Jobs\RunExamResearchJob($task->id);
-
-            // Try to dispatch immediately
-            if (config('queue.default') === 'sync') {
-                // If using sync queue, run immediately
-                $job->handle(app(\App\Services\LanguageApp\ExamResearchService::class));
-                Log::info('[TaskManagement] Job executed synchronously', ['task_id' => $task->id]);
-            } else {
-                // Dispatch to queue
-                dispatch($job);
-                Log::info('[TaskManagement] Job dispatched to queue', ['task_id' => $task->id]);
+            // Get last document
+            $documentId = null;
+            $lastDoc = $exam->documents()->latest()->first();
+            if ($lastDoc) {
+                $documentId = $lastDoc->id;
             }
 
-            $task->addActivity(
-                'job_dispatched',
-                'Job dispatched successfully',
-                ['queue_driver' => config('queue.default')]
-            );
-        } catch (\Throwable $e) {
-            Log::error('[TaskManagement] Failed to dispatch job', [
-                'task_id' => $task->id,
-                'error' => $e->getMessage(),
+            // Create task directly in DB
+            $task = GenerationTask::create([
+                'exam_id' => $exam->id,
+                'subject_type' => get_class($exam),
+                'subject_id' => $exam->id,
+                'type' => 'research',
+                'status' => 'queued',
+                'request' => [
+                    'exam_id' => $exam->id,
+                    'source' => 'force_start_api',
+                    'user_input' => $userInput,
+                    'document_id' => $documentId,
+                    'without_confirmation' => $validated['without_confirmation'] ?? true,
+                    'overview_model' => $validated['overview_model'] ?? 'gpt-5-mini',
+                    'force_restart' => true,
+                ],
+                'attempts' => 0,
+                'result' => null,
+                'error' => null,
+                'idempotency_key' => "exam:{$exam->id}:research:force_start:" . now()->timestamp . ':' . uniqid(),
             ]);
 
             $task->addActivity(
-                'job_dispatch_failed',
-                'Failed to dispatch job: ' . $e->getMessage(),
-                ['error' => $e->getMessage()]
+                'task_force_started',
+                'Task created via force-start API',
+                ['api' => true, 'force' => true]
             );
+
+            // Dispatch job directly
+            try {
+                $job = new \App\Jobs\RunExamResearchJob($task->id);
+
+                // Always use dispatch() and let Laravel handle it
+                dispatch($job);
+
+                Log::info('[TaskManagement] Job dispatched', [
+                    'task_id' => $task->id,
+                    'queue_driver' => config('queue.default'),
+                ]);
+
+                $task->addActivity(
+                    'job_dispatched',
+                    'Job dispatched successfully',
+                    ['queue_driver' => config('queue.default')]
+                );
+            } catch (\Throwable $e) {
+                Log::error('[TaskManagement] Failed to dispatch job', [
+                    'task_id' => $task->id,
+                    'error' => $e->getMessage(),
+                    'trace' => $e->getTraceAsString(),
+                ]);
+
+                $task->addActivity(
+                    'job_dispatch_failed',
+                    'Failed to dispatch job: ' . $e->getMessage(),
+                    ['error' => $e->getMessage()]
+                );
+
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Task created but job dispatch failed: ' . $e->getMessage(),
+                    'task_id' => $task->id,
+                    'error_details' => $e->getMessage(),
+                ], 500);
+            }
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Research task created and dispatched',
+                'task' => [
+                    'id' => $task->id,
+                    'status' => $task->status,
+                    'exam_id' => $exam->id,
+                ],
+                'queue_driver' => config('queue.default'),
+            ]);
+        } catch (\Throwable $e) {
+            Log::error('[TaskManagement] forceStartResearch failed', [
+                'exam_id' => $examId,
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString(),
+            ]);
 
             return response()->json([
                 'success' => false,
-                'message' => 'Task created but job dispatch failed: ' . $e->getMessage(),
-                'task_id' => $task->id,
+                'message' => 'Force start failed: ' . $e->getMessage(),
+                'error_details' => $e->getMessage(),
+                'trace' => explode("\n", $e->getTraceAsString()),
             ], 500);
         }
-
-        return response()->json([
-            'success' => true,
-            'message' => 'Research task created and dispatched',
-            'task' => [
-                'id' => $task->id,
-                'status' => $task->status,
-                'exam_id' => $exam->id,
-            ],
-            'queue_driver' => config('queue.default'),
-        ]);
     }
 
     /**

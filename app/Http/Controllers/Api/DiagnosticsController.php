@@ -415,20 +415,40 @@ class DiagnosticsController extends Controller
                         ->limit(50)
                         ->get()
                         ->map(function ($job) {
-                            $payload = json_decode($job->payload, true);
-                            $jobData = unserialize($payload['data']['command'] ?? '');
+                            try {
+                                $payload = json_decode($job->payload, true);
+                                $jobData = null;
+                                $taskId = null;
 
-                            return [
-                                'id' => $job->id,
-                                'queue' => $job->queue,
-                                'attempts' => $job->attempts,
-                                'reserved_at' => $job->reserved_at ? \Carbon\Carbon::createFromTimestamp($job->reserved_at)->toISOString() : null,
-                                'available_at' => \Carbon\Carbon::createFromTimestamp($job->available_at)->toISOString(),
-                                'created_at' => \Carbon\Carbon::createFromTimestamp($job->created_at)->toISOString(),
-                                'job_class' => $payload['displayName'] ?? 'Unknown',
-                                'task_id' => is_object($jobData) && property_exists($jobData, 'taskId') ? $jobData->taskId : null,
-                                'waiting_time' => now()->diffInSeconds(\Carbon\Carbon::createFromTimestamp($job->created_at)) . 's',
-                            ];
+                                // Safely try to unserialize job command
+                                if (isset($payload['data']['command'])) {
+                                    try {
+                                        $jobData = unserialize($payload['data']['command']);
+                                        if (is_object($jobData) && property_exists($jobData, 'taskId')) {
+                                            $taskId = $jobData->taskId;
+                                        }
+                                    } catch (\Exception $e) {
+                                        // Unserialize failed, skip task ID extraction
+                                    }
+                                }
+
+                                return [
+                                    'id' => $job->id,
+                                    'queue' => $job->queue,
+                                    'attempts' => $job->attempts,
+                                    'reserved_at' => $job->reserved_at ? \Carbon\Carbon::createFromTimestamp($job->reserved_at)->toISOString() : null,
+                                    'available_at' => \Carbon\Carbon::createFromTimestamp($job->available_at)->toISOString(),
+                                    'created_at' => \Carbon\Carbon::createFromTimestamp($job->created_at)->toISOString(),
+                                    'job_class' => $payload['displayName'] ?? 'Unknown',
+                                    'task_id' => $taskId,
+                                    'waiting_time' => now()->diffInSeconds(\Carbon\Carbon::createFromTimestamp($job->created_at)) . 's',
+                                ];
+                            } catch (\Exception $e) {
+                                return [
+                                    'id' => $job->id ?? null,
+                                    'error' => 'Failed to parse job: ' . $e->getMessage(),
+                                ];
+                            }
                         })
                         ->toArray();
 
@@ -443,17 +463,24 @@ class DiagnosticsController extends Controller
                         ->limit(20)
                         ->get()
                         ->map(function ($job) {
-                            $payload = json_decode($job->payload, true);
+                            try {
+                                $payload = json_decode($job->payload, true);
 
-                            return [
-                                'id' => $job->id,
-                                'uuid' => $job->uuid ?? null,
-                                'connection' => $job->connection,
-                                'queue' => $job->queue,
-                                'job_class' => $payload['displayName'] ?? 'Unknown',
-                                'exception' => substr($job->exception, 0, 500),
-                                'failed_at' => $job->failed_at,
-                            ];
+                                return [
+                                    'id' => $job->id,
+                                    'uuid' => $job->uuid ?? null,
+                                    'connection' => $job->connection,
+                                    'queue' => $job->queue,
+                                    'job_class' => $payload['displayName'] ?? 'Unknown',
+                                    'exception' => substr($job->exception ?? '', 0, 500),
+                                    'failed_at' => $job->failed_at,
+                                ];
+                            } catch (\Exception $e) {
+                                return [
+                                    'id' => $job->id ?? null,
+                                    'error' => 'Failed to parse failed job: ' . $e->getMessage(),
+                                ];
+                            }
                         })
                         ->toArray();
 
@@ -467,6 +494,7 @@ class DiagnosticsController extends Controller
             }
         } catch (\Exception $e) {
             $queueInfo['error'] = $e->getMessage();
+            $queueInfo['trace'] = $e->getTraceAsString();
         }
 
         return response()->json([
