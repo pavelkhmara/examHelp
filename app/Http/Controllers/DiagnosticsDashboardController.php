@@ -76,12 +76,21 @@ class DiagnosticsDashboardController extends Controller
             ->limit(30)
             ->get();
 
+        // Get system configuration
+        $systemConfig = [
+            'queue_driver' => config('queue.default'),
+            'app_env' => app()->environment(),
+            'php_version' => PHP_VERSION,
+            'laravel_version' => app()->version(),
+        ];
+
         return view('diagnostics.dashboard', compact(
             'stats',
             'stuckTasks',
             'recentFailures',
             'pendingTasks',
-            'recentActivity'
+            'recentActivity',
+            'systemConfig'
         ));
     }
 }

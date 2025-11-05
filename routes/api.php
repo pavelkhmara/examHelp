@@ -283,4 +283,7 @@ Route::prefix('tasks')->group(function () {
 
 Route::prefix('exams')->group(function () {
     Route::post('/{examId}/tasks/cancel-all', [\App\Http\Controllers\Api\TaskManagementController::class, 'cancelAllExamTasks']);
+    Route::post('/{examId}/research/force-start', [\App\Http\Controllers\Api\TaskManagementController::class, 'forceStartResearch']);
 });
+
+Route::get('/diagnostics/system-config', [\App\Http\Controllers\Api\TaskManagementController::class, 'getSystemConfig']);

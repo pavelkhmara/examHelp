@@ -28,6 +28,42 @@
                 </div>
             </div>
 
+            <!-- System Configuration -->
+            <div class="bg-white rounded-lg shadow mb-8">
+                <div class="px-6 py-4 border-b border-gray-200">
+                    <h2 class="text-lg font-semibold text-gray-900">⚙️ System Configuration</h2>
+                </div>
+                <div class="p-6">
+                    <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+                        <div>
+                            <p class="text-xs text-gray-500">Queue Driver</p>
+                            <p class="text-sm font-semibold text-gray-900">{{ $systemConfig['queue_driver'] }}</p>
+                        </div>
+                        <div>
+                            <p class="text-xs text-gray-500">Environment</p>
+                            <p class="text-sm font-semibold text-gray-900">{{ $systemConfig['app_env'] }}</p>
+                        </div>
+                        <div>
+                            <p class="text-xs text-gray-500">PHP Version</p>
+                            <p class="text-sm font-semibold text-gray-900">{{ $systemConfig['php_version'] }}</p>
+                        </div>
+                        <div>
+                            <p class="text-xs text-gray-500">Laravel Version</p>
+                            <p class="text-sm font-semibold text-gray-900">{{ $systemConfig['laravel_version'] }}</p>
+                        </div>
+                    </div>
+
+                    @if($systemConfig['queue_driver'] === 'sync')
+                    <div class="mt-4 p-4 bg-yellow-50 border border-yellow-200 rounded">
+                        <p class="text-sm text-yellow-800">
+                            ⚠️ <strong>Warning:</strong> Queue driver is set to 'sync'. Jobs will run synchronously, which may cause timeouts.
+                            Consider using 'database' or 'redis' for production and running <code class="bg-yellow-100 px-1 rounded">php artisan queue:work</code>.
+                        </p>
+                    </div>
+                    @endif
+                </div>
+            </div>
+
             <!-- Statistics Cards -->
             <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
                 <div class="bg-white rounded-lg shadow p-6">
@@ -128,6 +164,11 @@
                                     <p class="text-xs text-gray-500 mt-1">Stuck for {{ now()->diffForHumans($task->updated_at, true) }}</p>
                                 </div>
                                 <div class="flex space-x-2">
+                                    <button @click="forceStartResearch('{{ $task->exam_id }}')"
+                                            :disabled="loading"
+                                            class="px-3 py-2 bg-green-600 text-white text-sm rounded hover:bg-green-700 disabled:opacity-50">
+                                        🚀 Force Start
+                                    </button>
                                     <button @click="cancelTask({{ $task->id }})"
                                             :disabled="loading"
                                             class="px-3 py-2 bg-red-600 text-white text-sm rounded hover:bg-red-700 disabled:opacity-50">
@@ -346,6 +387,36 @@
                         }
                     } catch (error) {
                         alert(`Error: ${error.message}`);
+                    }
+                },
+
+                async forceStartResearch(examId) {
+                    if (!confirm(`Force start research for exam ${examId}?\n\nThis will:\n1. Cancel all active tasks\n2. Create new research task\n3. Start pipeline immediately`)) return;
+
+                    try {
+                        const response = await fetch(`/api/exams/${examId}/research/force-start`, {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json',
+                                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
+                            },
+                            body: JSON.stringify({
+                                without_confirmation: true,
+                                overview_model: 'gpt-5-mini',
+                                cancel_active: true
+                            })
+                        });
+
+                        const data = await response.json();
+
+                        if (data.success) {
+                            alert(`✅ Success!\n\nNew task created: #${data.task.id}\nQueue driver: ${data.queue_driver}\n\nRefreshing page...`);
+                            window.location.reload();
+                        } else {
+                            alert(`❌ Error: ${data.message}`);
+                        }
+                    } catch (error) {
+                        alert(`❌ Error: ${error.message}`);
                     }
                 },
 
