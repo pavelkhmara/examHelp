@@ -5,6 +5,7 @@ namespace App\Nova;
 use App\Nova\Actions\ConfirmIdentityAction;
 use App\Nova\Actions\ProvideAnswersAction;
 use App\Nova\Actions\ResearchAction;
+use App\Nova\Actions\ResetAndRestartResearch;
 use App\Nova\Actions\ConfirmExamIdentity;
 use App\Nova\Fields\CollapsiblePanel;
 use Laravel\Nova\Fields\Badge;
@@ -491,6 +492,7 @@ class Exam extends Resource
                     'pending_clarification' => 'warning',
                     'completed' => 'success',
                     'failed' => 'danger',
+                    'cancelled' => 'warning',
                 ])
                 ->labels([
                     'queued' => 'Queued',
@@ -499,6 +501,7 @@ class Exam extends Resource
                     'pending_clarification' => '⏸ Needs Clarification',
                     'completed' => 'Completed',
                     'failed' => 'Failed',
+                    'cancelled' => '🚫 Cancelled',
                 ])
                 ->onlyOnDetail(),
 
@@ -1045,6 +1048,7 @@ class Exam extends Resource
     {
         return [
             new ResearchAction,
+            new ResetAndRestartResearch,
             new ConfirmIdentityAction,
             new ProvideAnswersAction,
             // (new ConfirmExamIdentity)
