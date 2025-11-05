@@ -113,6 +113,27 @@ class ResearchAction extends Action
                     'requested_key' => $requestIdempotencyKey,
                     'returned_key' => $task->idempotency_key,
                 ]);
+
+                // IMPORTANT: If existing task is queued but old, re-dispatch the job
+                // This handles cases where queue worker wasn't running or job failed to dispatch
+                if ($task->status === 'queued' && $task->created_at->lt(now()->subMinutes(1))) {
+                    \Illuminate\Support\Facades\Log::warning('[ResearchAction] Re-dispatching job for old queued task', [
+                        'task_id' => $task->id,
+                        'task_age' => $task->created_at->diffForHumans(),
+                    ]);
+
+                    try {
+                        dispatch(new \App\Jobs\RunExamResearchJob($task->id));
+                        \Illuminate\Support\Facades\Log::info('[ResearchAction] Job re-dispatched successfully', [
+                            'task_id' => $task->id,
+                        ]);
+                    } catch (\Throwable $e) {
+                        \Illuminate\Support\Facades\Log::error('[ResearchAction] Failed to re-dispatch job', [
+                            'task_id' => $task->id,
+                            'error' => $e->getMessage(),
+                        ]);
+                    }
+                }
             }
         }
 

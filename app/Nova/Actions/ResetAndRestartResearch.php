@@ -111,7 +111,29 @@ class ResetAndRestartResearch extends Action
                         'exam_id' => $exam->id,
                         'task_id' => $task->id,
                         'cancelled_count' => $cancelledCount,
+                        'queue_driver' => config('queue.default'),
                     ]);
+
+                    // Step 6: Ensure job is dispatched (redundant safety check)
+                    // In case TaskDispatcher returned an existing task or dispatch failed
+                    if ($task->status === 'queued' && $task->updated_at->eq($task->created_at)) {
+                        Log::info('[ResetAndRestartResearch] Ensuring job dispatch (safety check)', [
+                            'task_id' => $task->id,
+                        ]);
+
+                        try {
+                            dispatch(new \App\Jobs\RunExamResearchJob($task->id));
+                            Log::info('[ResetAndRestartResearch] Job dispatched successfully', [
+                                'task_id' => $task->id,
+                            ]);
+                        } catch (\Throwable $e) {
+                            Log::error('[ResetAndRestartResearch] Failed to dispatch job', [
+                                'task_id' => $task->id,
+                                'error' => $e->getMessage(),
+                            ]);
+                            throw $e; // Re-throw to be caught by outer catch
+                        }
+                    }
 
                     $processedExams[] = [
                         'exam_id' => $exam->id,
@@ -170,12 +192,19 @@ class ResetAndRestartResearch extends Action
             $task->status = 'cancelled';
             $task->error = 'Manually cancelled via Reset & Restart Research action';
 
-            // Add activity log
-            $task->addActivity(
-                'task_cancelled',
-                "Task manually cancelled (was: {$oldStatus})",
-                ['old_status' => $oldStatus, 'reason' => 'reset_restart_action']
-            );
+            // Add activity log (wrapped in try-catch in case activity table doesn't exist)
+            try {
+                $task->addActivity(
+                    'task_cancelled',
+                    "Task manually cancelled (was: {$oldStatus})",
+                    ['old_status' => $oldStatus, 'reason' => 'reset_restart_action']
+                );
+            } catch (\Throwable $e) {
+                Log::warning('[ResetAndRestartResearch] Failed to add activity log', [
+                    'task_id' => $task->id,
+                    'error' => $e->getMessage(),
+                ]);
+            }
 
             $task->save();
 
