@@ -272,3 +272,15 @@ Route::prefix('diagnostics')->group(function () {
 
     Route::get('/tasks/{taskId}', [DiagnosticsController::class, 'task']);
 });
+
+// ===== TASK MANAGEMENT routes (public, write operations) =====
+Route::prefix('tasks')->group(function () {
+    Route::post('/{taskId}/cancel', [\App\Http\Controllers\Api\TaskManagementController::class, 'cancelTask']);
+    Route::post('/{taskId}/retry', [\App\Http\Controllers\Api\TaskManagementController::class, 'retryTask']);
+    Route::post('/{taskId}/force-complete', [\App\Http\Controllers\Api\TaskManagementController::class, 'forceCompleteTask']);
+    Route::get('/stuck', [\App\Http\Controllers\Api\TaskManagementController::class, 'getStuckTasks']);
+});
+
+Route::prefix('exams')->group(function () {
+    Route::post('/{examId}/tasks/cancel-all', [\App\Http\Controllers\Api\TaskManagementController::class, 'cancelAllExamTasks']);
+});

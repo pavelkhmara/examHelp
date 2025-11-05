@@ -19,3 +19,7 @@ Route::get('/attempts/{attempt}/result', [ExamPlayController::class, 'result'])-
 Route::get('/login', function () {
     return redirect('/nova/login');
 })->name('login');
+
+// Diagnostics Dashboard
+Route::get('/diagnostics-dashboard', [\App\Http\Controllers\DiagnosticsDashboardController::class, 'index'])
+    ->name('diagnostics.dashboard');
