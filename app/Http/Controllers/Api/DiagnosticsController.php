@@ -389,4 +389,89 @@ class DiagnosticsController extends Controller
             'environment' => app()->environment(),
         ]);
     }
+
+    /**
+     * Get queue information
+     * GET /api/diagnostics/queue
+     */
+    public function queueInfo()
+    {
+        $queueDriver = config('queue.default');
+        $queueInfo = [
+            'driver' => $queueDriver,
+            'pending_jobs' => [],
+            'failed_jobs' => [],
+            'total_pending' => 0,
+            'total_failed' => 0,
+        ];
+
+        try {
+            // For database queue driver
+            if ($queueDriver === 'database') {
+                // Get pending jobs from jobs table
+                if (\Schema::hasTable('jobs')) {
+                    $pendingJobs = \DB::table('jobs')
+                        ->orderBy('created_at')
+                        ->limit(50)
+                        ->get()
+                        ->map(function ($job) {
+                            $payload = json_decode($job->payload, true);
+                            $jobData = unserialize($payload['data']['command'] ?? '');
+
+                            return [
+                                'id' => $job->id,
+                                'queue' => $job->queue,
+                                'attempts' => $job->attempts,
+                                'reserved_at' => $job->reserved_at ? \Carbon\Carbon::createFromTimestamp($job->reserved_at)->toISOString() : null,
+                                'available_at' => \Carbon\Carbon::createFromTimestamp($job->available_at)->toISOString(),
+                                'created_at' => \Carbon\Carbon::createFromTimestamp($job->created_at)->toISOString(),
+                                'job_class' => $payload['displayName'] ?? 'Unknown',
+                                'task_id' => is_object($jobData) && property_exists($jobData, 'taskId') ? $jobData->taskId : null,
+                                'waiting_time' => now()->diffInSeconds(\Carbon\Carbon::createFromTimestamp($job->created_at)) . 's',
+                            ];
+                        })
+                        ->toArray();
+
+                    $queueInfo['pending_jobs'] = $pendingJobs;
+                    $queueInfo['total_pending'] = \DB::table('jobs')->count();
+                }
+
+                // Get failed jobs
+                if (\Schema::hasTable('failed_jobs')) {
+                    $failedJobs = \DB::table('failed_jobs')
+                        ->orderBy('failed_at', 'desc')
+                        ->limit(20)
+                        ->get()
+                        ->map(function ($job) {
+                            $payload = json_decode($job->payload, true);
+
+                            return [
+                                'id' => $job->id,
+                                'uuid' => $job->uuid ?? null,
+                                'connection' => $job->connection,
+                                'queue' => $job->queue,
+                                'job_class' => $payload['displayName'] ?? 'Unknown',
+                                'exception' => substr($job->exception, 0, 500),
+                                'failed_at' => $job->failed_at,
+                            ];
+                        })
+                        ->toArray();
+
+                    $queueInfo['failed_jobs'] = $failedJobs;
+                    $queueInfo['total_failed'] = \DB::table('failed_jobs')->count();
+                }
+            } elseif ($queueDriver === 'sync') {
+                $queueInfo['note'] = 'Sync driver does not use queue - jobs execute immediately';
+            } else {
+                $queueInfo['note'] = "Queue driver '{$queueDriver}' monitoring not implemented";
+            }
+        } catch (\Exception $e) {
+            $queueInfo['error'] = $e->getMessage();
+        }
+
+        return response()->json([
+            'success' => true,
+            'queue' => $queueInfo,
+        ]);
+    }
 }

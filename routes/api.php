@@ -262,6 +262,7 @@ Route::prefix('diagnostics')->group(function () {
     Route::get('/stats', [DiagnosticsController::class, 'stats']);
     Route::get('/activity', [DiagnosticsController::class, 'activity']);
     Route::get('/actions', [DiagnosticsController::class, 'actions']);
+    Route::get('/queue', [DiagnosticsController::class, 'queueInfo']);
 
     Route::get('/exams', [DiagnosticsController::class, 'exams']);
     Route::get('/exams/{examId}', [DiagnosticsController::class, 'exam']);

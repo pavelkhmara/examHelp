@@ -139,6 +139,107 @@
                 </div>
             </div>
 
+            <!-- Queue Status -->
+            @if($queueInfo['driver'] === 'database')
+            <div class="bg-white rounded-lg shadow mb-8">
+                <div class="px-6 py-4 border-b border-gray-200 flex items-center justify-between">
+                    <div>
+                        <h2 class="text-lg font-semibold text-gray-900">🔄 Laravel Queue Status</h2>
+                        <p class="text-sm text-gray-600 mt-1">Jobs waiting in queue and failed jobs</p>
+                    </div>
+                    <div class="text-right">
+                        <p class="text-sm text-gray-600">Total: <span class="font-semibold">{{ $queueInfo['total_pending'] }}</span> pending, <span class="font-semibold text-red-600">{{ $queueInfo['total_failed'] }}</span> failed</p>
+                    </div>
+                </div>
+
+                <!-- Pending Jobs -->
+                @if($queueInfo['pending_jobs']->count() > 0)
+                <div class="p-6 border-b border-gray-200">
+                    <h3 class="text-md font-semibold text-gray-900 mb-4">⏳ Pending Jobs ({{ $queueInfo['total_pending'] }})</h3>
+                    <div class="space-y-3">
+                        @foreach($queueInfo['pending_jobs']->take(10) as $job)
+                        <div class="bg-gray-50 p-3 rounded border border-gray-200">
+                            <div class="flex items-center justify-between">
+                                <div class="flex-1">
+                                    <p class="text-sm font-medium text-gray-900">
+                                        Job #{{ $job->id }} - {{ $job->job_class }}
+                                        @if($job->task_id)
+                                        <a href="/nova/resources/generation-tasks/{{ $job->task_id }}"
+                                           class="ml-2 text-xs text-blue-600 hover:underline"
+                                           target="_blank">
+                                            (Task #{{ $job->task_id }})
+                                        </a>
+                                        @endif
+                                    </p>
+                                    <div class="flex items-center mt-1 text-xs text-gray-600 space-x-4">
+                                        <span>Queue: <span class="font-semibold">{{ $job->queue }}</span></span>
+                                        <span>Attempts: <span class="font-semibold">{{ $job->attempts }}</span></span>
+                                        <span>Waiting: <span class="font-semibold">{{ $job->created_at->diffForHumans() }}</span></span>
+                                        <span>Created: <span class="font-semibold">{{ $job->created_at->format('Y-m-d H:i:s') }}</span></span>
+                                    </div>
+                                    @if($job->reserved_at)
+                                    <p class="text-xs text-orange-600 mt-1">🔒 Reserved at {{ $job->reserved_at->format('Y-m-d H:i:s') }}</p>
+                                    @endif
+                                </div>
+                            </div>
+                        </div>
+                        @endforeach
+
+                        @if($queueInfo['total_pending'] > 10)
+                        <p class="text-sm text-gray-600 text-center pt-2">
+                            ... and {{ $queueInfo['total_pending'] - 10 }} more jobs
+                        </p>
+                        @endif
+                    </div>
+                </div>
+                @else
+                <div class="p-6 border-b border-gray-200">
+                    <p class="text-sm text-gray-600 text-center">✅ No pending jobs in queue</p>
+                </div>
+                @endif
+
+                <!-- Failed Jobs -->
+                @if($queueInfo['failed_jobs']->count() > 0)
+                <div class="p-6">
+                    <h3 class="text-md font-semibold text-red-900 mb-4">❌ Failed Jobs ({{ $queueInfo['total_failed'] }})</h3>
+                    <div class="space-y-3">
+                        @foreach($queueInfo['failed_jobs']->take(5) as $job)
+                        <div class="bg-red-50 p-3 rounded border border-red-200">
+                            <div class="flex items-center justify-between">
+                                <div class="flex-1">
+                                    <p class="text-sm font-medium text-gray-900">
+                                        Job #{{ $job->id }} - {{ $job->job_class }}
+                                    </p>
+                                    <div class="flex items-center mt-1 text-xs text-gray-600 space-x-4">
+                                        <span>Queue: <span class="font-semibold">{{ $job->queue }}</span></span>
+                                        <span>Failed: <span class="font-semibold">{{ $job->failed_at->diffForHumans() }}</span></span>
+                                    </div>
+                                    <details class="mt-2">
+                                        <summary class="text-xs text-red-600 cursor-pointer hover:text-red-800">Show exception</summary>
+                                        <pre class="text-xs text-gray-700 mt-2 p-2 bg-white rounded border overflow-x-auto">{{ Str::limit($job->exception, 500) }}</pre>
+                                    </details>
+                                </div>
+                            </div>
+                        </div>
+                        @endforeach
+
+                        @if($queueInfo['total_failed'] > 5)
+                        <p class="text-sm text-gray-600 text-center pt-2">
+                            ... and {{ $queueInfo['total_failed'] - 5 }} more failed jobs
+                        </p>
+                        @endif
+                    </div>
+                </div>
+                @endif
+            </div>
+            @elseif($queueInfo['driver'] === 'sync')
+            <div class="bg-blue-50 border-l-4 border-blue-500 rounded-lg shadow mb-8 p-6">
+                <p class="text-sm text-blue-800">
+                    ℹ️ <strong>Sync Queue Driver:</strong> Jobs execute immediately without queueing. No queue monitoring available.
+                </p>
+            </div>
+            @endif
+
             <!-- Stuck Tasks -->
             @if($stuckTasks->count() > 0)
             <div class="bg-red-50 border-l-4 border-red-500 rounded-lg shadow mb-8">

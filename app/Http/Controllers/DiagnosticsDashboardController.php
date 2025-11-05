@@ -84,13 +84,98 @@ class DiagnosticsDashboardController extends Controller
             'laravel_version' => app()->version(),
         ];
 
+        // Get queue information
+        $queueInfo = $this->getQueueInfo();
+
         return view('diagnostics.dashboard', compact(
             'stats',
             'stuckTasks',
             'recentFailures',
             'pendingTasks',
             'recentActivity',
-            'systemConfig'
+            'systemConfig',
+            'queueInfo'
         ));
+    }
+
+    /**
+     * Get queue information
+     */
+    private function getQueueInfo(): array
+    {
+        $queueDriver = config('queue.default');
+        $queueInfo = [
+            'driver' => $queueDriver,
+            'pending_jobs' => collect([]),
+            'failed_jobs' => collect([]),
+            'total_pending' => 0,
+            'total_failed' => 0,
+        ];
+
+        try {
+            if ($queueDriver === 'database') {
+                // Get pending jobs
+                if (\Schema::hasTable('jobs')) {
+                    $queueInfo['pending_jobs'] = \DB::table('jobs')
+                        ->orderBy('created_at')
+                        ->limit(50)
+                        ->get()
+                        ->map(function ($job) {
+                            $payload = json_decode($job->payload, true);
+
+                            // Try to extract task ID from job data
+                            $taskId = null;
+                            try {
+                                $jobData = unserialize($payload['data']['command'] ?? '');
+                                if (is_object($jobData) && property_exists($jobData, 'taskId')) {
+                                    $taskId = $jobData->taskId;
+                                }
+                            } catch (\Exception $e) {
+                                // Ignore unserialize errors
+                            }
+
+                            return (object) [
+                                'id' => $job->id,
+                                'queue' => $job->queue,
+                                'attempts' => $job->attempts,
+                                'reserved_at' => $job->reserved_at ? \Carbon\Carbon::createFromTimestamp($job->reserved_at) : null,
+                                'available_at' => \Carbon\Carbon::createFromTimestamp($job->available_at),
+                                'created_at' => \Carbon\Carbon::createFromTimestamp($job->created_at),
+                                'job_class' => $payload['displayName'] ?? 'Unknown',
+                                'task_id' => $taskId,
+                            ];
+                        });
+
+                    $queueInfo['total_pending'] = \DB::table('jobs')->count();
+                }
+
+                // Get failed jobs
+                if (\Schema::hasTable('failed_jobs')) {
+                    $queueInfo['failed_jobs'] = \DB::table('failed_jobs')
+                        ->orderBy('failed_at', 'desc')
+                        ->limit(20)
+                        ->get()
+                        ->map(function ($job) {
+                            $payload = json_decode($job->payload, true);
+
+                            return (object) [
+                                'id' => $job->id,
+                                'uuid' => $job->uuid ?? null,
+                                'connection' => $job->connection,
+                                'queue' => $job->queue,
+                                'job_class' => $payload['displayName'] ?? 'Unknown',
+                                'exception' => $job->exception,
+                                'failed_at' => \Carbon\Carbon::parse($job->failed_at),
+                            ];
+                        });
+
+                    $queueInfo['total_failed'] = \DB::table('failed_jobs')->count();
+                }
+            }
+        } catch (\Exception $e) {
+            $queueInfo['error'] = $e->getMessage();
+        }
+
+        return $queueInfo;
     }
 }
