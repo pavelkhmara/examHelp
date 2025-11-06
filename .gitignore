@@ -25,7 +25,6 @@ yarn-error.log
 docker-compose.override.yml
 /.cursor
 /docs
-context-pack*
 repo-context.md
 /files
 repo-*
