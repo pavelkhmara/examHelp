@@ -86,38 +86,38 @@ CTX_OUT     ?= repo-context.md
 
 # Full pack (everything)
 ctx:
-	OUT=$(CTX_OUT) ARTISAN_CMD="$(ARTISAN_CMD)" $(CTX_SCRIPT) all
+	env OUT=$(CTX_OUT) ARTISAN_CMD="$(ARTISAN_CMD)" bash $(CTX_SCRIPT) all
 
 # Only Models (table, fillable, casts, relations)
 ctx-models:
-	OUT=$(basename $(CTX_OUT)).models.md ARTISAN_CMD="$(ARTISAN_CMD)" $(CTX_SCRIPT) models
+	env OUT=$(basename $(CTX_OUT)).models.md ARTISAN_CMD="$(ARTISAN_CMD)" bash $(CTX_SCRIPT) models
 
 # Only DB (tables, columns with types/null/default, FKs)
 ctx-db:
-	OUT=$(basename $(CTX_OUT)).db.md ARTISAN_CMD="$(ARTISAN_CMD)" $(CTX_SCRIPT) db
+	env OUT=$(basename $(CTX_OUT)).db.md ARTISAN_CMD="$(ARTISAN_CMD)" bash $(CTX_SCRIPT) db
 
 # Models + DB (recommended for schema focus)
 ctx-models-db:
-	OUT=$(basename $(CTX_OUT)).models-db.md ARTISAN_CMD="$(ARTISAN_CMD)" $(CTX_SCRIPT) models+db
+	env OUT=$(basename $(CTX_OUT)).models-db.md ARTISAN_CMD="$(ARTISAN_CMD)" bash $(CTX_SCRIPT) models+db
 
 # Nova resources (class, $model, fields() head)
 ctx-nova:
-	OUT=$(basename $(CTX_OUT)).nova.md ARTISAN_CMD="$(ARTISAN_CMD)" $(CTX_SCRIPT) nova
+	env OUT=$(basename $(CTX_OUT)).nova.md ARTISAN_CMD="$(ARTISAN_CMD)" bash $(CTX_SCRIPT) nova
 
 # Single file + related (use: make ctx-file FILE=path/to/File.php)
 ctx-file:
 	@if [ -z "$$FILE" ]; then echo "Usage: make ctx-file FILE=app/Services/LanguageApp/ExamResearchService.php"; exit 1; fi
-	OUT=$(basename $(CTX_OUT)).file.$(notdir $(FILE)).md ARTISAN_CMD="$(ARTISAN_CMD)" $(CTX_SCRIPT) file "$$FILE"
+	env OUT=$(basename $(CTX_OUT)).file.$(notdir $(FILE)).md ARTISAN_CMD="$(ARTISAN_CMD)" bash $(CTX_SCRIPT) file "$$FILE"
 
 # Debug variant
 ctx-file-debug:
 	@if [ -z "$$FILE" ]; then echo "Usage: make ctx-file-debug FILE=..."; exit 1; fi
-	DEBUG=1 OUT=$(basename $(CTX_OUT)).file.$(notdir $(FILE)).md ARTISAN_CMD="$(ARTISAN_CMD)" $(CTX_SCRIPT) file $(FILE)
+	env DEBUG=1 OUT=$(basename $(CTX_OUT)).file.$(notdir $(FILE)).md ARTISAN_CMD="$(ARTISAN_CMD)" bash $(CTX_SCRIPT) file $(FILE)
 
 # Single file (auto-resolve: path | App\\Class | basename)
 ctx-file-auto:
 	@if [ -z "$$FILE" ]; then echo "Usage: make ctx-file-auto FILE=ExamResearchService.php|App\\Services\\...|app/.../File.php"; exit 1; fi
-	OUT=$(basename $(CTX_OUT)).file.$(notdir $(FILE)).md ARTISAN_CMD="$(ARTISAN_CMD)" $(CTX_SCRIPT) file "$$FILE"
+	env OUT=$(basename $(CTX_OUT)).file.$(notdir $(FILE)).md ARTISAN_CMD="$(ARTISAN_CMD)" bash $(CTX_SCRIPT) file "$$FILE"
 
 # Help
 ctx-help:
