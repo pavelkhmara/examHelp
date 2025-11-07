@@ -26,6 +26,7 @@ class RunExamResearchJob implements ShouldQueue
         $exam = Exam::query()->findOrFail($task->exam_id);
 
         $task->addActivity('job_started', 'Research job started');
+        $task->updateHeartbeat(); // Initial heartbeat
 
         // CRITICAL: If task is already in pending_confirmation or pending_clarification, STOP immediately
         // This prevents duplicate execution when Job is dispatched multiple times
@@ -75,9 +76,11 @@ class RunExamResearchJob implements ShouldQueue
             if ($useIterativeVerification) {
                 // S1: Run iterative identity verification (new method with web search)
                 $task->addActivity('iterative_verification_started', 'Running iterative identity verification (max 3 attempts, 6 min timeout)');
+                $task->updateHeartbeat(); // Heartbeat before long operation
 
                 $identityResult = $svc->runIterativeIdentityVerification($exam, $task);
                 $task->refresh();
+                $task->updateHeartbeat(); // Heartbeat after identity verification
 
                 // Check if verification failed
                 if (($identityResult['status'] ?? '') === 'failed') {
@@ -129,6 +132,7 @@ class RunExamResearchJob implements ShouldQueue
                     'decision' => 'run_confidence_boost',
                 ]);
                 $task->addActivity('confidence_boost_started', 'Running confidence boost stage');
+                $task->updateHeartbeat(); // Heartbeat before boost
 
                 $identityResult = $svc->runConfidenceBoost($exam, $task, $identityResult);
 
@@ -143,6 +147,7 @@ class RunExamResearchJob implements ShouldQueue
                 $task->addActivity('confidence_boost_completed', "Confidence boosted to: {$boostedConfidence}", [
                     'confidence' => $boostedConfidence,
                 ]);
+                $task->updateHeartbeat(); // Heartbeat after boost
             }
 
             // CRITICAL: After identity guard (and optional boost), check if confidence is acceptable
@@ -378,7 +383,9 @@ class RunExamResearchJob implements ShouldQueue
         $identitySnapshot = $task->result['identity'] ?? null;
 
         // Run the main structure building pipeline
+        $task->updateHeartbeat(); // Heartbeat before overview pipeline
         $pipelineResult = $svc->runPipeline($exam, $task);
+        $task->updateHeartbeat(); // Heartbeat after overview pipeline
 
         // Check if pipeline failed
         if (isset($pipelineResult['ok']) && $pipelineResult['ok'] === false) {

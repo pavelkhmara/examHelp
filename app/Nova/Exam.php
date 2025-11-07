@@ -1333,7 +1333,15 @@ class Exam extends Resource
                     break;
 
                 case 'stalled_task':
-                    // TODO: Implement StalledTaskCard in Phase 7
+                    $cardInstance = new \App\Nova\Cards\StalledTaskCard();
+                    $cardInstance->withMeta([
+                        'examId' => $exam->id,
+                        'taskId' => $cardData['data']['task_id'] ?? null,
+                        'taskType' => $cardData['data']['type'] ?? null,
+                        'stalledSince' => $cardData['data']['stalled_since'] ?? null,
+                        'lastHeartbeat' => $cardData['data']['last_heartbeat'] ?? null,
+                        'suggestedActions' => ['cancel_and_restart', 'force_continue'],
+                    ]);
                     break;
             }
 
@@ -1374,6 +1382,7 @@ class Exam extends Resource
             new ResetAndRestartResearch,
             new ConfirmIdentityAction,
             new ProvideAnswersAction,
+            new \App\Nova\Actions\CancelStalledTaskAction,
             // (new ConfirmExamIdentity)
             // ->canSee(function () {
             //     $st = data_get($this->resource->identity, 'status');

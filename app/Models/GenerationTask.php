@@ -141,4 +141,16 @@ class GenerationTask extends Model
 
         return "Идёт: {$currentStage} · {$durationStr}";
     }
+
+    /**
+     * Update heartbeat timestamp
+     * Call this periodically during long-running operations to prevent stall detection
+     *
+     * @return void
+     */
+    public function updateHeartbeat(): void
+    {
+        $this->heartbeat_at = now();
+        $this->saveQuietly(); // Use saveQuietly to avoid triggering observers
+    }
 }
