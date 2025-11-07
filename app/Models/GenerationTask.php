@@ -50,7 +50,7 @@ class GenerationTask extends Model
         $activities = $this->activities ?? [];
 
         $activity = [
-            'timestamp' => now()->toISOString(),
+            'timestamp' => now()->toISOString(), // Храним ISO формат в БД
             'event' => $event,
             'message' => $message,
         ];
@@ -63,5 +63,82 @@ class GenerationTask extends Model
 
         $this->activities = $activities;
         $this->save();
+    }
+
+    /**
+     * Форматировать timestamp из ISO 8601 в [DD.MM HH:MM:SS]
+     *
+     * @param  string  $isoTimestamp
+     * @return string
+     */
+    public static function formatActivityTimestamp(string $isoTimestamp): string
+    {
+        try {
+            $dt = new \DateTime($isoTimestamp);
+            return '[' . $dt->format('d.m H:i:s') . ']';
+        } catch (\Exception $e) {
+            return '[Invalid timestamp]';
+        }
+    }
+
+    /**
+     * Получить отформатированные активности для отображения
+     *
+     * @return array
+     */
+    public function getFormattedActivities(): array
+    {
+        $activities = $this->activities ?? [];
+        $formatted = [];
+
+        foreach ($activities as $activity) {
+            $timestamp = $activity['timestamp'] ?? null;
+            $formatted[] = [
+                'timestamp' => $timestamp ? self::formatActivityTimestamp($timestamp) : '[Unknown]',
+                'timestamp_iso' => $timestamp,
+                'event' => $activity['event'] ?? 'unknown',
+                'message' => $activity['message'] ?? '',
+                'context' => $activity['context'] ?? null,
+            ];
+        }
+
+        return $formatted;
+    }
+
+    /**
+     * Получить текущий прогресс выполнения задачи
+     * Возвращает строку вида "Идёт: Overview · 02:15"
+     *
+     * @return string|null
+     */
+    public function getCurrentProgress(): ?string
+    {
+        if ($this->status !== 'running') {
+            return null;
+        }
+
+        // Определяем текущий stage из activities
+        $activities = $this->activities ?? [];
+        $lastActivity = end($activities);
+        $currentStage = 'Processing'; // По умолчанию
+
+        if ($lastActivity) {
+            $event = $lastActivity['event'] ?? '';
+            // Извлекаем stage из event (например, 'identity_guard_started' -> 'Identity')
+            if (str_contains($event, 'identity')) {
+                $currentStage = 'Identity';
+            } elseif (str_contains($event, 'overview') || str_contains($event, 'structure')) {
+                $currentStage = 'Overview';
+            } elseif (str_contains($event, 'example')) {
+                $currentStage = 'Examples';
+            }
+        }
+
+        // Вычисляем длительность
+        $startTime = $this->created_at;
+        $duration = now()->diff($startTime);
+        $durationStr = sprintf('%02d:%02d', $duration->i, $duration->s);
+
+        return "Идёт: {$currentStage} · {$durationStr}";
     }
 }

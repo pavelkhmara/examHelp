@@ -49,24 +49,26 @@ class GenerationTask extends Resource
                 ->resolveUsing(fn ($v) => is_string($v) ? $v : json_encode($v, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES))
                 ->hideFromIndex(),
             Code::make('Activities')
-                ->resolveUsing(function ($activities) {
-                    if (empty($activities)) {
+                ->resolveUsing(function () {
+                    $formattedActivities = $this->resource->getFormattedActivities();
+
+                    if (empty($formattedActivities)) {
                         return '[]';
                     }
 
-                    // Format activities as human-readable list
+                    // Format activities as human-readable list with [DD.MM HH:MM:SS] format
                     $formatted = [];
-                    foreach ($activities as $activity) {
-                        $timestamp = $activity['timestamp'] ?? 'unknown time';
+                    foreach ($formattedActivities as $activity) {
+                        $timestamp = $activity['timestamp']; // Already formatted as [DD.MM HH:MM:SS]
                         $message = $activity['message'] ?? 'no message';
                         $event = $activity['event'] ?? 'unknown';
 
-                        $formatted[] = "[{$timestamp}] {$message} ({$event})";
+                        $formatted[] = "{$timestamp} {$message} ({$event})";
                     }
 
                     return implode("\n", $formatted);
                 })
-                ->help('Timeline of task operations and stage transitions')
+                ->help('Timeline of task operations and stage transitions (format: [DD.MM HH:MM:SS])')
                 ->hideFromIndex(),
             Text::make('Error')->hideFromIndex(),
             DateTime::make('Created At')->sortable(),

@@ -1,0 +1,79 @@
+<?php
+
+namespace App\Models;
+
+use App\Casts\AsArrayWithUnescapedSlashes;
+use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+
+/**
+ * Подтверждённая идентичность экзамена
+ *
+ * Отдельное хранение позволяет:
+ * - Отслеживать, что Identity был подтверждён пользователем/системой
+ * - Не требовать повторного запуска, пока не изменились влияющие поля
+ * - Сохранять историю подтверждений
+ */
+class ConfirmedIdentity extends Model
+{
+    protected $fillable = [
+        'exam_id',
+        'identity_data',
+        'source_fields',
+        'confirmed_at',
+        'confirmed_by_task_id',
+        'is_valid',
+    ];
+
+    protected $casts = [
+        'identity_data' => AsArrayWithUnescapedSlashes::class,
+        'source_fields' => AsArrayWithUnescapedSlashes::class,
+        'confirmed_at' => 'datetime',
+        'is_valid' => 'boolean',
+    ];
+
+    /**
+     * Exam к которому относится подтверждённая идентичность
+     */
+    public function exam(): BelongsTo
+    {
+        return $this->belongsTo(Exam::class, 'exam_id', 'id');
+    }
+
+    /**
+     * Задача (GenerationTask), которая создала эту подтверждённую идентичность
+     */
+    public function confirmedByTask(): BelongsTo
+    {
+        return $this->belongsTo(GenerationTask::class, 'confirmed_by_task_id');
+    }
+
+    /**
+     * Инвалидировать подтверждённую идентичность
+     * (вызывается при изменении влияющих полей)
+     */
+    public function invalidate(): void
+    {
+        $this->is_valid = false;
+        $this->save();
+    }
+
+    /**
+     * Проверить, изменились ли влияющие поля экзамена
+     *
+     * @param  array  $currentFields  Текущие значения полей экзамена
+     * @return bool
+     */
+    public function hasSourceFieldsChanged(array $currentFields): bool
+    {
+        $sourceFields = $this->source_fields ?? [];
+
+        foreach ($sourceFields as $field => $value) {
+            if (!isset($currentFields[$field]) || $currentFields[$field] !== $value) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+}

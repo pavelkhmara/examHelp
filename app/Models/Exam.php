@@ -7,6 +7,7 @@ use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 
 class Exam extends Model
 {
@@ -57,6 +58,16 @@ class Exam extends Model
     public function documents(): HasMany
     {
         return $this->hasMany(ExamDocument::class);
+    }
+
+    public function confirmedIdentity(): HasOne
+    {
+        return $this->hasOne(ConfirmedIdentity::class, 'exam_id', 'id');
+    }
+
+    public function confirmedIdentities(): HasMany
+    {
+        return $this->hasMany(ConfirmedIdentity::class, 'exam_id', 'id');
     }
 
     public function loadAllCounts()

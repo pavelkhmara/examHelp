@@ -105,6 +105,27 @@ class ResearchAction extends Action
                 'research_status' => $exam->research_status,
             ]);
 
+            // Validate exam readiness using QuickCheckService
+            $quickCheckService = app(\App\Services\LanguageApp\QuickCheckService::class);
+            $checkResult = $quickCheckService->check($exam);
+
+            if (!$checkResult['ready']) {
+                \Illuminate\Support\Facades\Log::warning('🔵 [ResearchAction] Exam not ready', [
+                    'exam_id' => $exam->id,
+                    'missing_critical' => $checkResult['missing_critical'],
+                    'completion' => $checkResult['completion_percentage'],
+                ]);
+
+                // Update exam status to need_info
+                $exam->update(['research_status' => 'need_info']);
+
+                return Action::danger(
+                    '⚠️ Cannot start research: Missing critical fields. ' .
+                    $quickCheckService->getMissingFieldsMessage($checkResult) .
+                    '. Please review the Quick Check panel on the exam detail page.'
+                );
+            }
+
             // Parse user_input from exam
             $userInput = [];
             if (!empty($exam->user_input)) {
