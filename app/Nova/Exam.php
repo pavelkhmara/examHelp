@@ -244,6 +244,16 @@ class Exam extends Resource
 
         // ============== STAGE 1: Identity Verification ==============
         if ($task && $identity) {
+            // System Analysis Panel (collapsible) - shows anchors and enrichments
+            $systemAnalysisHtml = $this->buildSystemAnalysisHtml($identity, $task);
+            if ($systemAnalysisHtml) {
+                $fields[] = CollapsiblePanel::make('🤖 System Analysis', 'system_analysis_html')
+                    ->heading('🤖 System Analysis')
+                    ->content($systemAnalysisHtml)
+                    ->collapsed(true)
+                    ->onlyOnDetail();
+            }
+
             $identityFields = $this->buildIdentityFields($task, $identity);
 
             // Add issues/warnings/red_flags if present
@@ -345,12 +355,11 @@ class Exam extends Resource
 
         // ============== Sources (если есть) ==============
         if (! empty($this->sources)) {
-            $fields[] = new Panel('📚 Sources', [
-                Code::make('Sources JSON')
-                    ->json(JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT)
-                    ->resolveUsing(fn () => json_encode($this->sources ?? [], JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES))
-                    ->onlyOnDetail(),
-            ]);
+            $fields[] = CollapsiblePanel::make('📚 Sources', 'sources_panel_html')
+                ->heading('📚 Sources')
+                ->content($this->buildSourcesHtml())
+                ->collapsed(true)
+                ->onlyOnDetail();
         }
 
         // ============== Activity Timeline (для running tasks) ==============
@@ -1051,6 +1060,229 @@ class Exam extends Resource
 
         // Add "Unknown" option at the beginning
         return ['Unknown' => 'Unknown'] + $options;
+    }
+
+    /**
+     * Build HTML for System Analysis panel showing PDF facts and enrichments
+     */
+    private function buildSystemAnalysisHtml(array $identity, $task): ?string
+    {
+        $anchors = $identity['anchors'] ?? [];
+        $userInput = $task->request['user_input'] ?? null;
+        $documentHints = $task->request['document_hints'] ?? [];
+
+        if (empty($anchors) && empty($userInput) && empty($documentHints)) {
+            return null;
+        }
+
+        $html = '<div class="space-y-4">';
+
+        // Section 1: Facts from PDF (Anchors)
+        if (!empty($anchors)) {
+            $html .= '<div class="border-b border-gray-200 dark:border-gray-700 pb-4">';
+            $html .= '<h4 class="text-base font-semibold text-gray-900 dark:text-gray-100 mb-3">📄 Facts from Documents</h4>';
+            $html .= '<div class="space-y-2">';
+
+            foreach ($anchors as $idx => $anchor) {
+                $phrase = $anchor['phrase'] ?? $anchor['text'] ?? 'Unknown';
+                $source = $anchor['source'] ?? null;
+                $page = $anchor['page'] ?? null;
+                $confidence = $anchor['confidence'] ?? $anchor['score'] ?? null;
+
+                // Confidence badge
+                $confidenceBadge = '';
+                if ($confidence !== null) {
+                    $confClass = 'bg-gray-100 text-gray-700';
+                    $confLabel = 'Unknown';
+
+                    if (is_numeric($confidence)) {
+                        if ($confidence >= 0.9) {
+                            $confClass = 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300';
+                            $confLabel = number_format($confidence * 100, 0) . '%';
+                        } elseif ($confidence >= 0.7) {
+                            $confClass = 'bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300';
+                            $confLabel = number_format($confidence * 100, 0) . '%';
+                        } else {
+                            $confClass = 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-300';
+                            $confLabel = number_format($confidence * 100, 0) . '%';
+                        }
+                    }
+
+                    $confidenceBadge = "<span class=\"{$confClass} text-xs font-medium px-2 py-0.5 rounded ml-2\">{$confLabel}</span>";
+                }
+
+                $html .= '<div class="p-3 bg-gray-50 dark:bg-gray-800 rounded border border-gray-200 dark:border-gray-700">';
+                $html .= '<div class="flex items-start justify-between mb-1">';
+                $html .= '<span class="text-xs font-medium text-gray-500 dark:text-gray-400">';
+                if ($source) {
+                    $html .= htmlspecialchars($source);
+                }
+                if ($page) {
+                    $html .= $source ? ' · ' : '';
+                    $html .= "Page {$page}";
+                }
+                if (!$source && !$page) {
+                    $html .= 'Document';
+                }
+                $html .= '</span>';
+                $html .= $confidenceBadge;
+                $html .= '</div>';
+                $html .= '<p class="text-sm text-gray-800 dark:text-gray-200">"' . htmlspecialchars($phrase) . '"</p>';
+                $html .= '</div>';
+            }
+
+            $html .= '</div></div>';
+        }
+
+        // Section 2: Enrichments from User Input
+        if ($userInput) {
+            $html .= '<div class="border-b border-gray-200 dark:border-gray-700 pb-4">';
+            $html .= '<h4 class="text-base font-semibold text-gray-900 dark:text-gray-100 mb-3">👤 User Input Enrichments</h4>';
+            $html .= '<div class="p-3 bg-blue-50 dark:bg-blue-900/20 rounded border border-blue-200 dark:border-blue-800">';
+            $html .= '<p class="text-sm text-blue-900 dark:text-blue-100 whitespace-pre-wrap">';
+            $html .= htmlspecialchars(is_string($userInput) ? $userInput : json_encode($userInput, JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT));
+            $html .= '</p>';
+            $html .= '</div></div>';
+        }
+
+        // Section 3: Document Hints Summary
+        if (!empty($documentHints)) {
+            $html .= '<div>';
+            $html .= '<h4 class="text-base font-semibold text-gray-900 dark:text-gray-100 mb-3">📚 Document Hints</h4>';
+            $html .= '<div class="space-y-2">';
+
+            foreach ($documentHints as $hint) {
+                $docName = $hint['filename'] ?? $hint['name'] ?? 'Unknown';
+                $charCount = isset($hint['text']) ? mb_strlen($hint['text']) : 0;
+
+                $html .= '<div class="flex items-center justify-between p-2 bg-gray-50 dark:bg-gray-800 rounded border border-gray-200 dark:border-gray-700">';
+                $html .= '<span class="text-sm text-gray-800 dark:text-gray-200">' . htmlspecialchars($docName) . '</span>';
+                $html .= '<span class="text-xs text-gray-500 dark:text-gray-400">' . number_format($charCount) . ' chars</span>';
+                $html .= '</div>';
+            }
+
+            $html .= '</div></div>';
+        }
+
+        $html .= '</div>';
+
+        return $html;
+    }
+
+    /**
+     * Build HTML for sources panel with clickable links and trust badges
+     */
+    private function buildSourcesHtml(): string
+    {
+        $sources = $this->sources ?? [];
+
+        if (empty($sources)) {
+            return '<p class="text-sm text-gray-500">No sources available</p>';
+        }
+
+        $html = '<div class="space-y-4">';
+
+        foreach ($sources as $idx => $source) {
+            $sourceNum = $idx + 1;
+            $url = $source['url'] ?? $source['link'] ?? null;
+            $title = $source['title'] ?? $source['name'] ?? 'Untitled Source';
+            $rationale = $source['rationale'] ?? $source['reason'] ?? null;
+            $trustScore = $source['trust_score'] ?? $source['quality'] ?? null;
+            $page = $source['page'] ?? null;
+            $fragment = $source['fragment'] ?? $source['excerpt'] ?? null;
+
+            // Determine trust badge color
+            $trustBadgeClass = 'bg-gray-100 text-gray-700';
+            $trustLabel = 'Unknown';
+
+            if ($trustScore !== null) {
+                if (is_numeric($trustScore)) {
+                    if ($trustScore >= 0.9) {
+                        $trustBadgeClass = 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300';
+                        $trustLabel = 'High Trust';
+                    } elseif ($trustScore >= 0.7) {
+                        $trustBadgeClass = 'bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300';
+                        $trustLabel = 'Medium Trust';
+                    } elseif ($trustScore >= 0.5) {
+                        $trustBadgeClass = 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-300';
+                        $trustLabel = 'Low Trust';
+                    } else {
+                        $trustBadgeClass = 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-300';
+                        $trustLabel = 'Very Low Trust';
+                    }
+                } elseif (is_string($trustScore)) {
+                    $trustLabel = ucfirst($trustScore);
+                    if (stripos($trustScore, 'high') !== false) {
+                        $trustBadgeClass = 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300';
+                    } elseif (stripos($trustScore, 'medium') !== false) {
+                        $trustBadgeClass = 'bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300';
+                    } elseif (stripos($trustScore, 'low') !== false) {
+                        $trustBadgeClass = 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-300';
+                    }
+                }
+            }
+
+            $html .= '<div class="border border-gray-200 dark:border-gray-700 rounded-lg p-4 hover:shadow-md transition-shadow">';
+
+            // Header with source number and trust badge
+            $html .= '<div class="flex items-start justify-between mb-2">';
+            $html .= '<h4 class="text-base font-semibold text-gray-900 dark:text-gray-100">';
+            $html .= "Source #{$sourceNum}";
+            if ($page) {
+                $html .= " <span class=\"text-sm font-normal text-gray-500\">(Page {$page})</span>";
+            }
+            $html .= '</h4>';
+            $html .= "<span class=\"{$trustBadgeClass} text-xs font-medium px-2.5 py-0.5 rounded\">{$trustLabel}</span>";
+            $html .= '</div>';
+
+            // Title with link
+            if ($url) {
+                $html .= '<div class="mb-2">';
+                $html .= '<a href="' . htmlspecialchars($url) . '" target="_blank" rel="noopener noreferrer" ';
+                $html .= 'class="text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300 hover:underline text-sm font-medium">';
+                $html .= htmlspecialchars($title);
+                $html .= ' <span class="text-xs">↗</span></a>';
+                $html .= '</div>';
+            } else {
+                $html .= '<div class="mb-2 text-sm font-medium text-gray-800 dark:text-gray-200">';
+                $html .= htmlspecialchars($title);
+                $html .= '</div>';
+            }
+
+            // Rationale
+            if ($rationale) {
+                $html .= '<div class="mb-2 text-sm text-gray-700 dark:text-gray-300 italic">';
+                $html .= '"' . htmlspecialchars($rationale) . '"';
+                $html .= '</div>';
+            }
+
+            // Fragment/excerpt
+            if ($fragment) {
+                $html .= '<details class="text-xs text-gray-600 dark:text-gray-400">';
+                $html .= '<summary class="cursor-pointer hover:text-gray-900 dark:hover:text-gray-200">View excerpt</summary>';
+                $html .= '<div class="mt-2 p-2 bg-gray-50 dark:bg-gray-800 rounded border border-gray-200 dark:border-gray-700">';
+                $html .= '<pre class="whitespace-pre-wrap font-mono">' . htmlspecialchars(mb_substr($fragment, 0, 300)) . '</pre>';
+                if (mb_strlen($fragment) > 300) {
+                    $html .= '<p class="text-xs italic mt-1">... (excerpt truncated)</p>';
+                }
+                $html .= '</div>';
+                $html .= '</details>';
+            }
+
+            $html .= '</div>';
+        }
+
+        $html .= '</div>';
+
+        // Add full JSON at the bottom
+        $html .= '<details class="mt-4 pt-4 border-t border-gray-200 dark:border-gray-700">';
+        $html .= '<summary class="text-sm text-gray-600 dark:text-gray-400 cursor-pointer hover:text-gray-900 dark:hover:text-gray-200">View Full JSON</summary>';
+        $html .= '<pre class="mt-2 text-xs bg-gray-500 dark:bg-gray-900 text-white p-3 rounded overflow-auto">';
+        $html .= htmlspecialchars(json_encode($sources, JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES));
+        $html .= '</pre>';
+        $html .= '</details>';
+
+        return $html;
     }
 
     public function cards(NovaRequest $request)
