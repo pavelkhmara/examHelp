@@ -52,6 +52,28 @@ class GenerationTask extends Model
     {
         $activities = $this->activities ?? [];
 
+        // Prevent duplicate activities with same event within last 10 seconds
+        $now = now();
+        foreach ($activities as $existingActivity) {
+            if (($existingActivity['event'] ?? '') === $event) {
+                try {
+                    $existingTime = new \DateTime($existingActivity['timestamp'] ?? '');
+                    $diffSeconds = $now->diffInSeconds($existingTime);
+                    if ($diffSeconds < 10) {
+                        // Duplicate detected - skip adding
+                        \Illuminate\Support\Facades\Log::debug('Skipping duplicate activity', [
+                            'event' => $event,
+                            'task_id' => $this->id,
+                            'time_diff_seconds' => $diffSeconds,
+                        ]);
+                        return;
+                    }
+                } catch (\Exception $e) {
+                    // Continue if timestamp parsing fails
+                }
+            }
+        }
+
         $activity = [
             'timestamp' => now()->toISOString(), // Храним ISO формат в БД
             'event' => $event,

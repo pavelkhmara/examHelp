@@ -88,9 +88,9 @@ class IterativeIdentityVerificationService extends AbstractAiService
             $this->saveVerificationHistory($task, $history, $webSearchData);
 
             // Check if confidence is sufficient
-            if ($confidence >= self::MIN_CONFIDENCE_THRESHOLD) {
-                $task->addActivity('decision_point_iterative_verification', "Условие: confidence >= ".self::MIN_CONFIDENCE_THRESHOLD." (текущий: {$confidence}, попытка {$attempt}). Решение: верификация успешна, продолжить к ConfidenceBoost", [
-                    'condition' => 'confidence >= '.self::MIN_CONFIDENCE_THRESHOLD,
+            if ($confidence <= self::MIN_CONFIDENCE_THRESHOLD) {
+                $task->addActivity('decision_point_iterative_verification', "Условие: confidence <= ".self::MIN_CONFIDENCE_THRESHOLD." (текущий: {$confidence}, попытка {$attempt}). Решение: верификация успешна, продолжить к ConfidenceBoost", [
+                    'condition' => 'confidence <= '.self::MIN_CONFIDENCE_THRESHOLD,
                     'confidence' => $confidence,
                     'attempt' => $attempt,
                     'decision' => 'verification_success_continue',

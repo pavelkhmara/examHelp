@@ -40,7 +40,42 @@ class DocumentStructureExtractor extends AbstractAiService
 
         try {
             $payload = $this->buildExtractionPayload($document->extracted_text);
-            $response = $this->ai->generate($payload, []);
+            $response = $this->ai->generate($payload, [ 
+                'response_format' => [
+                    'type' => 'json_schema',
+                    'strict' => true,
+                    'json_schema' => [
+                        'schema' => [
+                            'name' => 'exam_structure',
+                            'schema' => [
+                                'type' => 'object',
+                                'properties' => [
+                                    'identity' => ['type' => 'object'],
+                                    'structure' => [
+                                    'type' => 'object',
+                                    'properties' => [
+                                        'sections' => [
+                                        'type' => 'array',
+                                        'items' => [
+                                            'type' => 'object',
+                                            'properties' => [
+                                            'name' => ['type' => 'string'],
+                                            'duration_minutes' => ['type' => 'integer'],
+                                            'tasks' => ['type' => 'array']
+                                            ],
+                                            'required' => ['name']
+                                        ]
+                                        ]
+                                    ],
+                                    'required' => ['sections']
+                                    ]
+                                ],
+                                'required' => ['identity', 'structure']
+                            ],
+                        ],
+                    ],
+                ],
+            ]);
 
             if (!isset($response['content'])) {
                 Log::warning('DocumentStructureExtractor: No content in AI response');
@@ -92,7 +127,11 @@ EXTRACTION RULES:
 1. Only extract information that is EXPLICITLY stated in the document
 2. Do NOT invent or assume missing information
 3. Mark confidence for identity fields (0.0 to 1.0)
-4. For timing: extract exactly as stated (section duration OR task duration, whichever is present)
+4. Timing rules:
+    4.1 Prefer section-level duration terms (e.g., "duration", "exam time", "total duration").
+    4.2 Do NOT use per-task "working time" as the duration of the whole section.
+    4.3 Only if a section-level duration is missing, you may SUM per-task working time
+    inside the same section block (between headings like "Reading", "Listening", "Writing", "Speaking").
 5. If multiple sources show different times, note all of them
 
 OUTPUT FORMAT (JSON):

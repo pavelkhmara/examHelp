@@ -214,6 +214,9 @@ class Exam extends Resource
         // ============== Quick Check for Identity ==============
         // Показываем, если исследование еще не завершено
         if ($this->research_status !== 'completed') {
+            // Refresh model to get latest identity data from Identity stage
+            $this->resource->refresh();
+
             $quickCheckService = app(\App\Services\LanguageApp\QuickCheckService::class);
             $checkResult = $quickCheckService->check($this->resource);
 

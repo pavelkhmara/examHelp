@@ -212,7 +212,7 @@ class ExamExampleQuestion extends Resource
         $html .= '</h3>';
         if ($this->type) {
             $html .= '<span class="inline-block bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300 text-sm font-medium px-3 py-1 rounded">';
-            $html .= htmlspecialchars($this->type->value);
+            $html .= '<p class="text-base text-gray-800 dark:text-gray-200"> Question Type: <b>' . nl2br(htmlspecialchars($this->type->value)) . '</b></p>';
             $html .= '</span>';
         }
         $html .= '</div>';
@@ -362,6 +362,55 @@ class ExamExampleQuestion extends Resource
             }
         }
 
-        return $html ?: null;
+        return $html ?? $this->toHTML($this->payload) ?: null;
+    }
+
+    public function toHTML($data, $title = ''): string
+    {
+        $html = $title ? "<h2>{$this->escape($title)}</h2>" : '';
+        $html .= '<div class="json-container">';
+        $html .= $this->renderValue($data);
+        $html .= '</div>';
+        
+        return $html;
+    }
+    
+    private function renderValue($value, $level = 0): string
+    {
+        $indent = str_repeat('  ', $level);
+        
+        if (is_array($value) || is_object($value)) {
+            return $this->renderObject($value, $level);
+        }
+        
+        return $this->renderScalar($value, $level);
+    }
+    
+    private function renderObject($object, $level): string
+    {
+        $indent = str_repeat('  ', $level);
+        $html = "{$indent}<div class=\"json-object\">\n";
+        
+        foreach ($object as $key => $value) {
+            $html .= "{$indent}  <div class=\"json-property\">\n";
+            $html .= "{$indent}    <strong class=\"json-key\">{$this->escape($key)}:</strong>\n";
+            $html .= $this->renderValue($value, $level + 2);
+            $html .= "{$indent}  </div>\n";
+        }
+        
+        $html .= "{$indent}</div>\n";
+        return $html;
+    }
+    
+    private function renderScalar($value, $level): string
+    {
+        $indent = str_repeat('  ', $level);
+        $displayValue = $this->escape($value);
+        return "{$indent}  <span class=\"json-value\">{$displayValue}</span>\n";
+    }
+    
+    private function escape($value): string
+    {
+        return htmlspecialchars($value ?? '', ENT_QUOTES, 'UTF-8');
     }
 }

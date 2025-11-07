@@ -32,7 +32,7 @@ Authority matters, but concrete, checkable evidence wins tie-breaks.
 
 
 **MINIMUM SOURCE REQUIREMENTS:**
-- At least 5 high-quality sources (minimum 4 web + documents if provided)If a primary/official document fully specifies timing + sections, 3 sources are sufficient.
+- At least 4-5 high-quality sources (minimum 3-4 web + documents if provided). If a primary/official document fully specifies timing + sections, 3 sources are sufficient.
 - Ensure diversity: max 2 from the same publisher/domain.
 - Include ≥1 primary-evidence page (contains exact timings/sections or direct excerpts of official docs). If none exist, state `no_primary_evidence_found` and pick the highest evidence-weighted sources instead (see below).
 
@@ -119,10 +119,10 @@ Example:
 }
 ```
 **SECTION ARCHETYPE MODEL (section_archetypes):**
-Provide a section-level blueprint per exam section (listening, reading, grammar_lexis, writing, speaking):
+Provide a section-level blueprint per exam section (e.g. listening, reading, writing, speaking - only existing):
 For each section_archetype:
 {
-  "section": "listening|reading|grammar_lexis|writing|speaking",
+  "section": "listening|reading|grammar_lexis|writing|speaking", // this is example, you can use only existing sections
   "objectives": ["comprehension gist","detail","inference", ...],
   "skills_subskills": ["note-taking","cohesion","pronunciation-range", ...],
   "allowed_question_types": ["single_select","multi_select","gap_cloze", ...],  // must be from QuestionType enum
@@ -195,7 +195,7 @@ PRIORITY ORDER (do not miss higher priorities):
 ### TIMEBOX POLICY (2.5-2.95 minutes)
 If time is short, ensure first:
 1) Canonical identity + **total_exam_duration** with citation.
-2) At least **1 section_archetype** per active section (listening, reading, grammar_lexis, writing, speaking) with key invariants.
+2) At least **1 section_archetype** per active section (e.g.listening, reading, grammar_lexis, writing, speaking, this is example, you can use only existing sections) with key invariants.
 3) ≥ **3 question_archetypes** with proper `question_type` (from ALLOWED TYPES) and a non-empty `type_specific`.
 Then expand with section timings, thresholds, and additional archetypes.
 
@@ -335,7 +335,7 @@ HINT;
 
 CRITICAL REQUIREMENT - Section Distribution:
 Each task archetype MUST include a 'category_weights' field mapping it to appropriate exam sections.
-Common sections: listening, reading, writing, speaking, grammar, vocabulary.
+Common sections: e.g.listening, reading, writing, speaking, grammar, vocabulary.  // this is example, you can use only existing sections
 Example:
 {
   "id": "L-MC",
@@ -389,7 +389,7 @@ SCHEMA;
             ],
             'section_archetypes' => [
                 [
-                    'section' => 'string (listening|reading|grammar_lexis|writing|speaking)',
+                    'section' => 'string (listening|reading|grammar_lexis|writing|speaking)',  // this is example, you can use only existing sections
                     'objectives' => ['string (comprehension gist, detail, inference, etc.)'],
                     'skills_subskills' => ['string (note-taking, cohesion, pronunciation-range, etc.)'],
                     'allowed_question_types' => ['string (must be from QuestionType enum: single_select, multi_select, gap_cloze, etc.)'],

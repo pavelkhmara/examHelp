@@ -100,7 +100,7 @@ class GenerationLog extends Resource
         }
 
         // Extract messages array (could be 'messages' or 'sent_messages')
-        $messages = $request['messages'] ?? $request['sent_messages'] ?? null;
+        $messages = $request['messages'] ?? $request['sent_messages'] ?? $request['request']['messages'] ?? $request['request']['sent_messages'] ?? $request['request'] ?? $request ?? null;
 
         if (! is_array($messages) || empty($messages)) {
             return 'No messages found in request';

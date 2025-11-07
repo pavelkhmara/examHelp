@@ -117,11 +117,11 @@ class QuickCheckService
                 return !empty($exam->title) ? 'ok' : 'empty';
 
             case 'language_of_test':
-                // Проверяем в identity или user_meta
-                $lang = $exam->identity['language_of_test'] ?? null;
-                if (!$lang) {
-                    $lang = $exam->user_meta['language_of_test'] ?? null;
-                }
+                // Check in identity (canonical first, then flat structure, then user_meta)
+                $lang = $exam->identity['canonical']['language_of_test']
+                    ?? $exam->identity['language_of_test']
+                    ?? $exam->user_meta['language_of_test']
+                    ?? null;
                 return !empty($lang) ? 'ok' : 'missing';
 
             case 'level':
@@ -134,19 +134,19 @@ class QuickCheckService
                 return ($hasDocument || $hasUserInput) ? 'ok' : 'missing';
 
             case 'exam_family':
-                // Проверяем в identity
-                $family = $exam->identity['canonical']['family'] ?? null;
-                if (!$family) {
-                    $family = $exam->user_meta['exam_family'] ?? null;
-                }
+                // Check in identity (canonical first, then flat structure, then user_meta)
+                $family = $exam->identity['canonical']['family']
+                    ?? $exam->identity['exam_family']
+                    ?? $exam->user_meta['exam_family']
+                    ?? null;
                 return !empty($family) ? 'ok' : 'missing';
 
             case 'exam_provider':
-                // Проверяем в identity
-                $provider = $exam->identity['canonical']['provider'] ?? null;
-                if (!$provider) {
-                    $provider = $exam->user_meta['exam_provider'] ?? null;
-                }
+                // Check in identity (canonical first, then flat structure, then user_meta)
+                $provider = $exam->identity['canonical']['provider']
+                    ?? $exam->identity['provider']
+                    ?? $exam->user_meta['exam_provider']
+                    ?? null;
                 return !empty($provider) ? 'ok' : 'missing';
 
             case 'description':

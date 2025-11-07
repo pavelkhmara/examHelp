@@ -25,9 +25,6 @@ class RunExamResearchJob implements ShouldQueue
         /** @var Exam $exam */
         $exam = Exam::query()->findOrFail($task->exam_id);
 
-        $task->addActivity('job_started', 'Research job started');
-        $task->updateHeartbeat(); // Initial heartbeat
-
         // CRITICAL: If task is already in pending_confirmation or pending_clarification, STOP immediately
         // This prevents duplicate execution when Job is dispatched multiple times
         if (in_array($task->status, ['pending_confirmation', 'pending_clarification'], true)) {
@@ -42,6 +39,17 @@ class RunExamResearchJob implements ShouldQueue
 
             return;
         }
+
+        // Set status to running immediately so Activity Timeline appears
+        $task->status = 'running';
+        $task->save();
+
+        $exam->research_status = 'running_overview';
+        $exam->save();
+
+        // Add activity AFTER duplicate check
+        $task->addActivity('job_started', 'Research job started');
+        $task->updateHeartbeat(); // Initial heartbeat
 
         // Phase 9: Check if we have a valid ConfirmedIdentity that can be reused
         /** @var \App\Services\LanguageApp\ConfirmedIdentityService $confirmedIdentityService */
@@ -170,31 +178,39 @@ class RunExamResearchJob implements ShouldQueue
                 'status' => $identityResult['status'] ?? 'unknown',
             ]);
 
+            // Update exam->identity with verified identity data so QuickCheck can see it
+            $exam->identity = $identityResult;
+            $exam->save();
+
             // S1.5: If confidence is 0.90-0.96, run confidence_boost
-            if (($identityResult['needs_confidence_boost'] ?? false) === true) {
-                $task->addActivity('decision_point_confidence_boost', "Условие: 0.90 <= confidence < 0.97 (текущий: {$confidence}). Решение: запустить ConfidenceBoost для повышения уверенности", [
-                    'condition' => '0.90 <= confidence < 0.97',
-                    'confidence' => $confidence,
-                    'decision' => 'run_confidence_boost',
-                ]);
-                $task->addActivity('confidence_boost_started', 'Running confidence boost stage');
-                $task->updateHeartbeat(); // Heartbeat before boost
+            // if (($identityResult['needs_confidence_boost'] ?? false) === true) {
+            //     $task->addActivity('decision_point_confidence_boost', "Условие: 0.90 <= confidence < 0.97 (текущий: {$confidence}). Решение: запустить ConfidenceBoost для повышения уверенности", [
+            //         'condition' => '0.90 <= confidence < 0.97',
+            //         'confidence' => $confidence,
+            //         'decision' => 'run_confidence_boost',
+            //     ]);
+            //     $task->addActivity('confidence_boost_started', 'Running confidence boost stage');
+            //     $task->updateHeartbeat(); // Heartbeat before boost
 
-                $identityResult = $svc->runConfidenceBoost($exam, $task, $identityResult);
+            //     $identityResult = $svc->runConfidenceBoost($exam, $task, $identityResult);
 
-                // Update task with boosted identity
-                $result = (array) ($task->result ?? []);
-                $result['identity'] = $identityResult;
-                $task->result = $result;
-                $task->save();
-                $task->refresh();
+            //     // Update task with boosted identity
+            //     $result = (array) ($task->result ?? []);
+            //     $result['identity'] = $identityResult;
+            //     $task->result = $result;
+            //     $task->save();
+            //     $task->refresh();
 
-                $boostedConfidence = $identityResult['confidence'] ?? 0.0;
-                $task->addActivity('confidence_boost_completed', "Confidence boosted to: {$boostedConfidence}", [
-                    'confidence' => $boostedConfidence,
-                ]);
-                $task->updateHeartbeat(); // Heartbeat after boost
-            }
+            //     // Update exam->identity with boosted confidence
+            //     $exam->identity = $identityResult;
+            //     $exam->save();
+
+            //     $boostedConfidence = $identityResult['confidence'] ?? 0.0;
+            //     $task->addActivity('confidence_boost_completed', "Confidence boosted to: {$boostedConfidence}", [
+            //         'confidence' => $boostedConfidence,
+            //     ]);
+            //     $task->updateHeartbeat(); // Heartbeat after boost
+            // }
 
             // CRITICAL: After identity guard (and optional boost), check if confidence is acceptable
             // If confidence < 0.97, we MUST stop and request user confirmation
