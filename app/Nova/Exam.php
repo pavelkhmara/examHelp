@@ -166,6 +166,7 @@ class Exam extends Resource
                     'running_overview' => 'warning',
                     'completed' => 'success',
                     'failed' => 'danger',
+                    'need_info' => 'warning', // Желтый статус
                 ])
                 ->labels([
                     'queued' => 'Queued',
@@ -173,11 +174,15 @@ class Exam extends Resource
                     'running_overview' => 'In Progress',
                     'completed' => 'Completed',
                     'failed' => 'Failed',
+                    'need_info' => 'Need Info',
                 ])
                 ->sortable()
                 ->help(function () {
                     if (in_array($this->research_status, ['queued', 'running', 'running_overview'], true)) {
                         return '🔄 <strong>Task is processing. Refresh this page to see updates.</strong>';
+                    }
+                    if ($this->research_status === 'need_info') {
+                        return '⚠️ <strong>Additional information required. Please review Quick Check panel.</strong>';
                     }
 
                     return null;
@@ -205,6 +210,25 @@ class Exam extends Resource
         $fields = [];
         $task = $this->generationTasks()->latest()->first();
         $identity = $task ? ($task->result['identity'] ?? null) : null;
+
+        // ============== Quick Check for Identity ==============
+        // Показываем, если исследование еще не завершено
+        if ($this->research_status !== 'completed') {
+            $quickCheckService = app(\App\Services\LanguageApp\QuickCheckService::class);
+            $checkResult = $quickCheckService->check($this->resource);
+
+            $fields[] = new Panel('✅ Quick Check for Identity', [
+                \Laravel\Nova\Fields\Text::make('Readiness Check', 'quick_check_html')
+                    ->asHtml()
+                    ->resolveUsing(fn() => $quickCheckService->getChecklistHtml($checkResult))
+                    ->onlyOnDetail()
+                    ->help(
+                        $checkResult['ready']
+                            ? '✅ Ready to run research'
+                            : '⚠️ ' . $quickCheckService->getMissingFieldsMessage($checkResult)
+                    ),
+            ]);
+        }
 
         // ============== STAGE 0: Initial Metadata Analysis ==============
         if ($this->analysis_status === 'completed' && (!empty($this->user_meta) || !empty($this->system_analysis))) {
@@ -291,10 +315,10 @@ class Exam extends Resource
                     ->json()
                     ->onlyOnDetail(),
 
-                Code::make('Full Structure JSON')
-                    ->json(JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT)
-                    ->resolveUsing(fn () => json_encode($this->exam_structure ?? [], JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES))
-                    ->onlyOnDetail(),
+                // Code::make('Full Structure JSON')
+                //     ->json(JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT)
+                //     ->resolveUsing(fn () => json_encode($this->exam_structure ?? [], JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES))
+                //     ->onlyOnDetail(),
             ];
 
             // Add issues/warnings/notes if present in exam_structure
@@ -326,6 +350,36 @@ class Exam extends Resource
                     ->json(JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT)
                     ->resolveUsing(fn () => json_encode($this->sources ?? [], JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES))
                     ->onlyOnDetail(),
+            ]);
+        }
+
+        // ============== Activity Timeline (для running tasks) ==============
+        $runningTasks = $this->generationTasks()->where('status', 'running')->get();
+        if ($runningTasks->isNotEmpty()) {
+            $fields[] = new Panel('⏱️ Activity Timeline', [
+                \Laravel\Nova\Fields\Text::make('Current Progress', 'current_progress_html')
+                    ->asHtml()
+                    ->resolveUsing(function () use ($runningTasks) {
+                        $html = '';
+                        foreach ($runningTasks as $task) {
+                            $progress = $task->getCurrentProgress();
+                            if ($progress) {
+                                $html .= '<div style="font-weight: bold; margin-bottom: 10px;">' . htmlspecialchars($progress) . '</div>';
+                            }
+
+                            $formatted = $task->getFormattedActivities();
+                            if (!empty($formatted)) {
+                                $html .= '<div style="font-family: monospace; line-height: 1.6;">';
+                                foreach ($formatted as $activity) {
+                                    $html .= '<div>' . htmlspecialchars($activity['timestamp'] . ' ' . $activity['message']) . '</div>';
+                                }
+                                $html .= '</div>';
+                            }
+                        }
+                        return $html ?: '<em>No activities yet</em>';
+                    })
+                    ->onlyOnDetail()
+                    ->help('Real-time progress of running tasks'),
             ]);
         }
 
@@ -1020,7 +1074,44 @@ class Exam extends Resource
 
         $cards = [];
 
-        // Show Identity Clarifier Card if task is pending
+        // Use CardManager to determine which cards to show
+        $cardManager = app(\App\Services\Nova\CardManager::class);
+        $activeCards = $cardManager->getActiveCards($exam);
+
+        foreach ($activeCards as $cardData) {
+            $cardType = $cardData['type'];
+            $cardInstance = null;
+
+            switch ($cardType) {
+                case 'missing_fields':
+                    $cardInstance = new \App\Nova\Cards\MissingFieldsCard();
+                    $cardInstance->withMeta([
+                        'examId' => $exam->id,
+                        'checkResult' => $cardData['data'],
+                    ]);
+                    break;
+
+                case 'fields_changed':
+                    $cardInstance = new \App\Nova\Cards\FieldsChangedCard();
+                    $cardInstance->withMeta([
+                        'examId' => $exam->id,
+                        'changedFields' => $cardData['data']['fields'] ?? [],
+                        'affectedStages' => $cardData['data']['affected_stages'] ?? [],
+                    ]);
+                    break;
+
+                case 'stalled_task':
+                    // TODO: Implement StalledTaskCard in Phase 7
+                    break;
+            }
+
+            if ($cardInstance) {
+                $cardInstance->onlyOnDetail();
+                $cards[] = $cardInstance;
+            }
+        }
+
+        // Show Identity Clarifier Card if task is pending (existing functionality)
         $task = $exam->generationTasks()->latest()->first();
 
         \Illuminate\Support\Facades\Log::info('Task check', [
