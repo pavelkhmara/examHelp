@@ -7,6 +7,9 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\MorphTo;
 
+/**
+ * @property string $status Task status: queued, running, completed, failed, pending_confirmation, pending_clarification, cancelled, waiting_for_confirmation
+ */
 class GenerationTask extends Model
 {
     protected $fillable = [
@@ -49,6 +52,28 @@ class GenerationTask extends Model
     {
         $activities = $this->activities ?? [];
 
+        // Prevent duplicate activities with same event within last 10 seconds
+        $now = now();
+        foreach ($activities as $existingActivity) {
+            if (($existingActivity['event'] ?? '') === $event) {
+                try {
+                    $existingTime = new \DateTime($existingActivity['timestamp'] ?? '');
+                    $diffSeconds = $now->diffInSeconds($existingTime);
+                    if ($diffSeconds < 10) {
+                        // Duplicate detected - skip adding
+                        \Illuminate\Support\Facades\Log::debug('Skipping duplicate activity', [
+                            'event' => $event,
+                            'task_id' => $this->id,
+                            'time_diff_seconds' => $diffSeconds,
+                        ]);
+                        return;
+                    }
+                } catch (\Exception $e) {
+                    // Continue if timestamp parsing fails
+                }
+            }
+        }
+
         $activity = [
             'timestamp' => now()->toISOString(), // Храним ISO формат в БД
             'event' => $event,
@@ -67,15 +92,13 @@ class GenerationTask extends Model
 
     /**
      * Форматировать timestamp из ISO 8601 в [DD.MM HH:MM:SS]
-     *
-     * @param  string  $isoTimestamp
-     * @return string
      */
     public static function formatActivityTimestamp(string $isoTimestamp): string
     {
         try {
             $dt = new \DateTime($isoTimestamp);
-            return '[' . $dt->format('d.m H:i:s') . ']';
+
+            return '['.$dt->format('d.m H:i:s').']';
         } catch (\Exception $e) {
             return '[Invalid timestamp]';
         }
@@ -83,8 +106,6 @@ class GenerationTask extends Model
 
     /**
      * Получить отформатированные активности для отображения
-     *
-     * @return array
      */
     public function getFormattedActivities(): array
     {
@@ -108,8 +129,6 @@ class GenerationTask extends Model
     /**
      * Получить текущий прогресс выполнения задачи
      * Возвращает строку вида "Идёт: Overview · 02:15"
-     *
-     * @return string|null
      */
     public function getCurrentProgress(): ?string
     {
@@ -140,5 +159,15 @@ class GenerationTask extends Model
         $durationStr = sprintf('%02d:%02d', $duration->i, $duration->s);
 
         return "Идёт: {$currentStage} · {$durationStr}";
+    }
+
+    /**
+     * Update heartbeat timestamp
+     * Call this periodically during long-running operations to prevent stall detection
+     */
+    public function updateHeartbeat(): void
+    {
+        $this->heartbeat_at = now();
+        $this->saveQuietly(); // Use saveQuietly to avoid triggering observers
     }
 }

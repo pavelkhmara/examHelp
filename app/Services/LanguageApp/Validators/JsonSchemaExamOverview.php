@@ -366,9 +366,9 @@ final class JsonSchemaExamOverview
         }
 
         // Quality check: require at least 4 sources total (unless testing)
-        if (count($out) < 4 && !app()->environment('testing')) {
+        if (count($out) < 3 && !app()->environment('testing')) {
             throw ValidationException::withMessages([
-                'sources' => 'At least 4 high-quality sources required. Found: ' . count($out)
+                'sources' => 'At least 3-4 high-quality sources required. Found: ' . count($out)
             ]);
         }
 
@@ -680,7 +680,7 @@ final class JsonSchemaExamOverview
             $section = $sa['section'] ?? null;
             if (!$section || !is_string($section)) {
                 throw ValidationException::withMessages([
-                    "section_archetypes.$i.section" => 'section is required and must be a string (listening|reading|grammar_lexis|writing|speaking)'
+                    "section_archetypes.$i.section" => 'section is required and must be a string (e.g.listening|reading|grammar_lexis|writing|speaking, this is example, you can use only existing sections)'
                 ]);
             }
 

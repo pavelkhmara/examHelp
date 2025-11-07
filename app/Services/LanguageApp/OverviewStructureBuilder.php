@@ -70,7 +70,7 @@ class OverviewStructureBuilder extends AbstractAiService
                 $hints = [];
 
                 // Add quality hint
-                $hints[] = 'IMPORTANT: Previous attempt had poor category distribution. Please ensure EACH archetype has category_weights field with appropriate categories (e.g., listening, reading, writing, speaking, grammar). Do NOT put all archetypes in "unknown" category.';
+                $hints[] = 'IMPORTANT: Previous attempt had poor category distribution. Please ensure EACH archetype has category_weights field with appropriate categories (e.g., listening, reading, writing, speaking). Do NOT put all archetypes in "unknown" category.';
 
                 // Add validation error hints with specific instructions
                 if (!empty($validationErrors)) {

@@ -77,11 +77,7 @@ class CardManager
                 $cards[] = [
                     'type' => 'stalled_task',
                     'priority' => 3,
-                    'data' => [
-                        'task_id' => $stalledTask->id,
-                        'type' => $stalledTask->type,
-                        'stalled_since' => $stalledTask->heartbeat_at,
-                    ],
+                    'data' => $this->getStalledTaskData($stalledTask),
                 ];
             }
         }
@@ -208,6 +204,28 @@ class CardManager
                 $q->whereNull('heartbeat_at')
                     ->orWhere('heartbeat_at', '<', $stalledThreshold);
             })
+            ->latest()
             ->first();
+    }
+
+    /**
+     * Get formatted data for stalled task card
+     *
+     * @param  GenerationTask  $task
+     * @return array
+     */
+    protected function getStalledTaskData(GenerationTask $task): array
+    {
+        $lastHeartbeat = $task->heartbeat_at;
+        $stalledSince = $lastHeartbeat
+            ? $lastHeartbeat->diffForHumans()
+            : 'No heartbeat recorded';
+
+        return [
+            'task_id' => $task->id,
+            'type' => $task->type,
+            'stalled_since' => $stalledSince,
+            'last_heartbeat' => $lastHeartbeat?->toDateTimeString(),
+        ];
     }
 }
