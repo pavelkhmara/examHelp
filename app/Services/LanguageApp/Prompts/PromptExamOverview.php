@@ -48,11 +48,38 @@ Prefer higher total score. You may select a non-official page over an official o
 **Authority hints (non-binding):**
 Official provider and government portals usually score high on Authority, but do not override lack of Specificity/Verifiability.
 
+**URL QUALITY VALIDATION (CRITICAL):**
+Before including any source, VERIFY that the URL:
+1. **Does NOT contain error indicators** in the page content:
+   - "not found", "404", "page not found"
+   - "page doesn't exist", "no longer available"
+   - "access denied", "forbidden"
+   - "this page has been removed/deleted/moved"
+   - "error", "oops", "something went wrong"
+2. **Is accessible and contains actual exam information**
+3. **Is not a generic landing page or homepage** - must be a specific page about exam structure/format
+
+**EXAMPLES OF GOOD SOURCES (use as reference for quality):**
+✓ https://certyfikatpolski.pl/o-egzaminie/struktura-egzaminu/ (Polish Certificate - exam structure)
+✓ https://certyfikatpolski.pl/o-egzaminie/kto-moze-zdawac-egzamin/ (Polish Certificate - eligibility)
+✓ https://www.ets.org/toefl/test-takers/ibt/about/content.html (TOEFL - official content guide)
+✓ https://www.testdaf.de/de/teilnehmende/der-papierbasierte-testdaf/aufbau-des-papierbasierten-testdaf/ (TestDaF - structure)
+✓ https://www.france-education-international.fr/diplome/delf-tout-public/niveau-a2 (DELF - level description)
+
+These examples show:
+- Official provider domains
+- Specific pages about exam structure/format/content
+- Direct information about sections, timing, and task types
+- Not generic "about us" or landing pages
+
 **DO NOT USE:**
 - Generic educational websites without clear attribution
 - Commercial prep sites without official credentials
 - User-generated content (forums, Reddit, Quora)
 - Sites that cannot be verified
+- **Broken/error pages** (see validation above)
+- **Generic landing pages** without specific exam structure information
+- **Outdated pages** that reference deprecated exam versions
 
 **SOURCE CONTRIBUTION TRACKING (CRITICAL):**
 For EACH source you use, you MUST specify:

@@ -43,8 +43,54 @@ class RunExamResearchJob implements ShouldQueue
             return;
         }
 
+        // Phase 9: Check if we have a valid ConfirmedIdentity that can be reused
+        /** @var \App\Services\LanguageApp\ConfirmedIdentityService $confirmedIdentityService */
+        $confirmedIdentityService = app(\App\Services\LanguageApp\ConfirmedIdentityService::class);
+        $rerunCheck = $confirmedIdentityService->shouldRerunIdentity($exam);
+
         // Check if identity stage was already run
         $identityResult = $task->result['identity'] ?? null;
+
+        // If we have a valid ConfirmedIdentity and no rerun is needed, reuse it
+        if (! $rerunCheck['should_rerun'] && $rerunCheck['confirmed_identity']) {
+            $confirmedIdentity = $rerunCheck['confirmed_identity'];
+            $identityResult = $confirmedIdentity->identity_data;
+
+            // Mark as reused from ConfirmedIdentity
+            $identityResult['confirmed_identity_id'] = $confirmedIdentity->id;
+            $identityResult['confirmed_at'] = $confirmedIdentity->confirmed_at->toISOString();
+            $identityResult['reused_from_confirmed'] = true;
+
+            // Save to task result
+            $result = (array) ($task->result ?? []);
+            $result['identity'] = $identityResult;
+            $task->result = $result;
+            $task->save();
+
+            \Illuminate\Support\Facades\Log::info('Reusing confirmed identity from database', [
+                'task_id' => $task->id,
+                'exam_id' => $exam->id,
+                'confirmed_identity_id' => $confirmedIdentity->id,
+            ]);
+
+            $task->addActivity('confirmed_identity_reused', 'Using previously confirmed identity (no field changes detected)', [
+                'confirmed_identity_id' => $confirmedIdentity->id,
+                'confirmed_at' => $confirmedIdentity->confirmed_at->format('d.m.Y H:i:s'),
+            ]);
+        } elseif ($rerunCheck['should_rerun'] && $rerunCheck['confirmed_identity']) {
+            // Fields changed - warn about rerun
+            $changedFields = $rerunCheck['changed_fields'] ?? [];
+            \Illuminate\Support\Facades\Log::warning('Identity-affecting fields changed, re-running identity verification', [
+                'task_id' => $task->id,
+                'exam_id' => $exam->id,
+                'changed_fields' => $changedFields,
+            ]);
+
+            $task->addActivity('identity_fields_changed_warning', 'Identity-affecting fields changed since last confirmation - re-running verification', [
+                'changed_fields' => $changedFields,
+                'reason' => $rerunCheck['reason'] ?? 'Fields changed',
+            ]);
+        }
 
         // If user confirmed identity, NEVER re-run identity_guard
         $userConfirmed = $identityResult['user_confirmed'] ?? false;
@@ -191,7 +237,7 @@ class RunExamResearchJob implements ShouldQueue
 
             // If user confirmed or without_confirmation, log it
             if ($userConfirmed || $withoutConfirmation) {
-                $task->addActivity('decision_point_confidence_check', "Условие: confidence >= 0.97 ИЛИ user_confirmed ИЛИ without_confirmation (текущий: {$finalConfidence}, подтверждено: ".($userConfirmed?'да':'нет').", без подтверждения: ".($withoutConfirmation?'да':'нет').'). Решение: продолжить к проверке hold', [
+                $task->addActivity('decision_point_confidence_check', "Условие: confidence >= 0.97 ИЛИ user_confirmed ИЛИ without_confirmation (текущий: {$finalConfidence}, подтверждено: ".($userConfirmed ? 'да' : 'нет').', без подтверждения: '.($withoutConfirmation ? 'да' : 'нет').'). Решение: продолжить к проверке hold', [
                     'condition' => 'confidence >= 0.97 OR user_confirmed OR without_confirmation',
                     'confidence' => $finalConfidence,
                     'user_confirmed' => $userConfirmed,
@@ -212,6 +258,42 @@ class RunExamResearchJob implements ShouldQueue
                     'user_confirmed' => false,
                     'decision' => 'continue_to_hold_check',
                 ]);
+            }
+
+            // Phase 9: Create ConfirmedIdentity when confidence is high enough or user confirmed
+            // Only create if we don't already have one for this identity AND identity is not reused
+            $isReused = $identityResult['reused_from_confirmed'] ?? false;
+            if (! $isReused && ($finalConfidence >= 0.97 || $userConfirmed)) {
+                try {
+                    $existingConfirmed = $confirmedIdentityService->shouldRerunIdentity($exam);
+                    // Only create if there's no existing valid ConfirmedIdentity
+                    if ($existingConfirmed['should_rerun'] || ! $existingConfirmed['confirmed_identity']) {
+                        $confirmedIdentity = $confirmedIdentityService->createConfirmedIdentity(
+                            $exam,
+                            $identityResult,
+                            $task
+                        );
+
+                        $task->addActivity('confirmed_identity_created', 'Identity confirmed and saved to database', [
+                            'confirmed_identity_id' => $confirmedIdentity->id,
+                            'confidence' => $finalConfidence,
+                            'user_confirmed' => $userConfirmed,
+                        ]);
+
+                        \Illuminate\Support\Facades\Log::info('ConfirmedIdentity created', [
+                            'exam_id' => $exam->id,
+                            'task_id' => $task->id,
+                            'confirmed_identity_id' => $confirmedIdentity->id,
+                        ]);
+                    }
+                } catch (\Throwable $e) {
+                    \Illuminate\Support\Facades\Log::error('Failed to create ConfirmedIdentity', [
+                        'exam_id' => $exam->id,
+                        'task_id' => $task->id,
+                        'error' => $e->getMessage(),
+                    ]);
+                    // Don't fail the job - this is non-critical
+                }
             }
         }
 

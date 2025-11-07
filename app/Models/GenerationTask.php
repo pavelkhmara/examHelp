@@ -7,6 +7,9 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\MorphTo;
 
+/**
+ * @property string $status Task status: queued, running, completed, failed, pending_confirmation, pending_clarification, cancelled, waiting_for_confirmation
+ */
 class GenerationTask extends Model
 {
     protected $fillable = [
@@ -67,15 +70,13 @@ class GenerationTask extends Model
 
     /**
      * Форматировать timestamp из ISO 8601 в [DD.MM HH:MM:SS]
-     *
-     * @param  string  $isoTimestamp
-     * @return string
      */
     public static function formatActivityTimestamp(string $isoTimestamp): string
     {
         try {
             $dt = new \DateTime($isoTimestamp);
-            return '[' . $dt->format('d.m H:i:s') . ']';
+
+            return '['.$dt->format('d.m H:i:s').']';
         } catch (\Exception $e) {
             return '[Invalid timestamp]';
         }
@@ -83,8 +84,6 @@ class GenerationTask extends Model
 
     /**
      * Получить отформатированные активности для отображения
-     *
-     * @return array
      */
     public function getFormattedActivities(): array
     {
@@ -108,8 +107,6 @@ class GenerationTask extends Model
     /**
      * Получить текущий прогресс выполнения задачи
      * Возвращает строку вида "Идёт: Overview · 02:15"
-     *
-     * @return string|null
      */
     public function getCurrentProgress(): ?string
     {
@@ -145,8 +142,6 @@ class GenerationTask extends Model
     /**
      * Update heartbeat timestamp
      * Call this periodically during long-running operations to prevent stall detection
-     *
-     * @return void
      */
     public function updateHeartbeat(): void
     {
