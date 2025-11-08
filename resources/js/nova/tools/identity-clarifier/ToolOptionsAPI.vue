@@ -1,32 +1,11 @@
 <template>
-  <div class="identity-clarifier-wrapper" :key="'clarifier-' + updateKey" style="min-height: 100px; position: relative;">
-    <!-- DEBUG PANEL -->
-    <div style="position: absolute; top: 0; right: 0; background: #f0f0f0; padding: 8px; font-size: 10px; z-index: 9999; border: 1px solid #ccc;">
-      <strong>DEBUG (Options API):</strong><br>
-      reactivity: {{ reactivityTest }}<br>
-      updateKey: {{ updateKey }}<br>
-      loading: {{ loading }}<br>
-      needsClarification: {{ needsClarification }}<br>
-      hasCandidates: {{ hasCandidates }}<br>
-      taskId: {{ taskId }}<br>
-      examId: {{ computedExamId }}
-    </div>
-
+  <!-- Hide component entirely when no task (research completed or not started) -->
+  <div v-if="task || loading" class="identity-clarifier-wrapper" :key="'clarifier-' + updateKey" style="min-height: 100px; position: relative;">
     <div v-if="loading" class="flex justify-center items-center p-8" style="min-height: 100px; background: rgba(0,0,0,0.02);">
       <svg class="animate-spin h-8 w-8 text-primary-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
         <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
         <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
       </svg>
-    </div>
-
-    <div v-else-if="!needsClarification" class="text-center p-8">
-      <div class="text-green-500 dark:text-green-400 text-3xl mb-3">✓</div>
-      <p class="text-gray-600 dark:text-gray-400 text-lg">
-        No clarification needed
-      </p>
-      <p class="text-gray-500 dark:text-gray-500 text-sm mt-2">
-        Identity verification is complete or not yet started
-      </p>
     </div>
 
     <div v-else class="p-6 bg-white dark:bg-gray-800 rounded-lg shadow-sm">
@@ -129,7 +108,6 @@ export default {
       task: null,
       identity: null,
       refreshInterval: null,
-      reactivityTest: 0,
       updateKey: 0, // Force re-render key
     }
   },
@@ -180,17 +158,7 @@ export default {
       props: this.$props,
       resourceId: this.resourceId,
       examId: this.examId,
-      isReactive: this.$data && typeof this.$data === 'object',
     })
-
-    // Start reactivity test - IMMEDIATELY increment to test
-    this.reactivityTest = 1
-    this.$forceUpdate()
-
-    setInterval(() => {
-      this.reactivityTest++
-      console.log('[Identity Clarifier Options API] Reactivity test incremented to:', this.reactivityTest)
-    }, 1000)
 
     this.fetchTask()
 
@@ -238,19 +206,12 @@ export default {
 
         console.log('[Identity Clarifier Options API] Data set:', {
           task: this.task,
-          identity: this.identity,
           needsClarification: this.needsClarification,
-          hasCandidates: this.hasCandidates,
-          hasFollowups: this.hasFollowups,
-          hasNeedFields: this.hasNeedFields,
-          candidates: this.candidates,
-          taskId: this.taskId,
-          examId: this.computedExamId,
         })
 
-        // If task status changed to non-pending, reload the page to update Nova UI
-        if (this.task && !this.needsClarification) {
-          // Task completed, stop auto-refresh
+        // Stop polling if no task (research completed or cancelled)
+        if (!this.task) {
+          console.log('[Identity Clarifier Options API] No task found, stopping polling')
           if (this.refreshInterval) {
             clearInterval(this.refreshInterval)
             this.refreshInterval = null
