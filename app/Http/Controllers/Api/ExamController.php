@@ -85,4 +85,70 @@ class ExamController extends Controller
             ],
         ], 201);
     }
+
+    /**
+     * Update exam fields from MissingFieldsForm
+     * Used by identity-clarifier card to fill missing fields during research
+     */
+    public function updateFields(Request $request, Exam $exam)
+    {
+        $validated = $request->validate([
+            'title' => ['nullable', 'string', 'max:255'],
+            'level' => ['nullable', 'string', 'in:A1,A2,B1,B2,C1,C2'],
+            'description' => ['nullable', 'string'],
+            'user_input_updates' => ['nullable', 'array'],
+        ]);
+
+        // Update direct exam fields
+        $updated = [];
+        foreach (['title', 'level', 'description'] as $field) {
+            if (isset($validated[$field])) {
+                $exam->{$field} = $validated[$field];
+                $updated[] = $field;
+            }
+        }
+
+        // Update user_input fields
+        if (!empty($validated['user_input_updates'])) {
+            $userInput = is_array($exam->user_input) ? $exam->user_input : [];
+            $userInput = array_merge($userInput, $validated['user_input_updates']);
+            $exam->user_input = $userInput;
+            $updated[] = 'user_input';
+        }
+
+        $exam->save();
+
+        \Illuminate\Support\Facades\Log::info('[ExamController] Fields updated via MissingFieldsForm', [
+            'exam_id' => $exam->id,
+            'updated_fields' => $updated,
+        ]);
+
+        return response()->json([
+            'success' => true,
+            'updated_fields' => $updated,
+        ]);
+    }
+
+    /**
+     * Dismiss a card for the exam
+     */
+    public function dismissCard(Request $request, Exam $exam)
+    {
+        $validated = $request->validate([
+            'card_type' => ['required', 'string', 'in:missing_fields,fields_changed,stalled_task'],
+        ]);
+
+        /** @var \App\Services\Nova\CardManager $cardManager */
+        $cardManager = app(\App\Services\Nova\CardManager::class);
+        $cardManager->dismissCard($exam, $validated['card_type']);
+
+        \Illuminate\Support\Facades\Log::info('[ExamController] Card dismissed', [
+            'exam_id' => $exam->id,
+            'card_type' => $validated['card_type'],
+        ]);
+
+        return response()->json([
+            'success' => true,
+        ]);
+    }
 }

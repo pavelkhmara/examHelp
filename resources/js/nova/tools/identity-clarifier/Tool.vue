@@ -1,6 +1,6 @@
 <template>
-  <!-- Hide component entirely when no task (research completed or not started) -->
-  <div v-if="task || loading" class="identity-clarifier-wrapper" style="min-height: 100px; position: relative;">
+  <!-- Hide component entirely when no task (research completed or not started) AND not a missing_fields card -->
+  <div v-if="task || loading || cardType === 'missing_fields'" class="identity-clarifier-wrapper" style="min-height: 100px; position: relative;">
     <div v-if="loading" class="flex justify-center items-center p-8" style="min-height: 100px; background: rgba(0,0,0,0.02);">
       <svg class="animate-spin h-8 w-8 text-primary-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
         <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
@@ -9,6 +9,14 @@
     </div>
 
   <div v-else class="p-6 bg-white dark:bg-gray-800 rounded-lg shadow-sm">
+    <!-- MissingFieldsForm - показывается когда cardType === 'missing_fields' -->
+    <MissingFieldsForm
+      v-if="cardType === 'missing_fields' && checkResult && examId"
+      :exam-id="examId"
+      :check-result="checkResult"
+      @saved="handleFieldsSaved"
+      @dismissed="handleCardDismissed"
+    />
     <!-- Show candidates selector if we have candidates -->
     <CandidateSelector
       v-if="hasCandidates && taskId && examId"
@@ -80,6 +88,7 @@
 <script setup>
 import { ref, computed, onMounted, onUnmounted, nextTick } from 'vue'
 import CandidateSelector from './components/CandidateSelector.vue'
+import MissingFieldsForm from './components/MissingFieldsForm.vue'
 
 const props = defineProps({
   resourceName: {
@@ -92,6 +101,14 @@ const props = defineProps({
   },
   examId: {
     type: [String, Number],
+    required: false,
+  },
+  cardType: {
+    type: String,
+    required: false,
+  },
+  checkResult: {
+    type: Object,
     required: false,
   },
 })
@@ -202,6 +219,30 @@ const handleCandidateSelected = () => {
   setTimeout(() => {
     location.reload()
   }, 2000)
+}
+
+const handleFieldsSaved = () => {
+  Nova.success('Fields saved successfully!')
+  // Reload handled by MissingFieldsForm
+}
+
+const handleCardDismissed = async () => {
+  const actualExamId = examId.value
+  if (!actualExamId) return
+
+  try {
+    await Nova.request().post(`/api/exams/${actualExamId}/dismiss-card`, {
+      card_type: 'missing_fields'
+    })
+    Nova.success('Card dismissed')
+    // Reload to hide card
+    setTimeout(() => {
+      location.reload()
+    }, 1000)
+  } catch (error) {
+    console.error('Failed to dismiss card:', error)
+    Nova.error('Failed to dismiss card')
+  }
 }
 
 onMounted(() => {

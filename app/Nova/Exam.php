@@ -159,6 +159,31 @@ class Exam extends Resource
             //         return null;
             //     }),
 
+            Badge::make('Analysis Status', 'analysis_status')
+                ->map([
+                    'pending' => 'info',
+                    'running' => 'warning',
+                    'completed' => 'success',
+                    'failed' => 'danger',
+                ])
+                ->labels([
+                    'pending' => 'Pending',
+                    'running' => 'Running',
+                    'completed' => 'Completed',
+                    'failed' => 'Failed',
+                ])
+                ->sortable()
+                ->help(function () {
+                    if ($this->analysis_status === 'running') {
+                        return '⏳ <strong>Metadata analysis in progress. Please wait before starting research.</strong>';
+                    }
+                    if ($this->analysis_status === 'failed') {
+                        return '❌ <strong>Metadata analysis failed. Check logs for details.</strong>';
+                    }
+
+                    return null;
+                }),
+
             Badge::make('Research Status', 'research_status')
                 ->map([
                     'queued' => 'info',

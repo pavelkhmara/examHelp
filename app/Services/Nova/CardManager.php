@@ -47,10 +47,22 @@ class CardManager
         // Проверяем dismissed cards
         $dismissedCards = $exam->meta['dismissed_cards'] ?? [];
 
-        // 1. MissingFieldsCard - если поля не готовы и карточка не закрыта
+        // 1. MissingFieldsCard - показывается когда:
+        // - есть недостающие поля (recommended или critical)
+        // - И есть активный task (queued, running, pending_*)
+        // - И карточка не закрыта
         if (!in_array('missing_fields', $dismissedCards)) {
             $quickCheck = $this->quickCheckService->check($exam);
-            if (!$quickCheck['ready']) {
+
+            // Проверяем, есть ли активный task
+            $hasActiveTask = $exam->generationTasks()
+                ->whereIn('status', ['queued', 'running', 'pending_confirmation', 'pending_clarification'])
+                ->exists();
+
+            // Показываем карточку если есть недостающие поля И есть активный task
+            $hasMissingFields = !empty($quickCheck['missing_critical']) || !empty($quickCheck['missing_recommended']);
+
+            if ($hasMissingFields && $hasActiveTask) {
                 $cards[] = [
                     'type' => 'missing_fields',
                     'priority' => 1,
