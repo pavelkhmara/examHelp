@@ -362,8 +362,35 @@ class RunExamResearchJob implements ShouldQueue
             ]);
 
             $task->addActivity('variant_probe_started', 'Running variant probe to disambiguate exam');
+            $task->updateHeartbeat(); // Heartbeat before variant probe
 
-            $variantResult = $svc->runVariantProbe($exam, $task, $identityResult);
+            try {
+                $variantResult = $svc->runVariantProbe($exam, $task, $identityResult);
+                $task->updateHeartbeat(); // Heartbeat after variant probe
+
+                $task->addActivity('variant_probe_completed', 'Variant probe completed', [
+                    'disambiguation_needed' => $variantResult['disambiguation_needed'] ?? false,
+                    'candidates_count' => count($variantResult['candidates'] ?? []),
+                ]);
+            } catch (\Throwable $e) {
+                $task->addActivity('variant_probe_failed', 'Variant probe failed: '.$e->getMessage());
+
+                \Illuminate\Support\Facades\Log::error('Variant probe failed', [
+                    'exam_id' => $exam->id,
+                    'task_id' => $task->id,
+                    'error' => $e->getMessage(),
+                    'trace' => $e->getTraceAsString(),
+                ]);
+
+                $task->status = 'failed';
+                $task->error = 'Variant probe failed: '.$e->getMessage();
+                $task->save();
+
+                $exam->research_status = 'failed';
+                $exam->save();
+
+                return;
+            }
 
             // If disambiguation is needed, stop and wait for user input
             // UNLESS without_confirmation is true
@@ -383,37 +410,68 @@ class RunExamResearchJob implements ShouldQueue
                     ]);
 
                     $task->addActivity('auto_clarification_started', 'Running AI auto-clarification');
+                    $task->updateHeartbeat(); // Heartbeat before AI call
 
-                    $autoClarification = $svc->runAutoClarification($exam, $task, $identityResult);
+                    try {
+                        $autoClarification = $svc->runAutoClarification($exam, $task, $identityResult);
 
-                    // Merge auto-clarified data into user_input
-                    $currentInput = $task->request['user_input'] ?? [];
-                    $inferredData = $autoClarification['inferred_data'] ?? [];
-                    $mergedInput = array_merge($currentInput, $inferredData);
+                        $task->updateHeartbeat(); // Heartbeat after AI call
+                        $task->addActivity('auto_clarification_completed', 'Auto-clarification completed successfully', [
+                            'confidence' => $autoClarification['confidence'] ?? null,
+                            'inferred_fields' => array_keys($autoClarification['inferred_data'] ?? []),
+                        ]);
 
-                    // Update task request
-                    $request = (array) ($task->request ?? []);
-                    $request['user_input'] = $mergedInput;
-                    $task->request = $request;
+                        // Merge auto-clarified data into user_input
+                        $currentInput = $task->request['user_input'] ?? [];
+                        $inferredData = $autoClarification['inferred_data'] ?? [];
+                        $mergedInput = array_merge($currentInput, $inferredData);
 
-                    // Mark identity as auto-clarified
-                    $identityResult['auto_clarified'] = true;
-                    $identityResult['auto_clarified_at'] = now()->toISOString();
-                    $identityResult['auto_clarified_data'] = $inferredData;
-                    $identityResult['disclaimer'] = $autoClarification['disclaimer'] ?? 'AI-inferred data used for structure generation';
-                    $identityResult['ai_reasoning'] = $autoClarification['reasoning'] ?? null;
+                        // Update task request
+                        $request = (array) ($task->request ?? []);
+                        $request['user_input'] = $mergedInput;
+                        $task->request = $request;
 
-                    // Update result and re-run identity guard with new data
-                    $result = (array) ($task->result ?? []);
-                    $result['identity'] = $identityResult;
-                    $task->result = $result;
-                    $task->save();
+                        // Mark identity as auto-clarified
+                        $identityResult['auto_clarified'] = true;
+                        $identityResult['auto_clarified_at'] = now()->toISOString();
+                        $identityResult['auto_clarified_data'] = $inferredData;
+                        $identityResult['disclaimer'] = $autoClarification['disclaimer'] ?? 'AI-inferred data used for structure generation';
+                        $identityResult['ai_reasoning'] = $autoClarification['reasoning'] ?? null;
 
-                    // Re-run identity guard with merged data
-                    $identityResult = $svc->runIdentityGuard($exam, $task);
-                    $task->refresh();
+                        // Update result and re-run identity guard with new data
+                        $result = (array) ($task->result ?? []);
+                        $result['identity'] = $identityResult;
+                        $task->result = $result;
+                        $task->save();
 
-                    // Continue with pipeline
+                        // Re-run identity guard with merged data
+                        $task->addActivity('identity_guard_rerun', 'Re-running identity guard with auto-clarified data');
+                        $task->updateHeartbeat(); // Heartbeat before re-run
+
+                        $identityResult = $svc->runIdentityGuard($exam, $task);
+                        $task->refresh();
+                        $task->updateHeartbeat(); // Heartbeat after re-run
+
+                        // Continue with pipeline
+                    } catch (\Throwable $e) {
+                        $task->addActivity('auto_clarification_failed', 'Auto-clarification failed: '.$e->getMessage());
+
+                        \Illuminate\Support\Facades\Log::error('Auto-clarification failed', [
+                            'exam_id' => $exam->id,
+                            'task_id' => $task->id,
+                            'error' => $e->getMessage(),
+                            'trace' => $e->getTraceAsString(),
+                        ]);
+
+                        $task->status = 'failed';
+                        $task->error = 'Auto-clarification failed: '.$e->getMessage();
+                        $task->save();
+
+                        $exam->research_status = 'failed';
+                        $exam->save();
+
+                        return;
+                    }
                 } else {
                     // Normal flow - wait for user
                     $task->addActivity('decision_point_disambiguation', 'Условие: disambiguation_needed = true И without_confirmation = false. Решение: PAUSE - ожидание уточнения от пользователя', [
@@ -456,33 +514,54 @@ class RunExamResearchJob implements ShouldQueue
 
         // Run the main structure building pipeline
         $task->updateHeartbeat(); // Heartbeat before overview pipeline
-        $pipelineResult = $svc->runPipeline($exam, $task);
-        $task->updateHeartbeat(); // Heartbeat after overview pipeline
 
-        // Check if pipeline failed
-        if (isset($pipelineResult['ok']) && $pipelineResult['ok'] === false) {
-            $error = $pipelineResult['error'] ?? 'unknown_error';
-            $errors = $pipelineResult['errors'] ?? [];
-            $errorMessage = implode('; ', $errors);
+        try {
+            $pipelineResult = $svc->runPipeline($exam, $task);
+            $task->updateHeartbeat(); // Heartbeat after overview pipeline
 
-            $task->addActivity('pipeline_failed', "Pipeline failed: {$error}", [
-                'error' => $error,
-                'errors' => $errors,
+            // Check if pipeline failed
+            if (isset($pipelineResult['ok']) && $pipelineResult['ok'] === false) {
+                $error = $pipelineResult['error'] ?? 'unknown_error';
+                $errors = $pipelineResult['errors'] ?? [];
+                $errorMessage = implode('; ', $errors);
+
+                $task->addActivity('pipeline_failed', "Pipeline failed: {$error}", [
+                    'error' => $error,
+                    'errors' => $errors,
+                ]);
+
+                $task->status = 'failed';
+                $task->error = $errorMessage ?: "Pipeline failed: {$error}";
+                $task->save();
+
+                $exam->research_status = 'failed';
+                $exam->save();
+
+                \Illuminate\Support\Facades\Log::error('Research pipeline failed', [
+                    'exam_id' => $exam->id,
+                    'task_id' => $task->id,
+                    'error' => $error,
+                    'errors' => $errors,
+                ]);
+
+                return;
+            }
+        } catch (\Throwable $e) {
+            $task->addActivity('pipeline_exception', 'Pipeline threw exception: '.$e->getMessage());
+
+            \Illuminate\Support\Facades\Log::error('Research pipeline threw exception', [
+                'exam_id' => $exam->id,
+                'task_id' => $task->id,
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString(),
             ]);
 
             $task->status = 'failed';
-            $task->error = $errorMessage ?: "Pipeline failed: {$error}";
+            $task->error = 'Pipeline exception: '.$e->getMessage();
             $task->save();
 
             $exam->research_status = 'failed';
             $exam->save();
-
-            \Illuminate\Support\Facades\Log::error('Research pipeline failed', [
-                'exam_id' => $exam->id,
-                'task_id' => $task->id,
-                'error' => $error,
-                'errors' => $errors,
-            ]);
 
             return;
         }
