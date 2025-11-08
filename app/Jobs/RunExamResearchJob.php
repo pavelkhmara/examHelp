@@ -182,37 +182,11 @@ class RunExamResearchJob implements ShouldQueue
             $exam->identity = $identityResult;
             $exam->save();
 
-            // S1.5: If confidence is 0.90-0.96, run confidence_boost
-            // if (($identityResult['needs_confidence_boost'] ?? false) === true) {
-            //     $task->addActivity('decision_point_confidence_boost', "Условие: 0.90 <= confidence < 0.97 (текущий: {$confidence}). Решение: запустить ConfidenceBoost для повышения уверенности", [
-            //         'condition' => '0.90 <= confidence < 0.97',
-            //         'confidence' => $confidence,
-            //         'decision' => 'run_confidence_boost',
-            //     ]);
-            //     $task->addActivity('confidence_boost_started', 'Running confidence boost stage');
-            //     $task->updateHeartbeat(); // Heartbeat before boost
+            // NOTE: ConfidenceBoost is now a separate manual action (ConfidenceBoostAction)
+            // It is no longer part of the automatic pipeline
+            // Operator can trigger it manually from Nova when confidence is 0.80-0.97
 
-            //     $identityResult = $svc->runConfidenceBoost($exam, $task, $identityResult);
-
-            //     // Update task with boosted identity
-            //     $result = (array) ($task->result ?? []);
-            //     $result['identity'] = $identityResult;
-            //     $task->result = $result;
-            //     $task->save();
-            //     $task->refresh();
-
-            //     // Update exam->identity with boosted confidence
-            //     $exam->identity = $identityResult;
-            //     $exam->save();
-
-            //     $boostedConfidence = $identityResult['confidence'] ?? 0.0;
-            //     $task->addActivity('confidence_boost_completed', "Confidence boosted to: {$boostedConfidence}", [
-            //         'confidence' => $boostedConfidence,
-            //     ]);
-            //     $task->updateHeartbeat(); // Heartbeat after boost
-            // }
-
-            // CRITICAL: After identity guard (and optional boost), check if confidence is acceptable
+            // CRITICAL: After identity guard, check if confidence is acceptable
             // If confidence < 0.97, we MUST stop and request user confirmation
             // UNLESS user already confirmed (from ConfirmIdentityAction) OR without_confirmation=true
             $finalConfidence = $identityResult['confidence'] ?? 0.0;

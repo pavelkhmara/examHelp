@@ -1429,6 +1429,7 @@ class Exam extends Resource
             new ResearchAction,
             new ResetAndRestartResearch,
             new ConfirmIdentityAction,
+            new \App\Nova\Actions\ConfidenceBoostAction,
             new ProvideAnswersAction,
             new \App\Nova\Actions\CancelStalledTaskAction,
             // (new ConfirmExamIdentity)
