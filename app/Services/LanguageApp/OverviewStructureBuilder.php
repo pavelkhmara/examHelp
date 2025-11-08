@@ -310,6 +310,9 @@ class OverviewStructureBuilder extends AbstractAiService
             $structure['section_archetypes'] = $overview_normalized['section_archetypes'];
         }
 
+        // Add sources to structure
+        $structure['sources'] = $overview_normalized['sources'] ?? [];
+
         Log::debug('OverviewStructureBuilder add exam-meta-structure', ['exam_structure' => $structure]);
 
         $meta = $exam->meta ?? [];
@@ -317,6 +320,10 @@ class OverviewStructureBuilder extends AbstractAiService
         $exam->meta = $meta;
         $exam->categories_count = count($createdCategories);
         $exam->research_status = 'completed';
+
+        // Save sources to dedicated column for easier access
+        $exam->sources = $overview_normalized['sources'] ?? [];
+
         $exam->save();
 
         // === 5) task->result and logs ===
@@ -728,15 +735,12 @@ class OverviewStructureBuilder extends AbstractAiService
         $webSources = [];
         $docSources = [];
 
-        // Web sources
+        // Web sources - preserve all fields from validator (tier, contribution, source_usage)
         if (! empty($overview_normalized['sources']) && is_array($overview_normalized['sources'])) {
             foreach ($overview_normalized['sources'] as $s) {
-                $webSources[] = [
-                    'url' => (string) ($s['url'] ?? ''),
-                    'title' => (string) ($s['title'] ?? ''),
-                    'publisher' => (string) ($s['publisher'] ?? ''),
+                $webSources[] = array_merge($s, [
                     'provenance' => 'web',
-                ];
+                ]);
             }
         }
 
@@ -749,6 +753,9 @@ class OverviewStructureBuilder extends AbstractAiService
                 'provenance' => 'document',
                 'doc_id' => $f['id'],
                 'filename' => $f['name'],
+                'tier' => null,
+                'contribution' => null,
+                'source_usage' => null,
             ];
         }
 

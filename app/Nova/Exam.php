@@ -272,8 +272,11 @@ class Exam extends Resource
 
             $fields[] = new Panel('🔍 Stage 1: Identity Verification', $identityFields);
 
-            // Показываем вопросы, если они есть
-            if (! empty($identity['followups']) || ! empty($identity['need_fields'])) {
+            // Показываем вопросы, если они есть И research еще не завершен
+            $hasQuestions = ! empty($identity['followups']) || ! empty($identity['need_fields']);
+            $researchNotCompleted = $this->research_status !== 'completed';
+
+            if ($hasQuestions && $researchNotCompleted) {
                 $fields[] = $this->buildFollowupPanel($identity, $task);
             }
 
@@ -1189,16 +1192,33 @@ class Exam extends Resource
             $sourceNum = $idx + 1;
             $url = $source['url'] ?? $source['link'] ?? null;
             $title = $source['title'] ?? $source['name'] ?? 'Untitled Source';
+            $publisher = $source['publisher'] ?? null;
+            $provenance = $source['provenance'] ?? null;
+            $tier = $source['tier'] ?? null;
+            $contribution = $source['contribution'] ?? null;
             $rationale = $source['rationale'] ?? $source['reason'] ?? null;
             $trustScore = $source['trust_score'] ?? $source['quality'] ?? null;
             $page = $source['page'] ?? null;
             $fragment = $source['fragment'] ?? $source['excerpt'] ?? null;
 
-            // Determine trust badge color
+            // Determine trust badge color (based on tier if available, otherwise trust_score)
             $trustBadgeClass = 'bg-gray-100 text-gray-700';
             $trustLabel = 'Unknown';
 
-            if ($trustScore !== null) {
+            if ($tier !== null) {
+                // New tier system: 1=official, 2=trusted, 3=supplementary
+                if ($tier === 1 || $tier === '1') {
+                    $trustBadgeClass = 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300';
+                    $trustLabel = 'Tier 1: Official';
+                } elseif ($tier === 2 || $tier === '2') {
+                    $trustBadgeClass = 'bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300';
+                    $trustLabel = 'Tier 2: Trusted';
+                } elseif ($tier === 3 || $tier === '3') {
+                    $trustBadgeClass = 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-300';
+                    $trustLabel = 'Tier 3: Supplementary';
+                }
+            } elseif ($trustScore !== null) {
+                // Legacy trust_score system
                 if (is_numeric($trustScore)) {
                     if ($trustScore >= 0.9) {
                         $trustBadgeClass = 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300';
@@ -1222,6 +1242,15 @@ class Exam extends Resource
                     } elseif (stripos($trustScore, 'low') !== false) {
                         $trustBadgeClass = 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-300';
                     }
+                }
+            } elseif ($provenance) {
+                // Fallback to provenance-based badge
+                if ($provenance === 'web') {
+                    $trustBadgeClass = 'bg-purple-100 text-purple-800 dark:bg-purple-900/30 dark:text-purple-300';
+                    $trustLabel = 'Web Source';
+                } elseif ($provenance === 'document' || $provenance === 'file') {
+                    $trustBadgeClass = 'bg-indigo-100 text-indigo-800 dark:bg-indigo-900/30 dark:text-indigo-300';
+                    $trustLabel = 'Document';
                 }
             }
 
@@ -1252,7 +1281,21 @@ class Exam extends Resource
                 $html .= '</div>';
             }
 
-            // Rationale
+            // Publisher
+            if ($publisher) {
+                $html .= '<div class="mb-2 text-xs text-gray-600 dark:text-gray-400">';
+                $html .= '<span class="font-semibold">Publisher:</span> ' . htmlspecialchars($publisher);
+                $html .= '</div>';
+            }
+
+            // Contribution (what was taken from this source)
+            if ($contribution) {
+                $html .= '<div class="mb-2 text-sm text-gray-700 dark:text-gray-300">';
+                $html .= '<span class="font-semibold">Contribution:</span> ' . htmlspecialchars($contribution);
+                $html .= '</div>';
+            }
+
+            // Rationale (legacy field, similar to contribution)
             if ($rationale) {
                 $html .= '<div class="mb-2 text-sm text-gray-700 dark:text-gray-300 italic">';
                 $html .= '"' . htmlspecialchars($rationale) . '"';
@@ -1354,16 +1397,18 @@ class Exam extends Resource
             }
         }
 
-        // Show Identity Clarifier Card if task is pending (existing functionality)
+        // Show Identity Clarifier Card if task is pending AND research not completed
         $task = $exam->generationTasks()->latest()->first();
+        $researchNotCompleted = $exam->research_status !== 'completed';
 
         \Illuminate\Support\Facades\Log::info('Task check', [
             'task_id' => $task?->id,
             'task_status' => $task?->status,
-            'will_show_card' => $task && in_array($task->status, ['pending_confirmation', 'pending_clarification'], true),
+            'research_status' => $exam->research_status,
+            'will_show_card' => $task && in_array($task->status, ['pending_confirmation', 'pending_clarification'], true) && $researchNotCompleted,
         ]);
 
-        if ($task && in_array($task->status, ['pending_confirmation', 'pending_clarification'], true)) {
+        if ($task && in_array($task->status, ['pending_confirmation', 'pending_clarification'], true) && $researchNotCompleted) {
             $card = new \App\Nova\Cards\IdentityClarifierCard();
             $card->withMeta(['examId' => $exam->id]);
             $card->onlyOnDetail(); // Explicitly show only on detail page
