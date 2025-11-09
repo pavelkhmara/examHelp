@@ -156,8 +156,8 @@ This is type_specific for question_types:
 - Extract patterns at TWO levels:
   (A) section_archetypes (section-level patterns)
   (B) question_archetypes (question-level patterns)
-- **CLASSIFY EVERY TASK** into one of our accepted question types (QuestionType enum keys below). 
-- Apply global_archetypes at the **question level**: for each question_archetype include `question_type` and a `type_specific` object with fields required for that type.
+- **CLASSIFY EVERY TASK** into one of our accepted question types (QuestionType enum keys below).
+- Apply question_archetypes at the **question level**: for each question_archetype include `question_type` and a `type_specific` object with fields required for that type.
 - Keep section mapping via `category_map` (sections → weights per question_archetype).
 
 **ALLOWED QUESTION TYPES (use exact keys; do not invent):**
@@ -167,7 +167,7 @@ listen_mcq, dictation, error_correction, writing_prompt, speaking_prompt
 
 **CLASSIFICATION & MAPPING RULES:**
 1) For every task, first pick `question_type` from the ALLOWED list.
-2) Build/choose an appropriate `question_archetype` (global_archetypes entry) with `question_type` and `type_specific`.
+2) Build/choose an appropriate `question_archetype` with `question_type` and `type_specific`.
 3) Map that archetype to sections via `category_map` (e.g., reading → {L-MC: 0.4, gap_cloze: 0.2, ...}).
 4) Ensure `section_archetypes[section].allowed_question_types` includes the types you map for that section; otherwise flag inconsistency.
 

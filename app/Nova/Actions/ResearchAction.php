@@ -105,25 +105,35 @@ class ResearchAction extends Action
                 'research_status' => $exam->research_status,
             ]);
 
-            // Validate exam readiness using QuickCheckService
+            // CRITICAL: Block if metadata analysis is still running
+            // This prevents race conditions between metadata_analysis and research tasks
+            if ($exam->analysis_status === 'running') {
+                \Illuminate\Support\Facades\Log::warning('🔵 [ResearchAction] Blocked: metadata analysis in progress', [
+                    'exam_id' => $exam->id,
+                    'analysis_status' => $exam->analysis_status,
+                ]);
+
+                return Action::danger(
+                    '⏳ Please wait: Metadata analysis is in progress. ' .
+                    'This usually takes 10-30 seconds. Please try again in a moment.'
+                );
+            }
+
+            // Check exam readiness using QuickCheckService but don't block
+            // Card will be shown to fill missing fields during research
             $quickCheckService = app(\App\Services\LanguageApp\QuickCheckService::class);
             $checkResult = $quickCheckService->check($exam);
 
             if (!$checkResult['ready']) {
-                \Illuminate\Support\Facades\Log::warning('🔵 [ResearchAction] Exam not ready', [
+                \Illuminate\Support\Facades\Log::info('🔵 [ResearchAction] Exam has missing fields but continuing', [
                     'exam_id' => $exam->id,
                     'missing_critical' => $checkResult['missing_critical'],
+                    'missing_recommended' => $checkResult['missing_recommended'],
                     'completion' => $checkResult['completion_percentage'],
                 ]);
 
-                // Update exam status to need_info
-                $exam->update(['research_status' => 'need_info']);
-
-                return Action::danger(
-                    '⚠️ Cannot start research: Missing critical fields. ' .
-                    $quickCheckService->getMissingFieldsMessage($checkResult) .
-                    '. Please review the Quick Check panel on the exam detail page.'
-                );
+                // Don't block - just log for monitoring
+                // MissingFieldsCard will be shown during research to collect missing data
             }
 
             // Parse user_input from exam

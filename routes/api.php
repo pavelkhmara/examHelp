@@ -77,6 +77,13 @@ Route::middleware(['web'])->group(function () {
 
     Route::get('/exams/{examId}/pending-task', [ExamResearchController::class, 'getPendingTask'])
         ->name('exams.pending-task');
+
+    // Missing fields card endpoints
+    Route::post('/exams/{exam}/update-fields', [ExamController::class, 'updateFields'])
+        ->name('exams.update-fields');
+
+    Route::post('/exams/{exam}/dismiss-card', [ExamController::class, 'dismissCard'])
+        ->name('exams.dismiss-card');
 });
 
 Route::post('/exams/{id}/research', [ExamResearchController::class, 'research'])

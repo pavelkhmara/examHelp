@@ -88,9 +88,9 @@ class IterativeIdentityVerificationService extends AbstractAiService
             $this->saveVerificationHistory($task, $history, $webSearchData);
 
             // Check if confidence is sufficient
-            if ($confidence <= self::MIN_CONFIDENCE_THRESHOLD) {
-                $task->addActivity('decision_point_iterative_verification', "Условие: confidence <= ".self::MIN_CONFIDENCE_THRESHOLD." (текущий: {$confidence}, попытка {$attempt}). Решение: верификация успешна, продолжить к ConfidenceBoost", [
-                    'condition' => 'confidence <= '.self::MIN_CONFIDENCE_THRESHOLD,
+            if ($confidence >= self::MIN_CONFIDENCE_THRESHOLD) {
+                $task->addActivity('decision_point_iterative_verification', "Условие: confidence >= ".self::MIN_CONFIDENCE_THRESHOLD." (текущий: {$confidence}, попытка {$attempt}). Решение: верификация успешна, продолжить к ConfidenceBoost", [
+                    'condition' => 'confidence >= '.self::MIN_CONFIDENCE_THRESHOLD,
                     'confidence' => $confidence,
                     'attempt' => $attempt,
                     'decision' => 'verification_success_continue',
@@ -126,6 +126,47 @@ class IterativeIdentityVerificationService extends AbstractAiService
             if (empty($followups)) {
                 // No followups means we can't improve - stop here
                 return $this->handleNoFollowups($exam, $task, $history, $webSearchData, $identityResult);
+            }
+
+            // Check if this is first attempt - if so, STOP and request user clarification
+            // (unless this attempt already has user clarification from previous pause)
+            $hasUserClarification = !empty($task->request['user_input']['clarification_answers'] ?? []);
+
+            if ($attempt === 1 && !$hasUserClarification) {
+                // First attempt with low confidence and no user clarification yet
+                // Save followup questions and pause for user input
+                $task->addActivity('decision_point_iterative_verification', "Условие: confidence < ".self::MIN_CONFIDENCE_THRESHOLD." И attempt = 1 И НЕТ user_clarification (текущий: {$confidence}, попытка {$attempt}). Решение: PAUSE - ожидание ответов на вопросы от пользователя", [
+                    'condition' => 'confidence < '.self::MIN_CONFIDENCE_THRESHOLD.' AND attempt = 1 AND NO user_clarification',
+                    'confidence' => $confidence,
+                    'attempt' => $attempt,
+                    'decision' => 'pause_pending_clarification',
+                ]);
+
+                $task->addActivity("verification_attempt_{$attempt}_followups", "Generated " . count($followups) . " followup questions - waiting for user", [
+                    'followups' => $followups,
+                ]);
+
+                // Save history and followup questions
+                $this->saveVerificationHistory($task, $history, $webSearchData);
+
+                // Save followup questions in identity result for card display
+                // ProvideAnswersAction expects them at task->result['identity']['followups']
+                $result = (array)($task->result ?? []);
+                $result['identity'] = array_merge($identityResult, [
+                    'followups' => $followups,
+                    'status' => 'needs_clarification',
+                ]);
+                $task->result = $result;
+                $task->save();
+
+                // Return special status to indicate we need user clarification
+                return [
+                    'status' => 'needs_clarification',
+                    'confidence' => $confidence,
+                    'canonical' => $identityResult['canonical'] ?? [],
+                    'followups' => $followups,
+                    'message' => 'Please answer the following questions to help us identify your exam.',
+                ];
             }
 
             // Decision: confidence < threshold, attempt < max, have followups -> run WebSearch and retry

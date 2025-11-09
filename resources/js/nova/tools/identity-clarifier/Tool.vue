@@ -1,16 +1,6 @@
 <template>
-  <div class="identity-clarifier-wrapper" style="min-height: 100px; position: relative;">
-    <!-- DEBUG PANEL - Remove this after debugging -->
-    <div style="position: absolute; top: 0; right: 0; background: #f0f0f0; padding: 8px; font-size: 10px; z-index: 9999; border: 1px solid #ccc;">
-      <strong>DEBUG:</strong><br>
-      reactivity: {{ reactivityTest }}<br>
-      loading: {{ loading }}<br>
-      needsClarification: {{ needsClarification }}<br>
-      hasCandidates: {{ hasCandidates }}<br>
-      taskId: {{ taskId }}<br>
-      examId: {{ examId }}
-    </div>
-
+  <!-- Hide component entirely when no task (research completed or not started) AND not a missing_fields card -->
+  <div v-if="task || loading || cardType === 'missing_fields'" class="identity-clarifier-wrapper" style="min-height: 100px; position: relative;">
     <div v-if="loading" class="flex justify-center items-center p-8" style="min-height: 100px; background: rgba(0,0,0,0.02);">
       <svg class="animate-spin h-8 w-8 text-primary-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
         <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
@@ -18,17 +8,15 @@
       </svg>
     </div>
 
-    <div v-else-if="!needsClarification" class="text-center p-8">
-      <div class="text-green-500 dark:text-green-400 text-3xl mb-3">✓</div>
-      <p class="text-gray-600 dark:text-gray-400 text-lg">
-        No clarification needed
-      </p>
-      <p class="text-gray-500 dark:text-gray-500 text-sm mt-2">
-        Identity verification is complete or not yet started
-      </p>
-  </div>
-
   <div v-else class="p-6 bg-white dark:bg-gray-800 rounded-lg shadow-sm">
+    <!-- MissingFieldsForm - показывается когда cardType === 'missing_fields' -->
+    <MissingFieldsForm
+      v-if="cardType === 'missing_fields' && checkResult && examId"
+      :exam-id="examId"
+      :check-result="checkResult"
+      @saved="handleFieldsSaved"
+      @dismissed="handleCardDismissed"
+    />
     <!-- Show candidates selector if we have candidates -->
     <CandidateSelector
       v-if="hasCandidates && taskId && examId"
@@ -100,6 +88,7 @@
 <script setup>
 import { ref, computed, onMounted, onUnmounted, nextTick } from 'vue'
 import CandidateSelector from './components/CandidateSelector.vue'
+import MissingFieldsForm from './components/MissingFieldsForm.vue'
 
 const props = defineProps({
   resourceName: {
@@ -114,18 +103,20 @@ const props = defineProps({
     type: [String, Number],
     required: false,
   },
+  cardType: {
+    type: String,
+    required: false,
+  },
+  checkResult: {
+    type: Object,
+    required: false,
+  },
 })
 
 const loading = ref(true)
 const task = ref(null)
 const identity = ref(null)
 let refreshInterval = null
-
-// Reactivity test - increments every second
-const reactivityTest = ref(0)
-setInterval(() => {
-  reactivityTest.value++
-}, 1000)
 
 const needsClarification = computed(() => {
   return (
@@ -197,20 +188,12 @@ const fetchTask = async () => {
 
     console.log('[Identity Clarifier] Data set:', {
       task: task.value,
-      identity: identity.value,
       needsClarification: needsClarification.value,
-      hasCandidates: hasCandidates.value,
-      hasFollowups: hasFollowups.value,
-      hasNeedFields: hasNeedFields.value,
-      candidates: candidates.value,
-      taskId: taskId.value,
-      examId: examId.value,
-      conditionMet: hasCandidates.value && taskId.value && examId.value,
     })
 
-    // If task status changed to non-pending, reload the page to update Nova UI
-    if (task.value && !needsClarification.value) {
-      // Task completed, stop auto-refresh
+    // Stop polling if no task (research completed or cancelled)
+    if (!task.value) {
+      console.log('[Identity Clarifier] No task found, stopping polling')
       if (refreshInterval) {
         clearInterval(refreshInterval)
         refreshInterval = null
@@ -236,6 +219,30 @@ const handleCandidateSelected = () => {
   setTimeout(() => {
     location.reload()
   }, 2000)
+}
+
+const handleFieldsSaved = () => {
+  Nova.success('Fields saved successfully!')
+  // Reload handled by MissingFieldsForm
+}
+
+const handleCardDismissed = async () => {
+  const actualExamId = examId.value
+  if (!actualExamId) return
+
+  try {
+    await Nova.request().post(`/api/exams/${actualExamId}/dismiss-card`, {
+      card_type: 'missing_fields'
+    })
+    Nova.success('Card dismissed')
+    // Reload to hide card
+    setTimeout(() => {
+      location.reload()
+    }, 1000)
+  } catch (error) {
+    console.error('Failed to dismiss card:', error)
+    Nova.error('Failed to dismiss card')
+  }
 }
 
 onMounted(() => {

@@ -107,6 +107,6 @@ class JsonSchemaExamOverviewTest extends TestCase
 
         $this->assertEquals('ielts', $out['exam_name']);
         $this->assertCount(2, $out['sources']);
-        $this->assertCount(2, $out['global_archetypes']);
+        $this->assertCount(2, $out['question_archetypes']);
     }
 }
