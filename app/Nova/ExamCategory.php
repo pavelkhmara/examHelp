@@ -78,12 +78,12 @@ class ExamCategory extends Resource
                     })
                     ->onlyOnDetail(),
 
-                // Global archetypes для этой категории - детальные данные о типах вопросов
+                // Question archetypes для этой категории - детальные данные о типах вопросов
                 Code::make('This Category Questions Archetypes')
                     ->json(JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT)
                     ->resolveUsing(function () {
                         $examStructure = $this->exam->meta['exam_structure'] ?? [];
-                        $globalArchetypes = $examStructure['global_archetypes'] ?? [];
+                        $globalArchetypes = $examStructure['question_archetypes'] ?? [];
 
                         // Найдем все архетипы для текущей категории
                         $categoryKey = strtolower($this->key);
@@ -125,7 +125,7 @@ class ExamCategory extends Resource
     private function buildCategoryStructureSummary(): string
     {
         $examStructure = $this->exam->meta['exam_structure'] ?? [];
-        $globalArchetypes = $examStructure['global_archetypes'] ?? [];
+        $globalArchetypes = $examStructure['question_archetypes'] ?? [];
 
         // Найдем все архетипы для текущей категории
         $categoryKey = strtolower($this->key);

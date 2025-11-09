@@ -20,16 +20,16 @@ use Illuminate\Support\Facades\Log;
 class ExampleGenerationService extends AbstractAiService
 {
     /**
-     * Generate example questions for exam archetypes
+     * Generate example questions for exam question_archetypes
      */
     public function generateExamples(Exam $exam, GenerationTask $task, int $examplesPerArchetype = 1): array
     {
-        // Get exam structure and archetypes from exam or task result
+        // Get exam structure and question_archetypes from exam or task result
         $structure = $exam->exam_structure ?? $task->result['overview'] ?? [];
-        $archetypes = $structure['global_archetypes'] ?? [];
+        $questionArchetypes = $structure['question_archetypes'] ?? [];
 
-        if (empty($archetypes)) {
-            throw new \RuntimeException('No archetypes found in exam structure. Run research pipeline first.');
+        if (empty($questionArchetypes)) {
+            throw new \RuntimeException('No question_archetypes found in exam structure. Run research pipeline first.');
         }
 
         // Build exam info for prompt
@@ -42,7 +42,7 @@ class ExampleGenerationService extends AbstractAiService
         // Build prompt
         $prompt = PromptExampleGeneration::build(
             $examInfo,
-            $archetypes,
+            $questionArchetypes,
             $examplesPerArchetype
         );
 
@@ -75,7 +75,7 @@ class ExampleGenerationService extends AbstractAiService
         $examples = $validated['examples'] ?? [];
 
         // Persist examples to database
-        $createdCount = $this->persistExamples($exam, $archetypes, $examples);
+        $createdCount = $this->persistExamples($exam, $questionArchetypes, $examples);
 
         // Update exam examples_count
         $exam->examples_count = $exam->examples()->count();
@@ -91,23 +91,23 @@ class ExampleGenerationService extends AbstractAiService
     /**
      * Persist examples to database
      */
-    protected function persistExamples(Exam $exam, array $archetypes, array $examples): int
+    protected function persistExamples(Exam $exam, array $questionArchetypes, array $examples): int
     {
         $createdCount = 0;
 
         foreach ($examples as $example) {
-            // Find category for this archetype
+            // Find category for this question_archetype
             $archetypeId = $example['archetype_id'];
-            $archetype = collect($archetypes)->firstWhere('id', $archetypeId);
+            $questionArchetype = collect($questionArchetypes)->firstWhere('id', $archetypeId);
 
-            if (! $archetype) {
-                Log::warning('Archetype not found for example', ['archetype_id' => $archetypeId]);
+            if (! $questionArchetype) {
+                Log::warning('Question archetype not found for example', ['archetype_id' => $archetypeId]);
 
                 continue;
             }
 
-            // Get category name from archetype
-            $categoryName = $archetype['category'] ?? 'unknown';
+            // Get category name from question_archetype
+            $categoryName = $questionArchetype['category'] ?? 'unknown';
 
             // Find or create category
             $category = ExamCategory::firstOrCreate(

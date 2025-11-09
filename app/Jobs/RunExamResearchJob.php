@@ -136,6 +136,34 @@ class RunExamResearchJob implements ShouldQueue
                 $task->refresh();
                 $task->updateHeartbeat(); // Heartbeat after identity verification
 
+                // Check if verification needs clarification (low confidence, needs user input)
+                if (($identityResult['status'] ?? '') === 'needs_clarification') {
+                    $message = $identityResult['message'] ?? 'Please provide more information about your exam';
+                    $followupQuestions = $identityResult['followup_questions'] ?? [];
+
+                    $task->addActivity('iterative_verification_needs_clarification', "Identity verification needs clarification (confidence: {$identityResult['confidence']})", [
+                        'confidence' => $identityResult['confidence'] ?? 0,
+                        'followup_questions_count' => count($followupQuestions),
+                    ]);
+
+                    // Set task to pending_clarification and wait for user
+                    $task->status = 'pending_clarification';
+                    $task->save();
+
+                    $exam->research_status = 'pending_clarification';
+                    $exam->save();
+
+                    \Illuminate\Support\Facades\Log::info('Iterative identity verification needs user clarification', [
+                        'exam_id' => $exam->id,
+                        'task_id' => $task->id,
+                        'confidence' => $identityResult['confidence'] ?? 0,
+                        'followup_questions_count' => count($followupQuestions),
+                    ]);
+
+                    // STOP - wait for user to provide clarification
+                    return;
+                }
+
                 // Check if verification failed
                 if (($identityResult['status'] ?? '') === 'failed') {
                     $errorType = $identityResult['error'] ?? 'unknown';

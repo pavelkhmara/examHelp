@@ -70,7 +70,7 @@ class OverviewStructureBuilder extends AbstractAiService
                 $hints = [];
 
                 // Add quality hint
-                $hints[] = 'IMPORTANT: Previous attempt had poor category distribution. Please ensure EACH archetype has category_weights field with appropriate categories (e.g., listening, reading, writing, speaking). Do NOT put all archetypes in "unknown" category.';
+                $hints[] = 'IMPORTANT: Previous attempt had poor category distribution. Please ensure EACH question_archetype has category_weights field with appropriate categories (e.g., listening, reading, writing, speaking). Do NOT put all question_archetypes in "unknown" category.';
 
                 // Add validation error hints with specific instructions
                 if (!empty($validationErrors)) {
@@ -215,9 +215,9 @@ class OverviewStructureBuilder extends AbstractAiService
             Log::debug('OverviewStructureBuilder overview Validated json', ['overview' => $overview_normalized]);
 
             // Check structure quality before continuing
-            $arcs = $overview_normalized['global_archetypes'] ?? $overview_normalized['archetypes'] ?? [];
-            $buckets = $this->groupArchetypesByCategory($arcs);
-            $qualityScore = $this->calculateStructureQuality($buckets, $arcs);
+            $questionArchetypes = $overview_normalized['question_archetypes'] ?? $overview_normalized['archetypes'] ?? [];
+            $buckets = $this->groupArchetypesByCategory($questionArchetypes);
+            $qualityScore = $this->calculateStructureQuality($buckets, $questionArchetypes);
 
             Log::info('Structure quality check', [
                 'attempt' => $retryAttempt,
@@ -302,8 +302,8 @@ class OverviewStructureBuilder extends AbstractAiService
         // === 4) Build simplified structure ===
         $structure = $this->buildSimplifiedStructure($overview_normalized, $buckets, $categoryOrder);
 
-        // Add global_archetypes to structure for example generation
-        $structure['global_archetypes'] = $overview_normalized['global_archetypes'] ?? [];
+        // Add question_archetypes to structure for example generation
+        $structure['question_archetypes'] = $overview_normalized['question_archetypes'] ?? [];
 
         // Add section_archetypes if present
         if (!empty($overview_normalized['section_archetypes'])) {
@@ -338,7 +338,7 @@ class OverviewStructureBuilder extends AbstractAiService
 
         $task->addActivity('pipeline_completed', 'Research pipeline completed successfully', [
             'categories_count' => count($createdCategories),
-            'archetypes_count' => count($overview_normalized['global_archetypes'] ?? []),
+            'archetypes_count' => count($overview_normalized['question_archetypes'] ?? []),
         ]);
 
         return [
@@ -350,15 +350,15 @@ class OverviewStructureBuilder extends AbstractAiService
     }
 
     /**
-     * Group archetypes by category
+     * Group question archetypes by category
      */
-    protected function groupArchetypesByCategory(array $arcs): array
+    protected function groupArchetypesByCategory(array $questionArchetypes): array
     {
         $b = [];
-        foreach ($arcs as $arc) {
-            $cat = trim((string) ($arc['category'] ?? '')) ?: 'unknown';
+        foreach ($questionArchetypes as $archetype) {
+            $cat = trim((string) ($archetype['category'] ?? '')) ?: 'unknown';
             $b[$cat] = $b[$cat] ?? [];
-            $b[$cat][] = $arc;
+            $b[$cat][] = $archetype;
         }
 
         return $b;
@@ -398,7 +398,7 @@ class OverviewStructureBuilder extends AbstractAiService
     protected function createCategories(Exam $exam, GenerationTask $task, array $buckets, array $categoryOrder): array
     {
         $categoriesCount = count($categoryOrder);
-        $task->addActivity('categories_creation_started', "Creating {$categoriesCount} exam categories with archetypes", [
+        $task->addActivity('categories_creation_started', "Creating {$categoriesCount} exam categories with question_archetypes", [
             'categories_count' => $categoriesCount,
         ]);
 
@@ -426,7 +426,8 @@ class OverviewStructureBuilder extends AbstractAiService
                         'sum_weight' => $sumWeight,
                         'archetype_count' => count($items),
                         'steps' => $steps,
-                        'archetypes' => $this->buildArchetypesMeta($items),
+                        'question_archetypes' => $this->buildArchetypesMeta($items),
+                        'question_sequence' => $this->buildQuestionSequence($items),
                     ],
                 ];
 
@@ -485,6 +486,34 @@ class OverviewStructureBuilder extends AbstractAiService
     }
 
     /**
+     * Build question sequence for category (lightweight references)
+     * Implements Variant A (Global templates + references)
+     */
+    protected function buildQuestionSequence(array $items): array
+    {
+        return collect($items)
+            ->map(function (array $arc) {
+                $stepOrder = null;
+                if (isset($arc['other']) && is_array($arc['other'])) {
+                    $maybe = $arc['other']['step_order'] ?? $arc['other']['order'] ?? null;
+                    if (is_numeric($maybe)) {
+                        $stepOrder = (int) $maybe;
+                    }
+                }
+
+                return [
+                    'template_id' => $arc['id'],
+                    'order' => $stepOrder,
+                ];
+            })
+            ->sortBy(function ($s, $idx) {
+                return is_int($s['order']) ? $s['order'] : (100000 + $idx);
+            })
+            ->values()
+            ->all();
+    }
+
+    /**
      * Calculate sum weight for category
      */
     protected function calculateSumWeight(array $items, string $catKey): float
@@ -502,7 +531,7 @@ class OverviewStructureBuilder extends AbstractAiService
     }
 
     /**
-     * Build archetypes meta
+     * Build question_archetypes meta (simplified version for category storage)
      */
     protected function buildArchetypesMeta(array $items): array
     {
@@ -705,13 +734,13 @@ class OverviewStructureBuilder extends AbstractAiService
     /**
      * Calculate structure quality score
      */
-    protected function calculateStructureQuality(array $buckets, array $archetypes): float
+    protected function calculateStructureQuality(array $buckets, array $questionArchetypes): float
     {
-        if (empty($archetypes)) {
+        if (empty($questionArchetypes)) {
             return 0.0;
         }
 
-        $totalArchetypes = count($archetypes);
+        $totalArchetypes = count($questionArchetypes);
         $unknownCount = count($buckets['unknown'] ?? []);
 
         $unknownRatio = $unknownCount / $totalArchetypes;
@@ -787,12 +816,22 @@ class OverviewStructureBuilder extends AbstractAiService
      */
     protected function updateExamMeta(Exam $exam, array $overview_normalized): void
     {
+        // Build exam structure with question_archetypes, section_archetypes, and sources
+        $structure = [];
+        $structure['question_archetypes'] = $overview_normalized['question_archetypes'] ?? [];
+
+        if (!empty($overview_normalized['section_archetypes'])) {
+            $structure['section_archetypes'] = $overview_normalized['section_archetypes'];
+        }
+
+        $structure['sources'] = $overview_normalized['sources'] ?? $overview_normalized['research_sources'] ?? [];
+
         $exam->update([
             'meta' => array_merge($exam->meta ?? [], [
-                'sources' => $overview_normalized['sources'] ?? $overview_normalized['research_sources'] ?? [],
-                'exam_structure' => $overview_normalized['global_archetypes'],
-                'sections_count' => count($overview_normalized['global_archetypes']),
-                'total_questions' => array_sum(array_column($overview_normalized['global_archetypes'], 'count')),
+                'sources' => $structure['sources'],
+                'exam_structure' => $structure,
+                'sections_count' => count($structure['question_archetypes']),
+                'total_questions' => array_sum(array_column($structure['question_archetypes'], 'count')),
                 'last_researched_at' => now()->toISOString(),
             ]),
         ]);
@@ -851,9 +890,9 @@ class OverviewStructureBuilder extends AbstractAiService
 
         $overview['sections'] = $sections;
 
-        // Also handle global_archetypes if present (fallback structure)
-        if (isset($overview['global_archetypes'])) {
-            foreach ($overview['global_archetypes'] as &$archetype) {
+        // Also handle question_archetypes if present (fallback structure)
+        if (isset($overview['question_archetypes'])) {
+            foreach ($overview['question_archetypes'] as &$archetype) {
                 if (!isset($archetype['step_duration']) || $archetype['step_duration'] <= 0) {
                     // Estimate based on task type or use default
                     $archetype['step_duration'] = $this->estimateTaskDuration($archetype);

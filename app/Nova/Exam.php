@@ -192,6 +192,7 @@ class Exam extends Resource
                     'completed' => 'success',
                     'failed' => 'danger',
                     'need_info' => 'warning', // Желтый статус
+                    'pending_clarification' => 'warning', // Желтый - ожидание ответов
                 ])
                 ->labels([
                     'queued' => 'Queued',
@@ -200,6 +201,7 @@ class Exam extends Resource
                     'completed' => 'Completed',
                     'failed' => 'Failed',
                     'need_info' => 'Need Info',
+                    'pending_clarification' => 'Pending Clarification',
                 ])
                 ->sortable()
                 ->help(function () {
@@ -208,6 +210,9 @@ class Exam extends Resource
                     }
                     if ($this->research_status === 'need_info') {
                         return '⚠️ <strong>Additional information required. Please review Quick Check panel.</strong>';
+                    }
+                    if ($this->research_status === 'pending_clarification') {
+                        return '❓ <strong>Awaiting your response to clarification questions. Please answer the questions in the card below.</strong>';
                     }
 
                     return null;
@@ -605,13 +610,17 @@ class Exam extends Resource
                     'certain' => 'success',
                     'confirmed' => 'success',
                     'uncertain' => 'warning',
+                    'needs_clarification' => 'warning',
                     'unknown' => 'danger',
+                    'rejected' => 'danger',
                 ])
                 ->labels([
                     'certain' => '✓ Certain',
                     'confirmed' => '✓ Confirmed',
                     'uncertain' => '? Uncertain',
+                    'needs_clarification' => '❓ Needs Clarification',
                     'unknown' => 'Unknown',
+                    'rejected' => '❌ Rejected',
                 ])
                 ->onlyOnDetail(),
 
@@ -1456,6 +1465,7 @@ class Exam extends Resource
             new ConfirmIdentityAction,
             new \App\Nova\Actions\ConfidenceBoostAction,
             new ProvideAnswersAction,
+            new \App\Nova\Actions\RejectAllVariantsAction,
             new \App\Nova\Actions\CancelStalledTaskAction,
             // (new ConfirmExamIdentity)
             // ->canSee(function () {
