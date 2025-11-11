@@ -449,7 +449,7 @@ docker compose exec app composer fix   # Автоисправление форм
 cd /opt/examhelp/examHelp
 
 # Обновление кода из git
-git pull origin main
+git pull origin master
 make refresh  # Очистить кеши + перезапустить воркеры
 
 # Применение миграций
@@ -915,7 +915,7 @@ make stan
 cd /opt/examhelp/examHelp
 
 # Обновление из git
-git pull origin main
+git pull origin master
 make refresh
 
 # Применение миграций (ВАЖНО: сделать бэкап БД!)
