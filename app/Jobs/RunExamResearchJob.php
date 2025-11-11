@@ -25,8 +25,6 @@ class RunExamResearchJob implements ShouldQueue
         /** @var Exam $exam */
         $exam = Exam::query()->findOrFail($task->exam_id);
 
-        $task->addActivity('job_started', 'Research job started');
-
         // CRITICAL: If task is already in pending_confirmation or pending_clarification, STOP immediately
         // This prevents duplicate execution when Job is dispatched multiple times
         if (in_array($task->status, ['pending_confirmation', 'pending_clarification'], true)) {
@@ -42,8 +40,65 @@ class RunExamResearchJob implements ShouldQueue
             return;
         }
 
+        // Set status to running immediately so Activity Timeline appears
+        $task->status = 'running';
+        $task->save();
+
+        $exam->research_status = 'running_overview';
+        $exam->save();
+
+        // Add activity AFTER duplicate check
+        $task->addActivity('job_started', 'Research job started');
+        $task->updateHeartbeat(); // Initial heartbeat
+
+        // Phase 9: Check if we have a valid ConfirmedIdentity that can be reused
+        /** @var \App\Services\LanguageApp\ConfirmedIdentityService $confirmedIdentityService */
+        $confirmedIdentityService = app(\App\Services\LanguageApp\ConfirmedIdentityService::class);
+        $rerunCheck = $confirmedIdentityService->shouldRerunIdentity($exam);
+
         // Check if identity stage was already run
         $identityResult = $task->result['identity'] ?? null;
+
+        // If we have a valid ConfirmedIdentity and no rerun is needed, reuse it
+        if (! $rerunCheck['should_rerun'] && $rerunCheck['confirmed_identity']) {
+            $confirmedIdentity = $rerunCheck['confirmed_identity'];
+            $identityResult = $confirmedIdentity->identity_data;
+
+            // Mark as reused from ConfirmedIdentity
+            $identityResult['confirmed_identity_id'] = $confirmedIdentity->id;
+            $identityResult['confirmed_at'] = $confirmedIdentity->confirmed_at->toISOString();
+            $identityResult['reused_from_confirmed'] = true;
+
+            // Save to task result
+            $result = (array) ($task->result ?? []);
+            $result['identity'] = $identityResult;
+            $task->result = $result;
+            $task->save();
+
+            \Illuminate\Support\Facades\Log::info('Reusing confirmed identity from database', [
+                'task_id' => $task->id,
+                'exam_id' => $exam->id,
+                'confirmed_identity_id' => $confirmedIdentity->id,
+            ]);
+
+            $task->addActivity('confirmed_identity_reused', 'Using previously confirmed identity (no field changes detected)', [
+                'confirmed_identity_id' => $confirmedIdentity->id,
+                'confirmed_at' => $confirmedIdentity->confirmed_at->format('d.m.Y H:i:s'),
+            ]);
+        } elseif ($rerunCheck['should_rerun'] && $rerunCheck['confirmed_identity']) {
+            // Fields changed - warn about rerun
+            $changedFields = $rerunCheck['changed_fields'] ?? [];
+            \Illuminate\Support\Facades\Log::warning('Identity-affecting fields changed, re-running identity verification', [
+                'task_id' => $task->id,
+                'exam_id' => $exam->id,
+                'changed_fields' => $changedFields,
+            ]);
+
+            $task->addActivity('identity_fields_changed_warning', 'Identity-affecting fields changed since last confirmation - re-running verification', [
+                'changed_fields' => $changedFields,
+                'reason' => $rerunCheck['reason'] ?? 'Fields changed',
+            ]);
+        }
 
         // If user confirmed identity, NEVER re-run identity_guard
         $userConfirmed = $identityResult['user_confirmed'] ?? false;
@@ -75,9 +130,39 @@ class RunExamResearchJob implements ShouldQueue
             if ($useIterativeVerification) {
                 // S1: Run iterative identity verification (new method with web search)
                 $task->addActivity('iterative_verification_started', 'Running iterative identity verification (max 3 attempts, 6 min timeout)');
+                $task->updateHeartbeat(); // Heartbeat before long operation
 
                 $identityResult = $svc->runIterativeIdentityVerification($exam, $task);
                 $task->refresh();
+                $task->updateHeartbeat(); // Heartbeat after identity verification
+
+                // Check if verification needs clarification (low confidence, needs user input)
+                if (($identityResult['status'] ?? '') === 'needs_clarification') {
+                    $message = $identityResult['message'] ?? 'Please provide more information about your exam';
+                    $followupQuestions = $identityResult['followup_questions'] ?? [];
+
+                    $task->addActivity('iterative_verification_needs_clarification', "Identity verification needs clarification (confidence: {$identityResult['confidence']})", [
+                        'confidence' => $identityResult['confidence'] ?? 0,
+                        'followup_questions_count' => count($followupQuestions),
+                    ]);
+
+                    // Set task to pending_clarification and wait for user
+                    $task->status = 'pending_clarification';
+                    $task->save();
+
+                    $exam->research_status = 'pending_clarification';
+                    $exam->save();
+
+                    \Illuminate\Support\Facades\Log::info('Iterative identity verification needs user clarification', [
+                        'exam_id' => $exam->id,
+                        'task_id' => $task->id,
+                        'confidence' => $identityResult['confidence'] ?? 0,
+                        'followup_questions_count' => count($followupQuestions),
+                    ]);
+
+                    // STOP - wait for user to provide clarification
+                    return;
+                }
 
                 // Check if verification failed
                 if (($identityResult['status'] ?? '') === 'failed') {
@@ -121,31 +206,15 @@ class RunExamResearchJob implements ShouldQueue
                 'status' => $identityResult['status'] ?? 'unknown',
             ]);
 
-            // S1.5: If confidence is 0.90-0.96, run confidence_boost
-            if (($identityResult['needs_confidence_boost'] ?? false) === true) {
-                $task->addActivity('decision_point_confidence_boost', "Условие: 0.90 <= confidence < 0.97 (текущий: {$confidence}). Решение: запустить ConfidenceBoost для повышения уверенности", [
-                    'condition' => '0.90 <= confidence < 0.97',
-                    'confidence' => $confidence,
-                    'decision' => 'run_confidence_boost',
-                ]);
-                $task->addActivity('confidence_boost_started', 'Running confidence boost stage');
+            // Update exam->identity with verified identity data so QuickCheck can see it
+            $exam->identity = $identityResult;
+            $exam->save();
 
-                $identityResult = $svc->runConfidenceBoost($exam, $task, $identityResult);
+            // NOTE: ConfidenceBoost is now a separate manual action (ConfidenceBoostAction)
+            // It is no longer part of the automatic pipeline
+            // Operator can trigger it manually from Nova when confidence is 0.80-0.97
 
-                // Update task with boosted identity
-                $result = (array) ($task->result ?? []);
-                $result['identity'] = $identityResult;
-                $task->result = $result;
-                $task->save();
-                $task->refresh();
-
-                $boostedConfidence = $identityResult['confidence'] ?? 0.0;
-                $task->addActivity('confidence_boost_completed', "Confidence boosted to: {$boostedConfidence}", [
-                    'confidence' => $boostedConfidence,
-                ]);
-            }
-
-            // CRITICAL: After identity guard (and optional boost), check if confidence is acceptable
+            // CRITICAL: After identity guard, check if confidence is acceptable
             // If confidence < 0.97, we MUST stop and request user confirmation
             // UNLESS user already confirmed (from ConfirmIdentityAction) OR without_confirmation=true
             $finalConfidence = $identityResult['confidence'] ?? 0.0;
@@ -186,7 +255,7 @@ class RunExamResearchJob implements ShouldQueue
 
             // If user confirmed or without_confirmation, log it
             if ($userConfirmed || $withoutConfirmation) {
-                $task->addActivity('decision_point_confidence_check', "Условие: confidence >= 0.97 ИЛИ user_confirmed ИЛИ without_confirmation (текущий: {$finalConfidence}, подтверждено: ".($userConfirmed?'да':'нет').", без подтверждения: ".($withoutConfirmation?'да':'нет').'). Решение: продолжить к проверке hold', [
+                $task->addActivity('decision_point_confidence_check', "Условие: confidence >= 0.97 ИЛИ user_confirmed ИЛИ without_confirmation (текущий: {$finalConfidence}, подтверждено: ".($userConfirmed ? 'да' : 'нет').', без подтверждения: '.($withoutConfirmation ? 'да' : 'нет').'). Решение: продолжить к проверке hold', [
                     'condition' => 'confidence >= 0.97 OR user_confirmed OR without_confirmation',
                     'confidence' => $finalConfidence,
                     'user_confirmed' => $userConfirmed,
@@ -207,6 +276,42 @@ class RunExamResearchJob implements ShouldQueue
                     'user_confirmed' => false,
                     'decision' => 'continue_to_hold_check',
                 ]);
+            }
+
+            // Phase 9: Create ConfirmedIdentity when confidence is high enough or user confirmed
+            // Only create if we don't already have one for this identity AND identity is not reused
+            $isReused = $identityResult['reused_from_confirmed'] ?? false;
+            if (! $isReused && ($finalConfidence >= 0.97 || $userConfirmed)) {
+                try {
+                    $existingConfirmed = $confirmedIdentityService->shouldRerunIdentity($exam);
+                    // Only create if there's no existing valid ConfirmedIdentity
+                    if ($existingConfirmed['should_rerun'] || ! $existingConfirmed['confirmed_identity']) {
+                        $confirmedIdentity = $confirmedIdentityService->createConfirmedIdentity(
+                            $exam,
+                            $identityResult,
+                            $task
+                        );
+
+                        $task->addActivity('confirmed_identity_created', 'Identity confirmed and saved to database', [
+                            'confirmed_identity_id' => $confirmedIdentity->id,
+                            'confidence' => $finalConfidence,
+                            'user_confirmed' => $userConfirmed,
+                        ]);
+
+                        \Illuminate\Support\Facades\Log::info('ConfirmedIdentity created', [
+                            'exam_id' => $exam->id,
+                            'task_id' => $task->id,
+                            'confirmed_identity_id' => $confirmedIdentity->id,
+                        ]);
+                    }
+                } catch (\Throwable $e) {
+                    \Illuminate\Support\Facades\Log::error('Failed to create ConfirmedIdentity', [
+                        'exam_id' => $exam->id,
+                        'task_id' => $task->id,
+                        'error' => $e->getMessage(),
+                    ]);
+                    // Don't fail the job - this is non-critical
+                }
             }
         }
 
@@ -285,8 +390,35 @@ class RunExamResearchJob implements ShouldQueue
             ]);
 
             $task->addActivity('variant_probe_started', 'Running variant probe to disambiguate exam');
+            $task->updateHeartbeat(); // Heartbeat before variant probe
 
-            $variantResult = $svc->runVariantProbe($exam, $task, $identityResult);
+            try {
+                $variantResult = $svc->runVariantProbe($exam, $task, $identityResult);
+                $task->updateHeartbeat(); // Heartbeat after variant probe
+
+                $task->addActivity('variant_probe_completed', 'Variant probe completed', [
+                    'disambiguation_needed' => $variantResult['disambiguation_needed'] ?? false,
+                    'candidates_count' => count($variantResult['candidates'] ?? []),
+                ]);
+            } catch (\Throwable $e) {
+                $task->addActivity('variant_probe_failed', 'Variant probe failed: '.$e->getMessage());
+
+                \Illuminate\Support\Facades\Log::error('Variant probe failed', [
+                    'exam_id' => $exam->id,
+                    'task_id' => $task->id,
+                    'error' => $e->getMessage(),
+                    'trace' => $e->getTraceAsString(),
+                ]);
+
+                $task->status = 'failed';
+                $task->error = 'Variant probe failed: '.$e->getMessage();
+                $task->save();
+
+                $exam->research_status = 'failed';
+                $exam->save();
+
+                return;
+            }
 
             // If disambiguation is needed, stop and wait for user input
             // UNLESS without_confirmation is true
@@ -306,37 +438,68 @@ class RunExamResearchJob implements ShouldQueue
                     ]);
 
                     $task->addActivity('auto_clarification_started', 'Running AI auto-clarification');
+                    $task->updateHeartbeat(); // Heartbeat before AI call
 
-                    $autoClarification = $svc->runAutoClarification($exam, $task, $identityResult);
+                    try {
+                        $autoClarification = $svc->runAutoClarification($exam, $task, $identityResult);
 
-                    // Merge auto-clarified data into user_input
-                    $currentInput = $task->request['user_input'] ?? [];
-                    $inferredData = $autoClarification['inferred_data'] ?? [];
-                    $mergedInput = array_merge($currentInput, $inferredData);
+                        $task->updateHeartbeat(); // Heartbeat after AI call
+                        $task->addActivity('auto_clarification_completed', 'Auto-clarification completed successfully', [
+                            'confidence' => $autoClarification['confidence'] ?? null,
+                            'inferred_fields' => array_keys($autoClarification['inferred_data'] ?? []),
+                        ]);
 
-                    // Update task request
-                    $request = (array) ($task->request ?? []);
-                    $request['user_input'] = $mergedInput;
-                    $task->request = $request;
+                        // Merge auto-clarified data into user_input
+                        $currentInput = $task->request['user_input'] ?? [];
+                        $inferredData = $autoClarification['inferred_data'] ?? [];
+                        $mergedInput = array_merge($currentInput, $inferredData);
 
-                    // Mark identity as auto-clarified
-                    $identityResult['auto_clarified'] = true;
-                    $identityResult['auto_clarified_at'] = now()->toISOString();
-                    $identityResult['auto_clarified_data'] = $inferredData;
-                    $identityResult['disclaimer'] = $autoClarification['disclaimer'] ?? 'AI-inferred data used for structure generation';
-                    $identityResult['ai_reasoning'] = $autoClarification['reasoning'] ?? null;
+                        // Update task request
+                        $request = (array) ($task->request ?? []);
+                        $request['user_input'] = $mergedInput;
+                        $task->request = $request;
 
-                    // Update result and re-run identity guard with new data
-                    $result = (array) ($task->result ?? []);
-                    $result['identity'] = $identityResult;
-                    $task->result = $result;
-                    $task->save();
+                        // Mark identity as auto-clarified
+                        $identityResult['auto_clarified'] = true;
+                        $identityResult['auto_clarified_at'] = now()->toISOString();
+                        $identityResult['auto_clarified_data'] = $inferredData;
+                        $identityResult['disclaimer'] = $autoClarification['disclaimer'] ?? 'AI-inferred data used for structure generation';
+                        $identityResult['ai_reasoning'] = $autoClarification['reasoning'] ?? null;
 
-                    // Re-run identity guard with merged data
-                    $identityResult = $svc->runIdentityGuard($exam, $task);
-                    $task->refresh();
+                        // Update result and re-run identity guard with new data
+                        $result = (array) ($task->result ?? []);
+                        $result['identity'] = $identityResult;
+                        $task->result = $result;
+                        $task->save();
 
-                    // Continue with pipeline
+                        // Re-run identity guard with merged data
+                        $task->addActivity('identity_guard_rerun', 'Re-running identity guard with auto-clarified data');
+                        $task->updateHeartbeat(); // Heartbeat before re-run
+
+                        $identityResult = $svc->runIdentityGuard($exam, $task);
+                        $task->refresh();
+                        $task->updateHeartbeat(); // Heartbeat after re-run
+
+                        // Continue with pipeline
+                    } catch (\Throwable $e) {
+                        $task->addActivity('auto_clarification_failed', 'Auto-clarification failed: '.$e->getMessage());
+
+                        \Illuminate\Support\Facades\Log::error('Auto-clarification failed', [
+                            'exam_id' => $exam->id,
+                            'task_id' => $task->id,
+                            'error' => $e->getMessage(),
+                            'trace' => $e->getTraceAsString(),
+                        ]);
+
+                        $task->status = 'failed';
+                        $task->error = 'Auto-clarification failed: '.$e->getMessage();
+                        $task->save();
+
+                        $exam->research_status = 'failed';
+                        $exam->save();
+
+                        return;
+                    }
                 } else {
                     // Normal flow - wait for user
                     $task->addActivity('decision_point_disambiguation', 'Условие: disambiguation_needed = true И without_confirmation = false. Решение: PAUSE - ожидание уточнения от пользователя', [
@@ -378,32 +541,55 @@ class RunExamResearchJob implements ShouldQueue
         $identitySnapshot = $task->result['identity'] ?? null;
 
         // Run the main structure building pipeline
-        $pipelineResult = $svc->runPipeline($exam, $task);
+        $task->updateHeartbeat(); // Heartbeat before overview pipeline
 
-        // Check if pipeline failed
-        if (isset($pipelineResult['ok']) && $pipelineResult['ok'] === false) {
-            $error = $pipelineResult['error'] ?? 'unknown_error';
-            $errors = $pipelineResult['errors'] ?? [];
-            $errorMessage = implode('; ', $errors);
+        try {
+            $pipelineResult = $svc->runPipeline($exam, $task);
+            $task->updateHeartbeat(); // Heartbeat after overview pipeline
 
-            $task->addActivity('pipeline_failed', "Pipeline failed: {$error}", [
-                'error' => $error,
-                'errors' => $errors,
+            // Check if pipeline failed
+            if (isset($pipelineResult['ok']) && $pipelineResult['ok'] === false) {
+                $error = $pipelineResult['error'] ?? 'unknown_error';
+                $errors = $pipelineResult['errors'] ?? [];
+                $errorMessage = implode('; ', $errors);
+
+                $task->addActivity('pipeline_failed', "Pipeline failed: {$error}", [
+                    'error' => $error,
+                    'errors' => $errors,
+                ]);
+
+                $task->status = 'failed';
+                $task->error = $errorMessage ?: "Pipeline failed: {$error}";
+                $task->save();
+
+                $exam->research_status = 'failed';
+                $exam->save();
+
+                \Illuminate\Support\Facades\Log::error('Research pipeline failed', [
+                    'exam_id' => $exam->id,
+                    'task_id' => $task->id,
+                    'error' => $error,
+                    'errors' => $errors,
+                ]);
+
+                return;
+            }
+        } catch (\Throwable $e) {
+            $task->addActivity('pipeline_exception', 'Pipeline threw exception: '.$e->getMessage());
+
+            \Illuminate\Support\Facades\Log::error('Research pipeline threw exception', [
+                'exam_id' => $exam->id,
+                'task_id' => $task->id,
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString(),
             ]);
 
             $task->status = 'failed';
-            $task->error = $errorMessage ?: "Pipeline failed: {$error}";
+            $task->error = 'Pipeline exception: '.$e->getMessage();
             $task->save();
 
             $exam->research_status = 'failed';
             $exam->save();
-
-            \Illuminate\Support\Facades\Log::error('Research pipeline failed', [
-                'exam_id' => $exam->id,
-                'task_id' => $task->id,
-                'error' => $error,
-                'errors' => $errors,
-            ]);
 
             return;
         }

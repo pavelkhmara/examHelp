@@ -69,7 +69,7 @@ class IdentityGuardService extends AbstractAiService
             $res = $this->setConfidenceFlags($res);
 
             // Log with tokens
-            $this->logIdentityResult($exam, $task, $user, $docId, $extracted, $res, $aiResponse);
+            $this->logIdentityResult($exam, $task, $user, $docId, $extracted, $res, $aiPayload,$aiResponse);
         } catch (\Throwable $e) {
             // Fallback to heuristic method if AI fails
             Log::warning('Identity Guard AI failed, using fallback heuristics', [
@@ -377,6 +377,7 @@ class IdentityGuardService extends AbstractAiService
         string|int|null $docId,
         ?string $extracted,
         array $res,
+        array $req,
         array $aiResponse
     ): void {
         GenerationLog::create([
@@ -388,6 +389,7 @@ class IdentityGuardService extends AbstractAiService
                 'document_id' => $docId,
                 'extracted_present' => ! is_null($extracted),
                 'extracted_length' => $extracted ? mb_strlen($extracted) : 0,
+                'messages' => $req['messages'],
             ],
             'response' => $res,
             'prompt_tokens' => $aiResponse['usage']['prompt_tokens'] ?? 0,

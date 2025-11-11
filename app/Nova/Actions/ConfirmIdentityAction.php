@@ -78,6 +78,36 @@ class ConfirmIdentityAction extends Action
                 $task->status = 'queued'; // Reset to queued so job can pick it up
                 $task->save();
 
+                // Phase 9: Create ConfirmedIdentity for future reuse
+                try {
+                    /** @var \App\Services\LanguageApp\ConfirmedIdentityService $confirmedIdentityService */
+                    $confirmedIdentityService = app(\App\Services\LanguageApp\ConfirmedIdentityService::class);
+                    $confirmedIdentity = $confirmedIdentityService->createConfirmedIdentity(
+                        $exam,
+                        $identity,
+                        $task
+                    );
+
+                    $task->addActivity('user_confirmed_identity', 'User confirmed identity via Nova action', [
+                        'confirmed_identity_id' => $confirmedIdentity->id,
+                        'original_confidence' => $originalConfidence,
+                        'notes' => $notes,
+                    ]);
+
+                    \Illuminate\Support\Facades\Log::info('ConfirmedIdentity created from user confirmation', [
+                        'exam_id' => $exam->id,
+                        'task_id' => $task->id,
+                        'confirmed_identity_id' => $confirmedIdentity->id,
+                    ]);
+                } catch (\Throwable $e) {
+                    // Log error but don't fail the action
+                    \Illuminate\Support\Facades\Log::error('Failed to create ConfirmedIdentity in ConfirmIdentityAction', [
+                        'exam_id' => $exam->id,
+                        'task_id' => $task->id,
+                        'error' => $e->getMessage(),
+                    ]);
+                }
+
                 // Continue the pipeline
                 \App\Jobs\RunExamResearchJob::dispatch($task->id)
                     ->delay(now()->addSeconds(1));

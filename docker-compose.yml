@@ -101,9 +101,9 @@ services:
     restart: unless-stopped
 
   scheduler:
-    build: ./docker/app
-      # context: .
-      # dockerfile: Dockerfile
+    build:
+      context: .
+      dockerfile: Dockerfile
     container_name: examhelp-scheduler
     env_file:
       - .env

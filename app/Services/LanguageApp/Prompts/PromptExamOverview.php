@@ -32,7 +32,7 @@ Authority matters, but concrete, checkable evidence wins tie-breaks.
 
 
 **MINIMUM SOURCE REQUIREMENTS:**
-- At least 5 high-quality sources (minimum 4 web + documents if provided)If a primary/official document fully specifies timing + sections, 3 sources are sufficient.
+- At least 4-5 high-quality sources (minimum 3-4 web + documents if provided). If a primary/official document fully specifies timing + sections, 3 sources are sufficient.
 - Ensure diversity: max 2 from the same publisher/domain.
 - Include ≥1 primary-evidence page (contains exact timings/sections or direct excerpts of official docs). If none exist, state `no_primary_evidence_found` and pick the highest evidence-weighted sources instead (see below).
 
@@ -48,11 +48,38 @@ Prefer higher total score. You may select a non-official page over an official o
 **Authority hints (non-binding):**
 Official provider and government portals usually score high on Authority, but do not override lack of Specificity/Verifiability.
 
+**URL QUALITY VALIDATION (CRITICAL):**
+Before including any source, VERIFY that the URL:
+1. **Does NOT contain error indicators** in the page content:
+   - "not found", "404", "page not found"
+   - "page doesn't exist", "no longer available"
+   - "access denied", "forbidden"
+   - "this page has been removed/deleted/moved"
+   - "error", "oops", "something went wrong"
+2. **Is accessible and contains actual exam information**
+3. **Is not a generic landing page or homepage** - must be a specific page about exam structure/format
+
+**EXAMPLES OF GOOD SOURCES (use as reference for quality):**
+✓ https://certyfikatpolski.pl/o-egzaminie/struktura-egzaminu/ (Polish Certificate - exam structure)
+✓ https://certyfikatpolski.pl/o-egzaminie/kto-moze-zdawac-egzamin/ (Polish Certificate - eligibility)
+✓ https://www.ets.org/toefl/test-takers/ibt/about/content.html (TOEFL - official content guide)
+✓ https://www.testdaf.de/de/teilnehmende/der-papierbasierte-testdaf/aufbau-des-papierbasierten-testdaf/ (TestDaF - structure)
+✓ https://www.france-education-international.fr/diplome/delf-tout-public/niveau-a2 (DELF - level description)
+
+These examples show:
+- Official provider domains
+- Specific pages about exam structure/format/content
+- Direct information about sections, timing, and task types
+- Not generic "about us" or landing pages
+
 **DO NOT USE:**
 - Generic educational websites without clear attribution
 - Commercial prep sites without official credentials
 - User-generated content (forums, Reddit, Quora)
 - Sites that cannot be verified
+- **Broken/error pages** (see validation above)
+- **Generic landing pages** without specific exam structure information
+- **Outdated pages** that reference deprecated exam versions
 
 **SOURCE CONTRIBUTION TRACKING (CRITICAL):**
 For EACH source you use, you MUST specify:
@@ -92,10 +119,10 @@ Example:
 }
 ```
 **SECTION ARCHETYPE MODEL (section_archetypes):**
-Provide a section-level blueprint per exam section (listening, reading, grammar_lexis, writing, speaking):
+Provide a section-level blueprint per exam section (e.g. listening, reading, writing, speaking - only existing):
 For each section_archetype:
 {
-  "section": "listening|reading|grammar_lexis|writing|speaking",
+  "section": "listening|reading|grammar_lexis|writing|speaking", // this is example, you can use only existing sections
   "objectives": ["comprehension gist","detail","inference", ...],
   "skills_subskills": ["note-taking","cohesion","pronunciation-range", ...],
   "allowed_question_types": ["single_select","multi_select","gap_cloze", ...],  // must be from QuestionType enum
@@ -129,8 +156,8 @@ This is type_specific for question_types:
 - Extract patterns at TWO levels:
   (A) section_archetypes (section-level patterns)
   (B) question_archetypes (question-level patterns)
-- **CLASSIFY EVERY TASK** into one of our accepted question types (QuestionType enum keys below). 
-- Apply global_archetypes at the **question level**: for each question_archetype include `question_type` and a `type_specific` object with fields required for that type.
+- **CLASSIFY EVERY TASK** into one of our accepted question types (QuestionType enum keys below).
+- Apply question_archetypes at the **question level**: for each question_archetype include `question_type` and a `type_specific` object with fields required for that type.
 - Keep section mapping via `category_map` (sections → weights per question_archetype).
 
 **ALLOWED QUESTION TYPES (use exact keys; do not invent):**
@@ -140,7 +167,7 @@ listen_mcq, dictation, error_correction, writing_prompt, speaking_prompt
 
 **CLASSIFICATION & MAPPING RULES:**
 1) For every task, first pick `question_type` from the ALLOWED list.
-2) Build/choose an appropriate `question_archetype` (global_archetypes entry) with `question_type` and `type_specific`.
+2) Build/choose an appropriate `question_archetype` with `question_type` and `type_specific`.
 3) Map that archetype to sections via `category_map` (e.g., reading → {L-MC: 0.4, gap_cloze: 0.2, ...}).
 4) Ensure `section_archetypes[section].allowed_question_types` includes the types you map for that section; otherwise flag inconsistency.
 
@@ -168,7 +195,7 @@ PRIORITY ORDER (do not miss higher priorities):
 ### TIMEBOX POLICY (2.5-2.95 minutes)
 If time is short, ensure first:
 1) Canonical identity + **total_exam_duration** with citation.
-2) At least **1 section_archetype** per active section (listening, reading, grammar_lexis, writing, speaking) with key invariants.
+2) At least **1 section_archetype** per active section (e.g.listening, reading, grammar_lexis, writing, speaking, this is example, you can use only existing sections) with key invariants.
 3) ≥ **3 question_archetypes** with proper `question_type` (from ALLOWED TYPES) and a non-empty `type_specific`.
 Then expand with section timings, thresholds, and additional archetypes.
 
@@ -308,7 +335,7 @@ HINT;
 
 CRITICAL REQUIREMENT - Section Distribution:
 Each task archetype MUST include a 'category_weights' field mapping it to appropriate exam sections.
-Common sections: listening, reading, writing, speaking, grammar, vocabulary.
+Common sections: e.g.listening, reading, writing, speaking, grammar, vocabulary.  // this is example, you can use only existing sections
 Example:
 {
   "id": "L-MC",
@@ -362,7 +389,7 @@ SCHEMA;
             ],
             'section_archetypes' => [
                 [
-                    'section' => 'string (listening|reading|grammar_lexis|writing|speaking)',
+                    'section' => 'string (listening|reading|grammar_lexis|writing|speaking)',  // this is example, you can use only existing sections
                     'objectives' => ['string (comprehension gist, detail, inference, etc.)'],
                     'skills_subskills' => ['string (note-taking, cohesion, pronunciation-range, etc.)'],
                     'allowed_question_types' => ['string (must be from QuestionType enum: single_select, multi_select, gap_cloze, etc.)'],

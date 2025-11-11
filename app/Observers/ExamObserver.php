@@ -42,10 +42,60 @@ class ExamObserver
 
     /**
      * Handle the Exam "updated" event.
+     *
+     * Отслеживает изменения в полях, влияющих на идентичность.
+     * При изменении:
+     * - Инвалидирует ConfirmedIdentity
+     * - Сбрасывает dismissed cards (чтобы показать FieldsChangedCard)
      */
     public function updated(Exam $exam): void
     {
-        //
+        // Поля, влияющие на идентичность
+        $identityAffectingFields = [
+            'title',
+            'user_input',
+            'level',
+            'description',
+            // document changes отслеживаются через ExamDocumentObserver
+        ];
+
+        // Проверяем, изменились ли влияющие поля
+        $changedFields = [];
+        foreach ($identityAffectingFields as $field) {
+            if ($exam->isDirty($field)) {
+                $changedFields[] = $field;
+            }
+        }
+
+        if (!empty($changedFields)) {
+            Log::info('ExamObserver: Identity-affecting fields changed', [
+                'exam_id' => $exam->id,
+                'changed_fields' => $changedFields,
+            ]);
+
+            // Инвалидировать подтвержденную идентичность
+            $confirmedIdentityService = app(\App\Services\LanguageApp\ConfirmedIdentityService::class);
+            $confirmedIdentityService->invalidateConfirmedIdentity(
+                $exam,
+                'Fields changed: ' . implode(', ', $changedFields)
+            );
+
+            // Сбросить dismissed cards, чтобы показать FieldsChangedCard
+            $meta = $exam->meta ?? [];
+            if (isset($meta['dismissed_cards'])) {
+                // Убираем 'fields_changed' из dismissed, чтобы карточка показалась снова
+                $meta['dismissed_cards'] = array_filter(
+                    $meta['dismissed_cards'],
+                    fn($card) => $card !== 'fields_changed'
+                );
+                $exam->meta = $meta;
+                $exam->saveQuietly(); // Не вызываем observer снова
+            }
+
+            Log::info('ExamObserver: ConfirmedIdentity invalidated and cards reset', [
+                'exam_id' => $exam->id,
+            ]);
+        }
     }
 
     /**

@@ -159,6 +159,31 @@ class Exam extends Resource
             //         return null;
             //     }),
 
+            Badge::make('Analysis Status', 'analysis_status')
+                ->map([
+                    'pending' => 'info',
+                    'running' => 'warning',
+                    'completed' => 'success',
+                    'failed' => 'danger',
+                ])
+                ->labels([
+                    'pending' => 'Pending',
+                    'running' => 'Running',
+                    'completed' => 'Completed',
+                    'failed' => 'Failed',
+                ])
+                ->sortable()
+                ->help(function () {
+                    if ($this->analysis_status === 'running') {
+                        return '⏳ <strong>Metadata analysis in progress. Please wait before starting research.</strong>';
+                    }
+                    if ($this->analysis_status === 'failed') {
+                        return '❌ <strong>Metadata analysis failed. Check logs for details.</strong>';
+                    }
+
+                    return null;
+                }),
+
             Badge::make('Research Status', 'research_status')
                 ->map([
                     'queued' => 'info',
@@ -166,6 +191,8 @@ class Exam extends Resource
                     'running_overview' => 'warning',
                     'completed' => 'success',
                     'failed' => 'danger',
+                    'need_info' => 'warning', // Желтый статус
+                    'pending_clarification' => 'warning', // Желтый - ожидание ответов
                 ])
                 ->labels([
                     'queued' => 'Queued',
@@ -173,11 +200,19 @@ class Exam extends Resource
                     'running_overview' => 'In Progress',
                     'completed' => 'Completed',
                     'failed' => 'Failed',
+                    'need_info' => 'Need Info',
+                    'pending_clarification' => 'Pending Clarification',
                 ])
                 ->sortable()
                 ->help(function () {
                     if (in_array($this->research_status, ['queued', 'running', 'running_overview'], true)) {
                         return '🔄 <strong>Task is processing. Refresh this page to see updates.</strong>';
+                    }
+                    if ($this->research_status === 'need_info') {
+                        return '⚠️ <strong>Additional information required. Please review Quick Check panel.</strong>';
+                    }
+                    if ($this->research_status === 'pending_clarification') {
+                        return '❓ <strong>Awaiting your response to clarification questions. Please answer the questions in the card below.</strong>';
                     }
 
                     return null;
@@ -206,6 +241,28 @@ class Exam extends Resource
         $task = $this->generationTasks()->latest()->first();
         $identity = $task ? ($task->result['identity'] ?? null) : null;
 
+        // ============== Quick Check for Identity ==============
+        // Показываем, если исследование еще не завершено
+        if ($this->research_status !== 'completed') {
+            // Refresh model to get latest identity data from Identity stage
+            $this->resource->refresh();
+
+            $quickCheckService = app(\App\Services\LanguageApp\QuickCheckService::class);
+            $checkResult = $quickCheckService->check($this->resource);
+
+            $fields[] = new Panel('✅ Quick Check for Identity', [
+                \Laravel\Nova\Fields\Text::make('Readiness Check', 'quick_check_html')
+                    ->asHtml()
+                    ->resolveUsing(fn() => $quickCheckService->getChecklistHtml($checkResult))
+                    ->onlyOnDetail()
+                    ->help(
+                        $checkResult['ready']
+                            ? '✅ Ready to run research'
+                            : '⚠️ ' . $quickCheckService->getMissingFieldsMessage($checkResult)
+                    ),
+            ]);
+        }
+
         // ============== STAGE 0: Initial Metadata Analysis ==============
         if ($this->analysis_status === 'completed' && (!empty($this->user_meta) || !empty($this->system_analysis))) {
             $fields[] = CollapsiblePanel::make('🤖 Initial Metadata Analysis', 'metadata_analysis_html')
@@ -220,6 +277,16 @@ class Exam extends Resource
 
         // ============== STAGE 1: Identity Verification ==============
         if ($task && $identity) {
+            // System Analysis Panel (collapsible) - shows anchors and enrichments
+            $systemAnalysisHtml = $this->buildSystemAnalysisHtml($identity, $task);
+            if ($systemAnalysisHtml) {
+                $fields[] = CollapsiblePanel::make('🤖 System Analysis', 'system_analysis_html')
+                    ->heading('🤖 System Analysis')
+                    ->content($systemAnalysisHtml)
+                    ->collapsed(true)
+                    ->onlyOnDetail();
+            }
+
             $identityFields = $this->buildIdentityFields($task, $identity);
 
             // Add issues/warnings/red_flags if present
@@ -235,8 +302,11 @@ class Exam extends Resource
 
             $fields[] = new Panel('🔍 Stage 1: Identity Verification', $identityFields);
 
-            // Показываем вопросы, если они есть
-            if (! empty($identity['followups']) || ! empty($identity['need_fields'])) {
+            // Показываем вопросы, если они есть И research еще не завершен
+            $hasQuestions = ! empty($identity['followups']) || ! empty($identity['need_fields']);
+            $researchNotCompleted = $this->research_status !== 'completed';
+
+            if ($hasQuestions && $researchNotCompleted) {
                 $fields[] = $this->buildFollowupPanel($identity, $task);
             }
 
@@ -291,10 +361,10 @@ class Exam extends Resource
                     ->json()
                     ->onlyOnDetail(),
 
-                Code::make('Full Structure JSON')
-                    ->json(JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT)
-                    ->resolveUsing(fn () => json_encode($this->exam_structure ?? [], JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES))
-                    ->onlyOnDetail(),
+                // Code::make('Full Structure JSON')
+                //     ->json(JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT)
+                //     ->resolveUsing(fn () => json_encode($this->exam_structure ?? [], JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES))
+                //     ->onlyOnDetail(),
             ];
 
             // Add issues/warnings/notes if present in exam_structure
@@ -321,11 +391,40 @@ class Exam extends Resource
 
         // ============== Sources (если есть) ==============
         if (! empty($this->sources)) {
-            $fields[] = new Panel('📚 Sources', [
-                Code::make('Sources JSON')
-                    ->json(JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT)
-                    ->resolveUsing(fn () => json_encode($this->sources ?? [], JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES))
-                    ->onlyOnDetail(),
+            $fields[] = CollapsiblePanel::make('📚 Sources', 'sources_panel_html')
+                ->heading('📚 Sources')
+                ->content($this->buildSourcesHtml())
+                ->collapsed(true)
+                ->onlyOnDetail();
+        }
+
+        // ============== Activity Timeline (для running tasks) ==============
+        $runningTasks = $this->generationTasks()->where('status', 'running')->get();
+        if ($runningTasks->isNotEmpty()) {
+            $fields[] = new Panel('⏱️ Activity Timeline', [
+                \Laravel\Nova\Fields\Text::make('Current Progress', 'current_progress_html')
+                    ->asHtml()
+                    ->resolveUsing(function () use ($runningTasks) {
+                        $html = '';
+                        foreach ($runningTasks as $task) {
+                            $progress = $task->getCurrentProgress();
+                            if ($progress) {
+                                $html .= '<div style="font-weight: bold; margin-bottom: 10px;">' . htmlspecialchars($progress) . '</div>';
+                            }
+
+                            $formatted = $task->getFormattedActivities();
+                            if (!empty($formatted)) {
+                                $html .= '<div style="font-family: monospace; line-height: 1.6;">';
+                                foreach ($formatted as $activity) {
+                                    $html .= '<div>' . htmlspecialchars($activity['timestamp'] . ' ' . $activity['message']) . '</div>';
+                                }
+                                $html .= '</div>';
+                            }
+                        }
+                        return $html ?: '<em>No activities yet</em>';
+                    })
+                    ->onlyOnDetail()
+                    ->help('Real-time progress of running tasks'),
             ]);
         }
 
@@ -511,13 +610,17 @@ class Exam extends Resource
                     'certain' => 'success',
                     'confirmed' => 'success',
                     'uncertain' => 'warning',
+                    'needs_clarification' => 'warning',
                     'unknown' => 'danger',
+                    'rejected' => 'danger',
                 ])
                 ->labels([
                     'certain' => '✓ Certain',
                     'confirmed' => '✓ Confirmed',
                     'uncertain' => '? Uncertain',
+                    'needs_clarification' => '❓ Needs Clarification',
                     'unknown' => 'Unknown',
+                    'rejected' => '❌ Rejected',
                 ])
                 ->onlyOnDetail(),
 
@@ -999,6 +1102,269 @@ class Exam extends Resource
         return ['Unknown' => 'Unknown'] + $options;
     }
 
+    /**
+     * Build HTML for System Analysis panel showing PDF facts and enrichments
+     */
+    private function buildSystemAnalysisHtml(array $identity, $task): ?string
+    {
+        $anchors = $identity['anchors'] ?? [];
+        $userInput = $task->request['user_input'] ?? null;
+        $documentHints = $task->request['document_hints'] ?? [];
+
+        if (empty($anchors) && empty($userInput) && empty($documentHints)) {
+            return null;
+        }
+
+        $html = '<div class="space-y-4">';
+
+        // Section 1: Facts from PDF (Anchors)
+        if (!empty($anchors)) {
+            $html .= '<div class="border-b border-gray-200 dark:border-gray-700 pb-4">';
+            $html .= '<h4 class="text-base font-semibold text-gray-900 dark:text-gray-100 mb-3">📄 Facts from Documents</h4>';
+            $html .= '<div class="space-y-2">';
+
+            foreach ($anchors as $idx => $anchor) {
+                $phrase = $anchor['phrase'] ?? $anchor['text'] ?? 'Unknown';
+                $source = $anchor['source'] ?? null;
+                $page = $anchor['page'] ?? null;
+                $confidence = $anchor['confidence'] ?? $anchor['score'] ?? null;
+
+                // Confidence badge
+                $confidenceBadge = '';
+                if ($confidence !== null) {
+                    $confClass = 'bg-gray-100 text-gray-700';
+                    $confLabel = 'Unknown';
+
+                    if (is_numeric($confidence)) {
+                        if ($confidence >= 0.9) {
+                            $confClass = 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300';
+                            $confLabel = number_format($confidence * 100, 0) . '%';
+                        } elseif ($confidence >= 0.7) {
+                            $confClass = 'bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300';
+                            $confLabel = number_format($confidence * 100, 0) . '%';
+                        } else {
+                            $confClass = 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-300';
+                            $confLabel = number_format($confidence * 100, 0) . '%';
+                        }
+                    }
+
+                    $confidenceBadge = "<span class=\"{$confClass} text-xs font-medium px-2 py-0.5 rounded ml-2\">{$confLabel}</span>";
+                }
+
+                $html .= '<div class="p-3 bg-gray-50 dark:bg-gray-800 rounded border border-gray-200 dark:border-gray-700">';
+                $html .= '<div class="flex items-start justify-between mb-1">';
+                $html .= '<span class="text-xs font-medium text-gray-500 dark:text-gray-400">';
+                if ($source) {
+                    $html .= htmlspecialchars($source);
+                }
+                if ($page) {
+                    $html .= $source ? ' · ' : '';
+                    $html .= "Page {$page}";
+                }
+                if (!$source && !$page) {
+                    $html .= 'Document';
+                }
+                $html .= '</span>';
+                $html .= $confidenceBadge;
+                $html .= '</div>';
+                $html .= '<p class="text-sm text-gray-800 dark:text-gray-200">"' . htmlspecialchars($phrase) . '"</p>';
+                $html .= '</div>';
+            }
+
+            $html .= '</div></div>';
+        }
+
+        // Section 2: Enrichments from User Input
+        if ($userInput) {
+            $html .= '<div class="border-b border-gray-200 dark:border-gray-700 pb-4">';
+            $html .= '<h4 class="text-base font-semibold text-gray-900 dark:text-gray-100 mb-3">👤 User Input Enrichments</h4>';
+            $html .= '<div class="p-3 bg-blue-50 dark:bg-blue-900/20 rounded border border-blue-200 dark:border-blue-800">';
+            $html .= '<p class="text-sm text-blue-900 dark:text-blue-100 whitespace-pre-wrap">';
+            $html .= htmlspecialchars(is_string($userInput) ? $userInput : json_encode($userInput, JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT));
+            $html .= '</p>';
+            $html .= '</div></div>';
+        }
+
+        // Section 3: Document Hints Summary
+        if (!empty($documentHints)) {
+            $html .= '<div>';
+            $html .= '<h4 class="text-base font-semibold text-gray-900 dark:text-gray-100 mb-3">📚 Document Hints</h4>';
+            $html .= '<div class="space-y-2">';
+
+            foreach ($documentHints as $hint) {
+                $docName = $hint['filename'] ?? $hint['name'] ?? 'Unknown';
+                $charCount = isset($hint['text']) ? mb_strlen($hint['text']) : 0;
+
+                $html .= '<div class="flex items-center justify-between p-2 bg-gray-50 dark:bg-gray-800 rounded border border-gray-200 dark:border-gray-700">';
+                $html .= '<span class="text-sm text-gray-800 dark:text-gray-200">' . htmlspecialchars($docName) . '</span>';
+                $html .= '<span class="text-xs text-gray-500 dark:text-gray-400">' . number_format($charCount) . ' chars</span>';
+                $html .= '</div>';
+            }
+
+            $html .= '</div></div>';
+        }
+
+        $html .= '</div>';
+
+        return $html;
+    }
+
+    /**
+     * Build HTML for sources panel with clickable links and trust badges
+     */
+    private function buildSourcesHtml(): string
+    {
+        $sources = $this->sources ?? [];
+
+        if (empty($sources)) {
+            return '<p class="text-sm text-gray-500">No sources available</p>';
+        }
+
+        $html = '<div class="space-y-4">';
+
+        foreach ($sources as $idx => $source) {
+            $sourceNum = $idx + 1;
+            $url = $source['url'] ?? $source['link'] ?? null;
+            $title = $source['title'] ?? $source['name'] ?? 'Untitled Source';
+            $publisher = $source['publisher'] ?? null;
+            $provenance = $source['provenance'] ?? null;
+            $tier = $source['tier'] ?? null;
+            $contribution = $source['contribution'] ?? null;
+            $rationale = $source['rationale'] ?? $source['reason'] ?? null;
+            $trustScore = $source['trust_score'] ?? $source['quality'] ?? null;
+            $page = $source['page'] ?? null;
+            $fragment = $source['fragment'] ?? $source['excerpt'] ?? null;
+
+            // Determine trust badge color (based on tier if available, otherwise trust_score)
+            $trustBadgeClass = 'bg-gray-100 text-gray-700';
+            $trustLabel = 'Unknown';
+
+            if ($tier !== null) {
+                // New tier system: 1=official, 2=trusted, 3=supplementary
+                if ($tier === 1 || $tier === '1') {
+                    $trustBadgeClass = 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300';
+                    $trustLabel = 'Tier 1: Official';
+                } elseif ($tier === 2 || $tier === '2') {
+                    $trustBadgeClass = 'bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300';
+                    $trustLabel = 'Tier 2: Trusted';
+                } elseif ($tier === 3 || $tier === '3') {
+                    $trustBadgeClass = 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-300';
+                    $trustLabel = 'Tier 3: Supplementary';
+                }
+            } elseif ($trustScore !== null) {
+                // Legacy trust_score system
+                if (is_numeric($trustScore)) {
+                    if ($trustScore >= 0.9) {
+                        $trustBadgeClass = 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300';
+                        $trustLabel = 'High Trust';
+                    } elseif ($trustScore >= 0.7) {
+                        $trustBadgeClass = 'bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300';
+                        $trustLabel = 'Medium Trust';
+                    } elseif ($trustScore >= 0.5) {
+                        $trustBadgeClass = 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-300';
+                        $trustLabel = 'Low Trust';
+                    } else {
+                        $trustBadgeClass = 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-300';
+                        $trustLabel = 'Very Low Trust';
+                    }
+                } elseif (is_string($trustScore)) {
+                    $trustLabel = ucfirst($trustScore);
+                    if (stripos($trustScore, 'high') !== false) {
+                        $trustBadgeClass = 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300';
+                    } elseif (stripos($trustScore, 'medium') !== false) {
+                        $trustBadgeClass = 'bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300';
+                    } elseif (stripos($trustScore, 'low') !== false) {
+                        $trustBadgeClass = 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-300';
+                    }
+                }
+            } elseif ($provenance) {
+                // Fallback to provenance-based badge
+                if ($provenance === 'web') {
+                    $trustBadgeClass = 'bg-purple-100 text-purple-800 dark:bg-purple-900/30 dark:text-purple-300';
+                    $trustLabel = 'Web Source';
+                } elseif ($provenance === 'document' || $provenance === 'file') {
+                    $trustBadgeClass = 'bg-indigo-100 text-indigo-800 dark:bg-indigo-900/30 dark:text-indigo-300';
+                    $trustLabel = 'Document';
+                }
+            }
+
+            $html .= '<div class="border border-gray-200 dark:border-gray-700 rounded-lg p-4 hover:shadow-md transition-shadow">';
+
+            // Header with source number and trust badge
+            $html .= '<div class="flex items-start justify-between mb-2">';
+            $html .= '<h4 class="text-base font-semibold text-gray-900 dark:text-gray-100">';
+            $html .= "Source #{$sourceNum}";
+            if ($page) {
+                $html .= " <span class=\"text-sm font-normal text-gray-500\">(Page {$page})</span>";
+            }
+            $html .= '</h4>';
+            $html .= "<span class=\"{$trustBadgeClass} text-xs font-medium px-2.5 py-0.5 rounded\">{$trustLabel}</span>";
+            $html .= '</div>';
+
+            // Title with link
+            if ($url) {
+                $html .= '<div class="mb-2">';
+                $html .= '<a href="' . htmlspecialchars($url) . '" target="_blank" rel="noopener noreferrer" ';
+                $html .= 'class="text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300 hover:underline text-sm font-medium">';
+                $html .= htmlspecialchars($title);
+                $html .= ' <span class="text-xs">↗</span></a>';
+                $html .= '</div>';
+            } else {
+                $html .= '<div class="mb-2 text-sm font-medium text-gray-800 dark:text-gray-200">';
+                $html .= htmlspecialchars($title);
+                $html .= '</div>';
+            }
+
+            // Publisher
+            if ($publisher) {
+                $html .= '<div class="mb-2 text-xs text-gray-600 dark:text-gray-400">';
+                $html .= '<span class="font-semibold">Publisher:</span> ' . htmlspecialchars($publisher);
+                $html .= '</div>';
+            }
+
+            // Contribution (what was taken from this source)
+            if ($contribution) {
+                $html .= '<div class="mb-2 text-sm text-gray-700 dark:text-gray-300">';
+                $html .= '<span class="font-semibold">Contribution:</span> ' . htmlspecialchars($contribution);
+                $html .= '</div>';
+            }
+
+            // Rationale (legacy field, similar to contribution)
+            if ($rationale) {
+                $html .= '<div class="mb-2 text-sm text-gray-700 dark:text-gray-300 italic">';
+                $html .= '"' . htmlspecialchars($rationale) . '"';
+                $html .= '</div>';
+            }
+
+            // Fragment/excerpt
+            if ($fragment) {
+                $html .= '<details class="text-xs text-gray-600 dark:text-gray-400">';
+                $html .= '<summary class="cursor-pointer hover:text-gray-900 dark:hover:text-gray-200">View excerpt</summary>';
+                $html .= '<div class="mt-2 p-2 bg-gray-50 dark:bg-gray-800 rounded border border-gray-200 dark:border-gray-700">';
+                $html .= '<pre class="whitespace-pre-wrap font-mono">' . htmlspecialchars(mb_substr($fragment, 0, 300)) . '</pre>';
+                if (mb_strlen($fragment) > 300) {
+                    $html .= '<p class="text-xs italic mt-1">... (excerpt truncated)</p>';
+                }
+                $html .= '</div>';
+                $html .= '</details>';
+            }
+
+            $html .= '</div>';
+        }
+
+        $html .= '</div>';
+
+        // Add full JSON at the bottom
+        $html .= '<details class="mt-4 pt-4 border-t border-gray-200 dark:border-gray-700">';
+        $html .= '<summary class="text-sm text-gray-600 dark:text-gray-400 cursor-pointer hover:text-gray-900 dark:hover:text-gray-200">View Full JSON</summary>';
+        $html .= '<pre class="mt-2 text-xs bg-gray-500 dark:bg-gray-900 text-white p-3 rounded overflow-auto">';
+        $html .= htmlspecialchars(json_encode($sources, JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES));
+        $html .= '</pre>';
+        $html .= '</details>';
+
+        return $html;
+    }
+
     public function cards(NovaRequest $request)
     {
         // In Nova, cards() is called before model is loaded to this resource instance
@@ -1020,16 +1386,63 @@ class Exam extends Resource
 
         $cards = [];
 
-        // Show Identity Clarifier Card if task is pending
+        // Use CardManager to determine which cards to show
+        $cardManager = app(\App\Services\Nova\CardManager::class);
+        $activeCards = $cardManager->getActiveCards($exam);
+
+        foreach ($activeCards as $cardData) {
+            $cardType = $cardData['type'];
+            $cardInstance = null;
+
+            switch ($cardType) {
+                case 'missing_fields':
+                    $cardInstance = new \App\Nova\Cards\MissingFieldsCard();
+                    $cardInstance->withMeta([
+                        'examId' => $exam->id,
+                        'checkResult' => $cardData['data'],
+                    ]);
+                    break;
+
+                case 'fields_changed':
+                    $cardInstance = new \App\Nova\Cards\FieldsChangedCard();
+                    $cardInstance->withMeta([
+                        'examId' => $exam->id,
+                        'changedFields' => $cardData['data']['fields'] ?? [],
+                        'affectedStages' => $cardData['data']['affected_stages'] ?? [],
+                    ]);
+                    break;
+
+                case 'stalled_task':
+                    $cardInstance = new \App\Nova\Cards\StalledTaskCard();
+                    $cardInstance->withMeta([
+                        'examId' => $exam->id,
+                        'taskId' => $cardData['data']['task_id'] ?? null,
+                        'taskType' => $cardData['data']['type'] ?? null,
+                        'stalledSince' => $cardData['data']['stalled_since'] ?? null,
+                        'lastHeartbeat' => $cardData['data']['last_heartbeat'] ?? null,
+                        'suggestedActions' => ['cancel_and_restart', 'force_continue'],
+                    ]);
+                    break;
+            }
+
+            if ($cardInstance) {
+                $cardInstance->onlyOnDetail();
+                $cards[] = $cardInstance;
+            }
+        }
+
+        // Show Identity Clarifier Card if task is pending AND research not completed
         $task = $exam->generationTasks()->latest()->first();
+        $researchNotCompleted = $exam->research_status !== 'completed';
 
         \Illuminate\Support\Facades\Log::info('Task check', [
             'task_id' => $task?->id,
             'task_status' => $task?->status,
-            'will_show_card' => $task && in_array($task->status, ['pending_confirmation', 'pending_clarification'], true),
+            'research_status' => $exam->research_status,
+            'will_show_card' => $task && in_array($task->status, ['pending_confirmation', 'pending_clarification'], true) && $researchNotCompleted,
         ]);
 
-        if ($task && in_array($task->status, ['pending_confirmation', 'pending_clarification'], true)) {
+        if ($task && in_array($task->status, ['pending_confirmation', 'pending_clarification'], true) && $researchNotCompleted) {
             $card = new \App\Nova\Cards\IdentityClarifierCard();
             $card->withMeta(['examId' => $exam->id]);
             $card->onlyOnDetail(); // Explicitly show only on detail page
@@ -1050,7 +1463,10 @@ class Exam extends Resource
             new ResearchAction,
             new ResetAndRestartResearch,
             new ConfirmIdentityAction,
+            new \App\Nova\Actions\ConfidenceBoostAction,
             new ProvideAnswersAction,
+            new \App\Nova\Actions\RejectAllVariantsAction,
+            new \App\Nova\Actions\CancelStalledTaskAction,
             // (new ConfirmExamIdentity)
             // ->canSee(function () {
             //     $st = data_get($this->resource->identity, 'status');

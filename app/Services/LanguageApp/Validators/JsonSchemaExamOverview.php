@@ -20,7 +20,7 @@ use Illuminate\Validation\ValidationException;
  *       "source_usage" => ?array (archetype_ids, data_types)
  *     ], ...
  *   ],
- *   "global_archetypes" => [
+ *   "question_archetypes" => [
  *     [
  *       "id" => "string",
  *       "name" => "string",
@@ -89,8 +89,10 @@ final class JsonSchemaExamOverview
 
         // --- archetypes (вход может называться по-разному, но в примерах — "archetypes")
         if (! isset($data['archetypes']) || ! is_array($data['archetypes'])) {
-            // Иногда встречается "global_archetypes" — подстрахуемся
-            if (isset($data['global_archetypes']) && is_array($data['global_archetypes'])) {
+            // Fallback to question_archetypes or old global_archetypes naming
+            if (isset($data['question_archetypes']) && is_array($data['question_archetypes'])) {
+                $data['archetypes'] = $data['question_archetypes'];
+            } elseif (isset($data['global_archetypes']) && is_array($data['global_archetypes'])) {
                 $data['archetypes'] = $data['global_archetypes'];
             } else {
                 throw ValidationException::withMessages(['archetypes' => 'archetypes must be an array']);
@@ -100,17 +102,17 @@ final class JsonSchemaExamOverview
         $globalArchetypes = [];
         $categoryMap = []; // "<category>" => ["archetype_weights" => [[archetype_id, weight], ...]]
 
-        foreach ($data['archetypes'] as $i => $arc) {
-            if (! is_array($arc) || ! $this->isAssoc($arc)) {
+        foreach ($data['archetypes'] as $i => $questionArchetype) {
+            if (! is_array($questionArchetype) || ! $this->isAssoc($questionArchetype)) {
                 throw ValidationException::withMessages(["archetypes.$i" => 'must be an object']);
             }
-            $id = $this->mustString($arc, 'id', "archetypes.$i.id");
-            $name = $this->mustString($arc, 'name', "archetypes.$i.name");
+            $id = $this->mustString($questionArchetype, 'id', "archetypes.$i.id");
+            $name = $this->mustString($questionArchetype, 'name', "archetypes.$i.name");
 
             // source_ids: array of integers (indices in sources array)
             $sourceIds = [];
-            if (isset($arc['source_ids']) && is_array($arc['source_ids'])) {
-                foreach ($arc['source_ids'] as $idx => $sourceId) {
+            if (isset($questionArchetype['source_ids']) && is_array($questionArchetype['source_ids'])) {
+                foreach ($questionArchetype['source_ids'] as $idx => $sourceId) {
                     if (!is_int($sourceId) && !is_numeric($sourceId)) {
                         throw ValidationException::withMessages([
                             "archetypes.$i.source_ids.$idx" => 'must be integer (source index)'
@@ -131,20 +133,20 @@ final class JsonSchemaExamOverview
 
             // category_weights на уровне архетипа: допускаем разные ключи и любой регистр
             $cw = null;
-            if (isset($arc['category_weights']) && is_array($arc['category_weights'])) {
-                $cw = $this->normalizeCategoryWeights($arc['category_weights'], "archetypes.$i.category_weights");
-            } elseif (isset($arc['weights']) && is_array($arc['weights'])) {
-                $cw = $this->normalizeCategoryWeights($arc['weights'], "archetypes.$i.weights");
+            if (isset($questionArchetype['category_weights']) && is_array($questionArchetype['category_weights'])) {
+                $cw = $this->normalizeCategoryWeights($questionArchetype['category_weights'], "archetypes.$i.category_weights");
+            } elseif (isset($questionArchetype['weights']) && is_array($questionArchetype['weights'])) {
+                $cw = $this->normalizeCategoryWeights($questionArchetype['weights'], "archetypes.$i.weights");
             } else {
-                // если нет — оставим пустой объект; некоторые твои JSON’ы кладут веса только сверху или по умолчанию 1 в одну категорию. :contentReference[oaicite:1]{index=1}
+                // если нет — оставим пустой объект; некоторые твои JSON'ы кладут веса только сверху или по умолчанию 1 в одну категорию. :contentReference[oaicite:1]{index=1}
                 $cw = [];
             }
 
             // category: выбираем primary по максимальному весу; если пусто — пробуем явное поле/секцию; иначе "unknown"
-            $category = $this->inferPrimaryCategory($cw, $arc);
+            $category = $this->inferPrimaryCategory($cw, $questionArchetype);
 
             // question_type: REQUIRED (Gate E)
-            $questionType = $arc['question_type'] ?? null;
+            $questionType = $questionArchetype['question_type'] ?? null;
             if (!$questionType || !is_string($questionType)) {
                 throw ValidationException::withMessages([
                     "archetypes.$i.question_type" => "question_type is REQUIRED and must be a string from QuestionType enum for archetype '{$name}'"
@@ -160,7 +162,7 @@ final class JsonSchemaExamOverview
             }
 
             // type_specific: REQUIRED (Gate E)
-            $typeSpecific = $arc['type_specific'] ?? null;
+            $typeSpecific = $questionArchetype['type_specific'] ?? null;
             if (!is_array($typeSpecific) || empty($typeSpecific)) {
                 throw ValidationException::withMessages([
                     "archetypes.$i.type_specific" => "type_specific is REQUIRED and must be a non-empty object for archetype '{$name}'"
@@ -169,26 +171,26 @@ final class JsonSchemaExamOverview
 
             // step_duration: из типичных полей о времени (минуты) — typical_length_or_time / typical_answer_length_or_range /
             // numeric_ranges / units "minutes" / и т.п. (best-effort).
-            $stepDuration = $this->inferStepDurationMinutes($arc);
+            $stepDuration = $this->inferStepDurationMinutes($questionArchetype);
 
             // stem_templates: собираем общие инструкции/шаблоны/фразы (typical_instructions, pattern, question_types-названия и т.д.)
-            $stemTemplates = $this->collectStemTemplates($arc);
+            $stemTemplates = $this->collectStemTemplates($questionArchetype);
 
-            // evidence: объединяем evidence (числа/строки) + evidence_sources (url’ы/строки)
-            $evidence = $this->collectEvidence($arc);
+            // evidence: объединяем evidence (числа/строки) + evidence_sources (url'ы/строки)
+            $evidence = $this->collectEvidence($questionArchetype);
 
             // distractors: typical_distractors | common_distractors | distractors
             $distractors = $this->normalizeStringArray(
-                $arc['typical_distractors'] ?? $arc['common_distractors'] ?? $arc['distractors'] ?? null,
+                $questionArchetype['typical_distractors'] ?? $questionArchetype['common_distractors'] ?? $questionArchetype['distractors'] ?? null,
                 "archetypes.$i.distractors",
                 allowNull: true
             ) ?? [];
 
             // ranges: numeric_ranges | numeric_ranges_and_constraints | typical_answer_length_or_range | typical_length_or_time
-            $ranges = $this->collectRanges($arc);
+            $ranges = $this->collectRanges($questionArchetype);
 
             // difficulty: difficulty | difficulty_band | difficulty_band_cefr
-            $difficulty = $this->pickFirstString($arc, ['difficulty', 'difficulty_band', 'difficulty_band_cefr']);
+            $difficulty = $this->pickFirstString($questionArchetype, ['difficulty', 'difficulty_band', 'difficulty_band_cefr']);
 
             // other: все ключи архетипа, которые мы не использовали — «как есть», без валидации
             $knownKeys = [
@@ -205,7 +207,7 @@ final class JsonSchemaExamOverview
                 'sequence_matters', 'step_order', // Sequencing fields
             ];
             $other = [];
-            foreach ($arc as $k => $v) {
+            foreach ($questionArchetype as $k => $v) {
                 if (! in_array($k, $knownKeys, true)) {
                     $other[$k] = $v;
                 }
@@ -289,7 +291,7 @@ final class JsonSchemaExamOverview
             'exam_name' => $examName,
             'sources' => $sources,
             'section_archetypes' => $sectionArchetypes,
-            'global_archetypes' => $globalArchetypes,
+            'question_archetypes' => $globalArchetypes,
             'category_map' => $categoryMap,
             'total_exam_duration' => $totalDuration,
             'rationale' => $rationale,
@@ -366,9 +368,9 @@ final class JsonSchemaExamOverview
         }
 
         // Quality check: require at least 4 sources total (unless testing)
-        if (count($out) < 4 && !app()->environment('testing')) {
+        if (count($out) < 3 && !app()->environment('testing')) {
             throw ValidationException::withMessages([
-                'sources' => 'At least 4 high-quality sources required. Found: ' . count($out)
+                'sources' => 'At least 3-4 high-quality sources required. Found: ' . count($out)
             ]);
         }
 
@@ -680,7 +682,7 @@ final class JsonSchemaExamOverview
             $section = $sa['section'] ?? null;
             if (!$section || !is_string($section)) {
                 throw ValidationException::withMessages([
-                    "section_archetypes.$i.section" => 'section is required and must be a string (listening|reading|grammar_lexis|writing|speaking)'
+                    "section_archetypes.$i.section" => 'section is required and must be a string (e.g.listening|reading|grammar_lexis|writing|speaking, this is example, you can use only existing sections)'
                 ]);
             }
 
@@ -768,7 +770,7 @@ final class JsonSchemaExamOverview
             foreach ($archetypeWeights as $aw) {
                 $archetypeId = $aw['archetype_id'] ?? null;
 
-                // Find the archetype in global_archetypes
+                // Find the archetype in question_archetypes
                 $archetype = null;
                 foreach ($globalArchetypes as $ga) {
                     if ($ga['id'] === $archetypeId) {

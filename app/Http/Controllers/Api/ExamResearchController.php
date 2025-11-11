@@ -252,7 +252,7 @@ class ExamResearchController extends Controller
         }
 
         $validated = $request->validate([
-            'clarification_type' => ['required', 'in:select_candidate,answer_questions,provide_fields'],
+            'clarification_type' => ['required', 'in:select_candidate,answer_questions,provide_fields,reject_all'],
             'selected_candidate' => ['required_if:clarification_type,select_candidate', 'array'],
             'answers' => ['required_if:clarification_type,answer_questions', 'array'],
             'user_input_updates' => ['required_if:clarification_type,provide_fields', 'array'],
@@ -361,6 +361,38 @@ class ExamResearchController extends Controller
                 return response()->json([
                     'status' => 'clarified',
                     'message' => 'Information provided. Re-running identity verification.',
+                    'task_id' => $task->id,
+                ]);
+
+            case 'reject_all':
+                // User rejected all candidates - none match their exam
+                $identity['status'] = 'rejected';
+                $identity['user_rejected_all'] = true;
+                $identity['rejected_at'] = now()->toISOString();
+
+                if (!empty($validated['notes'])) {
+                    $identity['rejection_notes'] = $validated['notes'];
+                }
+
+                $result = (array) ($task->result ?? []);
+                $result['identity'] = $identity;
+                $task->result = $result;
+                $task->status = 'failed';
+                $task->error = 'User rejected all exam variants - none match their exam. ' . ($validated['notes'] ?? '');
+                $task->save();
+
+                // Add activity log
+                $task->addActivity('user_rejected_all_variants', 'User rejected all exam variants', [
+                    'notes' => $validated['notes'] ?? null,
+                ]);
+
+                // Update exam research status
+                $exam->research_status = 'failed';
+                $exam->save();
+
+                return response()->json([
+                    'status' => 'rejected',
+                    'message' => 'All variants rejected. Research cancelled.',
                     'task_id' => $task->id,
                 ]);
         }
