@@ -265,6 +265,12 @@ Route::prefix('debug')->group(function () {
 
 // ===== DIAGNOSTICS routes (public, read-only) =====
 Route::prefix('diagnostics')->group(function () {
+    // Structure recovery endpoints
+    Route::get('/structure-recovery/scan', [\App\Http\Controllers\DiagnosticsDashboardController::class, 'scanStructureRecovery']);
+    Route::get('/structure-recovery/diagnose/{examId}', [\App\Http\Controllers\DiagnosticsDashboardController::class, 'diagnoseStructure']);
+    Route::post('/structure-recovery/recover/{examId}', [\App\Http\Controllers\DiagnosticsDashboardController::class, 'recoverStructure']);
+    Route::post('/structure-recovery/recover-all', [\App\Http\Controllers\DiagnosticsDashboardController::class, 'recoverAll']);
+
     Route::get('/health', [DiagnosticsController::class, 'health']);
     Route::get('/stats', [DiagnosticsController::class, 'stats']);
     Route::get('/activity', [DiagnosticsController::class, 'activity']);

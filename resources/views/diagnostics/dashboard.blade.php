@@ -310,6 +310,91 @@
                 </div>
             </div>
 
+            <!-- Structure Recovery Section -->
+            @if($recoveryStats['needing_recovery'] > 0)
+            <div class="bg-orange-50 border-l-4 border-orange-500 rounded-lg shadow mb-8" x-data="structureRecovery()">
+                <div class="px-6 py-4 border-b border-orange-200">
+                    <h2 class="text-lg font-semibold text-orange-900">🔧 Exam Structure Recovery ({{ $recoveryStats['needing_recovery'] }})</h2>
+                    <p class="text-sm text-orange-700 mt-1">
+                        Found {{ $recoveryStats['needing_recovery'] }} exam(s) with incomplete exam_structure data.
+                        This can cause empty "Category Template Data" and "Questions Archetypes" in Nova.
+                    </p>
+                </div>
+                <div class="p-6">
+                    <!-- Actions -->
+                    <div class="mb-6 flex gap-3">
+                        <button @click="recoverAll"
+                                :disabled="loading"
+                                class="px-4 py-2 bg-orange-600 text-white rounded-md hover:bg-orange-700 disabled:opacity-50 disabled:cursor-not-allowed">
+                            <span x-show="!loading">🚀 Recover All ({{ $recoveryStats['needing_recovery'] }} exams)</span>
+                            <span x-show="loading" x-cloak>Processing...</span>
+                        </button>
+                        <button @click="scanExams"
+                                :disabled="loading"
+                                class="px-4 py-2 bg-gray-600 text-white rounded-md hover:bg-gray-700 disabled:opacity-50 disabled:cursor-not-allowed">
+                            <span x-show="!loading">🔄 Refresh Scan</span>
+                            <span x-show="loading" x-cloak>Scanning...</span>
+                        </button>
+                    </div>
+
+                    <!-- Success message -->
+                    <div x-show="successMessage" x-cloak class="mb-4 p-4 bg-green-50 border border-green-200 rounded-md">
+                        <p class="text-sm text-green-800" x-text="successMessage"></p>
+                    </div>
+
+                    <!-- Error message -->
+                    <div x-show="errorMessage" x-cloak class="mb-4 p-4 bg-red-50 border border-red-200 rounded-md">
+                        <p class="text-sm text-red-800" x-text="errorMessage"></p>
+                    </div>
+
+                    <!-- Exams List -->
+                    <div class="space-y-3">
+                        @foreach($recoveryNeeded as $exam)
+                        <div class="bg-white p-4 rounded border border-orange-200" x-data="{ recoveryLoading: false, recovered: false }">
+                            <div class="flex items-center justify-between">
+                                <div class="flex-1">
+                                    <p class="font-medium text-gray-900">
+                                        {{ Str::limit($exam->title, 60) }}
+                                        <span x-show="recovered" x-cloak class="ml-2 px-2 py-0.5 text-xs rounded bg-green-100 text-green-800">✓ Recovered</span>
+                                    </p>
+                                    <p class="text-xs text-gray-500 mt-1">
+                                        ID: <code class="bg-gray-100 px-1 rounded">{{ $exam->id }}</code> •
+                                        Status: <span class="font-semibold">{{ $exam->research_status }}</span> •
+                                        Categories: <span class="font-semibold">{{ $exam->categories->count() }}</span>
+                                    </p>
+                                </div>
+                                <div class="flex space-x-2">
+                                    <button @click="recoverOne('{{ $exam->id }}')"
+                                            :disabled="recoveryLoading || recovered"
+                                            class="px-3 py-2 bg-orange-600 text-white text-sm rounded hover:bg-orange-700 disabled:opacity-50 disabled:cursor-not-allowed">
+                                        <span x-show="!recoveryLoading">Recover</span>
+                                        <span x-show="recoveryLoading" x-cloak>...</span>
+                                    </button>
+                                    <a href="/nova/resources/exams/{{ $exam->id }}"
+                                       target="_blank"
+                                       class="px-3 py-2 bg-gray-600 text-white text-sm rounded hover:bg-gray-700">
+                                        View
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                        @endforeach
+                    </div>
+
+                    <!-- Info -->
+                    <div class="mt-6 p-4 bg-blue-50 border border-blue-200 rounded-md">
+                        <p class="text-sm text-blue-800">
+                            <strong>ℹ️ What this does:</strong> Reconstructs exam_structure from existing category.meta['steps'] or ExamExampleQuestion records.
+                            This fixes empty "Category Template Data" and "Questions Archetypes" panels in Nova.
+                        </p>
+                        <p class="text-xs text-blue-700 mt-2">
+                            Recovery strategies: 1) From category.meta['question_archetypes'], 2) From category.meta['steps'], 3) From ExamExampleQuestion records
+                        </p>
+                    </div>
+                </div>
+            </div>
+            @endif
+
             <!-- All Task Statuses -->
             <div class="bg-white rounded-lg shadow mb-8">
                 <div class="px-6 py-4 border-b border-gray-200">
@@ -835,6 +920,110 @@
 
                 refreshData() {
                     window.location.reload();
+                }
+            }
+        }
+
+        function structureRecovery() {
+            return {
+                loading: false,
+                successMessage: null,
+                errorMessage: null,
+
+                async scanExams() {
+                    this.loading = true;
+                    this.errorMessage = null;
+                    this.successMessage = null;
+
+                    try {
+                        const response = await fetch('/api/diagnostics/structure-recovery/scan');
+                        const data = await response.json();
+
+                        if (data.success) {
+                            this.successMessage = `Scan complete: ${data.needing_recovery} exam(s) need recovery out of ${data.total_exams} total`;
+                            setTimeout(() => window.location.reload(), 2000);
+                        } else {
+                            this.errorMessage = data.error || 'Scan failed';
+                        }
+                    } catch (error) {
+                        this.errorMessage = `Error: ${error.message}`;
+                    } finally {
+                        this.loading = false;
+                    }
+                },
+
+                async recoverAll() {
+                    if (!confirm('Recover structure for all exams?\n\nThis will reconstruct exam_structure for all exams with missing data.')) return;
+
+                    this.loading = true;
+                    this.errorMessage = null;
+                    this.successMessage = null;
+
+                    try {
+                        const response = await fetch('/api/diagnostics/structure-recovery/recover-all', {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json',
+                                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
+                            },
+                            body: JSON.stringify({ dry_run: false })
+                        });
+
+                        const data = await response.json();
+
+                        if (data.success) {
+                            const results = data.results;
+                            this.successMessage = `✅ Recovery complete! Recovered: ${results.recovered}, Skipped: ${results.skipped}, Failed: ${results.failed}`;
+
+                            if (results.recovered > 0) {
+                                setTimeout(() => window.location.reload(), 3000);
+                            }
+                        } else {
+                            this.errorMessage = data.error || 'Recovery failed';
+                        }
+                    } catch (error) {
+                        this.errorMessage = `Error: ${error.message}`;
+                    } finally {
+                        this.loading = false;
+                    }
+                },
+
+                async recoverOne(examId) {
+                    const element = event.target.closest('[x-data]');
+                    const alpine = element.__x;
+
+                    alpine.$data.recoveryLoading = true;
+                    this.errorMessage = null;
+                    this.successMessage = null;
+
+                    try {
+                        const response = await fetch(`/api/diagnostics/structure-recovery/recover/${examId}`, {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json',
+                                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
+                            },
+                            body: JSON.stringify({ dry_run: false })
+                        });
+
+                        const data = await response.json();
+
+                        if (data.success) {
+                            const result = data.result;
+                            if (result.needed_recovery) {
+                                alpine.$data.recovered = true;
+                                this.successMessage = `✅ Recovered exam "${data.exam_title}": ${result.recovered_archetypes} archetypes, ${result.recovered_sections} sections`;
+                            } else {
+                                this.successMessage = `ℹ️ Exam "${data.exam_title}" did not need recovery`;
+                            }
+                        } else {
+                            this.errorMessage = `Error recovering exam: ${data.error}`;
+                        }
+                    } catch (error) {
+                        this.errorMessage = `Error: ${error.message}`;
+                    } finally {
+                        alpine.$data.recoveryLoading = false;
+                    }
                 }
             }
         }

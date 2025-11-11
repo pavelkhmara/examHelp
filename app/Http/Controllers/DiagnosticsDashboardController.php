@@ -7,6 +7,7 @@ use App\Models\ExamCategory;
 use App\Models\ExamExampleQuestion;
 use App\Models\GenerationLog;
 use App\Models\GenerationTask;
+use App\Services\LanguageApp\ExamStructureRecoveryService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 
@@ -16,7 +17,7 @@ class DiagnosticsDashboardController extends Controller
      * Show diagnostics dashboard
      * GET /diagnostics-dashboard
      */
-    public function index()
+    public function index(ExamStructureRecoveryService $recovery)
     {
         // Get system statistics
         $taskStatusCounts = GenerationTask::query()
@@ -87,6 +88,23 @@ class DiagnosticsDashboardController extends Controller
         // Get queue information
         $queueInfo = $this->getQueueInfo();
 
+        // Get structure recovery information
+        $recoveryNeeded = collect();
+        $exams = Exam::where('research_status', 'completed')
+            ->with('categories')
+            ->get();
+
+        foreach ($exams as $exam) {
+            if ($recovery->needsRecovery($exam)) {
+                $recoveryNeeded->push($exam);
+            }
+        }
+
+        $recoveryStats = [
+            'total_exams' => $exams->count(),
+            'needing_recovery' => $recoveryNeeded->count(),
+        ];
+
         return view('diagnostics.dashboard', compact(
             'stats',
             'stuckTasks',
@@ -94,7 +112,9 @@ class DiagnosticsDashboardController extends Controller
             'pendingTasks',
             'recentActivity',
             'systemConfig',
-            'queueInfo'
+            'queueInfo',
+            'recoveryNeeded',
+            'recoveryStats'
         ));
     }
 
@@ -296,5 +316,147 @@ class DiagnosticsDashboardController extends Controller
         }
 
         return $queueInfo;
+    }
+
+    /**
+     * Scan all exams for structure recovery needs
+     * GET /api/diagnostics/structure-recovery/scan
+     */
+    public function scanStructureRecovery(ExamStructureRecoveryService $recovery)
+    {
+        $exams = Exam::with('categories')->get();
+        $needingRecovery = [];
+
+        foreach ($exams as $exam) {
+            if ($recovery->needsRecovery($exam)) {
+                $needingRecovery[] = [
+                    'id' => $exam->id,
+                    'title' => $exam->title,
+                    'research_status' => $exam->research_status,
+                    'categories_count' => $exam->categories->count(),
+                    'created_at' => $exam->created_at->toISOString(),
+                ];
+            }
+        }
+
+        return response()->json([
+            'success' => true,
+            'total_exams' => $exams->count(),
+            'needing_recovery' => count($needingRecovery),
+            'exams' => $needingRecovery,
+        ]);
+    }
+
+    /**
+     * Recover structure for a single exam
+     * POST /api/diagnostics/structure-recovery/recover/{examId}
+     */
+    public function recoverStructure(string $examId, Request $request, ExamStructureRecoveryService $recovery)
+    {
+        $exam = Exam::find($examId);
+
+        if (!$exam) {
+            return response()->json([
+                'success' => false,
+                'error' => 'Exam not found',
+            ], 404);
+        }
+
+        $dryRun = $request->boolean('dry_run', false);
+
+        try {
+            $result = $recovery->recover($exam, $dryRun);
+
+            return response()->json([
+                'success' => true,
+                'exam_id' => $examId,
+                'exam_title' => $exam->title,
+                'result' => $result,
+            ]);
+        } catch (\Throwable $e) {
+            return response()->json([
+                'success' => false,
+                'error' => $e->getMessage(),
+                'trace' => app()->environment('local') ? $e->getTraceAsString() : null,
+            ], 500);
+        }
+    }
+
+    /**
+     * Diagnose structure for a single exam
+     * GET /api/diagnostics/structure-recovery/diagnose/{examId}
+     */
+    public function diagnoseStructure(string $examId, ExamStructureRecoveryService $recovery)
+    {
+        $exam = Exam::find($examId);
+
+        if (!$exam) {
+            return response()->json([
+                'success' => false,
+                'error' => 'Exam not found',
+            ], 404);
+        }
+
+        try {
+            $diagnostics = $recovery->diagnose($exam);
+
+            return response()->json([
+                'success' => true,
+                'exam_id' => $examId,
+                'exam_title' => $exam->title,
+                'diagnostics' => $diagnostics,
+            ]);
+        } catch (\Throwable $e) {
+            return response()->json([
+                'success' => false,
+                'error' => $e->getMessage(),
+                'trace' => app()->environment('local') ? $e->getTraceAsString() : null,
+            ], 500);
+        }
+    }
+
+    /**
+     * Recover all exams that need it
+     * POST /api/diagnostics/structure-recovery/recover-all
+     */
+    public function recoverAll(Request $request, ExamStructureRecoveryService $recovery)
+    {
+        $dryRun = $request->boolean('dry_run', false);
+        $exams = Exam::all();
+        $examIds = [];
+
+        foreach ($exams as $exam) {
+            if ($recovery->needsRecovery($exam)) {
+                $examIds[] = $exam->id;
+            }
+        }
+
+        if (empty($examIds)) {
+            return response()->json([
+                'success' => true,
+                'message' => 'No exams need recovery',
+                'results' => [
+                    'total' => 0,
+                    'recovered' => 0,
+                    'skipped' => 0,
+                    'failed' => 0,
+                ],
+            ]);
+        }
+
+        try {
+            $results = $recovery->recoverBatch($examIds, $dryRun);
+
+            return response()->json([
+                'success' => true,
+                'results' => $results,
+            ]);
+        } catch (\Throwable $e) {
+            return response()->json([
+                'success' => false,
+                'error' => $e->getMessage(),
+                'trace' => app()->environment('local') ? $e->getTraceAsString() : null,
+            ], 500);
+        }
     }
 }
