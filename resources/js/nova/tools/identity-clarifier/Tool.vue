@@ -1,6 +1,6 @@
 <template>
-  <!-- Hide component entirely when no task (research completed or not started) AND not a missing_fields card -->
-  <div v-if="task || loading || cardType === 'missing_fields'" class="identity-clarifier-wrapper" style="min-height: 100px; position: relative;">
+  <!-- Hide component entirely when no task (research completed or not started) -->
+  <div v-if="task || loading" class="identity-clarifier-wrapper" style="min-height: 100px; position: relative;">
     <div v-if="loading" class="flex justify-center items-center p-8" style="min-height: 100px; background: rgba(0,0,0,0.02);">
       <svg class="animate-spin h-8 w-8 text-primary-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
         <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
@@ -9,14 +9,6 @@
     </div>
 
   <div v-else class="p-6 bg-white dark:bg-gray-800 rounded-lg shadow-sm">
-    <!-- MissingFieldsForm - показывается когда cardType === 'missing_fields' -->
-    <MissingFieldsForm
-      v-if="cardType === 'missing_fields' && checkResult && examId"
-      :exam-id="examId"
-      :check-result="checkResult"
-      @saved="handleFieldsSaved"
-      @dismissed="handleCardDismissed"
-    />
     <!-- Show candidates selector if we have candidates -->
     <CandidateSelector
       v-if="hasCandidates && taskId && examId"
@@ -36,39 +28,71 @@
       </p>
     </div>
 
-    <!-- Placeholder for future: questions form -->
-    <div v-else-if="hasFollowups" class="text-center p-6">
-      <p class="text-gray-600 dark:text-gray-400 mb-4">
-        📋 The exam requires additional information
-      </p>
-      <div class="text-sm text-gray-500 dark:text-gray-500 bg-gray-100 dark:bg-gray-700 p-4 rounded">
-        <p class="font-semibold mb-2">Questions to answer:</p>
-        <ul class="list-disc list-inside text-left">
-          <li v-for="(question, index) in followups" :key="index">
-            {{ typeof question === 'string' ? question : question.q || question }}
-          </li>
-        </ul>
-        <p class="mt-3 text-xs italic">
-          (Answer form coming soon - use "Provide Answers" action for now)
+    <!-- Followup questions and/or Need fields form -->
+    <div v-else-if="hasFollowups || hasNeedFields">
+      <div class="mb-4">
+        <h3 class="text-xl font-bold text-gray-900 dark:text-gray-100 mb-2">
+          📋 Additional Information Required
+        </h3>
+        <p class="text-gray-600 dark:text-gray-400">
+          Please provide the following information to continue:
         </p>
       </div>
-    </div>
 
-    <!-- Placeholder for future: fields form -->
-    <div v-else-if="hasNeedFields" class="text-center p-6">
-      <p class="text-gray-600 dark:text-gray-400 mb-4">
-        📝 Missing required information
-      </p>
-      <div class="text-sm text-gray-500 dark:text-gray-500 bg-gray-100 dark:bg-gray-700 p-4 rounded">
-        <p class="font-semibold mb-2">Required fields:</p>
-        <ul class="list-disc list-inside text-left">
-          <li v-for="field in needFields" :key="field">
-            {{ field }}
-          </li>
-        </ul>
-        <p class="mt-3 text-xs italic">
-          (Input form coming soon - use "Provide Answers" action for now)
-        </p>
+      <!-- Questions Form -->
+      <div v-if="hasFollowups && followups.length > 0" class="mb-6">
+        <p class="font-semibold mb-3 text-gray-900 dark:text-gray-100">Questions to answer:</p>
+        <div v-for="(question, index) in followups" :key="'q-' + index" class="mb-4">
+          <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+            {{ index + 1 }}. {{ typeof question === 'string' ? question : question.q || question }}
+          </label>
+          <textarea
+            v-model="answerInputs[index]"
+            :placeholder="'Your answer to question ' + (index + 1)"
+            class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-gray-100"
+            rows="3"
+          ></textarea>
+        </div>
+      </div>
+
+      <!-- Fields Form -->
+      <div v-if="hasNeedFields && needFields.length > 0" class="mb-6">
+        <p class="font-semibold mb-3 text-gray-900 dark:text-gray-100">Required fields:</p>
+        <div v-for="field in needFields" :key="'f-' + field" class="mb-4">
+          <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+            <code class="bg-gray-100 dark:bg-gray-700 px-2 py-1 rounded text-sm">{{ field }}</code>
+          </label>
+          <input
+            v-model="fieldInputs[field]"
+            :placeholder="'Provide value for ' + field"
+            type="text"
+            class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-gray-100"
+          />
+        </div>
+      </div>
+
+      <!-- Submit Button -->
+      <div class="flex gap-3">
+        <button
+          @click="submitClarification"
+          :disabled="submitting"
+          class="px-4 py-2 rounded-lg font-medium transition-colors"
+          :style="{
+            backgroundColor: !submitting ? '#3b82f6' : '#d1d5db',
+            color: !submitting ? '#ffffff' : '#6b7280',
+            cursor: submitting ? 'not-allowed' : 'pointer',
+            opacity: submitting ? '0.6' : '1',
+          }">
+          {{ submitting ? 'Submitting...' : 'Submit Answers' }}
+        </button>
+      </div>
+
+      <div v-if="successMessage" class="mt-4 p-3 bg-green-100 border border-green-300 rounded-lg">
+        <p class="text-green-800">✓ {{ successMessage }}</p>
+      </div>
+
+      <div v-if="errorMessage" class="mt-4 p-3 bg-red-100 border border-red-300 rounded-lg">
+        <p class="text-red-800">✗ {{ errorMessage }}</p>
       </div>
     </div>
 
@@ -88,7 +112,6 @@
 <script setup>
 import { ref, computed, onMounted, onUnmounted, nextTick } from 'vue'
 import CandidateSelector from './components/CandidateSelector.vue'
-import MissingFieldsForm from './components/MissingFieldsForm.vue'
 
 const props = defineProps({
   resourceName: {
@@ -107,8 +130,20 @@ const props = defineProps({
     type: String,
     required: false,
   },
-  checkResult: {
-    type: Object,
+  taskId: {
+    type: Number,
+    required: false,
+  },
+  candidates: {
+    type: Array,
+    required: false,
+  },
+  followups: {
+    type: Array,
+    required: false,
+  },
+  needFields: {
+    type: Array,
     required: false,
   },
 })
@@ -118,6 +153,13 @@ const task = ref(null)
 const identity = ref(null)
 let refreshInterval = null
 
+// Form inputs for followup questions and fields
+const answerInputs = ref({})
+const fieldInputs = ref({})
+const submitting = ref(false)
+const successMessage = ref('')
+const errorMessage = ref('')
+
 const needsClarification = computed(() => {
   return (
     task.value?.status === 'pending_confirmation' ||
@@ -126,30 +168,65 @@ const needsClarification = computed(() => {
 })
 
 const hasCandidates = computed(() => {
+  // Если cardType === 'candidates', используем props
+  if (props.cardType === 'candidates') {
+    return props.candidates?.length > 0
+  }
+  // Иначе проверяем task result
   return identity.value?.candidates?.length > 0
 })
 
 const hasFollowups = computed(() => {
+  // Если cardType === 'followup_questions', используем props
+  if (props.cardType === 'followup_questions') {
+    return props.followups?.length > 0
+  }
+  // Иначе проверяем task result
   return identity.value?.followups?.length > 0
 })
 
 const hasNeedFields = computed(() => {
+  // Если cardType === 'followup_questions', используем props
+  if (props.cardType === 'followup_questions') {
+    return props.needFields?.length > 0
+  }
+  // Иначе проверяем task result
   return identity.value?.need_fields?.length > 0
 })
 
 const candidates = computed(() => {
+  // Если cardType === 'candidates', используем props
+  if (props.cardType === 'candidates') {
+    return props.candidates || []
+  }
+  // Иначе берём из task result
   return identity.value?.candidates || []
 })
 
 const followups = computed(() => {
+  // Если cardType === 'followup_questions', используем props
+  if (props.cardType === 'followup_questions') {
+    return props.followups || []
+  }
+  // Иначе берём из task result
   return identity.value?.followups || []
 })
 
 const needFields = computed(() => {
+  // Если cardType === 'followup_questions', используем props
+  if (props.cardType === 'followup_questions') {
+    return props.needFields || []
+  }
+  // Иначе берём из task result
   return identity.value?.need_fields || []
 })
 
 const taskId = computed(() => {
+  // Если передан taskId через props, используем его
+  if (props.taskId) {
+    return props.taskId
+  }
+  // Иначе берём из task
   return task.value?.id
 })
 
@@ -164,7 +241,17 @@ const fetchTask = async () => {
     resourceId: props.resourceId,
     examId: props.examId,
     actualExamId: actualExamId,
+    cardType: props.cardType,
   })
+
+  // Если это карточка с конкретным типом (candidates, followup_questions)
+  // и данные уже переданы через props, не загружаем task
+  if ((props.cardType === 'candidates' && props.candidates?.length > 0) ||
+      (props.cardType === 'followup_questions' && (props.followups?.length > 0 || props.needFields?.length > 0))) {
+    console.log('[Identity Clarifier] Using props data, skipping fetch')
+    loading.value = false
+    return
+  }
 
   if (!actualExamId) {
     console.error('[Identity Clarifier] No exam ID available')
@@ -221,27 +308,62 @@ const handleCandidateSelected = () => {
   }, 2000)
 }
 
-const handleFieldsSaved = () => {
-  Nova.success('Fields saved successfully!')
-  // Reload handled by MissingFieldsForm
-}
-
-const handleCardDismissed = async () => {
-  const actualExamId = examId.value
-  if (!actualExamId) return
+const submitClarification = async () => {
+  submitting.value = true
+  errorMessage.value = ''
+  successMessage.value = ''
 
   try {
-    await Nova.request().post(`/api/exams/${actualExamId}/dismiss-card`, {
-      card_type: 'missing_fields'
-    })
-    Nova.success('Card dismissed')
-    // Reload to hide card
+    const baseUrl = `/api/exams/${examId.value}/research/${taskId.value}/clarify`
+
+    // Submit answers to questions if any
+    if (hasFollowups.value && Object.keys(answerInputs.value).length > 0) {
+      // Convert answerInputs object to array, preserving question order
+      const answers = []
+      for (let i = 0; i < followups.value.length; i++) {
+        const answer = answerInputs.value[i]
+        if (answer && answer.trim()) {
+          answers.push(answer.trim())
+        } else {
+          // Empty answer - still include it to maintain order
+          answers.push('')
+        }
+      }
+
+      await Nova.request().post(baseUrl, {
+        clarification_type: 'answer_questions',
+        answers: answers,
+      })
+    }
+
+    // Submit field values if any
+    if (hasNeedFields.value && Object.keys(fieldInputs.value).length > 0) {
+      // Filter out empty values
+      const userInputUpdates = {}
+      for (const [field, value] of Object.entries(fieldInputs.value)) {
+        if (value && value.trim()) {
+          userInputUpdates[field] = value.trim()
+        }
+      }
+
+      if (Object.keys(userInputUpdates).length > 0) {
+        await Nova.request().post(baseUrl, {
+          clarification_type: 'provide_fields',
+          user_input_updates: userInputUpdates,
+        })
+      }
+    }
+
+    successMessage.value = 'Information submitted successfully!'
+
     setTimeout(() => {
       location.reload()
-    }, 1000)
+    }, 2000)
   } catch (error) {
-    console.error('Failed to dismiss card:', error)
-    Nova.error('Failed to dismiss card')
+    console.error('Failed to submit clarification:', error)
+    errorMessage.value = error.response?.data?.message || 'Failed to submit information.'
+  } finally {
+    submitting.value = false
   }
 }
 
@@ -258,9 +380,12 @@ onMounted(() => {
   fetchTask()
 
   // Auto-refresh every 5 seconds
-  refreshInterval = setInterval(() => {
-    fetchTask()
-  }, 5000)
+  // Но не обновляем, если это статичная карточка с данными из props
+  if (props.cardType !== 'candidates' && props.cardType !== 'followup_questions') {
+    refreshInterval = setInterval(() => {
+      fetchTask()
+    }, 5000)
+  }
 })
 
 onUnmounted(() => {
