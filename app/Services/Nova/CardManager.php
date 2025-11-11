@@ -15,11 +15,10 @@ use App\Services\LanguageApp\QuickCheckService;
  * - Управляет состоянием карточек (dismissed cards)
  *
  * Типы карточек:
- * - MissingFieldsCard: недостающие поля для Identity
  * - FieldsChangedCard: поля изменились, нужен перезапуск
- * - IdentityVariantsCard: несколько вариантов экзамена
  * - StalledTaskCard: задача зависла
- * - ThreeAttemptsFailedCard: все попытки исчерпаны
+ * - CandidatesCard: несколько вариантов экзамена для выбора
+ * - FollowupQuestionsCard: уточняющие вопросы или недостающие поля
  */
 class CardManager
 {
@@ -36,8 +35,10 @@ class CardManager
      * @param  Exam  $exam
      * @return array
      * [
-     *   ['type' => 'missing_fields', 'priority' => 1, 'data' => [...]],
-     *   ['type' => 'fields_changed', 'priority' => 2, 'data' => [...]],
+     *   ['type' => 'fields_changed', 'priority' => 1, 'data' => [...]],
+     *   ['type' => 'stalled_task', 'priority' => 2, 'data' => [...]],
+     *   ['type' => 'candidates', 'priority' => 3, 'data' => [...]],
+     *   ['type' => 'followup_questions', 'priority' => 4, 'data' => [...]],
      * ]
      */
     public function getActiveCards(Exam $exam): array
@@ -47,49 +48,49 @@ class CardManager
         // Проверяем dismissed cards
         $dismissedCards = $exam->meta['dismissed_cards'] ?? [];
 
-        // 1. MissingFieldsCard - показывается когда:
-        // - есть недостающие поля (recommended или critical)
-        // - И есть активный task (queued, running, pending_*)
-        // - И карточка не закрыта
-        if (!in_array('missing_fields', $dismissedCards)) {
-            $quickCheck = $this->quickCheckService->check($exam);
-
-            // Проверяем, есть ли активный task
-            $hasActiveTask = $exam->generationTasks()
-                ->whereIn('status', ['queued', 'running', 'pending_confirmation', 'pending_clarification'])
-                ->exists();
-
-            // Показываем карточку если есть недостающие поля И есть активный task
-            $hasMissingFields = !empty($quickCheck['missing_critical']) || !empty($quickCheck['missing_recommended']);
-
-            if ($hasMissingFields && $hasActiveTask) {
-                $cards[] = [
-                    'type' => 'missing_fields',
-                    'priority' => 1,
-                    'data' => $quickCheck,
-                ];
-            }
-        }
-
-        // 2. FieldsChangedCard - если поля изменились после подтверждения
+        // 1. FieldsChangedCard - если поля изменились после подтверждения
         if (!in_array('fields_changed', $dismissedCards)) {
             if ($this->hasFieldsChanged($exam)) {
                 $cards[] = [
                     'type' => 'fields_changed',
-                    'priority' => 2,
+                    'priority' => 1,
                     'data' => $this->getChangedFields($exam),
                 ];
             }
         }
 
-        // 3. StalledTaskCard - если есть зависшая задача
+        // 2. StalledTaskCard - если есть зависшая задача
         if (!in_array('stalled_task', $dismissedCards)) {
             $stalledTask = $this->getStalledTask($exam);
             if ($stalledTask) {
                 $cards[] = [
                     'type' => 'stalled_task',
-                    'priority' => 3,
+                    'priority' => 2,
                     'data' => $this->getStalledTaskData($stalledTask),
+                ];
+            }
+        }
+
+        // 3. CandidatesCard - если есть несколько вариантов экзамена для выбора
+        if (!in_array('candidates', $dismissedCards)) {
+            $candidatesData = $this->getCandidatesData($exam);
+            if ($candidatesData) {
+                $cards[] = [
+                    'type' => 'candidates',
+                    'priority' => 3,
+                    'data' => $candidatesData,
+                ];
+            }
+        }
+
+        // 4. FollowupQuestionsCard - если есть уточняющие вопросы
+        if (!in_array('followup_questions', $dismissedCards)) {
+            $followupsData = $this->getFollowupsData($exam);
+            if ($followupsData) {
+                $cards[] = [
+                    'type' => 'followup_questions',
+                    'priority' => 4,
+                    'data' => $followupsData,
                 ];
             }
         }
@@ -238,6 +239,115 @@ class CardManager
             'type' => $task->type,
             'stalled_since' => $stalledSince,
             'last_heartbeat' => $lastHeartbeat?->toDateTimeString(),
+        ];
+    }
+
+    /**
+     * Получить данные для CandidatesCard
+     *
+     * Показывается когда:
+     * - Есть task со статусом pending_confirmation
+     * - В result есть identity.candidates.length > 0
+     * - ИЛИ в логах (generation_logs) есть кандидаты
+     *
+     * @param  Exam  $exam
+     * @return array|null
+     */
+    protected function getCandidatesData(Exam $exam): ?array
+    {
+        // Ищем последнюю задачу со статусом pending_confirmation
+        $task = $exam->generationTasks()
+            ->where('status', 'pending_confirmation')
+            ->latest()
+            ->first();
+
+        if (!$task) {
+            return null;
+        }
+
+        $candidates = [];
+
+        // Сначала пробуем получить из result
+        $result = $task->result ?? [];
+        $identity = $result['identity'] ?? [];
+        $candidates = $identity['candidates'] ?? [];
+
+        // Если в result нет кандидатов, ищем в логах
+        if (empty($candidates)) {
+            // Ищем последний лог со стейджем 'identity'
+            $identityLog = $task->logs()
+                ->where('stage', 'identity')
+                ->latest()
+                ->first();
+
+            if ($identityLog && isset($identityLog->response['candidates'])) {
+                $candidates = $identityLog->response['candidates'];
+            }
+        }
+
+        // Показываем карточку только если есть кандидаты
+        if (empty($candidates) || count($candidates) === 0) {
+            return null;
+        }
+
+        return [
+            'task_id' => $task->id,
+            'candidates' => $candidates,
+        ];
+    }
+
+    /**
+     * Получить данные для FollowupQuestionsCard
+     *
+     * Показывается когда:
+     * - Есть task со статусом pending_clarification
+     * - В result есть identity.followups.length > 0 ИЛИ identity.need_fields.length > 0
+     * - ИЛИ в логах (generation_logs) есть followups/need_fields
+     *
+     * @param  Exam  $exam
+     * @return array|null
+     */
+    protected function getFollowupsData(Exam $exam): ?array
+    {
+        // Ищем последнюю задачу со статусом pending_clarification
+        $task = $exam->generationTasks()
+            ->where('status', 'pending_clarification')
+            ->latest()
+            ->first();
+
+        if (!$task) {
+            return null;
+        }
+
+        // Сначала пробуем получить из result
+        $result = $task->result ?? [];
+        $identity = $result['identity'] ?? [];
+        $followups = $identity['followups'] ?? [];
+        $needFields = $identity['need_fields'] ?? [];
+
+        // Если в result нет данных, ищем в логах
+        if (empty($followups) && empty($needFields)) {
+            // Ищем последний лог со стейджем 'identity'
+            $identityLog = $task->logs()
+                ->where('stage', 'identity')
+                ->latest()
+                ->first();
+
+            if ($identityLog) {
+                $followups = $identityLog->response['followups'] ?? [];
+                $needFields = $identityLog->response['need_fields'] ?? [];
+            }
+        }
+
+        // Показываем карточку только если есть followup вопросы или need_fields
+        if (empty($followups) && empty($needFields)) {
+            return null;
+        }
+
+        return [
+            'task_id' => $task->id,
+            'followups' => $followups,
+            'need_fields' => $needFields,
         ];
     }
 }

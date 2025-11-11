@@ -41,5 +41,8 @@ class AppServiceProvider extends ServiceProvider
 
         // Register ExamDocument observer for automatic document analysis
         \App\Models\ExamDocument::observe(\App\Observers\ExamDocumentObserver::class);
+
+        // Register ExamExampleQuestion observer for automatic exam_structure recovery
+        \App\Models\ExamExampleQuestion::observe(\App\Observers\ExamExampleQuestionObserver::class);
     }
 }

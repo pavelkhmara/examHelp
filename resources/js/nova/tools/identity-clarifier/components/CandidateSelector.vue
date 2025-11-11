@@ -28,16 +28,22 @@
           />
           <div class="flex-1">
             <div class="font-semibold text-gray-900 dark:text-gray-100">
-              {{ candidate.family }}
-              <span v-if="candidate.variant" class="text-gray-600 dark:text-gray-400">
-                - {{ candidate.variant }}
-              </span>
+              {{ candidate.family || candidate.name || candidate.title || 'Unknown Exam' }}
+            </div>
+            <div v-if="candidate.name && candidate.family && candidate.name !== candidate.family" class="text-sm text-gray-700 dark:text-gray-300 mt-1">
+              Name: {{ candidate.name }}
+            </div>
+            <div v-if="candidate.title && candidate.title !== candidate.family && candidate.title !== candidate.name" class="text-sm text-gray-700 dark:text-gray-300 mt-1">
+              Title: {{ candidate.title }}
             </div>
             <div class="text-sm text-gray-600 dark:text-gray-400 mt-1">
-              {{ candidate.provider || 'Unknown Provider' }}
+              Provider: {{ candidate.provider || 'Unknown Provider' }}
             </div>
-            <div v-if="candidate.language_of_test" class="text-sm text-gray-500 dark:text-gray-500 mt-1">
-              Language: {{ candidate.language_of_test }}
+            <div v-if="candidate.level" class="text-sm text-gray-600 dark:text-gray-400 mt-1">
+              Level: {{ candidate.level }}
+            </div>
+            <div v-if="candidate.score || candidate.confidence" class="text-sm text-blue-600 dark:text-blue-400 mt-1">
+              Confidence: {{ Math.round((candidate.score || candidate.confidence) * 100) }}%
             </div>
           </div>
         </div>
