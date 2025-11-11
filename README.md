@@ -448,15 +448,38 @@ docker compose exec app composer fix   # Автоисправление форм
 # Переход в рабочую директорию
 cd /opt/examhelp/examHelp
 
-# Обновление кода из git
+# DEPLOY
+# 1. Обновить код
 git pull origin master
-make refresh  # Очистить кеши + перезапустить воркеры
 
-# Применение миграций
-make migrate
+# 2. Пересобрать образы (по необходимости)
+docker compose build app queue-worker scheduler
 
-# Перезапуск контейнеров (при изменении .env или docker-compose.yml)
-docker compose down && docker compose up -d --build
+# 3. Установить бэкенд зависимости (при изменениях composer.lock)
+docker compose run --rm app bash -lc 'composer install --no-dev --prefer-dist -o'
+
+# 4. Миграции
+docker compose run --rm app php artisan migrate --force
+
+# 5. Кэширование/оптимизация - кэшируем заранее (а не очищаем)
+docker compose run --rm app php artisan event:cache
+docker compose run --rm app php artisan config:cache
+docker compose run --rm app php artisan route:cache
+docker compose run --rm app php artisan view:cache
+docker compose run --rm app php artisan optimize
+
+# 6. Поднять/перезапустить
+docker compose up -d
+
+# 7. Frontend (если менялся)
+docker compose exec -T app bash -lc 'npm ci && npm run build'
+
+# 8. Прогрев
+sleep 2
+curl -s http://localhost:8080/health >/dev/null || true
+curl -s 'http://localhost:8080/nova/resources/exams' >/dev/null || true
+curl -s 'http://localhost:8080/nova-api/exams?perPage=25&page=1' >/dev/null || true
+
 
 # Мониторинг воркеров
 docker compose logs queue-worker-1 queue-worker-2 queue-worker-3 -f --tail=50
@@ -914,19 +937,47 @@ make stan
 ```bash
 cd /opt/examhelp/examHelp
 
-# Обновление из git
+# 1. Обновить код
 git pull origin master
-make refresh
 
-# Применение миграций (ВАЖНО: сделать бэкап БД!)
-make migrate
+# 2. Пересобрать образы (по необходимости)
+docker compose build app queue-worker scheduler
+
+# 3. Установить бэкенд зависимости (при изменениях composer.lock)
+docker compose run --rm app bash -lc 'composer install --no-dev --prefer-dist -o'
+
+# 4. Миграции
+docker compose run --rm app php artisan migrate --force
+
+# 5. Кэширование/оптимизация - кэшируем заранее (а не очищаем)
+docker compose run --rm app php artisan event:cache
+docker compose run --rm app php artisan config:cache
+docker compose run --rm app php artisan route:cache
+docker compose run --rm app php artisan view:cache
+docker compose run --rm app php artisan optimize
+
+# 6. Поднять/перезапустить
+docker compose up -d
+
+# 7. Frontend (если менялся)
+docker compose exec -T app bash -lc 'npm ci && npm run build'
+
+# 8. Прогрев
+sleep 2
+curl -s http://localhost:8080/health >/dev/null || true
+curl -s 'http://localhost:8080/nova/resources/exams' >/dev/null || true
+curl -s 'http://localhost:8080/nova-api/exams?perPage=25&page=1' >/dev/null || true
+
 
 # Мониторинг воркеров
 docker compose logs queue-worker-1 queue-worker-2 queue-worker-3 -f
 
 # Проверка здоровья
-curl http://localhost:8080/health
+curl -s http://localhost:8080/health
+
 docker compose ps
+
+docker compose exec app php -i | grep -i opcache
 
 # Перезапуск при проблемах
 docker compose restart queue-worker-1 queue-worker-2 queue-worker-3
