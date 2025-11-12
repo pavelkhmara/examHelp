@@ -14,7 +14,7 @@ abstract class AbstractAiService
     ) {}
 
     /**
-     * @param  array  $opts  ['schema' => array|null, 'web' => bool, 'files' => array<int,\SplFileInfo|string>, 'model' => string|null]
+     * @param  array  $opts  ['schema' => array|null, 'web' => bool, 'files' => array<int,\SplFileInfo|string>, 'model' => string|null, 'prompt_class' => string|null, 'prompt_args' => array|null]
      */
     protected function callAi(array $payload, array $opts = []): array
     {
@@ -40,17 +40,24 @@ abstract class AbstractAiService
             $payload['files_hint'] = $filesHint;
         }
 
-        // 2) Build prompt using PromptExamOverview
+        // 2) Build prompt using specified prompt class or default PromptExamOverview
         $retryHint = $payload['retry_hint'] ?? null;
         $userInputParsed = $payload['user_input'] ?? null;
-        $prompt = Prompts\PromptExamOverview::build(
+        $promptClass = $opts['prompt_class'] ?? Prompts\PromptExamOverview::class;
+        $promptArgs = $opts['prompt_args'] ?? [];
+
+        // Build prompt with provided args or default args
+        $defaultArgs = [
             $examTitle,
             $userInput,
             $contextNotes,
             $retryHint,
             $userInputParsed,
             $filesHint
-        );
+        ];
+
+        $buildArgs = !empty($promptArgs) ? $promptArgs : $defaultArgs;
+        $prompt = $promptClass::build(...$buildArgs);
 
         // 3) Messages
         $messages = [

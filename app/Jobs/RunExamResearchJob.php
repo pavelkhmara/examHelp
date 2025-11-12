@@ -544,8 +544,39 @@ class RunExamResearchJob implements ShouldQueue
         $task->updateHeartbeat(); // Heartbeat before overview pipeline
 
         try {
-            $pipelineResult = $svc->runPipeline($exam, $task);
-            $task->updateHeartbeat(); // Heartbeat after overview pipeline
+            // Check if two-phase generation is enabled (v2 architecture)
+            $useTwoPhaseGeneration = $task->request['use_two_phase_generation'] ?? true; // Default to v2
+
+            if ($useTwoPhaseGeneration) {
+                // V2 ARCHITECTURE: Two-phase generation (Phase A + Phase B)
+                $task->addActivity('two_phase_mode_enabled', 'Using v2 two-phase generation (Phase A: skeleton, Phase B: assembly plan)');
+
+                // Phase A: Generate skeleton structure
+                $task->updateHeartbeat(); // Heartbeat before Phase A
+                $phaseASkeleton = $svc->runPhaseA($exam, $task);
+                $task->updateHeartbeat(); // Heartbeat after Phase A
+
+                // Phase B: Generate assembly plan
+                $task->updateHeartbeat(); // Heartbeat before Phase B
+                $phaseBStructure = $svc->runPhaseB($exam, $task, $phaseASkeleton);
+                $task->updateHeartbeat(); // Heartbeat after Phase B
+
+                // Build compatible pipelineResult structure for downstream code
+                $pipelineResult = [
+                    'ok' => true,
+                    'overview' => $phaseBStructure, // Complete structure with assembly
+                    'structure' => $phaseBStructure,
+                    'phase_a_skeleton' => $phaseASkeleton,
+                    'phase_b_complete' => $phaseBStructure,
+                    'generation_mode' => 'two_phase_v2',
+                ];
+            } else {
+                // V1 ARCHITECTURE: Single-phase generation (legacy)
+                $task->addActivity('legacy_mode_enabled', 'Using legacy single-phase generation (v1)');
+
+                $pipelineResult = $svc->runPipeline($exam, $task);
+                $task->updateHeartbeat(); // Heartbeat after overview pipeline
+            }
 
             // Check if pipeline failed
             if (isset($pipelineResult['ok']) && $pipelineResult['ok'] === false) {

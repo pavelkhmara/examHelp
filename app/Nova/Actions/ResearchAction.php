@@ -105,18 +105,45 @@ class ResearchAction extends Action
                 'research_status' => $exam->research_status,
             ]);
 
-            // CRITICAL: Block if metadata analysis is still running
-            // This prevents race conditions between metadata_analysis and research tasks
-            if ($exam->analysis_status === 'running') {
+            // CRITICAL: Ensure metadata analysis completes BEFORE research
+            // This prevents race conditions and ensures research has identity data
+            $analysisStatus = $exam->analysis_status ?? 'not_started';
+
+            // If metadata analysis hasn't been done or failed, dispatch it now
+            if (in_array($analysisStatus, ['not_started', 'failed', null])) {
+                \Illuminate\Support\Facades\Log::info('🔵 [ResearchAction] Starting metadata analysis first', [
+                    'exam_id' => $exam->id,
+                    'current_analysis_status' => $analysisStatus,
+                ]);
+
+                // Dispatch metadata analysis job
+                dispatch(new \App\Jobs\AnalyzeExamMetadataJob($exam->id));
+
+                return Action::message(
+                    '🚀 Metadata analysis started (usually takes 10-30 seconds). ' .
+                    'Please wait for it to complete, then click "Run Exam Research" again to start the research phase.'
+                );
+            }
+
+            // If metadata analysis is still running, block
+            if ($analysisStatus === 'running') {
                 \Illuminate\Support\Facades\Log::warning('🔵 [ResearchAction] Blocked: metadata analysis in progress', [
                     'exam_id' => $exam->id,
-                    'analysis_status' => $exam->analysis_status,
+                    'analysis_status' => $analysisStatus,
                 ]);
 
                 return Action::danger(
                     '⏳ Please wait: Metadata analysis is in progress. ' .
                     'This usually takes 10-30 seconds. Please try again in a moment.'
                 );
+            }
+
+            // If we reach here, analysis_status should be 'completed'
+            if ($analysisStatus !== 'completed') {
+                \Illuminate\Support\Facades\Log::warning('🔵 [ResearchAction] Unexpected analysis_status', [
+                    'exam_id' => $exam->id,
+                    'analysis_status' => $analysisStatus,
+                ]);
             }
 
             // Check exam readiness using QuickCheckService but don't block
