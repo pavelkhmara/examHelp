@@ -29,7 +29,11 @@ class PromptOverviewPhaseB
 
         return <<<EOT
 # Роль и цель
-Ты — планировщик сборки экзаменационных вопросов. Подготовь **Assembly Plan** для ВСЕХ секций экзамена **без генерации контента вопросов** — строго по `s2_exam_json_archetype_v2.json`.
+Ты — планировщик сборки экзаменационных вопросов.
+
+**Цель этого запроса:** Подготовь **Assembly Plan** (план сборки) для ВСЕХ секций экзамена **без генерации контента вопросов** — строго по `s2_exam_json_archetype_v2.json`.
+
+**Важно:** В этом запросе ты НЕ создаёшь тексты вопросов, stimulus, scoring details. Только конфигурацию сборки (assembly).
 
 # Входные данные
 **Exam Title**: {$examTitle}
@@ -40,6 +44,25 @@ class PromptOverviewPhaseB
 ```json
 {$skeletonJson}
 ```
+
+# Приоритеты требований (от критичного к желательному)
+
+1. **КРИТИЧНО (MUST)** - нарушение сломает результат:
+   - Валидный JSON без синтаксических ошибок
+   - КАЖДАЯ секция из Phase A skeleton имеет ровно ОДИН assembly mode (pool|blueprint|inline)
+   - В filters.type использовать ТОЛЬКО типы из Question Types enum (см. ниже)
+   - Для blueprint: сумма всех `pick` в слотах = `assertions.total_tasks_equals`
+   - Не создавать текст вопросов (instructions, stimulus, options, answer_key и т.д.)
+   - Не использовать удалённые поля (`pattern`, `type_specific`)
+
+2. **ВАЖНО (SHOULD)** - желательно соблюдать:
+   - Правильный выбор assembly mode для типа секции
+   - Realistic filters (difficulty, cefr levels, skills_measured)
+   - Корректные assertions для валидации плана
+
+3. **ЖЕЛАТЕЛЬНО** - дополнительные улучшения:
+   - Подробные io_signature для каждого filter
+   - Дополнительные теги и метаданные
 
 # Что нужно сделать
 Для КАЖДОЙ секции из Phase A skeleton определи ОДИН из трёх режимов сборки:
@@ -186,6 +209,33 @@ class PromptOverviewPhaseB
 {$schemaDescription}
 
 {$documentsHint}
+
+# Финальная проверка перед ответом
+
+**Перед тем как вернуть JSON, обязательно проверь:**
+
+1. ✅ JSON синтаксически корректен (все кавычки, запятые, скобки на месте)
+2. ✅ КАЖДАЯ секция из Phase A skeleton присутствует в ответе
+3. ✅ КАЖДАЯ секция имеет ровно ОДИН assembly mode:
+   - `assembly.mode` = "pool" | "blueprint" | "inline"
+4. ✅ Для pool mode:
+   - Есть `pool_id` (string)
+   - Есть `pick` (integer)
+   - Есть `filters` с полем `type` (array of question types)
+   - Есть `assertions.total_tasks_equals` (integer)
+5. ✅ Для blueprint mode:
+   - Есть `blueprint` (array of slots)
+   - Каждый slot имеет: `slot`, `from_pool`, `pick`, `filters`
+   - Сумма всех `pick` = `assertions.total_tasks_equals`
+6. ✅ Для inline mode:
+   - Есть `assembly.mode = "inline"`
+   - Опционально: `tasks[]` array с placeholders (только `id` и `type`, БЕЗ контента)
+7. ✅ Все типы в `filters.type` из Question Types enum (single_select, multi_select, writing_prompt и т.д.)
+8. ✅ НЕТ текста вопросов (instructions, stimulus, options, answer_key)
+9. ✅ НЕТ удалённых полей (`pattern`, `type_specific`)
+10. ✅ Возвращаешь ПОЛНЫЙ JSON экзамена (из Phase A + добавленные assembly configs)
+
+Если хотя бы одна проверка не прошла — исправь JSON и проверь снова.
 
 # Timeframe
 Complete this in ~1-1.5 minutes. Focus on assembly strategy, not question content.
