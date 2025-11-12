@@ -70,6 +70,11 @@ class Exam extends Model
         return $this->hasMany(ConfirmedIdentity::class, 'exam_id', 'id');
     }
 
+    public function questions(): HasMany
+    {
+        return $this->hasMany(Question::class, 'exam_id', 'id');
+    }
+
     public function loadAllCounts()
     {
         return $this->loadCount([
@@ -77,22 +82,52 @@ class Exam extends Model
             'examples',
             'generationTasks',
             'generationLogs',
+            'questions',
         ]);
     }
 
-    // Упрощённая структура экзамена из meta
+    // ========== V2 ACCESSORS ==========
+
+    /**
+     * Get v2 exam structure from meta['structure_v2']
+     * This is the new v2 format with sections[], pass_policy, policies, etc.
+     */
+    public function getStructureV2Attribute(): ?array
+    {
+        return $this->meta['structure_v2'] ?? null;
+    }
+
+    /**
+     * Set v2 exam structure to meta['structure_v2']
+     */
+    public function setStructureV2Attribute(array $value): void
+    {
+        $meta = $this->meta ?? [];
+        $meta['structure_v2'] = $value;
+        $this->meta = $meta;
+    }
+
+    // ========== V1 ACCESSORS (Backward Compatibility) ==========
+
+    /**
+     * Get v1 exam structure from meta['exam_structure'] (for backward compatibility)
+     */
     public function getExamStructureAttribute()
     {
         return $this->meta['exam_structure'] ?? null;
     }
 
-    // Суммарная длительность из структуры (если есть)
+    /**
+     * Get total exam duration from v1 structure (backward compatibility)
+     */
     public function getTotalExamDurationAttribute()
     {
         return data_get($this->exam_structure, 'total_exam_duration');
     }
 
-    // Удобный список секций (категорий) из структуры
+    /**
+     * Get sections from v1 structure (backward compatibility)
+     */
     public function getStructureSectionsAttribute()
     {
         $s = $this->exam_structure;
