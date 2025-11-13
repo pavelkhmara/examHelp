@@ -56,6 +56,12 @@ class Exam extends Resource
     {
         $fields = [
             ID::make()->sortable()->hideFromIndex(),
+            Code::make('Structure V2', function () {
+                return json_encode($this->structure_v2 ?? [], JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
+            })
+                ->language('json')
+                ->onlyOnDetail()
+                ->help('Exam skeleton/assembly (v2)'),
             // Text::make('ID', 'id')->onlyOnIndex(),
 
             // === CREATION FORM FIELDS ===
@@ -387,6 +393,7 @@ class Exam extends Resource
         // ============== STAGE 3: Categories ==============
         // Always show, even if count is 0 - Nova will show empty state
         $fields[] = HasMany::make('Categories', 'categories', ExamCategory::class);
+        $fields[] = HasMany::make('Questions', 'questions', \App\Nova\Question::class);
 
         // ============== STAGE 4: Examples ==============
         // Always show, even if count is 0 - Nova will show empty state
@@ -1469,6 +1476,11 @@ class Exam extends Resource
             new ProvideAnswersAction,
             new \App\Nova\Actions\RejectAllVariantsAction,
             new \App\Nova\Actions\CancelStalledTaskAction,
+            (new \App\Nova\Actions\RunOverviewPhaseAAction())->onlyOnDetail(),
+            (new \App\Nova\Actions\RunOverviewPhaseBAction())->onlyOnDetail(),
+            (new \App\Nova\Actions\ResolveGenerationPlanAction())->onlyOnDetail(),
+            (new \App\Nova\Actions\SynthesizeQuestionsAction())->onlyOnDetail(),
+            (new \App\Nova\Actions\ValidateAttachQuestionsAction())->onlyOnDetail(),
             // (new ConfirmExamIdentity)
             // ->canSee(function () {
             //     $st = data_get($this->resource->identity, 'status');
