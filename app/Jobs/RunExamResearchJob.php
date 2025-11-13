@@ -148,6 +148,11 @@ class RunExamResearchJob implements ShouldQueue
 
                     // Set task to pending_clarification and wait for user
                     $task->status = 'pending_clarification';
+
+                    // Save identity data to task.result so Vue component can display followup questions
+                    $result = (array) ($task->result ?? []);
+                    $result['identity'] = $identityResult;
+                    $task->result = $result;
                     $task->save();
 
                     $exam->research_status = 'pending_clarification';
@@ -357,6 +362,11 @@ class RunExamResearchJob implements ShouldQueue
                 ]);
 
                 $task->status = 'pending_confirmation';
+
+                // Save identity data to task.result so Vue component can display it
+                $result = (array) ($task->result ?? []);
+                $result['identity'] = $identityResult;
+                $task->result = $result;
                 $task->save();
 
                 $exam->research_status = 'queued';
@@ -691,15 +701,17 @@ class RunExamResearchJob implements ShouldQueue
         }
 
         // Generate example questions for each archetype
-        try {
-            \Illuminate\Support\Facades\Log::info('Starting example generation', [
-                'exam_id' => $exam->id,
-                'task_id' => $task->id,
-            ]);
+        // SKIP for v2 architecture - examples will be generated in Stage 6 (QuestionSynthesizer)
+        if (!$useTwoPhaseGeneration) {
+            try {
+                \Illuminate\Support\Facades\Log::info('Starting example generation', [
+                    'exam_id' => $exam->id,
+                    'task_id' => $task->id,
+                ]);
 
-            $task->addActivity('example_generation_started', 'Generating example questions for archetypes');
+                $task->addActivity('example_generation_started', 'Generating example questions for archetypes');
 
-            $exampleResult = $svc->generateExamples($exam, $task, 1); // 1 example per archetype
+                $exampleResult = $svc->generateExamples($exam, $task, 1); // 1 example per archetype
 
             \Illuminate\Support\Facades\Log::info('Example generation completed', [
                 'exam_id' => $exam->id,
@@ -727,11 +739,21 @@ class RunExamResearchJob implements ShouldQueue
 
             $task->addActivity('example_generation_failed', 'Example generation failed: '.$e->getMessage());
 
-            // Don't fail the whole job - examples are nice-to-have
-            $result = (array) ($task->result ?? []);
-            $result['examples_error'] = $e->getMessage();
-            $task->result = $result;
-            $task->save();
+                // Don't fail the whole job - examples are nice-to-have
+                $result = (array) ($task->result ?? []);
+                $result['examples_error'] = $e->getMessage();
+                $task->result = $result;
+                $task->save();
+            }
+        } else {
+            // V2 architecture: Skip example generation (will be done in Stage 6)
+            $task->addActivity('example_generation_skipped', 'Skipping example generation for v2 architecture (will be generated in Stage 6 via QuestionSynthesizer)');
+
+            \Illuminate\Support\Facades\Log::info('Skipping example generation for v2 architecture', [
+                'exam_id' => $exam->id,
+                'task_id' => $task->id,
+                'reason' => 'v2 uses assembly configs instead of question_archetypes',
+            ]);
         }
     }
 }

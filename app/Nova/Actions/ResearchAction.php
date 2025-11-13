@@ -314,11 +314,11 @@ class ResearchAction extends Action
             $existingTask = $task ?? null; // Last task from the loop
             $statusInfo = $existingTask ? " (status: {$existingTask->status})" : '';
 
-            return Action::message("ℹ️ A research task is already running for this exam{$statusInfo}. Please wait for it to complete or use \"Reset & Restart Research\" to force a new run. DEBUG: {$debugSummary}");
+            return Action::message("ℹ️ A research task is already running for this exam{$statusInfo}. Please wait for it to complete. DEBUG: {$debugSummary}");
         } elseif ($existingCount > 0) {
             return Action::message("✅ {$createdCount} new task(s) started! {$existingCount} exam(s) already have tasks running. DEBUG: {$debugSummary}");
         } else {
-            return Action::message("✅ Research task started! DEBUG: {$debugSummary}. Check Nova -> Generation Tasks.");
+            return Action::message("✅ Research task started! {$debugSummary}");
         }
     }
 }

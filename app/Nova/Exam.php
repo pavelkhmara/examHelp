@@ -5,7 +5,6 @@ namespace App\Nova;
 use App\Nova\Actions\ConfirmIdentityAction;
 use App\Nova\Actions\ProvideAnswersAction;
 use App\Nova\Actions\ResearchAction;
-use App\Nova\Actions\ResetAndRestartResearch;
 use App\Nova\Actions\ConfirmExamIdentity;
 use App\Nova\Fields\CollapsiblePanel;
 use Laravel\Nova\Fields\Badge;
@@ -160,6 +159,7 @@ class Exam extends Resource
             //     }),
 
             Badge::make('Analysis Status', 'analysis_status')
+                ->resolveUsing(fn ($value) => $value ?? 'pending')
                 ->map([
                     'pending' => 'info',
                     'running' => 'warning',
@@ -185,7 +185,9 @@ class Exam extends Resource
                 }),
 
             Badge::make('Research Status', 'research_status')
+                ->resolveUsing(fn ($value) => $value ?? 'not_started')
                 ->map([
+                    'not_started' => 'info',
                     'queued' => 'info',
                     'running' => 'warning',
                     'running_overview' => 'warning',
@@ -195,6 +197,7 @@ class Exam extends Resource
                     'pending_clarification' => 'warning', // Желтый - ожидание ответов
                 ])
                 ->labels([
+                    'not_started' => 'Not Started',
                     'queued' => 'Queued',
                     'running' => 'Running',
                     'running_overview' => 'In Progress',
@@ -583,21 +586,25 @@ class Exam extends Resource
     {
         $fields = [
             Badge::make('Task Status')
-                ->resolveUsing(fn () => $task->status)
+                ->resolveUsing(fn () => $task->status ?? 'unknown')
                 ->map([
+                    'unknown' => 'info',
                     'queued' => 'info',
                     'running' => 'warning',
                     'pending_confirmation' => 'warning',
                     'pending_clarification' => 'warning',
+                    'waiting_for_confirmation' => 'warning',
                     'completed' => 'success',
                     'failed' => 'danger',
                     'cancelled' => 'warning',
                 ])
                 ->labels([
+                    'unknown' => 'Unknown',
                     'queued' => 'Queued',
                     'running' => 'Running',
                     'pending_confirmation' => '⏸ Waiting for Confirmation',
                     'pending_clarification' => '⏸ Needs Clarification',
+                    'waiting_for_confirmation' => '⏸ Waiting for Confirmation',
                     'completed' => 'Completed',
                     'failed' => 'Failed',
                     'cancelled' => '🚫 Cancelled',
@@ -1423,35 +1430,31 @@ class Exam extends Resource
                         'suggestedActions' => ['cancel_and_restart', 'force_continue'],
                     ]);
                     break;
+
+                case 'candidates':
+                    $cardInstance = new \App\Nova\Cards\CandidatesCard();
+                    $cardInstance->withMeta([
+                        'examId' => $exam->id,
+                        'taskId' => $cardData['data']['task_id'] ?? null,
+                        'candidates' => $cardData['data']['candidates'] ?? [],
+                    ]);
+                    break;
+
+                case 'followup_questions':
+                    $cardInstance = new \App\Nova\Cards\FollowupQuestionsCard();
+                    $cardInstance->withMeta([
+                        'examId' => $exam->id,
+                        'taskId' => $cardData['data']['task_id'] ?? null,
+                        'followups' => $cardData['data']['followups'] ?? [],
+                        'needFields' => $cardData['data']['need_fields'] ?? [],
+                    ]);
+                    break;
             }
 
             if ($cardInstance) {
                 $cardInstance->onlyOnDetail();
                 $cards[] = $cardInstance;
             }
-        }
-
-        // Show Identity Clarifier Card if task is pending AND research not completed
-        $task = $exam->generationTasks()->latest()->first();
-        $researchNotCompleted = $exam->research_status !== 'completed';
-
-        \Illuminate\Support\Facades\Log::info('Task check', [
-            'task_id' => $task?->id,
-            'task_status' => $task?->status,
-            'research_status' => $exam->research_status,
-            'will_show_card' => $task && in_array($task->status, ['pending_confirmation', 'pending_clarification'], true) && $researchNotCompleted,
-        ]);
-
-        if ($task && in_array($task->status, ['pending_confirmation', 'pending_clarification'], true) && $researchNotCompleted) {
-            $card = new \App\Nova\Cards\IdentityClarifierCard();
-            $card->withMeta(['examId' => $exam->id]);
-            $card->onlyOnDetail(); // Explicitly show only on detail page
-            $cards[] = $card;
-
-            \Illuminate\Support\Facades\Log::info('Identity Clarifier Card added', [
-                'component' => $card->component(),
-                'meta' => $card->meta(),
-            ]);
         }
 
         return $cards;
@@ -1461,7 +1464,6 @@ class Exam extends Resource
     {
         return [
             new ResearchAction,
-            new ResetAndRestartResearch,
             new ConfirmIdentityAction,
             new \App\Nova\Actions\ConfidenceBoostAction,
             new ProvideAnswersAction,
