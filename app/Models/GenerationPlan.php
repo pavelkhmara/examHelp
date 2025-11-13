@@ -23,6 +23,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  * @property string|null $error
  * @property \Carbon\Carbon|null $started_at
  * @property \Carbon\Carbon|null $completed_at
+ * @property \Carbon\Carbon|null $attached_at
  * @property \Carbon\Carbon $created_at
  * @property \Carbon\Carbon $updated_at
  *
@@ -46,6 +47,7 @@ class GenerationPlan extends Model
         'error',
         'started_at',
         'completed_at',
+        'attached_at',
     ];
 
     protected $casts = [
@@ -54,6 +56,7 @@ class GenerationPlan extends Model
         'generated_questions' => 'integer',
         'started_at' => 'datetime',
         'completed_at' => 'datetime',
+        'attached_at' => 'datetime',
     ];
 
     /**
@@ -82,6 +85,14 @@ class GenerationPlan extends Model
     public function getIsCompletedAttribute(): bool
     {
         return $this->status === 'completed';
+    }
+
+    /**
+     * Check if generation is attached
+     */
+    public function getIsAttachedAttribute(): bool
+    {
+        return $this->status === 'attached';
     }
 
     /**
@@ -180,6 +191,17 @@ class GenerationPlan extends Model
             'status' => 'failed',
             'error' => $error,
             'completed_at' => now(),
+        ]);
+    }
+
+    /**
+     * Mark plan as attached to exam
+     */
+    public function markAsAttached(): void
+    {
+        $this->update([
+            'status' => 'attached',
+            'attached_at' => now(),
         ]);
     }
 
