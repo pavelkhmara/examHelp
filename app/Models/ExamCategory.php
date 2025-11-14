@@ -10,9 +10,19 @@ class ExamCategory extends Model
 {
     use HasFactory;
 
-    protected $fillable = ['exam_id', 'key', 'name', 'meta', 'description', 'order'];
+    protected $fillable = [
+        'exam_id', 'key', 'name', 'meta', 'description', 'order',
+        // V2 fields
+        'skill', 'duration_min', 'max_score', 'min_pass_percent', 'time_policy',
+    ];
 
-    protected $casts = ['meta' => AsArrayWithUnescapedSlashes::class];
+    protected $casts = [
+        'meta' => AsArrayWithUnescapedSlashes::class,
+        'task_archetypes' => 'array',
+        'duration_min' => 'integer',
+        'max_score' => 'decimal:2',
+        'min_pass_percent' => 'decimal:2',
+    ];
 
     public function exam()
     {
@@ -24,9 +34,38 @@ class ExamCategory extends Model
         return $this->hasMany(ExamExampleQuestion::class);
     }
 
+    public function questions()
+    {
+        return $this->hasMany(Question::class, 'section_id');
+    }
+
+    // ========== V2 ACCESSORS ==========
+
+    /**
+     * Get assembly config from meta['assembly']
+     * Used in v2 for question generation (pool/blueprint/inline)
+     */
+    public function getAssemblyConfigAttribute(): ?array
+    {
+        return $this->meta['assembly'] ?? null;
+    }
+
+    /**
+     * Set assembly config to meta['assembly']
+     */
+    public function setAssemblyConfigAttribute(array $value): void
+    {
+        $meta = $this->meta ?? [];
+        $meta['assembly'] = $value;
+        $this->meta = $meta;
+    }
+
+    // ========== V1 ACCESSORS (Backward Compatibility) ==========
+
     /**
      * Get question templates for this category with overrides applied
      * Implements Variant A (Global templates + references)
+     * NOTE: This is v1 compatibility accessor
      *
      * @return array
      */

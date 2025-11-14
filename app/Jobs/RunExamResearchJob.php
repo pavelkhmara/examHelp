@@ -148,6 +148,11 @@ class RunExamResearchJob implements ShouldQueue
 
                     // Set task to pending_clarification and wait for user
                     $task->status = 'pending_clarification';
+
+                    // Save identity data to task.result so Vue component can display followup questions
+                    $result = (array) ($task->result ?? []);
+                    $result['identity'] = $identityResult;
+                    $task->result = $result;
                     $task->save();
 
                     $exam->research_status = 'pending_clarification';
@@ -357,6 +362,11 @@ class RunExamResearchJob implements ShouldQueue
                 ]);
 
                 $task->status = 'pending_confirmation';
+
+                // Save identity data to task.result so Vue component can display it
+                $result = (array) ($task->result ?? []);
+                $result['identity'] = $identityResult;
+                $task->result = $result;
                 $task->save();
 
                 $exam->research_status = 'queued';
@@ -544,8 +554,39 @@ class RunExamResearchJob implements ShouldQueue
         $task->updateHeartbeat(); // Heartbeat before overview pipeline
 
         try {
-            $pipelineResult = $svc->runPipeline($exam, $task);
-            $task->updateHeartbeat(); // Heartbeat after overview pipeline
+            // Check if two-phase generation is enabled (v2 architecture)
+            $useTwoPhaseGeneration = $task->request['use_two_phase_generation'] ?? true; // Default to v2
+
+            if ($useTwoPhaseGeneration) {
+                // V2 ARCHITECTURE: Two-phase generation (Phase A + Phase B)
+                $task->addActivity('two_phase_mode_enabled', 'Using v2 two-phase generation (Phase A: skeleton, Phase B: assembly plan)');
+
+                // Phase A: Generate skeleton structure
+                $task->updateHeartbeat(); // Heartbeat before Phase A
+                $phaseASkeleton = $svc->runPhaseA($exam, $task);
+                $task->updateHeartbeat(); // Heartbeat after Phase A
+
+                // Phase B: Generate assembly plan
+                $task->updateHeartbeat(); // Heartbeat before Phase B
+                $phaseBStructure = $svc->runPhaseB($exam, $task, $phaseASkeleton);
+                $task->updateHeartbeat(); // Heartbeat after Phase B
+
+                // Build compatible pipelineResult structure for downstream code
+                $pipelineResult = [
+                    'ok' => true,
+                    'overview' => $phaseBStructure, // Complete structure with assembly
+                    'structure' => $phaseBStructure,
+                    'phase_a_skeleton' => $phaseASkeleton,
+                    'phase_b_complete' => $phaseBStructure,
+                    'generation_mode' => 'two_phase_v2',
+                ];
+            } else {
+                // V1 ARCHITECTURE: Single-phase generation (legacy)
+                $task->addActivity('legacy_mode_enabled', 'Using legacy single-phase generation (v1)');
+
+                $pipelineResult = $svc->runPipeline($exam, $task);
+                $task->updateHeartbeat(); // Heartbeat after overview pipeline
+            }
 
             // Check if pipeline failed
             if (isset($pipelineResult['ok']) && $pipelineResult['ok'] === false) {
@@ -628,11 +669,16 @@ class RunExamResearchJob implements ShouldQueue
 
             // If compliance is too low, add warning to result
             $complianceScore = $sanityResult['compliance_score'] ?? 0;
+            $nextStepMessage = $useTwoPhaseGeneration
+                ? 'завершить Stage 5 (генерация примеров будет в Stage 6)'
+                : 'продолжить к ЭТАПУ 4 (Examples)';
+
             if ($complianceScore < 0.85) {
-                $task->addActivity('decision_point_sanity_check', "Условие: compliance_score < 0.85 (текущий: {$complianceScore}). Решение: добавить warning и продолжить к ЭТАПУ 4 (Examples)", [
+                $task->addActivity('decision_point_sanity_check', "Условие: compliance_score < 0.85 (текущий: {$complianceScore}). Решение: добавить warning и {$nextStepMessage}", [
                     'condition' => 'compliance_score < 0.85',
                     'compliance_score' => $complianceScore,
                     'decision' => 'add_warning_continue',
+                    'architecture' => $useTwoPhaseGeneration ? 'v2' : 'v1',
                 ]);
 
                 $result = (array) ($task->result ?? []);
@@ -651,24 +697,27 @@ class RunExamResearchJob implements ShouldQueue
                     'fails' => $sanityResult['fails'] ?? [],
                 ]);
             } else {
-                $task->addActivity('decision_point_sanity_check', "Условие: compliance_score >= 0.85 (текущий: {$complianceScore}). Решение: продолжить к ЭТАПУ 4 (Examples)", [
+                $task->addActivity('decision_point_sanity_check', "Условие: compliance_score >= 0.85 (текущий: {$complianceScore}). Решение: {$nextStepMessage}", [
                     'condition' => 'compliance_score >= 0.85',
                     'compliance_score' => $complianceScore,
                     'decision' => 'continue_to_examples',
+                    'architecture' => $useTwoPhaseGeneration ? 'v2' : 'v1',
                 ]);
             }
         }
 
         // Generate example questions for each archetype
-        try {
-            \Illuminate\Support\Facades\Log::info('Starting example generation', [
-                'exam_id' => $exam->id,
-                'task_id' => $task->id,
-            ]);
+        // SKIP for v2 architecture - examples will be generated in Stage 6 (QuestionSynthesizer)
+        if (!$useTwoPhaseGeneration) {
+            try {
+                \Illuminate\Support\Facades\Log::info('Starting example generation', [
+                    'exam_id' => $exam->id,
+                    'task_id' => $task->id,
+                ]);
 
-            $task->addActivity('example_generation_started', 'Generating example questions for archetypes');
+                $task->addActivity('example_generation_started', 'Generating example questions for archetypes');
 
-            $exampleResult = $svc->generateExamples($exam, $task, 1); // 1 example per archetype
+                $exampleResult = $svc->generateExamples($exam, $task, 1); // 1 example per archetype
 
             \Illuminate\Support\Facades\Log::info('Example generation completed', [
                 'exam_id' => $exam->id,
@@ -696,11 +745,94 @@ class RunExamResearchJob implements ShouldQueue
 
             $task->addActivity('example_generation_failed', 'Example generation failed: '.$e->getMessage());
 
-            // Don't fail the whole job - examples are nice-to-have
-            $result = (array) ($task->result ?? []);
-            $result['examples_error'] = $e->getMessage();
-            $task->result = $result;
-            $task->save();
+                // Don't fail the whole job - examples are nice-to-have
+                $result = (array) ($task->result ?? []);
+                $result['examples_error'] = $e->getMessage();
+                $task->result = $result;
+                $task->save();
+            }
+        } else {
+            // V2 architecture: Skip example generation (will be done in Stage 6)
+            $task->addActivity('example_generation_skipped', 'Skipping example generation for v2 architecture (will be generated in Stage 6 via QuestionSynthesizer)');
+
+            \Illuminate\Support\Facades\Log::info('Skipping example generation for v2 architecture', [
+                'exam_id' => $exam->id,
+                'task_id' => $task->id,
+                'reason' => 'v2 uses assembly configs instead of question_archetypes',
+            ]);
         }
+
+        // ========================================
+        // FINALIZATION: Complete research task
+        // ========================================
+
+        $task->addActivity('finalization_started', 'Starting research finalization');
+
+        // Create ExamCategory records from structure_v2 sections (v2 only)
+        if ($useTwoPhaseGeneration && !empty($exam->meta['structure_v2']['sections'])) {
+            $task->addActivity('creating_categories', 'Creating ExamCategory records from structure_v2 sections');
+
+            $structure = $exam->meta['structure_v2'];
+            $existingCategories = \App\Models\ExamCategory::where('exam_id', $exam->id)->pluck('name')->toArray();
+
+            foreach ($structure['sections'] as $section) {
+                $sectionName = $section['id'];
+
+                // Skip if category already exists
+                if (in_array($sectionName, $existingCategories)) {
+                    \Illuminate\Support\Facades\Log::info('Skipping existing category', [
+                        'exam_id' => $exam->id,
+                        'section_name' => $sectionName,
+                    ]);
+                    continue;
+                }
+
+                // Create ExamCategory
+                \App\Models\ExamCategory::create([
+                    'exam_id' => $exam->id,
+                    'key' => $sectionName, // Required field
+                    'name' => $sectionName,
+                    'skill' => $section['skill'] ?? null,
+                    'duration_min' => $section['duration_min'] ?? null,
+                    'max_score' => $section['max_score'] ?? null,
+                    'min_pass_percent' => $section['min_pass_percent'] ?? null,
+                    'task_archetypes' => $section['task_archetypes'] ?? [],
+                    'meta' => [
+                        'tasks' => $section['tasks'] ?? [],
+                        'assembly' => $section['assembly'] ?? null,
+                    ],
+                ]);
+
+                \Illuminate\Support\Facades\Log::info('Created ExamCategory from v2 section', [
+                    'exam_id' => $exam->id,
+                    'section_name' => $sectionName,
+                ]);
+            }
+
+            $categoriesCount = count($structure['sections']);
+            $task->addActivity('categories_created', "Created {$categoriesCount} ExamCategory records from structure_v2");
+        }
+
+        // Update exam research_status
+        $exam->research_status = 'completed';
+        $exam->save();
+
+        $task->addActivity('research_completed', 'Research pipeline completed successfully');
+
+        // Finalize task
+        $task->status = 'completed';
+        $task->result = [
+            'success' => true,
+            'architecture' => $useTwoPhaseGeneration ? 'v2' : 'v1',
+            'structure_v2' => $useTwoPhaseGeneration ? $exam->meta['structure_v2'] : null,
+        ];
+        $task->save();
+
+        \Illuminate\Support\Facades\Log::info('✅ Research job completed successfully', [
+            'exam_id' => $exam->id,
+            'task_id' => $task->id,
+            'architecture' => $useTwoPhaseGeneration ? 'v2' : 'v1',
+            'categories_count' => \App\Models\ExamCategory::where('exam_id', $exam->id)->count(),
+        ]);
     }
 }

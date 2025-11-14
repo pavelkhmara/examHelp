@@ -5,7 +5,6 @@ namespace App\Nova;
 use App\Nova\Actions\ConfirmIdentityAction;
 use App\Nova\Actions\ProvideAnswersAction;
 use App\Nova\Actions\ResearchAction;
-use App\Nova\Actions\ResetAndRestartResearch;
 use App\Nova\Actions\ConfirmExamIdentity;
 use App\Nova\Fields\CollapsiblePanel;
 use Laravel\Nova\Fields\Badge;
@@ -57,6 +56,29 @@ class Exam extends Resource
     {
         $fields = [
             ID::make()->sortable()->hideFromIndex(),
+            Code::make('Structure V2', function () {
+                return json_encode($this->structure_v2 ?? [], JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
+            })
+                ->language('json')
+                ->onlyOnDetail()
+                ->help('Exam skeleton/assembly (v2)'),
+
+            // Phase B Assembly Config (читабельное отображение)
+            CollapsiblePanel::make('🔧 Phase B: Assembly Config', 'phase_b_assembly_html')
+                ->heading('🔧 Phase B: Assembly Config')
+                ->content($this->buildPhaseBAssemblyHtml())
+                ->collapsed(true)
+                ->onlyOnDetail()
+                ->help('Human-readable view of assembly configurations from Phase B'),
+
+            // Generation Plans
+            CollapsiblePanel::make('📋 Generation Plans', 'generation_plans_html')
+                ->heading('📋 Generation Plans')
+                ->content($this->buildGenerationPlansHtml())
+                ->collapsed(true)
+                ->onlyOnDetail()
+                ->help('Plans for question generation based on assembly configs'),
+
             // Text::make('ID', 'id')->onlyOnIndex(),
 
             // === CREATION FORM FIELDS ===
@@ -160,6 +182,7 @@ class Exam extends Resource
             //     }),
 
             Badge::make('Analysis Status', 'analysis_status')
+                ->resolveUsing(fn ($value) => $value ?? 'pending')
                 ->map([
                     'pending' => 'info',
                     'running' => 'warning',
@@ -185,7 +208,9 @@ class Exam extends Resource
                 }),
 
             Badge::make('Research Status', 'research_status')
+                ->resolveUsing(fn ($value) => $value ?? 'not_started')
                 ->map([
+                    'not_started' => 'info',
                     'queued' => 'info',
                     'running' => 'warning',
                     'running_overview' => 'warning',
@@ -195,6 +220,7 @@ class Exam extends Resource
                     'pending_clarification' => 'warning', // Желтый - ожидание ответов
                 ])
                 ->labels([
+                    'not_started' => 'Not Started',
                     'queued' => 'Queued',
                     'running' => 'Running',
                     'running_overview' => 'In Progress',
@@ -384,6 +410,7 @@ class Exam extends Resource
         // ============== STAGE 3: Categories ==============
         // Always show, even if count is 0 - Nova will show empty state
         $fields[] = HasMany::make('Categories', 'categories', ExamCategory::class);
+        $fields[] = HasMany::make('Questions', 'questions', \App\Nova\Question::class);
 
         // ============== STAGE 4: Examples ==============
         // Always show, even if count is 0 - Nova will show empty state
@@ -583,21 +610,25 @@ class Exam extends Resource
     {
         $fields = [
             Badge::make('Task Status')
-                ->resolveUsing(fn () => $task->status)
+                ->resolveUsing(fn () => $task->status ?? 'unknown')
                 ->map([
+                    'unknown' => 'info',
                     'queued' => 'info',
                     'running' => 'warning',
                     'pending_confirmation' => 'warning',
                     'pending_clarification' => 'warning',
+                    'waiting_for_confirmation' => 'warning',
                     'completed' => 'success',
                     'failed' => 'danger',
                     'cancelled' => 'warning',
                 ])
                 ->labels([
+                    'unknown' => 'Unknown',
                     'queued' => 'Queued',
                     'running' => 'Running',
                     'pending_confirmation' => '⏸ Waiting for Confirmation',
                     'pending_clarification' => '⏸ Needs Clarification',
+                    'waiting_for_confirmation' => '⏸ Waiting for Confirmation',
                     'completed' => 'Completed',
                     'failed' => 'Failed',
                     'cancelled' => '🚫 Cancelled',
@@ -1365,6 +1396,269 @@ class Exam extends Resource
         return $html;
     }
 
+    /**
+     * Build HTML for Generation Plans panel
+     */
+    protected function buildGenerationPlansHtml(): string
+    {
+        $plans = \App\Models\GenerationPlan::where('exam_id', $this->id)->get();
+
+        if ($plans->isEmpty()) {
+            return '<div class="text-sm text-gray-500 dark:text-gray-400">No generation plans yet. Run "Resolve Generation Plans" action first.</div>';
+        }
+
+        $html = '<div class="space-y-4">';
+
+        foreach ($plans as $plan) {
+            $statusColor = match($plan->status) {
+                'pending' => 'bg-gray-100 text-gray-800 dark:bg-gray-900/30 dark:text-gray-300',
+                'in_progress' => 'bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300',
+                'completed' => 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300',
+                'attached' => 'bg-purple-100 text-purple-800 dark:bg-purple-900/30 dark:text-purple-300',
+                'failed' => 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-300',
+                default => 'bg-gray-100 text-gray-800',
+            };
+
+            $modeColor = match($plan->assembly_mode) {
+                'pool' => 'bg-indigo-100 text-indigo-800 dark:bg-indigo-900/30 dark:text-indigo-300',
+                'blueprint' => 'bg-teal-100 text-teal-800 dark:bg-teal-900/30 dark:text-teal-300',
+                'inline' => 'bg-cyan-100 text-cyan-800 dark:bg-cyan-900/30 dark:text-cyan-300',
+                default => 'bg-gray-100 text-gray-800',
+            };
+
+            $html .= '<div class="border border-gray-200 dark:border-gray-700 rounded-lg p-4">';
+
+            // Header
+            $html .= '<div class="flex items-start justify-between mb-3">';
+            $html .= '<div>';
+            $html .= '<h4 class="text-base font-semibold text-gray-900 dark:text-gray-100">';
+            $html .= htmlspecialchars($plan->section_id);
+            $html .= '</h4>';
+            $html .= '<div class="text-xs text-gray-500 dark:text-gray-400 mt-1">Plan ID: ' . $plan->id . '</div>';
+            $html .= '</div>';
+            $html .= '<div class="flex gap-2">';
+            $html .= "<span class=\"{$modeColor} text-xs font-medium px-2.5 py-0.5 rounded\">" . strtoupper($plan->assembly_mode) . "</span>";
+            $html .= "<span class=\"{$statusColor} text-xs font-medium px-2.5 py-0.5 rounded\">" . strtoupper($plan->status) . "</span>";
+            $html .= '</div>';
+            $html .= '</div>';
+
+            // Questions count
+            $html .= '<div class="mb-3">';
+            $html .= '<span class="text-sm font-semibold text-gray-700 dark:text-gray-300">Questions: </span>';
+            $html .= '<span class="text-sm text-gray-900 dark:text-gray-100">';
+            $html .= $plan->generated_questions . ' / ' . $plan->total_questions;
+
+            if ($plan->total_questions > 0) {
+                $percentage = round(($plan->generated_questions / $plan->total_questions) * 100);
+                $html .= " ({$percentage}%)";
+
+                if ($plan->generated_questions >= $plan->total_questions) {
+                    $html .= ' <span class="text-green-600 dark:text-green-400">✓</span>';
+                } elseif ($plan->generated_questions > 0) {
+                    $html .= ' <span class="text-yellow-600 dark:text-yellow-400">⏳</span>';
+                }
+            }
+            $html .= '</span>';
+            $html .= '</div>';
+
+            // Plan data summary
+            $html .= '<div class="text-sm text-gray-700 dark:text-gray-300">';
+            $html .= '<span class="font-semibold">Config: </span>';
+            $html .= $this->formatPlanDataSummary($plan->assembly_mode, $plan->plan_data);
+            $html .= '</div>';
+
+            // Timestamps
+            if ($plan->started_at || $plan->completed_at || $plan->attached_at) {
+                $html .= '<div class="mt-3 pt-3 border-t border-gray-200 dark:border-gray-700 text-xs text-gray-500 dark:text-gray-400">';
+                if ($plan->started_at) {
+                    $html .= '<div>Started: ' . $plan->started_at->format('d.m.Y H:i') . '</div>';
+                }
+                if ($plan->completed_at) {
+                    $html .= '<div>Completed: ' . $plan->completed_at->format('d.m.Y H:i') . '</div>';
+                }
+                if ($plan->attached_at) {
+                    $html .= '<div>Attached: ' . $plan->attached_at->format('d.m.Y H:i') . '</div>';
+                }
+                $html .= '</div>';
+            }
+
+            // Error if any
+            if ($plan->error) {
+                $html .= '<div class="mt-3 p-2 bg-red-50 dark:bg-red-900/20 text-red-800 dark:text-red-300 text-sm rounded">';
+                $html .= '<strong>Error:</strong> ' . htmlspecialchars($plan->error);
+                $html .= '</div>';
+            }
+
+            $html .= '</div>';
+        }
+
+        $html .= '</div>';
+
+        return $html;
+    }
+
+    /**
+     * Format plan_data into human-readable summary
+     */
+    protected function formatPlanDataSummary(string $mode, array $planData): string
+    {
+        switch ($mode) {
+            case 'pool':
+                $poolId = $planData['pool_id'] ?? 'unknown';
+                $pick = $planData['pick'] ?? 0;
+                $filters = $planData['filters'] ?? [];
+                $summary = "Pool: {$poolId}, Pick: {$pick}";
+                if (!empty($filters)) {
+                    $filterKeys = implode(', ', array_keys($filters));
+                    $summary .= ", Filters: {$filterKeys}";
+                }
+                return $summary;
+
+            case 'blueprint':
+                $slots = $planData['slots'] ?? [];
+                $slotCount = count($slots);
+                $totalPick = array_sum(array_map(fn($slot) => $slot['pick'] ?? 0, $slots));
+                return "Blueprint: {$slotCount} slots, Total pick: {$totalPick}";
+
+            case 'inline':
+                $placeholders = $planData['placeholders'] ?? [];
+                $count = count($placeholders);
+                return "Inline: {$count} placeholders";
+
+            default:
+                return json_encode($planData, JSON_UNESCAPED_UNICODE);
+        }
+    }
+
+    /**
+     * Build HTML for Phase B Assembly Config panel
+     */
+    protected function buildPhaseBAssemblyHtml(): string
+    {
+        $structure = $this->structure_v2;
+        if (!$structure || empty($structure['sections'])) {
+            return '<div class="text-sm text-gray-500 dark:text-gray-400">No Phase B assembly data yet.</div>';
+        }
+
+        $sections = $structure['sections'] ?? [];
+        $phaseBSections = array_filter($sections, fn($section) => isset($section['assembly']));
+
+        if (empty($phaseBSections)) {
+            return '<div class="text-sm text-gray-500 dark:text-gray-400">Run Phase B to generate assembly configs.</div>';
+        }
+
+        $html = '<div class="space-y-4">';
+
+        foreach ($phaseBSections as $section) {
+            $assembly = $section['assembly'] ?? [];
+            $mode = $assembly['mode'] ?? 'unknown';
+
+            $modeColor = match($mode) {
+                'pool' => 'bg-indigo-100 text-indigo-800 dark:bg-indigo-900/30 dark:text-indigo-300',
+                'blueprint' => 'bg-teal-100 text-teal-800 dark:bg-teal-900/30 dark:text-teal-300',
+                'inline' => 'bg-cyan-100 text-cyan-800 dark:bg-cyan-900/30 dark:text-cyan-300',
+                default => 'bg-gray-100 text-gray-800',
+            };
+
+            $html .= '<div class="border border-gray-200 dark:border-gray-700 rounded-lg p-4">';
+
+            // Header
+            $html .= '<div class="flex items-start justify-between mb-3">';
+            $html .= '<h4 class="text-base font-semibold text-gray-900 dark:text-gray-100">';
+            $html .= htmlspecialchars($section['id'] ?? 'Unknown Section');
+            $html .= ' <span class="text-sm font-normal text-gray-500">(' . ($section['skill'] ?? '') . ')</span>';
+            $html .= '</h4>';
+            $html .= "<span class=\"{$modeColor} text-xs font-medium px-2.5 py-0.5 rounded\">" . strtoupper($mode) . "</span>";
+            $html .= '</div>';
+
+            // Assembly details
+            $html .= '<div class="text-sm text-gray-700 dark:text-gray-300 space-y-2">';
+            $html .= $this->formatAssemblyDetails($mode, $assembly);
+            $html .= '</div>';
+
+            $html .= '</div>';
+        }
+
+        $html .= '</div>';
+
+        return $html;
+    }
+
+    /**
+     * Format assembly details into human-readable HTML
+     */
+    protected function formatAssemblyDetails(string $mode, array $assembly): string
+    {
+        $html = '';
+
+        switch ($mode) {
+            case 'pool':
+                $poolId = $assembly['pool_id'] ?? 'unknown';
+                $pick = $assembly['pick'] ?? 0;
+                $filters = $assembly['filters'] ?? [];
+
+                $html .= '<div><strong>Pool ID:</strong> ' . htmlspecialchars($poolId) . '</div>';
+                $html .= '<div><strong>Pick:</strong> ' . $pick . ' questions</div>';
+
+                if (!empty($filters)) {
+                    $html .= '<div><strong>Filters:</strong></div>';
+                    $html .= '<ul class="list-disc list-inside ml-4">';
+                    foreach ($filters as $key => $value) {
+                        $valueStr = is_array($value) ? json_encode($value, JSON_UNESCAPED_UNICODE) : $value;
+                        $html .= '<li>' . htmlspecialchars($key) . ': ' . htmlspecialchars($valueStr) . '</li>';
+                    }
+                    $html .= '</ul>';
+                }
+                break;
+
+            case 'blueprint':
+                $slots = $assembly['blueprint'] ?? [];
+                $html .= '<div><strong>Slots:</strong> ' . count($slots) . '</div>';
+
+                if (!empty($slots)) {
+                    $html .= '<div class="mt-2"><strong>Slot Details:</strong></div>';
+                    $html .= '<ul class="list-disc list-inside ml-4">';
+                    foreach ($slots as $idx => $slot) {
+                        $slotNum = $idx + 1;
+                        $pick = $slot['pick'] ?? 0;
+                        $typesStr = isset($slot['types']) ? implode(', ', $slot['types']) : 'any';
+                        $html .= "<li>Slot {$slotNum}: {$pick} questions, Types: {$typesStr}</li>";
+                    }
+                    $html .= '</ul>';
+                }
+                break;
+
+            case 'inline':
+                $placeholders = $assembly['placeholders'] ?? [];
+                $html .= '<div><strong>Placeholders:</strong> ' . count($placeholders) . '</div>';
+
+                if (!empty($placeholders)) {
+                    $html .= '<div class="mt-2"><strong>Placeholder Details:</strong></div>';
+                    $html .= '<ul class="list-disc list-inside ml-4">';
+                    foreach ($placeholders as $idx => $placeholder) {
+                        $phNum = $idx + 1;
+                        $type = $placeholder['type'] ?? 'unknown';
+                        $promptHint = $placeholder['prompt_hint'] ?? '';
+                        $promptShort = mb_substr($promptHint, 0, 60);
+                        $html .= "<li>#{$phNum}: Type {$type}";
+                        if ($promptShort) {
+                            $html .= " - " . htmlspecialchars($promptShort) . (mb_strlen($promptHint) > 60 ? '...' : '');
+                        }
+                        $html .= '</li>';
+                    }
+                    $html .= '</ul>';
+                }
+                break;
+
+            default:
+                $html .= '<pre class="text-xs bg-gray-100 dark:bg-gray-900 p-2 rounded overflow-auto">';
+                $html .= htmlspecialchars(json_encode($assembly, JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT));
+                $html .= '</pre>';
+        }
+
+        return $html;
+    }
+
     public function cards(NovaRequest $request)
     {
         // In Nova, cards() is called before model is loaded to this resource instance
@@ -1423,6 +1717,25 @@ class Exam extends Resource
                         'suggestedActions' => ['cancel_and_restart', 'force_continue'],
                     ]);
                     break;
+
+                case 'candidates':
+                    $cardInstance = new \App\Nova\Cards\CandidatesCard();
+                    $cardInstance->withMeta([
+                        'examId' => $exam->id,
+                        'taskId' => $cardData['data']['task_id'] ?? null,
+                        'candidates' => $cardData['data']['candidates'] ?? [],
+                    ]);
+                    break;
+
+                case 'followup_questions':
+                    $cardInstance = new \App\Nova\Cards\FollowupQuestionsCard();
+                    $cardInstance->withMeta([
+                        'examId' => $exam->id,
+                        'taskId' => $cardData['data']['task_id'] ?? null,
+                        'followups' => $cardData['data']['followups'] ?? [],
+                        'needFields' => $cardData['data']['need_fields'] ?? [],
+                    ]);
+                    break;
             }
 
             if ($cardInstance) {
@@ -1431,27 +1744,10 @@ class Exam extends Resource
             }
         }
 
-        // Show Identity Clarifier Card if task is pending AND research not completed
-        $task = $exam->generationTasks()->latest()->first();
-        $researchNotCompleted = $exam->research_status !== 'completed';
-
-        \Illuminate\Support\Facades\Log::info('Task check', [
-            'task_id' => $task?->id,
-            'task_status' => $task?->status,
-            'research_status' => $exam->research_status,
-            'will_show_card' => $task && in_array($task->status, ['pending_confirmation', 'pending_clarification'], true) && $researchNotCompleted,
-        ]);
-
-        if ($task && in_array($task->status, ['pending_confirmation', 'pending_clarification'], true) && $researchNotCompleted) {
-            $card = new \App\Nova\Cards\IdentityClarifierCard();
-            $card->withMeta(['examId' => $exam->id]);
-            $card->onlyOnDetail(); // Explicitly show only on detail page
-            $cards[] = $card;
-
-            \Illuminate\Support\Facades\Log::info('Identity Clarifier Card added', [
-                'component' => $card->component(),
-                'meta' => $card->meta(),
-            ]);
+        // Add v2 cards if structure_v2 exists
+        if (!empty($exam->meta['structure_v2'])) {
+            $cards[] = (new \App\Nova\Cards\OverviewStatusCard($exam))->width('1/2');
+            $cards[] = (new \App\Nova\Cards\GenerationProgressCard($exam))->width('1/2');
         }
 
         return $cards;
@@ -1461,12 +1757,16 @@ class Exam extends Resource
     {
         return [
             new ResearchAction,
-            new ResetAndRestartResearch,
             new ConfirmIdentityAction,
             new \App\Nova\Actions\ConfidenceBoostAction,
             new ProvideAnswersAction,
             new \App\Nova\Actions\RejectAllVariantsAction,
             new \App\Nova\Actions\CancelStalledTaskAction,
+            (new \App\Nova\Actions\RunOverviewPhaseAAction())->onlyOnDetail(),
+            (new \App\Nova\Actions\RunOverviewPhaseBAction())->onlyOnDetail(),
+            (new \App\Nova\Actions\ResolveGenerationPlanAction())->onlyOnDetail(),
+            (new \App\Nova\Actions\SynthesizeQuestionsAction())->onlyOnDetail(),
+            (new \App\Nova\Actions\ValidateAttachQuestionsAction())->onlyOnDetail(),
             // (new ConfirmExamIdentity)
             // ->canSee(function () {
             //     $st = data_get($this->resource->identity, 'status');

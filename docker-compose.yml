@@ -117,6 +117,7 @@ services:
       - mysql
       - redis
     restart: unless-stopped
+    user: www-data
 
   mailpit:
     image: axllent/mailpit:latest

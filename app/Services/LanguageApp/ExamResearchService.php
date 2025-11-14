@@ -113,6 +113,24 @@ class ExamResearchService extends AbstractAiService
     }
 
     /**
+     * Run Phase A - delegates to OverviewStructureBuilder
+     * Generates exam skeleton structure (sections without tasks) - v2 architecture
+     */
+    public function runPhaseA(Exam $exam, GenerationTask $task): array
+    {
+        return $this->structureBuilder->runPhaseA($exam, $task);
+    }
+
+    /**
+     * Run Phase B - delegates to OverviewStructureBuilder
+     * Generates assembly plan for exam sections - v2 architecture
+     */
+    public function runPhaseB(Exam $exam, GenerationTask $task, array $phaseASkeleton): array
+    {
+        return $this->structureBuilder->runPhaseB($exam, $task, $phaseASkeleton);
+    }
+
+    /**
      * Coerce overview for tests - delegates to OverviewStructureBuilder
      * This is used by tests for soft validation fallback
      */
