@@ -13,6 +13,11 @@ use Laravel\Nova\Fields\Textarea;
 use Laravel\Nova\Http\Requests\NovaRequest;
 use Laravel\Nova\Panel;
 
+/**
+ * @property string $key
+ * @property string $name
+ * @property \App\Models\Exam $exam
+ */
 class ExamCategory extends Resource
 {
     public static $model = \App\Models\ExamCategory::class;
@@ -61,44 +66,130 @@ class ExamCategory extends Resource
             // Связь с примерами вопросов
             HasMany::make('Example Questions', 'examples', ExamExampleQuestion::class),
 
-            new Panel('Category Meta', [
-                // Section archetype - общий шаблон категории
-                Code::make('Category Template Data')
+            new Panel('Category Meta (V2 Structure)', [
+                // Section data - supports both structure_v2 and exam_structure formats
+                Code::make('Section Structure')
                     ->json(JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT)
                     ->resolveUsing(function () {
-                        $examStructure = $this->exam->meta['exam_structure'] ?? [];
+                        $currentSection = $this->findCurrentSection();
+
+                        return json_encode($currentSection ?? ['error' => 'Section not found'], JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES);
+                    })
+                    ->onlyOnDetail()
+                    ->help('Section structure (supports both structure_v2 and exam_structure formats)'),
+
+                // Section archetype/metadata
+                Code::make('Section Archetype / Metadata')
+                    ->json(JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT)
+                    ->resolveUsing(function () {
+                        $structureV2 = $this->exam->meta['structure_v2'] ?? null;
+                        $examStructure = $this->exam->meta['exam_structure'] ?? null;
+
+                        // For structure_v2: extract section metadata (not assembly)
+                        if ($structureV2) {
+                            $currentSection = $this->findCurrentSection();
+                            if ($currentSection) {
+                                // Extract section-level metadata (exclude assembly to avoid duplication)
+                                $metadata = array_filter($currentSection, function ($key) {
+                                    return ! in_array($key, ['assembly', 'task_archetypes']); // Exclude these as they're shown separately
+                                }, ARRAY_FILTER_USE_KEY);
+
+                                return json_encode($metadata, JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES);
+                            }
+
+                            return json_encode(['error' => 'Section not found'], JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT);
+                        }
+
+                        // For exam_structure: look for section_archetypes
                         $sectionArchetypes = $examStructure['section_archetypes'] ?? [];
 
+                        if (empty($sectionArchetypes)) {
+                            return json_encode(['info' => 'No section_archetypes in this exam'], JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT);
+                        }
+
                         // Найдем section_archetype для текущей категории
-                        $categoryKey = strtolower($this->key);
-                        $sectionArchetype = collect($sectionArchetypes)
-                            ->firstWhere('section', $categoryKey);
+                        $categoryKey = strtolower(str_replace(['/', ' ', '_', '-'], '', $this->key));
+                        $sectionArchetype = null;
 
-                        return json_encode($sectionArchetype ?? [], JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES);
+                        foreach ($sectionArchetypes as $sa) {
+                            $saKey = strtolower(str_replace(['/', ' ', '_', '-'], '', $sa['section'] ?? ''));
+                            if ($saKey === $categoryKey) {
+                                $sectionArchetype = $sa;
+                                break;
+                            }
+                        }
+
+                        return json_encode($sectionArchetype ?? ['error' => 'Section archetype not found'], JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES);
                     })
-                    ->onlyOnDetail(),
+                    ->onlyOnDetail()
+                    ->help('Section-level metadata: skill, weight, duration, phases, navigation, scoring, etc.'),
 
-                // Question archetypes для этой категории - детальные данные о типах вопросов
-                Code::make('This Category Questions Archetypes')
+                // Task archetypes (question types)
+                Code::make('Task Archetypes (Question Types)')
                     ->json(JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT)
                     ->resolveUsing(function () {
-                        $examStructure = $this->exam->meta['exam_structure'] ?? [];
-                        $globalArchetypes = $examStructure['question_archetypes'] ?? [];
+                        $structureV2 = $this->exam->meta['structure_v2'] ?? null;
+                        $examStructure = $this->exam->meta['exam_structure'] ?? null;
 
-                        // Найдем все архетипы для текущей категории
-                        $categoryKey = strtolower($this->key);
-                        $categoryArchetypes = collect($globalArchetypes)
-                            ->filter(fn($arc) => strtolower($arc['category'] ?? '') === $categoryKey)
+                        // For structure_v2: get task_archetypes from section
+                        if ($structureV2) {
+                            $currentSection = $this->findCurrentSection();
+                            if ($currentSection && isset($currentSection['task_archetypes'])) {
+                                return json_encode($currentSection['task_archetypes'], JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES);
+                            }
+
+                            return json_encode(['info' => 'No task_archetypes defined for this section'], JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT);
+                        }
+
+                        // For exam_structure: get question_archetypes
+                        $questionArchetypes = $examStructure['question_archetypes'] ?? [];
+
+                        if (empty($questionArchetypes)) {
+                            return json_encode(['info' => 'No question_archetypes in this exam'], JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT);
+                        }
+
+                        $currentSection = $this->findCurrentSection();
+
+                        if (! $currentSection || empty($currentSection['steps'])) {
+                            return json_encode(['error' => 'Section not found'], JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT);
+                        }
+
+                        // Собираем детальные данные архетипов для этой секции
+                        $archetypeIds = collect($currentSection['steps'])->pluck('archetype_id')->filter()->all();
+                        $detailedArchetypes = collect($questionArchetypes)
+                            ->filter(fn ($arc) => in_array($arc['id'] ?? null, $archetypeIds))
                             ->values()
                             ->all();
 
-                        return json_encode($categoryArchetypes, JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES);
+                        return json_encode($detailedArchetypes, JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES);
                     })
-                    ->onlyOnDetail(),
+                    ->onlyOnDetail()
+                    ->help('Task archetypes with type, config, scoring, duration. For V2: task_archetypes from section. For V1: question_archetypes filtered by section.'),
 
                 // Сводные числа
-                // Number::make('Sum Weight', fn () => (float) data_get($this->meta, 'sum_weight', 0.0))->onlyOnDetail(),
-                Number::make('Archetype Count', fn () => (int) data_get($this->meta, 'archetype_count', 0))->onlyOnDetail(),
+                Number::make('Items/Steps Count', function () {
+                    $currentSection = $this->findCurrentSection();
+
+                    if (! $currentSection) {
+                        return 0;
+                    }
+
+                    $assembly = $currentSection['assembly'] ?? [];
+                    $mode = $assembly['mode'] ?? null;
+
+                    // For structure_v2: count based on mode
+                    if ($mode === 'blueprint' && isset($assembly['blueprint'])) {
+                        return array_sum(array_column($assembly['blueprint'], 'pick'));
+                    } elseif ($mode === 'pool' && isset($assembly['pick'])) {
+                        return $assembly['pick'];
+                    } elseif ($mode === 'inline') {
+                        // For inline mode, tasks are embedded (count would need task array)
+                        return 0; // or count tasks if available
+                    }
+
+                    // For exam_structure: count steps
+                    return count($currentSection['steps'] ?? []);
+                })->onlyOnDetail(),
             ]),
         ];
     }
@@ -120,72 +211,205 @@ class ExamCategory extends Resource
     }
 
     /**
-     * Построить структурированное описание категории
+     * Построить структурированное описание категории (V2 structure)
      */
     private function buildCategoryStructureSummary(): string
     {
-        $examStructure = $this->exam->meta['exam_structure'] ?? [];
-        $globalArchetypes = $examStructure['question_archetypes'] ?? [];
+        // Try structure_v2 first (newer format), then exam_structure (older format)
+        $structureV2 = $this->exam->meta['structure_v2'] ?? null;
+        $examStructure = $this->exam->meta['exam_structure'] ?? null;
 
-        // Найдем все архетипы для текущей категории
-        $categoryKey = strtolower($this->key);
-        $categoryArchetypes = collect($globalArchetypes)
-            ->filter(fn($arc) => strtolower($arc['category'] ?? '') === $categoryKey)
-            ->values()
-            ->all();
+        if ($structureV2) {
+            return $this->buildCategorySummaryFromStructureV2($structureV2);
+        } elseif ($examStructure) {
+            return $this->buildCategorySummaryFromExamStructure($examStructure);
+        }
 
-        if (empty($categoryArchetypes)) {
+        return 'No structure information available for this category';
+    }
+
+    /**
+     * Build summary from structure_v2 format (sections[].id, assembly.blueprint/pool/inline)
+     */
+    private function buildCategorySummaryFromStructureV2(array $structureV2): string
+    {
+        $sections = $structureV2['sections'] ?? [];
+
+        // Normalize category key for matching
+        $categoryKey = strtolower(str_replace(['/', ' ', '_', '-'], '', $this->key));
+        $currentSection = null;
+        $sectionNum = 1;
+
+        foreach ($sections as $idx => $section) {
+            $sectionId = strtolower(str_replace(['/', ' ', '_', '-'], '', $section['id'] ?? ''));
+            if ($sectionId === $categoryKey) {
+                $currentSection = $section;
+                $sectionNum = $idx + 1;
+                break;
+            }
+        }
+
+        if (! $currentSection) {
             return 'No structure information available for this category';
         }
 
         $lines = [];
+        $lines[] = $currentSection['title'] ?? $this->name;
 
-        // Header
+        // Weight (if available)
+        if (isset($currentSection['weight'])) {
+            $weight = round($currentSection['weight'] * 100);
+            $lines[] = "Weight: {$weight}%";
+        }
+
+        $assembly = $currentSection['assembly'] ?? [];
+        $mode = $assembly['mode'] ?? 'unknown';
+        $lines[] = "Assembly mode: {$mode}";
+
+        // Handle different assembly modes
+        if ($mode === 'blueprint') {
+            $blueprint = $assembly['blueprint'] ?? [];
+            if (! empty($blueprint)) {
+                $totalItems = array_sum(array_column($blueprint, 'pick'));
+                $lines[] = "Total items: {$totalItems}";
+                $lines[] = 'Slots: '.count($blueprint);
+                $lines[] = '';
+
+                // List blueprint slots
+                foreach ($blueprint as $idx => $slot) {
+                    $slotNum = $idx + 1;
+                    $slotName = $slot['slot'] ?? 'Unnamed Slot';
+                    $pick = $slot['pick'] ?? 0;
+                    $slotWeight = isset($slot['weight']) ? round($slot['weight'] * 100).'%' : 'N/A';
+
+                    $lines[] = "{$sectionNum}.{$slotNum}. {$slotName} (pick: {$pick}, weight: {$slotWeight})";
+                }
+            } else {
+                $lines[] = 'No blueprint slots defined';
+            }
+        } elseif ($mode === 'pool') {
+            $pick = $assembly['pick'] ?? 0;
+            $poolId = $assembly['pool_id'] ?? 'unknown';
+            $lines[] = "Pick from pool: {$pick} items";
+            $lines[] = "Pool: {$poolId}";
+
+            // Show filters if available
+            $filters = $assembly['filters'] ?? [];
+            if (! empty($filters)) {
+                $lines[] = '';
+                $lines[] = 'Filters:';
+                if (isset($filters['type'])) {
+                    $lines[] = '  - Types: '.implode(', ', $filters['type']);
+                }
+                if (isset($filters['difficulty'])) {
+                    $lines[] = '  - Difficulty: '.implode(', ', $filters['difficulty']);
+                }
+                if (isset($filters['cefr'])) {
+                    $lines[] = '  - CEFR: '.implode(', ', $filters['cefr']);
+                }
+            }
+        } elseif ($mode === 'inline') {
+            $lines[] = 'Tasks defined inline (see section data for details)';
+        } else {
+            $lines[] = 'Unknown assembly mode';
+        }
+
+        return implode("\n", $lines);
+    }
+
+    /**
+     * Build summary from exam_structure format (sections[].key, steps)
+     */
+    private function buildCategorySummaryFromExamStructure(array $examStructure): string
+    {
+        $sections = $examStructure['sections'] ?? [];
+
+        // Normalize category key for matching
+        $categoryKey = strtolower(str_replace(['/', ' ', '_', '-'], '', $this->key));
+        $currentSection = null;
+        $sectionNum = 1;
+
+        foreach ($sections as $idx => $section) {
+            $sectionKey = strtolower(str_replace(['/', ' ', '_', '-'], '', $section['key'] ?? ''));
+            if ($sectionKey === $categoryKey) {
+                $currentSection = $section;
+                $sectionNum = $section['order'] ?? ($idx + 1);
+                break;
+            }
+        }
+
+        if (! $currentSection || empty($currentSection['steps'])) {
+            return 'No structure information available for this category';
+        }
+
+        $lines = [];
         $lines[] = "{$this->name}";
 
-        // Duration (sum of all step_duration)
+        // Duration (sum of all step durations)
         $totalDuration = 0;
-        foreach ($categoryArchetypes as $arc) {
-            $totalDuration += $arc['step_duration'] ?? 0;
+        foreach ($currentSection['steps'] as $step) {
+            $totalDuration += $step['duration_min'] ?? 0;
         }
         if ($totalDuration > 0) {
             $lines[] = "Duration: {$totalDuration} min total";
         }
 
         // Tasks count
-        $taskCount = count($categoryArchetypes);
+        $taskCount = count($currentSection['steps']);
         $lines[] = "Tasks: {$taskCount}";
         $lines[] = '';
 
-        // Get section number from exam structure
-        $sections = $examStructure['sections'] ?? [];
-        $sectionNum = 1;
-        foreach ($sections as $idx => $section) {
-            if (strtolower($section['key'] ?? '') === $categoryKey) {
-                $sectionNum = $idx + 1;
-                break;
-            }
-        }
-
-        // List each archetype/task
-        foreach ($categoryArchetypes as $idx => $arc) {
+        // List each step/task
+        foreach ($currentSection['steps'] as $idx => $step) {
             $taskNum = $idx + 1;
-            $archetypeId = $arc['id'] ?? 'N/A';
-            $archetypeName = $arc['name'] ?? 'Unnamed Task';
-            $archetypeDuration = $arc['step_duration'] ?? null;
-            $questionType = $arc['question_type'] ?? null;
+            $stepName = $step['name'] ?? 'Unnamed Task';
+            $stepDuration = $step['duration_min'] ?? null;
+            $archetypeId = $step['archetype_id'] ?? 'N/A';
 
             // Format like "1.1. Task Name [duration]"
-            $taskLine = "{$sectionNum}.{$taskNum}. {$archetypeName}";
+            $taskLine = "{$sectionNum}.{$taskNum}. {$stepName}";
 
-            // Add duration in brackets (without type/id for cleaner look)
-            if ($archetypeDuration) {
-                $taskLine .= " [{$archetypeDuration} min]";
+            // Add duration in brackets
+            if ($stepDuration) {
+                $taskLine .= " [{$stepDuration} min]";
             }
 
             $lines[] = $taskLine;
         }
 
         return implode("\n", $lines);
+    }
+
+    /**
+     * Find current section in either structure_v2 or exam_structure format
+     */
+    private function findCurrentSection(): ?array
+    {
+        $structureV2 = $this->exam->meta['structure_v2'] ?? null;
+        $examStructure = $this->exam->meta['exam_structure'] ?? null;
+
+        $categoryKey = strtolower(str_replace(['/', ' ', '_', '-'], '', $this->key));
+
+        // Try structure_v2 first
+        if ($structureV2) {
+            foreach ($structureV2['sections'] ?? [] as $section) {
+                $sectionId = strtolower(str_replace(['/', ' ', '_', '-'], '', $section['id'] ?? ''));
+                if ($sectionId === $categoryKey) {
+                    return $section;
+                }
+            }
+        }
+
+        // Fallback to exam_structure
+        if ($examStructure) {
+            foreach ($examStructure['sections'] ?? [] as $section) {
+                $sectionKey = strtolower(str_replace(['/', ' ', '_', '-'], '', $section['key'] ?? ''));
+                if ($sectionKey === $categoryKey) {
+                    return $section;
+                }
+            }
+        }
+
+        return null;
     }
 }
