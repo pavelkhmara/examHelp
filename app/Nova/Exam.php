@@ -1680,71 +1680,12 @@ class Exam extends Resource
 
         $cards = [];
 
-        // Use CardManager to determine which cards to show
-        $cardManager = app(\App\Services\Nova\CardManager::class);
-        $activeCards = $cardManager->getActiveCards($exam);
+        // ExamWorkflowHub - умная карточка-хаб (всегда первая, сверху)
+        // Сама определяет режим отображения (missing_fields, pending_confirmation, status, etc.)
+        $cards[] = (new \App\Nova\Cards\ExamWorkflowHub($exam->id))
+            ->onlyOnDetail();
 
-        foreach ($activeCards as $cardData) {
-            $cardType = $cardData['type'];
-            $cardInstance = null;
-
-            switch ($cardType) {
-                case 'missing_fields':
-                    $cardInstance = new \App\Nova\Cards\MissingFieldsCard();
-                    $cardInstance->withMeta([
-                        'examId' => $exam->id,
-                        'checkResult' => $cardData['data'],
-                    ]);
-                    break;
-
-                case 'fields_changed':
-                    $cardInstance = new \App\Nova\Cards\FieldsChangedCard();
-                    $cardInstance->withMeta([
-                        'examId' => $exam->id,
-                        'changedFields' => $cardData['data']['fields'] ?? [],
-                        'affectedStages' => $cardData['data']['affected_stages'] ?? [],
-                    ]);
-                    break;
-
-                case 'stalled_task':
-                    $cardInstance = new \App\Nova\Cards\StalledTaskCard();
-                    $cardInstance->withMeta([
-                        'examId' => $exam->id,
-                        'taskId' => $cardData['data']['task_id'] ?? null,
-                        'taskType' => $cardData['data']['type'] ?? null,
-                        'stalledSince' => $cardData['data']['stalled_since'] ?? null,
-                        'lastHeartbeat' => $cardData['data']['last_heartbeat'] ?? null,
-                        'suggestedActions' => ['cancel_and_restart', 'force_continue'],
-                    ]);
-                    break;
-
-                case 'candidates':
-                    $cardInstance = new \App\Nova\Cards\CandidatesCard();
-                    $cardInstance->withMeta([
-                        'examId' => $exam->id,
-                        'taskId' => $cardData['data']['task_id'] ?? null,
-                        'candidates' => $cardData['data']['candidates'] ?? [],
-                    ]);
-                    break;
-
-                case 'followup_questions':
-                    $cardInstance = new \App\Nova\Cards\FollowupQuestionsCard();
-                    $cardInstance->withMeta([
-                        'examId' => $exam->id,
-                        'taskId' => $cardData['data']['task_id'] ?? null,
-                        'followups' => $cardData['data']['followups'] ?? [],
-                        'needFields' => $cardData['data']['need_fields'] ?? [],
-                    ]);
-                    break;
-            }
-
-            if ($cardInstance) {
-                $cardInstance->onlyOnDetail();
-                $cards[] = $cardInstance;
-            }
-        }
-
-        // Add v2 cards if structure_v2 exists
+        // Add v2 cards if structure_v2 exists (ниже ExamWorkflowHub)
         if (!empty($exam->meta['structure_v2'])) {
             $cards[] = (new \App\Nova\Cards\OverviewStatusCard($exam))->width('1/2');
             $cards[] = (new \App\Nova\Cards\GenerationProgressCard($exam))->width('1/2');
