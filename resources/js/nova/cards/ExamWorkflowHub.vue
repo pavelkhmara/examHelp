@@ -304,7 +304,7 @@ export default {
 
       try {
         const { data } = await Nova.request().get(
-          `/nova-vendor/exam-status/${this.examId}`
+          `/api/nova-vendor/exam-status/${this.examId}`
         )
 
         this.status = data
@@ -335,7 +335,7 @@ export default {
       this.actionLoading = true
       try {
         await Nova.request().post(
-          `/exams/${this.examId}/research/${this.status.pending_task.id}/confirm-identity`,
+          `/api/exams/${this.examId}/research/${this.status.pending_task.id}/confirm-identity`,
           {
             confirmed: true,
             notes: 'Confirmed via ExamWorkflowHub',
@@ -358,7 +358,7 @@ export default {
       this.actionLoading = true
       try {
         await Nova.request().post(
-          `/exams/${this.examId}/research/${this.status.pending_task.id}/confirm-identity`,
+          `/api/exams/${this.examId}/research/${this.status.pending_task.id}/confirm-identity`,
           {
             confirmed: false,
             notes: 'Rejected via ExamWorkflowHub - re-run identity',
@@ -383,7 +383,7 @@ export default {
       this.actionLoading = true
       try {
         await Nova.request().post(
-          `/exams/${this.examId}/research/${this.status.pending_task.id}/clarify`,
+          `/api/exams/${this.examId}/research/${this.status.pending_task.id}/clarify`,
           {
             clarification_type: 'reject_all',
             notes: notes || '',
