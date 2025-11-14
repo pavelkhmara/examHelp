@@ -18,6 +18,7 @@ class ExamCategory extends Model
 
     protected $casts = [
         'meta' => AsArrayWithUnescapedSlashes::class,
+        'task_archetypes' => 'array',
         'duration_min' => 'integer',
         'max_score' => 'decimal:2',
         'min_pass_percent' => 'decimal:2',

@@ -3,6 +3,7 @@
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
+use Illuminate\Support\Facades\DB;
 
 return new class extends Migration
 {
@@ -40,13 +41,18 @@ return new class extends Migration
         });
 
         // 3. Drop existing questions table (old structure incompatible with v2)
-        // Disable foreign key checks to drop related tables
-        DB::statement('SET FOREIGN_KEY_CHECKS=0;');
+        // Disable foreign key checks on MySQL only
+        $driver = DB::getDriverName();
+        if ($driver === 'mysql') {
+            DB::statement('SET FOREIGN_KEY_CHECKS=0;');
+        }
         Schema::dropIfExists('attempt_answers');
         Schema::dropIfExists('attempts');
         Schema::dropIfExists('question_options');
         Schema::dropIfExists('questions');
-        DB::statement('SET FOREIGN_KEY_CHECKS=1;');
+        if ($driver === 'mysql') {
+            DB::statement('SET FOREIGN_KEY_CHECKS=1;');
+        }
 
         // 4. Recreate questions table with v2 schema
         Schema::create('questions', function (Blueprint $table) {
