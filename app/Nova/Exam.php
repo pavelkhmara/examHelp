@@ -208,22 +208,30 @@ class Exam extends Resource
                 }),
 
             Badge::make('Research Status', 'research_status')
-                ->resolveUsing(fn ($value) => $value ?? 'not_started')
+                ->resolveUsing(fn ($value) => $value ?? 'queued')
                 ->map([
-                    'not_started' => 'info',
                     'queued' => 'info',
                     'running' => 'warning',
                     'running_overview' => 'warning',
+                    'running_phase_a' => 'warning',
+                    'running_phase_b' => 'warning',
+                    'running_categories' => 'warning',
+                    'running_examples' => 'warning',
+                    'running_rubrics' => 'warning',
                     'completed' => 'success',
                     'failed' => 'danger',
-                    'need_info' => 'warning', // Желтый статус
-                    'pending_clarification' => 'warning', // Желтый - ожидание ответов
+                    'need_info' => 'warning',
+                    'pending_clarification' => 'warning',
                 ])
                 ->labels([
-                    'not_started' => 'Not Started',
                     'queued' => 'Queued',
                     'running' => 'Running',
                     'running_overview' => 'In Progress',
+                    'running_phase_a' => 'Running Phase A',
+                    'running_phase_b' => 'Running Phase B',
+                    'running_categories' => 'Running Categories',
+                    'running_examples' => 'Running Examples',
+                    'running_rubrics' => 'Running Rubrics',
                     'completed' => 'Completed',
                     'failed' => 'Failed',
                     'need_info' => 'Need Info',
@@ -231,7 +239,7 @@ class Exam extends Resource
                 ])
                 ->sortable()
                 ->help(function () {
-                    if (in_array($this->research_status, ['queued', 'running', 'running_overview'], true)) {
+                    if (in_array($this->research_status, ['queued', 'running', 'running_overview', 'running_phase_a', 'running_phase_b', 'running_categories', 'running_examples', 'running_rubrics'], true)) {
                         return '🔄 <strong>Task is processing. Refresh this page to see updates.</strong>';
                     }
                     if ($this->research_status === 'need_info') {

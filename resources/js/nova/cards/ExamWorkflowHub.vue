@@ -289,10 +289,17 @@ export default {
       const classes = {
         idle: 'bg-gray-200 text-gray-700',
         queued: 'bg-blue-100 text-blue-700',
+        running: 'bg-yellow-100 text-yellow-800',
         running_overview: 'bg-yellow-100 text-yellow-800',
+        running_phase_a: 'bg-yellow-100 text-yellow-800',
+        running_phase_b: 'bg-yellow-100 text-yellow-800',
+        running_categories: 'bg-yellow-100 text-yellow-800',
+        running_examples: 'bg-yellow-100 text-yellow-800',
+        running_rubrics: 'bg-yellow-100 text-yellow-800',
         completed: 'bg-green-100 text-green-800',
         failed: 'bg-red-100 text-red-800',
         need_info: 'bg-orange-100 text-orange-800',
+        pending_clarification: 'bg-purple-100 text-purple-800',
       }
       return classes[status] || 'bg-gray-100 text-gray-700'
     },

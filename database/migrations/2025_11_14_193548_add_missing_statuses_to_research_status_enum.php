@@ -8,13 +8,18 @@ return new class extends Migration
     /**
      * Run the migrations.
      *
-     * Add running_phase_a and running_phase_b statuses to research_status enum
-     * for v2 two-phase generation architecture
+     * Add missing 'need_info' and 'pending_clarification' statuses back to research_status enum.
+     * These were removed by mistake in 2025_11_14_155912_add_phase_statuses migration.
      */
     public function up(): void
     {
-        // MySQL: ALTER ENUM by recreating the column
-        // IMPORTANT: Include ALL statuses from previous migrations
+        $driver = DB::getDriverName();
+        if ($driver !== 'mysql') {
+            // Skip enum alteration for non-MySQL (e.g., sqlite in tests)
+            return;
+        }
+
+        // Include ALL statuses: existing phase statuses + missing need_info and pending_clarification
         DB::statement("ALTER TABLE exams MODIFY COLUMN research_status ENUM(
             'queued',
             'running_overview',
@@ -35,17 +40,23 @@ return new class extends Migration
      */
     public function down(): void
     {
-        // Revert to state before this migration (with need_info and pending_clarification)
+        $driver = DB::getDriverName();
+        if ($driver !== 'mysql') {
+            return;
+        }
+
+        // Revert to state without need_info and pending_clarification
+        // WARNING: This will fail if any exams have these statuses
         DB::statement("ALTER TABLE exams MODIFY COLUMN research_status ENUM(
             'queued',
             'running_overview',
+            'running_phase_a',
+            'running_phase_b',
             'running_categories',
             'running_examples',
             'running_rubrics',
             'completed',
-            'failed',
-            'need_info',
-            'pending_clarification'
+            'failed'
         ) DEFAULT 'queued' NOT NULL");
     }
 };
