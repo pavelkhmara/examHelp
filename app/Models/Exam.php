@@ -130,6 +130,13 @@ class Exam extends Model
      */
     public function getStructureSectionsAttribute()
     {
+        // NEW v2: Try structure_v2 first (stored in meta)
+        $v2 = $this->meta['structure_v2'] ?? null;
+        if (is_array($v2) && isset($v2['sections']) && is_array($v2['sections'])) {
+            return $v2['sections'];
+        }
+
+        // LEGACY v1: Fallback to old exam_structure
         $s = $this->exam_structure;
         if (is_array($s)) {
             // поддержка как объекта с sections, так и массива верхнего уровня

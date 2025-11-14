@@ -68,6 +68,14 @@ class GenerationPlan extends Model
     }
 
     /**
+     * Get the exam category (section) that this plan belongs to
+     */
+    public function section(): BelongsTo
+    {
+        return $this->belongsTo(ExamCategory::class, 'section_id', 'id');
+    }
+
+    /**
      * Get progress percentage (0-100)
      */
     public function getProgressPercentAttribute(): float

@@ -247,6 +247,10 @@ final class JsonSchemaExamV2
             $result['tasks'] = is_array($section['tasks']) ? $section['tasks'] : null;
         }
 
+        if (isset($section['task_archetypes'])) {
+            $result['task_archetypes'] = $this->validateTaskArchetypes($section['task_archetypes'], $prefix);
+        }
+
         return $result;
     }
 
@@ -338,6 +342,49 @@ final class JsonSchemaExamV2
         }
 
         return $result;
+    }
+
+    private function validateTaskArchetypes(mixed $data, string $prefix): array
+    {
+        if (! is_array($data)) {
+            throw ValidationException::withMessages(["$prefix.task_archetypes" => 'task_archetypes must be an array']);
+        }
+
+        if (empty($data)) {
+            throw ValidationException::withMessages(["$prefix.task_archetypes" => 'task_archetypes cannot be empty if present']);
+        }
+
+        $validated = [];
+        foreach ($data as $i => $archetype) {
+            if (! is_array($archetype)) {
+                throw ValidationException::withMessages(["$prefix.task_archetypes.$i" => 'Each archetype must be an object']);
+            }
+
+            $validatedArchetype = [
+                'id' => $this->mustString($archetype, 'id'),
+                'type' => $this->mustString($archetype, 'type'),
+                'name' => $this->mustString($archetype, 'name'),
+            ];
+
+            // Optional fields
+            if (isset($archetype['difficulty'])) {
+                $difficulty = (string) $archetype['difficulty'];
+                if (! in_array($difficulty, ['easy', 'medium', 'hard'])) {
+                    throw ValidationException::withMessages([
+                        "$prefix.task_archetypes.$i.difficulty" => 'difficulty must be one of: easy, medium, hard',
+                    ]);
+                }
+                $validatedArchetype['difficulty'] = $difficulty;
+            }
+
+            if (isset($archetype['config'])) {
+                $validatedArchetype['config'] = is_array($archetype['config']) ? $archetype['config'] : null;
+            }
+
+            $validated[] = $validatedArchetype;
+        }
+
+        return $validated;
     }
 
     private function validateLogic(array $data, array $passPolicy, array $sections): void
