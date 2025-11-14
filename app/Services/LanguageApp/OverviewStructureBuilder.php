@@ -143,7 +143,7 @@ class OverviewStructureBuilder extends AbstractAiService
             $this->log($task, $retryAttempt > 0 ? "overview_retry_{$retryAttempt}" : 'overview', $payload, $res1);
 
             $exam->update(['research_status' => 'running_overview']);
-            $task->update(['result' => $res1['body'] ?? $res1['content'] ?? $res1['raw'] ?? null]);
+            $task->update(['result' => $res1['content'] ?? $res1['body'] ?? $res1['raw'] ?? null]);
 
             Log::debug('OverviewStructureBuilder overview result', ['result' => $res1['content'] ?? null]);
 
@@ -1040,7 +1040,7 @@ class OverviewStructureBuilder extends AbstractAiService
         $this->log($task, 'phase_a_skeleton', $payload, $res1);
 
         $exam->update(['research_status' => 'running_overview']);
-        $task->update(['result' => $res1['body'] ?? $res1['content'] ?? $res1['raw'] ?? null]);
+        $task->update(['result' => $res1['content'] ?? $res1['body'] ?? $res1['raw'] ?? null]);
 
         Log::debug('OverviewStructureBuilder Phase A result', ['result' => $res1['content'] ?? null]);
 
@@ -1140,7 +1140,7 @@ class OverviewStructureBuilder extends AbstractAiService
         $this->log($task, 'phase_b_assembly', $payload, $res2);
 
         $exam->update(['research_status' => 'running_overview']);
-        $task->update(['result' => $res2['body'] ?? $res2['content'] ?? $res2['raw'] ?? null]);
+        $task->update(['result' => $res2['content'] ?? $res2['body'] ?? $res2['raw'] ?? null]);
 
         Log::debug('OverviewStructureBuilder Phase B result', ['result' => $res2['content'] ?? null]);
 

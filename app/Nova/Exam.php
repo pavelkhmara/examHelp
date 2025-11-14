@@ -371,14 +371,19 @@ class Exam extends Resource
                     ->resolveUsing(function () {
                         $sections = $this->structure_sections ?? [];
                         $compact = array_map(function ($s) {
+                            // V2 uses 'title', V1 uses 'name'
+                            $sectionName = $s['title'] ?? $s['name'] ?? $s['key'] ?? '';
+                            // V2 uses 'task_archetypes' or 'tasks', V1 uses 'steps'
+                            $steps = $s['task_archetypes'] ?? $s['tasks'] ?? $s['steps'] ?? [];
+
                             return [
-                                'name' => $s['name'] ?? $s['key'] ?? '',
+                                'name' => $sectionName,
                                 'order' => $s['order'] ?? null,
                                 'steps' => array_map(fn ($st) => [
                                     'name' => $st['name'] ?? '',
                                     'order' => $st['order'] ?? null,
                                     'duration_min' => $st['duration_min'] ?? null,
-                                ], $s['steps'] ?? []),
+                                ], $steps),
                             ];
                         }, $sections);
 
@@ -867,8 +872,10 @@ class Exam extends Resource
         // Iterate through sections
         foreach ($sections as $idx => $section) {
             $sectionNum = $idx + 1;
-            $sectionName = $section['name'] ?? $section['key'] ?? 'Unnamed Section';
-            $steps = $section['steps'] ?? [];
+            // V2 uses 'title', V1 uses 'name'
+            $sectionName = $section['title'] ?? $section['name'] ?? $section['key'] ?? 'Unnamed Section';
+            // V2 uses 'task_archetypes' or 'tasks', V1 uses 'steps'
+            $steps = $section['task_archetypes'] ?? $section['tasks'] ?? $section['steps'] ?? [];
             $stepCount = count($steps);
 
             $lines[] = '';

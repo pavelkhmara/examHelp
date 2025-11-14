@@ -2,7 +2,8 @@
 
 namespace App\Nova\Actions;
 
-use App\Services\LanguageApp\AssemblyResolver;
+use App\Jobs\ResolveGenerationPlansJob;
+use App\Models\GenerationTask;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Queue\InteractsWithQueue;
@@ -10,7 +11,7 @@ use Illuminate\Support\Collection;
 use Laravel\Nova\Actions\Action;
 use Laravel\Nova\Fields\ActionFields;
 
-class ResolveGenerationPlanAction extends Action implements ShouldQueue
+class ResolveGenerationPlanAction extends Action
 {
     use InteractsWithQueue, Queueable;
 
@@ -20,16 +21,29 @@ class ResolveGenerationPlanAction extends Action implements ShouldQueue
     {
         /** @var \App\Models\Exam $exam */
         foreach ($models as $exam) {
-            try {
-                $resolver = app(AssemblyResolver::class);
-                $plans = $resolver->resolve($exam);
-                return Action::message('Resolved '.count($plans).' plans.');
-            } catch (\Throwable $e) {
-                return Action::danger('Plan resolution failed: '.$e->getMessage());
+            // Validate that structure_v2 exists (from Phase A)
+            $structure = $exam->structure_v2 ?? null;
+            if (!$structure) {
+                return Action::danger('Phase A structure_v2 is required before resolving plans.');
             }
+
+            // Create generation task
+            $task = GenerationTask::create([
+                'exam_id' => $exam->id,
+                'type' => 'resolve_plans',
+                'status' => 'queued',
+                'request' => [],
+            ]);
+
+            $task->addActivity('resolve_plans_queued', 'Operator requested plan resolution via Nova action');
+
+            // Dispatch job
+            ResolveGenerationPlansJob::dispatch($task->id);
+
+            return Action::message('Plan resolution queued. Check Activity Timeline for progress.');
         }
 
-        return Action::message('No exams selected.');
+        return Action::message('Plan resolution queued.');
     }
 }
 
