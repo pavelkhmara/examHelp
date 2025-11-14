@@ -455,11 +455,38 @@ class QuestionSynthesizer extends AbstractAiService
     /**
      * Get section metadata from exam structure
      */
-    protected function getSectionMetadata(Exam $exam, string $sectionId): array
+    protected function getSectionMetadata(Exam $exam, string|int $sectionId): array
     {
         $structure = $exam->meta['structure_v2'] ?? [];
         $sections = $structure['sections'] ?? [];
 
+        // If $sectionId is numeric, it's an ExamCategory ID - match by skill
+        if (is_numeric($sectionId)) {
+            $category = \App\Models\ExamCategory::find($sectionId);
+            if (!$category) {
+                throw new \Exception("ExamCategory not found for ID: {$sectionId}");
+            }
+
+            // Match by skill (more reliable than key)
+            $skill = $category->skill;
+            foreach ($sections as $section) {
+                if (($section['skill'] ?? null) === $skill) {
+                    return $section;
+                }
+            }
+
+            // Fallback: try matching by key if skill match fails
+            $sectionKey = $category->key ?? $category->name;
+            foreach ($sections as $section) {
+                if ($section['id'] === $sectionKey) {
+                    return $section;
+                }
+            }
+
+            throw new \Exception("Section not found for skill '{$skill}' or key '{$sectionKey}' (ExamCategory ID: {$sectionId})");
+        }
+
+        // String sectionId - match by section ID
         foreach ($sections as $section) {
             if ($section['id'] === $sectionId) {
                 return $section;
