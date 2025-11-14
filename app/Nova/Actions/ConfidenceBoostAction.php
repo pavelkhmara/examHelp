@@ -56,83 +56,31 @@ class ConfidenceBoostAction extends Action
                 return Action::danger('Confidence has already been boosted. Use "Confirm Identity" instead.');
             }
 
-            // Run confidence boost
-            try {
-                /** @var ExamResearchService $svc */
-                $svc = app(ExamResearchService::class);
-
-                $task->addActivity('confidence_boost_manual', 'Operator requested confidence boost via Nova action', [
-                    'original_confidence' => $confidence,
-                ]);
-
-                $task->status = 'running';
-                $task->save();
-
-                $exam->research_status = 'running_overview';
-                $exam->save();
-
-                // Run confidence boost
-                $boostedIdentity = $svc->runConfidenceBoost($exam, $task, $identity);
-
-                // Update task with boosted identity
-                $result = (array) ($task->result ?? []);
-                $result['identity'] = $boostedIdentity;
-                $task->result = $result;
-                $task->save();
-                $task->refresh();
-
-                // Update exam->identity with boosted confidence
-                $exam->identity = $boostedIdentity;
-                $exam->save();
-
-                $boostedConfidence = $boostedIdentity['confidence'] ?? 0.0;
-                $task->addActivity('confidence_boost_completed', "Confidence boosted to: {$boostedConfidence}", [
-                    'original_confidence' => $confidence,
-                    'boosted_confidence' => $boostedConfidence,
+            // Create new task for confidence boost
+            $boostTask = GenerationTask::create([
+                'exam_id' => $exam->id,
+                'type' => 'confidence_boost',
+                'status' => 'queued',
+                'request' => [
                     'triggered_by' => 'operator_manual',
-                ]);
+                    'original_confidence' => $confidence,
+                ],
+                'result' => [
+                    'identity' => $identity, // Pass current identity
+                ],
+            ]);
 
-                // If confidence is now >= 0.97, continue pipeline
-                if ($boostedConfidence >= 0.97) {
-                    $task->status = 'queued';
-                    $task->save();
+            $boostTask->addActivity('confidence_boost_queued', 'Operator requested confidence boost via Nova action', [
+                'original_confidence' => $confidence,
+            ]);
 
-                    // Continue the pipeline
-                    \App\Jobs\RunExamResearchJob::dispatch($task->id)
-                        ->delay(now()->addSeconds(1));
+            // Dispatch job
+            \App\Jobs\RunConfidenceBoostJob::dispatch($boostTask->id);
 
-                    return Action::message("Confidence boosted from {$confidence} to {$boostedConfidence}! Pipeline will continue.");
-                } else {
-                    // Still below threshold - set to pending_confirmation
-                    $task->status = 'pending_confirmation';
-                    $task->save();
-
-                    $exam->research_status = 'queued';
-                    $exam->save();
-
-                    return Action::message("Confidence boosted to {$boostedConfidence}, but still below 0.97. Please confirm identity manually.");
-                }
-            } catch (\Throwable $e) {
-                \Illuminate\Support\Facades\Log::error('Confidence boost failed', [
-                    'exam_id' => $exam->id,
-                    'task_id' => $task->id,
-                    'error' => $e->getMessage(),
-                    'trace' => $e->getTraceAsString(),
-                ]);
-
-                $task->addActivity('confidence_boost_failed', 'Confidence boost failed: '.$e->getMessage());
-                $task->status = 'failed';
-                $task->error = 'Confidence boost failed: '.$e->getMessage();
-                $task->save();
-
-                $exam->research_status = 'failed';
-                $exam->save();
-
-                return Action::danger('Confidence boost failed: '.$e->getMessage());
-            }
+            return Action::message("Confidence boost queued (current: {$confidence}). Check Activity Timeline for progress.");
         }
 
-        return Action::message('Confidence boost completed.');
+        return Action::message('Confidence boost queued.');
     }
 
     /**

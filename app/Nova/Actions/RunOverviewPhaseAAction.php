@@ -11,7 +11,7 @@ use Illuminate\Support\Collection;
 use Laravel\Nova\Actions\Action;
 use Laravel\Nova\Fields\ActionFields;
 
-class RunOverviewPhaseAAction extends Action implements ShouldQueue
+class RunOverviewPhaseAAction extends Action
 {
     use InteractsWithQueue, Queueable;
 
@@ -24,26 +24,19 @@ class RunOverviewPhaseAAction extends Action implements ShouldQueue
             $task = GenerationTask::create([
                 'exam_id' => $exam->id,
                 'type' => 'research_phase_a',
-                'status' => 'running',
+                'status' => 'queued',
                 'request' => [],
             ]);
 
-            try {
-                $service = app(ExamResearchService::class);
-                $result = $service->runPhaseA($exam, $task);
+            $task->addActivity('phase_a_queued', 'Operator requested Phase A via Nova action');
 
-                $exam->structure_v2 = $result;
-                $exam->research_status = 'completed';
-                $exam->save();
+            // Dispatch job
+            \App\Jobs\RunPhaseAJob::dispatch($task->id);
 
-                $task->update(['status' => 'completed', 'result' => $result]);
-            } catch (\Throwable $e) {
-                $task->update(['status' => 'failed', 'error' => $e->getMessage()]);
-                return Action::danger('Phase A failed: '.$e->getMessage());
-            }
+            return Action::message('Phase A queued. Check Activity Timeline for progress.');
         }
 
-        return Action::message('Phase A completed. Structure V2 saved.');
+        return Action::message('Phase A queued.');
     }
 }
 

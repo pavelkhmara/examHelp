@@ -100,6 +100,132 @@ services:
       - redis
     restart: unless-stopped
 
+  queue-worker-4:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: examhelp-queue-worker-4
+    env_file:
+      - .env
+    working_dir: /var/www/html
+    volumes:
+      - ./:/var/www/html
+      - vendor:/var/www/html/vendor
+      - cache:/var/www/html/bootstrap/cache
+    command: sh -lc "php artisan queue:work --tries=2 --backoff=3 --timeout=120 --name=worker-4"
+    depends_on:
+      - app
+      - redis
+    restart: unless-stopped
+
+  queue-worker-5:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: examhelp-queue-worker-5
+    env_file:
+      - .env
+    working_dir: /var/www/html
+    volumes:
+      - ./:/var/www/html
+      - vendor:/var/www/html/vendor
+      - cache:/var/www/html/bootstrap/cache
+    command: sh -lc "php artisan queue:work --tries=2 --backoff=3 --timeout=120 --name=worker-5"
+    depends_on:
+      - app
+      - redis
+    restart: unless-stopped
+
+  queue-worker-6:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: examhelp-queue-worker-6
+    env_file:
+      - .env
+    working_dir: /var/www/html
+    volumes:
+      - ./:/var/www/html
+      - vendor:/var/www/html/vendor
+      - cache:/var/www/html/bootstrap/cache
+    command: sh -lc "php artisan queue:work --tries=2 --backoff=3 --timeout=120 --name=worker-6"
+    depends_on:
+      - app
+      - redis
+    restart: unless-stopped
+
+  queue-worker-7:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: examhelp-queue-worker-7
+    env_file:
+      - .env
+    working_dir: /var/www/html
+    volumes:
+      - ./:/var/www/html
+      - vendor:/var/www/html/vendor
+      - cache:/var/www/html/bootstrap/cache
+    command: sh -lc "php artisan queue:work --tries=2 --backoff=3 --timeout=120 --name=worker-7"
+    depends_on:
+      - app
+      - redis
+    restart: unless-stopped
+
+  queue-worker-8:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: examhelp-queue-worker-8
+    env_file:
+      - .env
+    working_dir: /var/www/html
+    volumes:
+      - ./:/var/www/html
+      - vendor:/var/www/html/vendor
+      - cache:/var/www/html/bootstrap/cache
+    command: sh -lc "php artisan queue:work --tries=2 --backoff=3 --timeout=120 --name=worker-8"
+    depends_on:
+      - app
+      - redis
+    restart: unless-stopped
+
+  queue-worker-9:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: examhelp-queue-worker-9
+    env_file:
+      - .env
+    working_dir: /var/www/html
+    volumes:
+      - ./:/var/www/html
+      - vendor:/var/www/html/vendor
+      - cache:/var/www/html/bootstrap/cache
+    command: sh -lc "php artisan queue:work --tries=2 --backoff=3 --timeout=120 --name=worker-9"
+    depends_on:
+      - app
+      - redis
+    restart: unless-stopped
+
+  queue-worker-10:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: examhelp-queue-worker-10
+    env_file:
+      - .env
+    working_dir: /var/www/html
+    volumes:
+      - ./:/var/www/html
+      - vendor:/var/www/html/vendor
+      - cache:/var/www/html/bootstrap/cache
+    command: sh -lc "php artisan queue:work --tries=2 --backoff=3 --timeout=120 --name=worker-10"
+    depends_on:
+      - app
+      - redis
+    restart: unless-stopped
+
   scheduler:
     build:
       context: .
