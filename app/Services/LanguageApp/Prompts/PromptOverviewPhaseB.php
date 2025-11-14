@@ -417,7 +417,6 @@ writing_prompt     - essay/letter/report writing task
 speaking_prompt    - speaking task with rubric
 
 listen_mcq         - listening comprehension multiple choice
-video_mcq          - video comprehension multiple choice
 
 translation        - translate text/speech
 roleplay           - role-playing conversation

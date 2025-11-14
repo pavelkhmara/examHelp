@@ -26,7 +26,6 @@ class QuestionValidator
         'order_words',
         'highlight_text',
         'listen_mcq',
-        'video_mcq',
     ];
 
     public function __construct(

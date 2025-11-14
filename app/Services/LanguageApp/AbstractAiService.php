@@ -268,6 +268,9 @@ abstract class AbstractAiService
         // Use sent_messages from response if available (full prompt), otherwise use request array
         $loggedRequest = $response['sent_messages'] ?? $request;
 
+        // Save full response for async provider (includes content_text), or legacy format
+        $loggedResponse = $response['data'] ?? $response['json'] ?? $response;
+
         \App\Models\GenerationLog::create([
             'exam_id' => $task->exam_id,
             'generation_task_id' => $task->id,
@@ -275,7 +278,7 @@ abstract class AbstractAiService
             'model' => $response['model'] ?? null,
             'model_alias' => $response['model_alias'] ?? null,
             'request' => $loggedRequest,
-            'response' => $response['data'] ?? $response['json'] ?? $response['content'] ?? null,
+            'response' => $loggedResponse,
             'prompt_tokens' => $response['usage']['prompt_tokens'] ?? 0,
             'completion_tokens' => $response['usage']['completion_tokens'] ?? 0,
             'total_tokens' => $response['usage']['total_tokens'] ?? 0,

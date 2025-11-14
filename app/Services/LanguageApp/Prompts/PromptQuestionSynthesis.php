@@ -240,14 +240,12 @@ REQ,
   "instructions": {
     "brief": "string (short instruction, 1-2 sentences)",
     "full": "string (detailed instructions)",
-    "audio_url": "string (optional - audio instructions)",
-    "video_url": "string (optional - video instructions)"
+    "audio_url": "string (optional - audio instructions)"
   },
   "stimulus": {
     "text_html": "string (optional - HTML text stimulus)",
     "images": ["object (optional - image resources)"],
-    "audio": ["object (optional - audio resources)"],
-    "video": ["object (optional - video resources)"]
+    "audio": ["object (optional - audio resources)"]
   },
   "interaction": {
     "response_type": "string (selection, text, matching, ordering, spans)",
@@ -303,7 +301,7 @@ Before returning your response, verify:
 ✓ **Required Fields**
   - All CRITICAL fields present (id, type, skills_measured, etc.)
   - instructions.brief AND instructions.full both provided
-  - At least one stimulus type (text_html, images, audio, or video)
+  - At least one stimulus type (text_html, images, or audio)
   - interaction.response_type matches question type
   - response.mode is compatible with response_type
   - scoring.method is appropriate for question type

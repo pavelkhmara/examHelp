@@ -48,7 +48,6 @@ class Question extends Resource
                 'writing_prompt' => 'Writing Prompt',
                 'speaking_prompt' => 'Speaking Prompt',
                 'listen_mcq' => 'Listening MCQ',
-                'video_mcq' => 'Video MCQ',
                 'translation' => 'Translation',
                 'roleplay' => 'Roleplay',
                 'note_completion' => 'Note Completion',

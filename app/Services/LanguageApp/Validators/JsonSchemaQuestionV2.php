@@ -26,7 +26,7 @@ final class JsonSchemaQuestionV2
         'matching', 'order_sentences', 'order_words', 'highlight_text',
         'short_answer', 'numeric', 'dictation',
         'writing_prompt', 'speaking_prompt',
-        'listen_mcq', 'video_mcq',
+        'listen_mcq',
         'translation', 'roleplay', 'note_completion',
     ];
 
@@ -135,7 +135,6 @@ final class JsonSchemaQuestionV2
             'brief' => $brief,
             'full' => $full,
             'audio_url' => $instructions['audio_url'] ?? null,
-            'video_url' => $instructions['video_url'] ?? null,
             'l10n' => $instructions['l10n'] ?? null,
         ];
     }
@@ -149,18 +148,16 @@ final class JsonSchemaQuestionV2
         // At least one stimulus type must be present
         $hasStimulus = ! empty($stimulus['text_html'])
             || ! empty($stimulus['images'])
-            || ! empty($stimulus['audio'])
-            || ! empty($stimulus['video']);
+            || ! empty($stimulus['audio']);
 
         if (! $hasStimulus) {
-            throw ValidationException::withMessages(['stimulus' => 'stimulus must have at least one content type (text_html, images, audio, or video)']);
+            throw ValidationException::withMessages(['stimulus' => 'stimulus must have at least one content type (text_html, images, or audio)']);
         }
 
         return [
             'text_html' => $stimulus['text_html'] ?? null,
             'images' => $stimulus['images'] ?? null,
             'audio' => $stimulus['audio'] ?? null,
-            'video' => $stimulus['video'] ?? null,
             'resources' => $stimulus['resources'] ?? null,
             'media_metadata' => $stimulus['media_metadata'] ?? null,
         ];

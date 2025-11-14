@@ -5,6 +5,7 @@ namespace App\Services\LanguageApp;
 use App\Models\Exam;
 use App\Models\GenerationPlan;
 use App\Services\LanguageApp\Prompts\PromptQuestionSynthesis;
+use App\Services\LanguageApp\Schemas\QuestionArraySchema;
 use App\Services\LanguageApp\Validators\JsonSchemaQuestionV2;
 use Illuminate\Support\Facades\Log;
 
@@ -161,7 +162,8 @@ class ParallelQuestionSynthesizer extends AbstractAiService
                 }
 
                 try {
-                    $questions = $this->parseAndValidateQuestions($aiResult['content_text'] ?? '');
+                    // Extract questions from response (Structured Outputs wraps in {"questions": [...]})
+                    $questions = $this->parseAndValidateQuestions($aiResult);
 
                     // Validate, deduplicate, attach
                     $validatedQuestions = $this->questionValidator->validateAndFinalize($questions, $plan, $exam);
@@ -344,6 +346,8 @@ class ParallelQuestionSynthesizer extends AbstractAiService
                     null,
                 ],
                 'model' => $model,
+                'json_schema' => QuestionArraySchema::getSchema($questionType),
+                'json_schema_name' => 'question_generation',
             ],
         ];
     }
@@ -396,6 +400,8 @@ class ParallelQuestionSynthesizer extends AbstractAiService
                     null,
                 ],
                 'model' => $model,
+                'json_schema' => QuestionArraySchema::getSchema($questionType),
+                'json_schema_name' => 'question_generation',
             ],
         ];
     }
@@ -455,45 +461,66 @@ class ParallelQuestionSynthesizer extends AbstractAiService
 
     /**
      * Parse and validate AI response
+     *
+     * @param  array  $aiResult  Full AI response from AsyncOpenAiProvider
+     * @return array Validated questions array
      */
-    protected function parseAndValidateQuestions(string $content): array
+    protected function parseAndValidateQuestions(array $aiResult): array
     {
-        // Extract JSON from markdown if present
-        $content = trim($content);
+        // Step 1: Extract questions from response
+        // With Structured Outputs: {"questions": [...]}
+        // Legacy json_object: could be array or object
+        $content = $aiResult['content'] ?? null;
 
-        if (str_starts_with($content, '```')) {
-            preg_match('/```(?:json)?\s*\n(.*?)\n```/s', $content, $matches);
-            $content = $matches[1] ?? $content;
+        if (! $content || ! is_array($content)) {
+            throw new \Exception('AI response content is missing or invalid');
         }
 
-        $decoded = json_decode($content, true);
-
-        if (json_last_error() !== JSON_ERROR_NONE) {
-            throw new \Exception('Invalid JSON response: '.json_last_error_msg());
+        // If Structured Outputs used, extract 'questions' array
+        if (isset($content['questions']) && is_array($content['questions'])) {
+            $questions = $content['questions'];
+            Log::debug('[ParallelQuestionSynthesizer] Extracted questions from Structured Outputs', [
+                'count' => count($questions),
+            ]);
+        }
+        // Legacy: direct array (should not happen with json_schema)
+        elseif (isset($content[0])) {
+            $questions = $content;
+            Log::debug('[ParallelQuestionSynthesizer] Using legacy array format', [
+                'count' => count($questions),
+            ]);
+        }
+        // Legacy: single object wrapped in array
+        else {
+            $questions = [$content];
+            Log::debug('[ParallelQuestionSynthesizer] Wrapped single object in array');
         }
 
-        if (! is_array($decoded)) {
-            throw new \Exception('AI response is not an array');
-        }
-
-        // Validate each question
+        // Step 2: Validate each question with JsonSchemaQuestionV2
         $validated = [];
-        foreach ($decoded as $question) {
+        foreach ($questions as $index => $question) {
             try {
                 $this->validator->validate($question);
                 $validated[] = $question;
             } catch (\Throwable $e) {
                 Log::warning('[ParallelQuestionSynthesizer] Question validation failed', [
+                    'index' => $index,
                     'error' => $e->getMessage(),
-                    'question' => $question,
+                    'question_id' => $question['id'] ?? 'unknown',
                 ]);
-                // Skip invalid questions
+                // Skip invalid questions (should rarely happen with Structured Outputs)
             }
         }
 
         if (empty($validated)) {
             throw new \Exception('No valid questions after validation');
         }
+
+        Log::info('[ParallelQuestionSynthesizer] Questions validated', [
+            'total' => count($questions),
+            'valid' => count($validated),
+            'invalid' => count($questions) - count($validated),
+        ]);
 
         return $validated;
     }

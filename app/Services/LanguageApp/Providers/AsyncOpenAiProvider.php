@@ -85,13 +85,30 @@ final class AsyncOpenAiProvider implements AsyncAiProvider
             'messages' => $messages,
         ];
 
-        if ($openai_cfg['json_strict'] ?? false) {
-            $body['response_format'] = ['type' => 'json_object'];
-        }
+        // Priority 1: Use Structured Outputs (json_schema) if provided in opts
+        $jsonSchema = $opts['json_schema'] ?? null;
+        if ($jsonSchema) {
+            $body['response_format'] = [
+                'type' => 'json_schema',
+                'json_schema' => [
+                    'name' => $opts['json_schema_name'] ?? 'response',
+                    'strict' => true,
+                    'schema' => $jsonSchema,
+                ],
+            ];
 
-        if ($responseJsonSchema) {
-            $body['response_format'] = $body['response_format'] ?? ['type' => 'json_object'];
+            Log::debug('AsyncOpenAiProvider: using Structured Outputs', [
+                'schema_name' => $opts['json_schema_name'] ?? 'response',
+            ]);
+        }
+        // Priority 2: Legacy response_json_schema (deprecated)
+        elseif ($responseJsonSchema) {
+            $body['response_format'] = ['type' => 'json_object'];
             $body['response_format']['response_json_schema'] = $responseJsonSchema;
+        }
+        // Priority 3: Basic json_object mode
+        elseif ($openai_cfg['json_strict'] ?? false) {
+            $body['response_format'] = ['type' => 'json_object'];
         }
 
         Log::debug('AsyncOpenAiProvider: sending async request', ['model' => $model, 'messages_count' => count($messages)]);
@@ -176,16 +193,24 @@ final class AsyncOpenAiProvider implements AsyncAiProvider
             throw new \RuntimeException('AI returned non-JSON content: '.self::clip($contentText));
         }
 
+        // Check for refusal (Structured Outputs safety feature)
+        $refusal = $body['choices'][0]['message']['refusal'] ?? null;
+        if ($refusal) {
+            Log::warning('AsyncOpenAiProvider: AI refused to generate', ['refusal' => $refusal]);
+            throw new \RuntimeException('AI refused to generate: '.$refusal);
+        }
+
         return [
             'ok' => true,
             'raw' => $raw,
             'body' => $body,
-            'content_text' => $contentText,
-            'content' => $content,
+            'content_text' => $contentText, // Keep original JSON string
+            'content' => $content,          // Parsed object/array
             'usage' => $body['usage'] ?? ['prompt_tokens' => 0, 'completion_tokens' => 0, 'total_tokens' => 0],
             'model' => $model,
             'model_alias' => $opts['model'] ?? null,
             'sent_messages' => $messages,
+            'json_schema_used' => isset($opts['json_schema']), // Flag for downstream processing
         ];
     }
 

@@ -97,11 +97,22 @@ final class OpenAiProvider implements AiProvider
             'messages' => $messages,
         ];
 
-        if ($openai_cfg['json_strict'] ?? false) {
+        // Support Structured Outputs via json_schema option
+        $jsonSchema = $opts['json_schema'] ?? null;
+        if ($jsonSchema) {
+            $body['response_format'] = [
+                'type' => 'json_schema',
+                'json_schema' => [
+                    'name' => $opts['json_schema_name'] ?? 'response',
+                    'strict' => true,
+                    'schema' => $jsonSchema,
+                ],
+            ];
+        } elseif ($openai_cfg['json_strict'] ?? false) {
             $body['response_format'] = ['type' => 'json_object'];
         }
 
-        if ($responseJsonSchema) {
+        if ($responseJsonSchema && !$jsonSchema) {
             $body['response_format'] = $body['response_format'] ?? ['type' => 'json_object'];
             $body['response_format']['response_json_schema'] = $responseJsonSchema;
         }
