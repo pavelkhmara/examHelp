@@ -13,8 +13,8 @@
     <!-- Main content based on viewMode -->
     <div v-else>
       <!-- MODE 1: Missing Fields (highest priority) -->
-      <div v-if="viewMode === 'missing_fields'">
-        <h3 class="text-base font-bold mb-3 text-yellow-700">
+      <div v-if="viewMode === 'missing_fields'" class="bg-white dark:bg-gray-800 rounded-lg p-4">
+        <h3 class="text-base font-bold mb-3 text-yellow-700 dark:text-yellow-500">
           ⚠️ Не хватает обязательных полей
         </h3>
         <p class="text-sm mb-3">
@@ -43,63 +43,73 @@
       </div>
 
       <!-- MODE 2: Pending Confirmation (candidates) -->
-      <div v-else-if="viewMode === 'pending_confirmation'">
-        <h3 class="text-base font-bold mb-3 text-blue-700">
+      <div v-else-if="viewMode === 'pending_confirmation'" class="bg-white dark:bg-gray-800 rounded-lg p-4">
+        <h3 class="text-base font-bold mb-3 text-blue-700 dark:text-blue-400">
           🔍 Требуется подтверждение идентичности
         </h3>
-        <p class="text-sm mb-3">
+        <p class="text-sm mb-3 text-gray-700 dark:text-gray-300">
           Система нашла {{ status.pending_task.candidates.length }} вариант(ов) экзамена.
           Выберите подходящий или отклоните все.
         </p>
 
-        <!-- Candidates list -->
+        <!-- Candidates list with radio buttons -->
         <div class="space-y-2 mb-4">
-          <div
+          <label
             v-for="(candidate, index) in status.pending_task.candidates"
             :key="index"
-            class="border border-gray-300 rounded p-2 text-sm"
+            class="flex items-start border border-gray-300 dark:border-gray-600 rounded p-3 text-sm cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-700 transition"
+            :class="{ 'bg-blue-50 dark:bg-blue-900 border-blue-500': selectedCandidateIndex === index }"
           >
-            <div class="font-semibold">{{ candidate.canonical?.name || 'Unnamed' }}</div>
-            <div class="text-xs text-gray-600">
-              Provider: {{ candidate.canonical?.provider || '—' }} |
-              Variant: {{ candidate.canonical?.variant || '—' }} |
-              Confidence: {{ Math.round((candidate.confidence || 0) * 100) }}%
+            <input
+              type="radio"
+              name="candidate"
+              :value="index"
+              v-model="selectedCandidateIndex"
+              class="mt-1 mr-3"
+            />
+            <div class="flex-1">
+              <div class="font-semibold text-gray-900 dark:text-gray-100">{{ candidate.name || 'Unnamed' }}</div>
+              <div class="text-xs text-gray-600 dark:text-gray-400">
+                Provider: {{ candidate.provider || '—' }} |
+                Family: {{ candidate.family || '—' }} |
+                Score: {{ Math.round((candidate.score || 0) * 100) }}%
+              </div>
             </div>
-          </div>
+          </label>
         </div>
 
         <!-- Buttons -->
         <div class="flex gap-2">
           <button
             @click="confirmIdentity"
-            class="px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700 text-sm"
-            :disabled="actionLoading"
+            class="px-4 py-2 bg-gray-800 dark:bg-gray-700 text-white rounded hover:bg-gray-900 dark:hover:bg-gray-600 text-sm font-medium disabled:opacity-50 disabled:cursor-not-allowed"
+            :disabled="actionLoading || selectedCandidateIndex === null"
           >
-            ✓ Confirm Identity
+            ✓ Confirm Selected
           </button>
           <button
             @click="rejectIdentity"
-            class="px-4 py-2 bg-yellow-600 text-white rounded hover:bg-yellow-700 text-sm"
+            class="px-4 py-2 bg-gray-600 dark:bg-gray-500 text-white rounded hover:bg-gray-700 dark:hover:bg-gray-400 text-sm font-medium disabled:opacity-50 disabled:cursor-not-allowed"
             :disabled="actionLoading"
           >
             ↻ Reject & Re-run
           </button>
           <button
             @click="rejectAll"
-            class="px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700 text-sm"
+            class="px-4 py-2 bg-gray-600 dark:bg-gray-500 text-white rounded hover:bg-gray-700 dark:hover:bg-gray-400 text-sm font-medium disabled:opacity-50 disabled:cursor-not-allowed"
             :disabled="actionLoading"
           >
             ❌ Reject All
           </button>
         </div>
-        <p v-if="actionLoading" class="text-xs text-gray-600 mt-2">
+        <p v-if="actionLoading" class="text-xs text-gray-600 dark:text-gray-400 mt-2">
           Обрабатываю запрос...
         </p>
       </div>
 
       <!-- MODE 3: Pending Clarification (followups/need_fields) -->
-      <div v-else-if="viewMode === 'pending_clarification'">
-        <h3 class="text-base font-bold mb-3 text-purple-700">
+      <div v-else-if="viewMode === 'pending_clarification'" class="bg-white dark:bg-gray-800 rounded-lg p-4">
+        <h3 class="text-base font-bold mb-3 text-purple-700 dark:text-purple-400">
           ❓ Нужны уточнения
         </h3>
         <p class="text-sm mb-3">
@@ -150,8 +160,8 @@
       </div>
 
       <!-- MODE 4: Fields Changed -->
-      <div v-else-if="viewMode === 'fields_changed'">
-        <h3 class="text-base font-bold mb-3 text-orange-700">
+      <div v-else-if="viewMode === 'fields_changed'" class="bg-white dark:bg-gray-800 rounded-lg p-4">
+        <h3 class="text-base font-bold mb-3 text-orange-700 dark:text-orange-400">
           🔄 Поля изменились после подтверждения
         </h3>
         <p class="text-sm mb-3">
@@ -173,8 +183,8 @@
       </div>
 
       <!-- MODE 5: Stalled Task -->
-      <div v-else-if="viewMode === 'stalled'">
-        <h3 class="text-base font-bold mb-3 text-red-700">
+      <div v-else-if="viewMode === 'stalled'" class="bg-white dark:bg-gray-800 rounded-lg p-4">
+        <h3 class="text-base font-bold mb-3 text-red-700 dark:text-red-400">
           ⏸️ Задача зависла
         </h3>
         <p class="text-sm mb-3">
@@ -190,8 +200,8 @@
       </div>
 
       <!-- MODE 6: Status (default) -->
-      <div v-else>
-        <h3 class="text-base font-bold mb-3 text-gray-700">
+      <div v-else class="bg-white dark:bg-gray-800 rounded-lg p-4">
+        <h3 class="text-base font-bold mb-3 text-gray-700 dark:text-gray-300">
           📊 Exam Workflow Status
         </h3>
         <p class="text-sm mb-2">
@@ -232,6 +242,7 @@ export default {
       },
       pollHandle: null,
       actionLoading: false,
+      selectedCandidateIndex: null,
     }
   },
 
@@ -290,6 +301,20 @@ export default {
     this.pollHandle = setInterval(this.fetchStatus, 5000) // Poll every 5 seconds
   },
 
+  watch: {
+    'status.pending_task.candidates': {
+      handler(newCandidates) {
+        // Auto-select first candidate if only one exists
+        if (newCandidates && newCandidates.length === 1) {
+          this.selectedCandidateIndex = 0
+        } else {
+          this.selectedCandidateIndex = null
+        }
+      },
+      immediate: true,
+    },
+  },
+
   beforeUnmount() {
     if (this.pollHandle) {
       clearInterval(this.pollHandle)
@@ -330,7 +355,9 @@ export default {
     },
 
     async confirmIdentity() {
-      if (!this.status.pending_task) return
+      if (!this.status.pending_task || this.selectedCandidateIndex === null) return
+
+      const selectedCandidate = this.status.pending_task.candidates[this.selectedCandidateIndex]
 
       this.actionLoading = true
       try {
@@ -338,7 +365,8 @@ export default {
           `/api/exams/${this.examId}/research/${this.status.pending_task.id}/confirm-identity`,
           {
             confirmed: true,
-            notes: 'Confirmed via ExamWorkflowHub',
+            candidate_index: this.selectedCandidateIndex,
+            notes: `Confirmed "${selectedCandidate.name}" via ExamWorkflowHub`,
           }
         )
 

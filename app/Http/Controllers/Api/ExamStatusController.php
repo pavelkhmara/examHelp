@@ -58,11 +58,14 @@ class ExamStatusController extends Controller
 
         $confirmedIdentityStatus = null;
         if ($confirmedIdentity) {
+            // Build current fields including document_ids_hash
+            $documentIds = $exam->documents()->pluck('id')->toArray();
             $currentFields = [
                 'title' => $exam->title,
                 'user_input' => $exam->user_input,
                 'level' => $exam->level,
                 'description' => $exam->description,
+                'document_ids_hash' => md5(json_encode($documentIds)),
             ];
 
             $hasFieldsChanged = $confirmedIdentity->hasSourceFieldsChanged($currentFields);
@@ -99,7 +102,14 @@ class ExamStatusController extends Controller
         $pendingTaskData = null;
         if ($pendingTask) {
             $result = $pendingTask->result ?? [];
-            $identity = $result['identity'] ?? [];
+
+            // Extract identity data from new structure (verification_attempts) or fallback to old
+            if (isset($result['verification_attempts']) && !empty($result['verification_attempts'])) {
+                $latestAttempt = end($result['verification_attempts']);
+                $identity = $latestAttempt['identity_result'] ?? [];
+            } else {
+                $identity = $result['identity'] ?? [];
+            }
 
             $pendingTaskData = [
                 'id' => $pendingTask->id,
@@ -141,7 +151,15 @@ class ExamStatusController extends Controller
         $sourceFields = $confirmedIdentity->source_fields ?? [];
         $changedFields = [];
 
+        // Technical fields that shouldn't be shown to user
+        $technicalFields = ['document_ids_hash'];
+
         foreach ($sourceFields as $field => $oldValue) {
+            // Skip technical fields in the display
+            if (in_array($field, $technicalFields)) {
+                continue;
+            }
+
             if (!isset($currentFields[$field]) || $currentFields[$field] !== $oldValue) {
                 $changedFields[] = $field;
             }

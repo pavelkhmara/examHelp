@@ -178,15 +178,27 @@ class CardManager
         }
 
         $sourceFields = $confirmedIdentity->source_fields ?? [];
+
+        // Build current fields including document_ids_hash
+        $documentIds = $exam->documents()->pluck('id')->toArray();
         $currentFields = [
             'title' => $exam->title,
             'user_input' => $exam->user_input,
             'level' => $exam->level,
             'description' => $exam->description,
+            'document_ids_hash' => md5(json_encode($documentIds)),
         ];
+
+        // Technical fields that shouldn't be shown to user
+        $technicalFields = ['document_ids_hash'];
 
         $changedFields = [];
         foreach ($sourceFields as $field => $oldValue) {
+            // Skip technical fields in the display
+            if (in_array($field, $technicalFields)) {
+                continue;
+            }
+
             if (!isset($currentFields[$field]) || $currentFields[$field] !== $oldValue) {
                 $changedFields[] = $field;
             }
@@ -269,8 +281,17 @@ class CardManager
 
         // Сначала пробуем получить из result
         $result = $task->result ?? [];
-        $identity = $result['identity'] ?? [];
-        $candidates = $identity['candidates'] ?? [];
+
+        // Check new structure first (verification_attempts)
+        if (isset($result['verification_attempts']) && !empty($result['verification_attempts'])) {
+            $latestAttempt = end($result['verification_attempts']);
+            $identityResult = $latestAttempt['identity_result'] ?? [];
+            $candidates = $identityResult['candidates'] ?? [];
+        } else {
+            // Fallback to old structure
+            $identity = $result['identity'] ?? [];
+            $candidates = $identity['candidates'] ?? [];
+        }
 
         // Если в result нет кандидатов, ищем в логах
         if (empty($candidates)) {
@@ -321,9 +342,19 @@ class CardManager
 
         // Сначала пробуем получить из result
         $result = $task->result ?? [];
-        $identity = $result['identity'] ?? [];
-        $followups = $identity['followups'] ?? [];
-        $needFields = $identity['need_fields'] ?? [];
+
+        // Check new structure first (verification_attempts)
+        if (isset($result['verification_attempts']) && !empty($result['verification_attempts'])) {
+            $latestAttempt = end($result['verification_attempts']);
+            $identityResult = $latestAttempt['identity_result'] ?? [];
+            $followups = $identityResult['followups'] ?? [];
+            $needFields = $identityResult['need_fields'] ?? [];
+        } else {
+            // Fallback to old structure
+            $identity = $result['identity'] ?? [];
+            $followups = $identity['followups'] ?? [];
+            $needFields = $identity['need_fields'] ?? [];
+        }
 
         // Если в result нет данных, ищем в логах
         if (empty($followups) && empty($needFields)) {
