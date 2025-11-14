@@ -108,6 +108,7 @@ class GenerationLog extends Resource
 
         // Format messages in readable way
         $formatted = [];
+        $messageNumber = 1;
         foreach ($messages as $index => $message) {
             $role = $message['role'] ?? 'unknown';
             $content = $message['content'] ?? '';
@@ -129,7 +130,8 @@ class GenerationLog extends Resource
             // Unescape newlines and other escape sequences for readability
             $content = str_replace(['\\n', '\\t', '\\r'], ["\n", "\t", "\r"], $content);
 
-            $formatted[] = '=== Message '.($index + 1).' (Role: '.strtoupper($role).") ===\n".$content;
+            $formatted[] = '=== Message '.$messageNumber.' (Role: '.strtoupper($role).") ===\n".$content;
+            $messageNumber++;
         }
 
         return implode("\n\n".str_repeat('-', 80)."\n\n", $formatted);
