@@ -247,8 +247,8 @@ final class JsonSchemaExamV2
             $result['tasks'] = is_array($section['tasks']) ? $section['tasks'] : null;
         }
 
-        if (isset($section['task_archetypes'])) {
-            $result['task_archetypes'] = $this->validateTaskArchetypes($section['task_archetypes'], $prefix);
+        if (isset($section['question_archetypes'])) {
+            $result['question_archetypes'] = $this->validateTaskArchetypes($section['question_archetypes'], $prefix);
         }
 
         return $result;
@@ -347,17 +347,17 @@ final class JsonSchemaExamV2
     private function validateTaskArchetypes(mixed $data, string $prefix): array
     {
         if (! is_array($data)) {
-            throw ValidationException::withMessages(["$prefix.task_archetypes" => 'task_archetypes must be an array']);
+            throw ValidationException::withMessages(["$prefix.question_archetypes" => 'question_archetypes must be an array']);
         }
 
         if (empty($data)) {
-            throw ValidationException::withMessages(["$prefix.task_archetypes" => 'task_archetypes cannot be empty if present']);
+            throw ValidationException::withMessages(["$prefix.question_archetypes" => 'question_archetypes cannot be empty if present']);
         }
 
         $validated = [];
         foreach ($data as $i => $archetype) {
             if (! is_array($archetype)) {
-                throw ValidationException::withMessages(["$prefix.task_archetypes.$i" => 'Each archetype must be an object']);
+                throw ValidationException::withMessages(["$prefix.question_archetypes.$i" => 'Each archetype must be an object']);
             }
 
             $validatedArchetype = [
@@ -371,7 +371,7 @@ final class JsonSchemaExamV2
                 $difficulty = (string) $archetype['difficulty'];
                 if (! in_array($difficulty, ['easy', 'medium', 'hard'])) {
                     throw ValidationException::withMessages([
-                        "$prefix.task_archetypes.$i.difficulty" => 'difficulty must be one of: easy, medium, hard',
+                        "$prefix.question_archetypes.$i.difficulty" => 'difficulty must be one of: easy, medium, hard',
                     ]);
                 }
                 $validatedArchetype['difficulty'] = $difficulty;

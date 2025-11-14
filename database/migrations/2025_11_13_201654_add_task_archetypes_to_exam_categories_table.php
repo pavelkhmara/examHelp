@@ -12,8 +12,8 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('exam_categories', function (Blueprint $table) {
-            $table->json('task_archetypes')->nullable()->after('skill')
-                ->comment('Task archetypes from Phase B (v2 architecture)');
+            $table->json('question_archetypes')->nullable()->after('skill')
+                ->comment('Question archetypes from Phase B (v2 architecture)');
         });
     }
 
@@ -23,7 +23,7 @@ return new class extends Migration
     public function down(): void
     {
         Schema::table('exam_categories', function (Blueprint $table) {
-            $table->dropColumn('task_archetypes');
+            $table->dropColumn('question_archetypes');
         });
     }
 };

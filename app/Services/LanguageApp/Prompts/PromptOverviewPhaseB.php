@@ -31,10 +31,10 @@ class PromptOverviewPhaseB
 # Роль и цель
 Ты — планировщик сборки экзаменационных вопросов.
 
-**Цель этого запроса:** Подготовь **Assembly Plan** (план сборки) И **Task Archetypes** (шаблоны вопросов) для ВСЕХ секций экзамена — строго по `s2_exam_json_archetype_v2.json`.
+**Цель этого запроса:** Подготовь **Assembly Plan** (план сборки) И **Question Archetypes** (шаблоны вопросов) для ВСЕХ секций экзамена — строго по `s2_exam_json_archetype_v2.json`.
 
 **Важно:** В этом запросе ты создаёшь:
-1. **task_archetypes** - шаблоны вопросов (типы, сложность, базовая конфигурация)
+1. **question_archetypes** - шаблоны вопросов (типы, сложность, базовая конфигурация)
 2. **assembly** - конфигурацию сборки (pool/blueprint/inline)
 
 Ты НЕ создаёшь тексты вопросов, stimulus, конкретные options. Только архетипы и стратегию сборки.
@@ -70,11 +70,11 @@ class PromptOverviewPhaseB
 
 # Что нужно сделать
 
-## Часть 1: Создать Task Archetypes для каждой секции
+## Часть 1: Создать Question Archetypes для каждой секции
 
-Для КАЖДОЙ секции создай массив `task_archetypes` — это шаблоны вопросов, которые будут использоваться при генерации.
+Для КАЖДОЙ секции создай массив `question_archetypes` — это шаблоны вопросов, которые будут использоваться при генерации.
 
-**Структура Task Archetype:**
+**Структура Question Archetype:**
 ```json
 {
   "id": "listen_mcq_01",                    // уникальный ID шаблона
@@ -105,7 +105,7 @@ class PromptOverviewPhaseB
 
 **Listening Section** → archetypes примеры:
 ```json
-"task_archetypes": [
+"question_archetypes": [
   {
     "id": "listen_mcq_detail",
     "type": "listen_mcq",
@@ -125,7 +125,7 @@ class PromptOverviewPhaseB
 
 **Reading Section** → archetypes примеры:
 ```json
-"task_archetypes": [
+"question_archetypes": [
   {
     "id": "read_mcq_inference",
     "type": "single_select",
@@ -152,7 +152,7 @@ class PromptOverviewPhaseB
 
 **Writing Section** → archetypes примеры:
 ```json
-"task_archetypes": [
+"question_archetypes": [
   {
     "id": "writing_task_1",
     "type": "writing_prompt",
@@ -180,7 +180,7 @@ class PromptOverviewPhaseB
 
 **Speaking Section** → archetypes примеры:
 ```json
-"task_archetypes": [
+"question_archetypes": [
   {
     "id": "speaking_part_1",
     "type": "speaking_prompt",
@@ -358,7 +358,7 @@ class PromptOverviewPhaseB
 
 1. ✅ JSON синтаксически корректен (все кавычки, запятые, скобки на месте)
 2. ✅ КАЖДАЯ секция из Phase A skeleton присутствует в ответе
-3. ✅ КАЖДАЯ секция имеет `task_archetypes` array с 2-5 элементами:
+3. ✅ КАЖДАЯ секция имеет `question_archetypes` array с 2-5 элементами:
    - Каждый archetype имеет: `id`, `type`, `name`, `difficulty`, `config`
    - Все `type` из Question Types enum
    - `config` содержит базовые параметры (options_count, word_count, duration_sec, scoring)
@@ -376,10 +376,10 @@ class PromptOverviewPhaseB
 7. ✅ Для inline mode:
    - Есть `assembly.mode = "inline"`
    - Опционально: `tasks[]` array с placeholders (только `id` и `type`, БЕЗ контента)
-8. ✅ Все типы в `filters.type` И в `task_archetypes[].type` из Question Types enum
+8. ✅ Все типы в `filters.type` И в `question_archetypes[].type` из Question Types enum
 9. ✅ НЕТ текста вопросов (instructions, stimulus, options, answer_key) - только шаблоны!
 10. ✅ НЕТ удалённых полей (`pattern`, `type_specific`)
-11. ✅ Возвращаешь ПОЛНЫЙ JSON экзамена (из Phase A + task_archetypes + assembly configs)
+11. ✅ Возвращаешь ПОЛНЫЙ JSON экзамена (из Phase A + question_archetypes + assembly configs)
 
 Если хотя бы одна проверка не прошла — исправь JSON и проверь снова.
 
@@ -548,7 +548,7 @@ MODES;
 # Response Schema (STRICT):
 
 Return the FULL exam JSON from Phase A with updated sections.
-Each section MUST have task_archetypes array AND assembly configuration.
+Each section MUST have question_archetypes array AND assembly configuration.
 
 Required structure per section:
 ```json
@@ -558,7 +558,7 @@ Required structure per section:
   "duration_min": 30,
   "max_score": 100,
   "min_pass_percent": 60,
-  "task_archetypes": [
+  "question_archetypes": [
     {
       "id": "archetype_id",
       "type": "question_type",

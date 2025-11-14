@@ -91,7 +91,7 @@ class ExamCategory extends Resource
                             if ($currentSection) {
                                 // Extract section-level metadata (exclude assembly to avoid duplication)
                                 $metadata = array_filter($currentSection, function ($key) {
-                                    return ! in_array($key, ['assembly', 'task_archetypes']); // Exclude these as they're shown separately
+                                    return ! in_array($key, ['assembly', 'question_archetypes']); // Exclude these as they're shown separately
                                 }, ARRAY_FILTER_USE_KEY);
 
                                 return json_encode($metadata, JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES);
@@ -124,21 +124,21 @@ class ExamCategory extends Resource
                     ->onlyOnDetail()
                     ->help('Section-level metadata: skill, weight, duration, phases, navigation, scoring, etc.'),
 
-                // Task archetypes (question types)
-                Code::make('Task Archetypes (Question Types)')
+                // Question archetypes (question templates)
+                Code::make('This Section Question Archetypes')
                     ->json(JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT)
                     ->resolveUsing(function () {
                         $structureV2 = $this->exam->meta['structure_v2'] ?? null;
                         $examStructure = $this->exam->meta['exam_structure'] ?? null;
 
-                        // For structure_v2: get task_archetypes from section
+                        // For structure_v2: get question_archetypes from section
                         if ($structureV2) {
                             $currentSection = $this->findCurrentSection();
-                            if ($currentSection && isset($currentSection['task_archetypes'])) {
-                                return json_encode($currentSection['task_archetypes'], JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES);
+                            if ($currentSection && isset($currentSection['question_archetypes'])) {
+                                return json_encode($currentSection['question_archetypes'], JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES);
                             }
 
-                            return json_encode(['info' => 'No task_archetypes defined for this section'], JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT);
+                            return json_encode(['info' => 'No question_archetypes defined for this section'], JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT);
                         }
 
                         // For exam_structure: get question_archetypes
@@ -164,7 +164,7 @@ class ExamCategory extends Resource
                         return json_encode($detailedArchetypes, JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES);
                     })
                     ->onlyOnDetail()
-                    ->help('Task archetypes with type, config, scoring, duration. For V2: task_archetypes from section. For V1: question_archetypes filtered by section.'),
+                    ->help('Question archetypes with type, config, scoring, duration. For V2: question_archetypes from section. For V1: question_archetypes filtered by section.'),
 
                 // Сводные числа
                 Number::make('Items/Steps Count', function () {

@@ -16,7 +16,7 @@ use Illuminate\Support\Facades\Log;
  * Responsibilities:
  * - Generate example questions for exam archetypes
  * - Validate and persist examples to database
- * - Supports both V1 (question_archetypes) and V2 (task_archetypes from structure_v2)
+ * - Supports both V1 (question_archetypes) and V2 (question_archetypes from structure_v2)
  */
 class ExampleGenerationService extends AbstractAiService
 {
@@ -32,12 +32,12 @@ class ExampleGenerationService extends AbstractAiService
      */
     public function generateExamples(Exam $exam, GenerationTask $task, int $examplesPerArchetype = 1): array
     {
-        // Check if V2 architecture (structure_v2 exists with task_archetypes)
+        // Check if V2 architecture (structure_v2 exists with question_archetypes)
         $structureV2 = $exam->meta['structure_v2'] ?? null;
         $isV2 = !empty($structureV2);
 
         if ($isV2) {
-            // V2 architecture: use ParallelExampleGenerator with task_archetypes
+            // V2 architecture: use ParallelExampleGenerator with question_archetypes
             Log::info('Using V2 architecture for example generation', [
                 'exam_id' => $exam->id,
             ]);

@@ -5,7 +5,7 @@ namespace App\Services\LanguageApp\Prompts;
 /**
  * Question Synthesis Prompt (Stage 6)
  *
- * Generates individual exam questions based on task archetypes from Phase B.
+ * Generates individual exam questions based on question archetypes from Phase B.
  * Uses priority system and end-of-prompt checklist for quality.
  */
 class PromptQuestionSynthesis

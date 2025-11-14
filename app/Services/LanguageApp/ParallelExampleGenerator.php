@@ -26,7 +26,7 @@ class ParallelExampleGenerator extends AbstractAiService
     }
 
     /**
-     * Generate examples for all task archetypes in parallel
+     * Generate examples for all question archetypes in parallel
      *
      * @param  Exam  $exam
      * @param  GenerationTask|null  $task
@@ -41,7 +41,7 @@ class ParallelExampleGenerator extends AbstractAiService
             'examples_per_archetype' => $examplesPerArchetype,
         ]);
 
-        // Get task_archetypes from structure_v2
+        // Get question_archetypes from structure_v2
         $structure = $exam->meta['structure_v2'] ?? null;
 
         if (!$structure) {
@@ -54,10 +54,10 @@ class ParallelExampleGenerator extends AbstractAiService
             throw new \RuntimeException('No sections found in structure_v2.');
         }
 
-        // Collect all task_archetypes with their section context
+        // Collect all question_archetypes with their section context
         $archetypesWithContext = [];
         foreach ($sections as $section) {
-            $taskArchetypes = $section['task_archetypes'] ?? [];
+            $taskArchetypes = $section['question_archetypes'] ?? [];
             $sectionId = $section['id'];
             $sectionSkill = $section['skill'];
 
@@ -71,7 +71,7 @@ class ParallelExampleGenerator extends AbstractAiService
         }
 
         if (empty($archetypesWithContext)) {
-            Log::warning('[ParallelExampleGenerator] No task_archetypes found in any section', [
+            Log::warning('[ParallelExampleGenerator] No question_archetypes found in any section', [
                 'exam_id' => $exam->id,
             ]);
 
@@ -79,13 +79,13 @@ class ParallelExampleGenerator extends AbstractAiService
                 'success' => true,
                 'examples_created' => 0,
                 'total_archetypes' => 0,
-                'message' => 'No task archetypes found to generate examples',
+                'message' => 'No question archetypes found to generate examples',
             ];
         }
 
         $totalArchetypes = count($archetypesWithContext);
 
-        Log::info('[ParallelExampleGenerator] Found task archetypes', [
+        Log::info('[ParallelExampleGenerator] Found question archetypes', [
             'total_archetypes' => $totalArchetypes,
         ]);
 

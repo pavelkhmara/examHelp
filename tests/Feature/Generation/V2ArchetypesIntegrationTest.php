@@ -16,9 +16,9 @@ use Tests\TestCase;
  * Integration tests for v2 architecture archetypes flow
  *
  * These tests verify that the full pipeline from Phase A → Phase B → Resolve → Synthesize
- * works correctly and that task_archetypes are properly generated.
+ * works correctly and that question_archetypes are properly generated.
  *
- * Bug discovered: Phase B does not generate task_archetypes, causing QuestionSynthesizer
+ * Bug discovered: Phase B does not generate question_archetypes, causing QuestionSynthesizer
  * to fail with "No archetypes found in section" error.
  */
 class V2ArchetypesIntegrationTest extends TestCase
@@ -34,9 +34,9 @@ class V2ArchetypesIntegrationTest extends TestCase
     }
 
     /**
-     * Test that validator accepts task_archetypes for blueprint sections
+     * Test that validator accepts question_archetypes for blueprint sections
      */
-    public function test_phase_b_generates_task_archetypes_for_blueprint_sections()
+    public function test_phase_b_generates_question_archetypes_for_blueprint_sections()
     {
         // Arrange
         $validator = new \App\Services\LanguageApp\Validators\JsonSchemaExamV2();
@@ -54,7 +54,7 @@ class V2ArchetypesIntegrationTest extends TestCase
                     'duration_min' => 60,
                     'max_score' => 40,
                     'min_pass_percent' => 60,
-                    'task_archetypes' => [
+                    'question_archetypes' => [
                         [
                             'id' => 'read_mcq',
                             'type' => 'single_select',
@@ -91,10 +91,10 @@ class V2ArchetypesIntegrationTest extends TestCase
 
         // Assert - validation should succeed
         $this->assertArrayHasKey('sections', $validated);
-        $this->assertArrayHasKey('task_archetypes', $validated['sections'][0],
-            'Validator MUST accept task_archetypes field');
+        $this->assertArrayHasKey('question_archetypes', $validated['sections'][0],
+            'Validator MUST accept question_archetypes field');
 
-        $archetypes = $validated['sections'][0]['task_archetypes'];
+        $archetypes = $validated['sections'][0]['question_archetypes'];
         $this->assertIsArray($archetypes);
         $this->assertCount(2, $archetypes);
 
@@ -107,9 +107,9 @@ class V2ArchetypesIntegrationTest extends TestCase
     }
 
     /**
-     * Test that validator accepts task_archetypes for inline sections
+     * Test that validator accepts question_archetypes for inline sections
      */
-    public function test_phase_b_generates_task_archetypes_for_inline_sections()
+    public function test_phase_b_generates_question_archetypes_for_inline_sections()
     {
         // Arrange
         $validator = new \App\Services\LanguageApp\Validators\JsonSchemaExamV2();
@@ -127,7 +127,7 @@ class V2ArchetypesIntegrationTest extends TestCase
                     'duration_min' => 60,
                     'max_score' => 25,
                     'min_pass_percent' => 60,
-                    'task_archetypes' => [
+                    'question_archetypes' => [
                         [
                             'id' => 'writing_task_1',
                             'type' => 'writing_prompt',
@@ -155,10 +155,10 @@ class V2ArchetypesIntegrationTest extends TestCase
 
         // Assert
         $this->assertArrayHasKey('sections', $validated);
-        $this->assertArrayHasKey('task_archetypes', $validated['sections'][0],
-            'Validator MUST accept task_archetypes for inline sections');
+        $this->assertArrayHasKey('question_archetypes', $validated['sections'][0],
+            'Validator MUST accept question_archetypes for inline sections');
 
-        $archetypes = $validated['sections'][0]['task_archetypes'];
+        $archetypes = $validated['sections'][0]['question_archetypes'];
         $this->assertIsArray($archetypes);
         $this->assertCount(2, $archetypes);
     }
@@ -170,7 +170,7 @@ class V2ArchetypesIntegrationTest extends TestCase
      */
     public function test_full_v2_pipeline_from_phase_a_to_synthesis()
     {
-        // Arrange: Create exam with complete Phase B structure (including task_archetypes)
+        // Arrange: Create exam with complete Phase B structure (including question_archetypes)
         $exam = Exam::factory()->create([
             'title' => 'IELTS Academic Full Test',
             'level' => 'B2',
@@ -189,7 +189,7 @@ class V2ArchetypesIntegrationTest extends TestCase
                     'duration_min' => 60,
                     'max_score' => 40,
                     'min_pass_percent' => 60,
-                    'task_archetypes' => [
+                    'question_archetypes' => [
                         [
                             'id' => 'read_mcq',
                             'type' => 'single_select',
@@ -227,12 +227,12 @@ class V2ArchetypesIntegrationTest extends TestCase
             'meta' => [],
         ]);
 
-        // Verify task_archetypes exist in structure
+        // Verify question_archetypes exist in structure
         foreach ($structure['sections'] as $section) {
-            $this->assertArrayHasKey('task_archetypes', $section,
-                "Section {$section['id']} MUST have task_archetypes");
-            $this->assertNotEmpty($section['task_archetypes'],
-                "Section {$section['id']} task_archetypes MUST not be empty");
+            $this->assertArrayHasKey('question_archetypes', $section,
+                "Section {$section['id']} MUST have question_archetypes");
+            $this->assertNotEmpty($section['question_archetypes'],
+                "Section {$section['id']} question_archetypes MUST not be empty");
         }
 
         // Step 1: Run Resolve (create GenerationPlans)
@@ -253,11 +253,11 @@ class V2ArchetypesIntegrationTest extends TestCase
         $plan = $plans[0];
         $section = $method->invoke($synthesizer, $exam, $plan->section_id);
 
-        // CRITICAL: Verify task_archetypes exist and are accessible
-        $this->assertArrayHasKey('task_archetypes', $section,
-            'QuestionSynthesizer MUST be able to access task_archetypes from structure_v2');
-        $this->assertNotEmpty($section['task_archetypes'],
-            'task_archetypes MUST not be empty');
+        // CRITICAL: Verify question_archetypes exist and are accessible
+        $this->assertArrayHasKey('question_archetypes', $section,
+            'QuestionSynthesizer MUST be able to access question_archetypes from structure_v2');
+        $this->assertNotEmpty($section['question_archetypes'],
+            'question_archetypes MUST not be empty');
 
         // Verify getArchetypeForPool works
         $method2 = $reflection->getMethod('getArchetypeForPool');
@@ -269,11 +269,11 @@ class V2ArchetypesIntegrationTest extends TestCase
     }
 
     /**
-     * Test that QuestionSynthesizer fails gracefully when task_archetypes are missing
+     * Test that QuestionSynthesizer fails gracefully when question_archetypes are missing
      *
      * This test documents the CURRENT behavior (bug) that should be fixed.
      */
-    public function test_synthesizer_fails_when_task_archetypes_missing()
+    public function test_synthesizer_fails_when_question_archetypes_missing()
     {
         // Arrange
         $exam = Exam::factory()->create([
@@ -281,7 +281,7 @@ class V2ArchetypesIntegrationTest extends TestCase
             'level' => 'B2',
         ]);
 
-        // Create structure WITHOUT task_archetypes (reproducing the bug)
+        // Create structure WITHOUT question_archetypes (reproducing the bug)
         $structure = [
             'id' => 'test-exam',
             'version' => '2.0',
@@ -304,7 +304,7 @@ class V2ArchetypesIntegrationTest extends TestCase
                         'assertions' => ['total_tasks_equals' => 10],
                     ],
                     'tasks' => [],
-                    // NOTE: task_archetypes is MISSING - this is the bug!
+                    // NOTE: question_archetypes is MISSING - this is the bug!
                 ],
             ],
         ];

@@ -797,7 +797,7 @@ class RunExamResearchJob implements ShouldQueue
                     'duration_min' => $section['duration_min'] ?? null,
                     'max_score' => $section['max_score'] ?? null,
                     'min_pass_percent' => $section['min_pass_percent'] ?? null,
-                    'task_archetypes' => $section['task_archetypes'] ?? [],
+                    'question_archetypes' => $section['question_archetypes'] ?? [],
                     'meta' => [
                         'tasks' => $section['tasks'] ?? [],
                         'assembly' => $section['assembly'] ?? null,

@@ -14,10 +14,10 @@ class QuestionAttacher
     /**
      * @param array<int, array<string, mixed>> $questions
      */
-    public function attachToExam(array $questions, GenerationPlan $plan, Exam $exam): void
+    public function attachToExam(array $questions, GenerationPlan $plan, Exam $exam): array
     {
         if (empty($questions)) {
-            return;
+            return [];
         }
 
         DB::transaction(function () use ($questions, $plan, $exam) {
@@ -36,6 +36,7 @@ class QuestionAttacher
                 $existingQuestions,
                 $questions,
             ));
+            $attachedQuestions = $meta['generated_questions_v2'];
 
             // Update structure_v2 sections with question IDs
             $structure = $meta['structure_v2'] ?? [];
@@ -58,6 +59,11 @@ class QuestionAttacher
             // Mark plan as attached
             $plan->markAsAttached();
         });
+
+        if ($exam->meta['generated_questions_v2']) {
+            return $exam->meta['generated_questions_v2'];
+        }
+        return [];
     }
 
     /**

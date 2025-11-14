@@ -334,7 +334,7 @@ HINT;
         return <<<'HINT'
 
 CRITICAL REQUIREMENT - Section Distribution:
-Each task archetype MUST include a 'category_weights' field mapping it to appropriate exam sections.
+Each question archetype MUST include a 'category_weights' field mapping it to appropriate exam sections.
 Common sections: e.g.listening, reading, writing, speaking, grammar, vocabulary.  // this is example, you can use only existing sections
 Example:
 {
@@ -414,7 +414,7 @@ SCHEMA;
             ],
             'question_archetypes' => [
                 [
-                    'id' => 'string (unique identifier for this task archetype)',
+                    'id' => 'string (unique identifier for this question archetype)',
                     'name' => 'string (human-readable name)',
                     'source_ids' => ['number (indices of sources in sources array that provided info for this archetype - 0-based indices) REQUIRED'],
                     'question_type' => 'string REQUIRED (one of QuestionType enum keys: single_select, multi_select, true_false, yes_no_ng, dropdown_cloze, gap_cloze, banked_cloze, matching, order_sentences, order_words, highlight_text, short_answer, numeric, listen_mcq, dictation, error_correction, writing_prompt, speaking_prompt)',

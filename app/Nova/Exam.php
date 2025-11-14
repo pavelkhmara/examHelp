@@ -373,8 +373,8 @@ class Exam extends Resource
                         $compact = array_map(function ($s) {
                             // V2 uses 'title', V1 uses 'name'
                             $sectionName = $s['title'] ?? $s['name'] ?? $s['key'] ?? '';
-                            // V2 uses 'task_archetypes' or 'tasks', V1 uses 'steps'
-                            $steps = $s['task_archetypes'] ?? $s['tasks'] ?? $s['steps'] ?? [];
+                            // V2 uses 'question_archetypes' or 'tasks', V1 uses 'steps'
+                            $steps = $s['question_archetypes'] ?? $s['tasks'] ?? $s['steps'] ?? [];
 
                             return [
                                 'name' => $sectionName,
@@ -874,8 +874,8 @@ class Exam extends Resource
             $sectionNum = $idx + 1;
             // V2 uses 'title', V1 uses 'name'
             $sectionName = $section['title'] ?? $section['name'] ?? $section['key'] ?? 'Unnamed Section';
-            // V2 uses 'task_archetypes' or 'tasks', V1 uses 'steps'
-            $steps = $section['task_archetypes'] ?? $section['tasks'] ?? $section['steps'] ?? [];
+            // V2 uses 'question_archetypes' or 'tasks', V1 uses 'steps'
+            $steps = $section['question_archetypes'] ?? $section['tasks'] ?? $section['steps'] ?? [];
             $stepCount = count($steps);
 
             $lines[] = '';

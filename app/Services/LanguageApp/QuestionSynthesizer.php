@@ -502,7 +502,7 @@ class QuestionSynthesizer extends AbstractAiService
     protected function getArchetypeForPool(array $section, array $filters): array
     {
         // For pool mode, derive archetype from section's archetypes
-        $archetypes = $section['task_archetypes'] ?? [];
+        $archetypes = $section['question_archetypes'] ?? [];
 
         if (empty($archetypes)) {
             throw new \Exception('No archetypes found in section');

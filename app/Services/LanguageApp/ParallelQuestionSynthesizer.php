@@ -165,8 +165,8 @@ class ParallelQuestionSynthesizer extends AbstractAiService
 
                     // Validate, deduplicate, attach
                     $validatedQuestions = $this->questionValidator->validateAndFinalize($questions, $plan, $exam);
-                    $dedupedQuestions = $this->deduplicator->deduplicate($validatedQuestions, $exam);
-                    $attachedQuestions = $this->attacher->attach($dedupedQuestions, $exam, $plan);
+                    $dedupedQuestions = $this->deduplicator->detectDuplicates($validatedQuestions, $exam);
+                    $attachedQuestions = $this->attacher->attachToExam($dedupedQuestions, $plan, $exam);
 
                     // Log validation result
                     if ($task) {
@@ -270,8 +270,8 @@ class ParallelQuestionSynthesizer extends AbstractAiService
 
             // Validate, deduplicate, attach
             $validatedQuestions = $this->questionValidator->validateAndFinalize($questions, $plan, $exam);
-            $dedupedQuestions = $this->deduplicator->deduplicate($validatedQuestions, $exam);
-            $attachedQuestions = $this->attacher->attach($dedupedQuestions, $exam, $plan);
+            $dedupedQuestions = $this->deduplicator->detectDuplicates($validatedQuestions, $exam);
+            $attachedQuestions = $this->attacher->attachToExam($dedupedQuestions, $plan, $exam);
 
             $plan->markAsCompleted();
 
@@ -434,10 +434,10 @@ class ParallelQuestionSynthesizer extends AbstractAiService
      */
     protected function getArchetypeForPool(array $section, array $filters): array
     {
-        $archetypes = $section['task_archetypes'] ?? [];
+        $archetypes = $section['question_archetypes'] ?? [];
 
         if (empty($archetypes)) {
-            throw new \Exception('No task archetypes found in section');
+            throw new \Exception('No question archetypes found in section');
         }
 
         // For simplicity, return first archetype
