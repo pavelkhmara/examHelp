@@ -31,9 +31,13 @@ class PromptOverviewPhaseB
 # Роль и цель
 Ты — планировщик сборки экзаменационных вопросов.
 
-**Цель этого запроса:** Подготовь **Assembly Plan** (план сборки) для ВСЕХ секций экзамена **без генерации контента вопросов** — строго по `s2_exam_json_archetype_v2.json`.
+**Цель этого запроса:** Подготовь **Assembly Plan** (план сборки) И **Task Archetypes** (шаблоны вопросов) для ВСЕХ секций экзамена — строго по `s2_exam_json_archetype_v2.json`.
 
-**Важно:** В этом запросе ты НЕ создаёшь тексты вопросов, stimulus, scoring details. Только конфигурацию сборки (assembly).
+**Важно:** В этом запросе ты создаёшь:
+1. **task_archetypes** - шаблоны вопросов (типы, сложность, базовая конфигурация)
+2. **assembly** - конфигурацию сборки (pool/blueprint/inline)
+
+Ты НЕ создаёшь тексты вопросов, stimulus, конкретные options. Только архетипы и стратегию сборки.
 
 # Входные данные
 **Exam Title**: {$examTitle}
@@ -65,6 +69,144 @@ class PromptOverviewPhaseB
    - Дополнительные теги и метаданные
 
 # Что нужно сделать
+
+## Часть 1: Создать Task Archetypes для каждой секции
+
+Для КАЖДОЙ секции создай массив `task_archetypes` — это шаблоны вопросов, которые будут использоваться при генерации.
+
+**Структура Task Archetype:**
+```json
+{
+  "id": "listen_mcq_01",                    // уникальный ID шаблона
+  "type": "listen_mcq",                     // тип вопроса из Question Types enum
+  "name": "Listening MCQ - Main Idea",      // название шаблона
+  "difficulty": "medium",                    // easy | medium | hard
+  "config": {                                // базовая конфигурация
+    "options_count": 4,                      // количество вариантов ответа (для MCQ)
+    "min_word_count": 150,                   // минимум слов (для writing)
+    "max_word_count": 200,                   // максимум слов (для writing)
+    "duration_sec": 120,                     // время на вопрос в секундах
+    "scoring": {
+      "max_points": 1,                       // максимум баллов
+      "partial_credit": false                // частичные баллы
+    }
+  }
+}
+```
+
+**Правила создания archetypes:**
+
+1. **Количество**: создай 2-5 archetypes для каждой секции (в зависимости от разнообразия типов вопросов)
+2. **Разнообразие**: если секция использует разные типы вопросов → создай по archetype для каждого типа
+3. **Сложность**: для экзаменов с градацией сложности создай archetypes разной difficulty
+4. **Config**: заполни только базовые параметры (options_count, word_count, duration, scoring.max_points)
+
+**Примеры по секциям:**
+
+**Listening Section** → archetypes примеры:
+```json
+"task_archetypes": [
+  {
+    "id": "listen_mcq_detail",
+    "type": "listen_mcq",
+    "name": "Detail Extraction MCQ",
+    "difficulty": "medium",
+    "config": {"options_count": 4, "scoring": {"max_points": 1}}
+  },
+  {
+    "id": "listen_completion",
+    "type": "note_completion",
+    "name": "Note Completion",
+    "difficulty": "hard",
+    "config": {"scoring": {"max_points": 1}}
+  }
+]
+```
+
+**Reading Section** → archetypes примеры:
+```json
+"task_archetypes": [
+  {
+    "id": "read_mcq_inference",
+    "type": "single_select",
+    "name": "Inference MCQ",
+    "difficulty": "medium",
+    "config": {"options_count": 4, "scoring": {"max_points": 1}}
+  },
+  {
+    "id": "read_tfng",
+    "type": "true_false",
+    "name": "True/False/Not Given",
+    "difficulty": "hard",
+    "config": {"scoring": {"max_points": 1}}
+  },
+  {
+    "id": "read_matching",
+    "type": "matching",
+    "name": "Heading Matching",
+    "difficulty": "medium",
+    "config": {"scoring": {"max_points": 1}}
+  }
+]
+```
+
+**Writing Section** → archetypes примеры:
+```json
+"task_archetypes": [
+  {
+    "id": "writing_task_1",
+    "type": "writing_prompt",
+    "name": "Short Writing Task (150 words)",
+    "difficulty": "medium",
+    "config": {
+      "min_word_count": 150,
+      "duration_sec": 1200,
+      "scoring": {"max_points": 33}
+    }
+  },
+  {
+    "id": "writing_task_2",
+    "type": "writing_prompt",
+    "name": "Essay Task (250 words)",
+    "difficulty": "hard",
+    "config": {
+      "min_word_count": 250,
+      "duration_sec": 2400,
+      "scoring": {"max_points": 67}
+    }
+  }
+]
+```
+
+**Speaking Section** → archetypes примеры:
+```json
+"task_archetypes": [
+  {
+    "id": "speaking_part_1",
+    "type": "speaking_prompt",
+    "name": "Introduction & Interview",
+    "difficulty": "easy",
+    "config": {"duration_sec": 300, "scoring": {"max_points": 25}}
+  },
+  {
+    "id": "speaking_part_2",
+    "type": "speaking_prompt",
+    "name": "Individual Long Turn",
+    "difficulty": "medium",
+    "config": {"duration_sec": 240, "scoring": {"max_points": 25}}
+  },
+  {
+    "id": "speaking_part_3",
+    "type": "speaking_prompt",
+    "name": "Two-way Discussion",
+    "difficulty": "hard",
+    "config": {"duration_sec": 300, "scoring": {"max_points": 50}}
+  }
+]
+```
+
+## Часть 2: Определить Assembly Mode для каждой секции
+
 Для КАЖДОЙ секции из Phase A skeleton определи ОДИН из трёх режимов сборки:
 
 {$assemblyModesDescription}
@@ -216,24 +358,28 @@ class PromptOverviewPhaseB
 
 1. ✅ JSON синтаксически корректен (все кавычки, запятые, скобки на месте)
 2. ✅ КАЖДАЯ секция из Phase A skeleton присутствует в ответе
-3. ✅ КАЖДАЯ секция имеет ровно ОДИН assembly mode:
+3. ✅ КАЖДАЯ секция имеет `task_archetypes` array с 2-5 элементами:
+   - Каждый archetype имеет: `id`, `type`, `name`, `difficulty`, `config`
+   - Все `type` из Question Types enum
+   - `config` содержит базовые параметры (options_count, word_count, duration_sec, scoring)
+4. ✅ КАЖДАЯ секция имеет ровно ОДИН assembly mode:
    - `assembly.mode` = "pool" | "blueprint" | "inline"
-4. ✅ Для pool mode:
+5. ✅ Для pool mode:
    - Есть `pool_id` (string)
    - Есть `pick` (integer)
    - Есть `filters` с полем `type` (array of question types)
    - Есть `assertions.total_tasks_equals` (integer)
-5. ✅ Для blueprint mode:
+6. ✅ Для blueprint mode:
    - Есть `blueprint` (array of slots)
    - Каждый slot имеет: `slot`, `from_pool`, `pick`, `filters`
    - Сумма всех `pick` = `assertions.total_tasks_equals`
-6. ✅ Для inline mode:
+7. ✅ Для inline mode:
    - Есть `assembly.mode = "inline"`
    - Опционально: `tasks[]` array с placeholders (только `id` и `type`, БЕЗ контента)
-7. ✅ Все типы в `filters.type` из Question Types enum (single_select, multi_select, writing_prompt и т.д.)
-8. ✅ НЕТ текста вопросов (instructions, stimulus, options, answer_key)
-9. ✅ НЕТ удалённых полей (`pattern`, `type_specific`)
-10. ✅ Возвращаешь ПОЛНЫЙ JSON экзамена (из Phase A + добавленные assembly configs)
+8. ✅ Все типы в `filters.type` И в `task_archetypes[].type` из Question Types enum
+9. ✅ НЕТ текста вопросов (instructions, stimulus, options, answer_key) - только шаблоны!
+10. ✅ НЕТ удалённых полей (`pattern`, `type_specific`)
+11. ✅ Возвращаешь ПОЛНЫЙ JSON экзамена (из Phase A + task_archetypes + assembly configs)
 
 Если хотя бы одна проверка не прошла — исправь JSON и проверь снова.
 
@@ -402,7 +548,7 @@ MODES;
 # Response Schema (STRICT):
 
 Return the FULL exam JSON from Phase A with updated sections.
-Each section MUST have EXACTLY ONE assembly configuration.
+Each section MUST have task_archetypes array AND assembly configuration.
 
 Required structure per section:
 ```json
@@ -412,6 +558,18 @@ Required structure per section:
   "duration_min": 30,
   "max_score": 100,
   "min_pass_percent": 60,
+  "task_archetypes": [
+    {
+      "id": "archetype_id",
+      "type": "question_type",
+      "name": "Archetype Name",
+      "difficulty": "easy|medium|hard",
+      "config": {
+        "options_count": 4,
+        "scoring": {"max_points": 1}
+      }
+    }
+  ],
   "assembly": {
     // ONE OF: assembly_pool | assembly_blueprint | assembly_inline
   }

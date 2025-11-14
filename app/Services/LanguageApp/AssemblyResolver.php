@@ -3,6 +3,7 @@
 namespace App\Services\LanguageApp;
 
 use App\Models\Exam;
+use App\Models\ExamCategory;
 use App\Models\GenerationPlan;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
@@ -82,11 +83,26 @@ class AssemblyResolver
                     default => throw new \Exception("Unknown assembly mode: {$mode}"),
                 };
 
-                // Create or update generation plan
+                // Look up ExamCategory by skill (more reliable than key matching)
+                $skill = $section['skill'] ?? null;
+
+                if (!$skill) {
+                    throw new \Exception("Section {$sectionId} has no 'skill' field. Cannot match to ExamCategory.");
+                }
+
+                $category = ExamCategory::where('exam_id', $exam->id)
+                    ->where('skill', $skill)
+                    ->first();
+
+                if (!$category) {
+                    throw new \Exception("ExamCategory not found for skill '{$skill}' (section {$sectionId}). Ensure categories are created before resolving assembly.");
+                }
+
+                // Create or update generation plan (using numeric category ID)
                 $plan = GenerationPlan::updateOrCreate(
                     [
                         'exam_id' => $exam->id,
-                        'section_id' => $sectionId,
+                        'section_id' => $category->id, // Use numeric ID instead of string
                     ],
                     [
                         'assembly_mode' => $mode,
@@ -298,11 +314,25 @@ class AssemblyResolver
      */
     public function resolveInline(array $section, array $assembly): array
     {
+        // For inline mode, placeholders can be in assembly OR tasks can be in section
         $placeholders = $assembly['placeholders'] ?? [];
+        $tasks = $section['tasks'] ?? [];
         $assertions = $assembly['assertions'] ?? [];
 
+        // If placeholders not in assembly, use tasks from section
+        if (empty($placeholders) && !empty($tasks)) {
+            // Convert tasks to placeholders format
+            $placeholders = array_map(function ($task, $index) {
+                return [
+                    'id' => $task['id'] ?? 'task_' . ($index + 1),
+                    'type' => $task['type'] ?? 'inline_task',
+                    'spec' => $task,
+                ];
+            }, $tasks, array_keys($tasks));
+        }
+
         if (empty($placeholders)) {
-            throw new \Exception("Inline mode requires placeholders array for section {$section['id']}");
+            throw new \Exception("Inline mode requires placeholders in assembly or tasks in section for {$section['id']}");
         }
 
         // Calculate total questions from placeholders
