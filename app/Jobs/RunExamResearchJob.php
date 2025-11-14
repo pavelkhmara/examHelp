@@ -669,11 +669,16 @@ class RunExamResearchJob implements ShouldQueue
 
             // If compliance is too low, add warning to result
             $complianceScore = $sanityResult['compliance_score'] ?? 0;
+            $nextStepMessage = $useTwoPhaseGeneration
+                ? 'завершить Stage 5 (генерация примеров будет в Stage 6)'
+                : 'продолжить к ЭТАПУ 4 (Examples)';
+
             if ($complianceScore < 0.85) {
-                $task->addActivity('decision_point_sanity_check', "Условие: compliance_score < 0.85 (текущий: {$complianceScore}). Решение: добавить warning и продолжить к ЭТАПУ 4 (Examples)", [
+                $task->addActivity('decision_point_sanity_check', "Условие: compliance_score < 0.85 (текущий: {$complianceScore}). Решение: добавить warning и {$nextStepMessage}", [
                     'condition' => 'compliance_score < 0.85',
                     'compliance_score' => $complianceScore,
                     'decision' => 'add_warning_continue',
+                    'architecture' => $useTwoPhaseGeneration ? 'v2' : 'v1',
                 ]);
 
                 $result = (array) ($task->result ?? []);
@@ -692,10 +697,11 @@ class RunExamResearchJob implements ShouldQueue
                     'fails' => $sanityResult['fails'] ?? [],
                 ]);
             } else {
-                $task->addActivity('decision_point_sanity_check', "Условие: compliance_score >= 0.85 (текущий: {$complianceScore}). Решение: продолжить к ЭТАПУ 4 (Examples)", [
+                $task->addActivity('decision_point_sanity_check', "Условие: compliance_score >= 0.85 (текущий: {$complianceScore}). Решение: {$nextStepMessage}", [
                     'condition' => 'compliance_score >= 0.85',
                     'compliance_score' => $complianceScore,
                     'decision' => 'continue_to_examples',
+                    'architecture' => $useTwoPhaseGeneration ? 'v2' : 'v1',
                 ]);
             }
         }
@@ -755,5 +761,78 @@ class RunExamResearchJob implements ShouldQueue
                 'reason' => 'v2 uses assembly configs instead of question_archetypes',
             ]);
         }
+
+        // ========================================
+        // FINALIZATION: Complete research task
+        // ========================================
+
+        $task->addActivity('finalization_started', 'Starting research finalization');
+
+        // Create ExamCategory records from structure_v2 sections (v2 only)
+        if ($useTwoPhaseGeneration && !empty($exam->meta['structure_v2']['sections'])) {
+            $task->addActivity('creating_categories', 'Creating ExamCategory records from structure_v2 sections');
+
+            $structure = $exam->meta['structure_v2'];
+            $existingCategories = \App\Models\ExamCategory::where('exam_id', $exam->id)->pluck('name')->toArray();
+
+            foreach ($structure['sections'] as $section) {
+                $sectionName = $section['id'];
+
+                // Skip if category already exists
+                if (in_array($sectionName, $existingCategories)) {
+                    \Illuminate\Support\Facades\Log::info('Skipping existing category', [
+                        'exam_id' => $exam->id,
+                        'section_name' => $sectionName,
+                    ]);
+                    continue;
+                }
+
+                // Create ExamCategory
+                \App\Models\ExamCategory::create([
+                    'exam_id' => $exam->id,
+                    'key' => $sectionName, // Required field
+                    'name' => $sectionName,
+                    'skill' => $section['skill'] ?? null,
+                    'duration_min' => $section['duration_min'] ?? null,
+                    'max_score' => $section['max_score'] ?? null,
+                    'min_pass_percent' => $section['min_pass_percent'] ?? null,
+                    'task_archetypes' => $section['task_archetypes'] ?? [],
+                    'meta' => [
+                        'tasks' => $section['tasks'] ?? [],
+                        'assembly' => $section['assembly'] ?? null,
+                    ],
+                ]);
+
+                \Illuminate\Support\Facades\Log::info('Created ExamCategory from v2 section', [
+                    'exam_id' => $exam->id,
+                    'section_name' => $sectionName,
+                ]);
+            }
+
+            $categoriesCount = count($structure['sections']);
+            $task->addActivity('categories_created', "Created {$categoriesCount} ExamCategory records from structure_v2");
+        }
+
+        // Update exam research_status
+        $exam->research_status = 'completed';
+        $exam->save();
+
+        $task->addActivity('research_completed', 'Research pipeline completed successfully');
+
+        // Finalize task
+        $task->status = 'completed';
+        $task->result = [
+            'success' => true,
+            'architecture' => $useTwoPhaseGeneration ? 'v2' : 'v1',
+            'structure_v2' => $useTwoPhaseGeneration ? $exam->meta['structure_v2'] : null,
+        ];
+        $task->save();
+
+        \Illuminate\Support\Facades\Log::info('✅ Research job completed successfully', [
+            'exam_id' => $exam->id,
+            'task_id' => $task->id,
+            'architecture' => $useTwoPhaseGeneration ? 'v2' : 'v1',
+            'categories_count' => \App\Models\ExamCategory::where('exam_id', $exam->id)->count(),
+        ]);
     }
 }
