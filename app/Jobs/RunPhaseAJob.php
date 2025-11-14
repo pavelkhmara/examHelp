@@ -27,11 +27,17 @@ class RunPhaseAJob implements ShouldQueue
         /** @var Exam $exam */
         $exam = Exam::query()->findOrFail($task->exam_id);
 
-        // Prevent duplicate execution
-        if ($task->status === 'completed') {
-            Log::info('Job stopped: task already completed', [
+        // Prevent duplicate execution when Job is retried or dispatched multiple times
+        if (in_array($task->status, ['running', 'completed', 'pending_confirmation', 'pending_clarification'], true)) {
+            Log::info('Job stopped: task already processing or finished', [
                 'task_id' => $task->id,
                 'status' => $task->status,
+                'attempt' => $this->attempts(),
+            ]);
+
+            $task->addActivity('job_stopped_duplicate', 'Phase A job execution prevented - task already processing or finished', [
+                'status' => $task->status,
+                'attempt' => $this->attempts(),
             ]);
 
             return;
@@ -42,7 +48,7 @@ class RunPhaseAJob implements ShouldQueue
             $task->status = 'running';
             $task->save();
 
-            $exam->research_status = 'running_overview';
+            $exam->research_status = 'running_phase_a';
             $exam->save();
 
             $task->addActivity('phase_a_started', 'Starting Phase A (Skeleton v2)');

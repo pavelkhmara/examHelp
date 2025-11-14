@@ -25,16 +25,18 @@ class RunExamResearchJob implements ShouldQueue
         /** @var Exam $exam */
         $exam = Exam::query()->findOrFail($task->exam_id);
 
-        // CRITICAL: If task is already in pending_confirmation or pending_clarification, STOP immediately
-        // This prevents duplicate execution when Job is dispatched multiple times
-        if (in_array($task->status, ['pending_confirmation', 'pending_clarification'], true)) {
-            \Illuminate\Support\Facades\Log::info('Job stopped: task already waiting for user input', [
+        // CRITICAL: Prevent duplicate execution when Job is retried or dispatched multiple times
+        // Stop if task is already processing or finished
+        if (in_array($task->status, ['running', 'completed', 'pending_confirmation', 'pending_clarification'], true)) {
+            \Illuminate\Support\Facades\Log::info('Job stopped: task already processing or finished', [
                 'task_id' => $task->id,
                 'status' => $task->status,
+                'attempt' => $this->attempts(),
             ]);
 
-            $task->addActivity('job_stopped_duplicate', 'Task already waiting for user input', [
+            $task->addActivity('job_stopped_duplicate', 'Job execution prevented - task already processing or finished', [
                 'status' => $task->status,
+                'attempt' => $this->attempts(),
             ]);
 
             return;
@@ -562,11 +564,15 @@ class RunExamResearchJob implements ShouldQueue
                 $task->addActivity('two_phase_mode_enabled', 'Using v2 two-phase generation (Phase A: skeleton, Phase B: assembly plan)');
 
                 // Phase A: Generate skeleton structure
+                $exam->research_status = 'running_phase_a';
+                $exam->save();
                 $task->updateHeartbeat(); // Heartbeat before Phase A
                 $phaseASkeleton = $svc->runPhaseA($exam, $task);
                 $task->updateHeartbeat(); // Heartbeat after Phase A
 
                 // Phase B: Generate assembly plan
+                $exam->research_status = 'running_phase_b';
+                $exam->save();
                 $task->updateHeartbeat(); // Heartbeat before Phase B
                 $phaseBStructure = $svc->runPhaseB($exam, $task, $phaseASkeleton);
                 $task->updateHeartbeat(); // Heartbeat after Phase B
