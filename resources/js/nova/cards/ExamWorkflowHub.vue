@@ -64,8 +64,9 @@
               type="radio"
               name="candidate"
               :value="index"
-              v-model="selectedCandidateIndex"
+              :checked="selectedCandidateIndex === index"
               class="mt-1 mr-3"
+              @change="selectedCandidateIndex = index"
             />
             <div class="flex-1">
               <div class="font-semibold text-gray-900 dark:text-gray-100">{{ candidate.name || 'Unnamed' }}</div>
@@ -102,6 +103,7 @@
             ❌ Reject All
           </button>
         </div>
+
         <p v-if="actionLoading" class="text-xs text-gray-600 dark:text-gray-400 mt-2">
           Обрабатываю запрос...
         </p>
@@ -303,12 +305,15 @@ export default {
 
   watch: {
     'status.pending_task.candidates': {
-      handler(newCandidates) {
-        // Auto-select first candidate if only one exists
-        if (newCandidates && newCandidates.length === 1) {
-          this.selectedCandidateIndex = 0
-        } else {
-          this.selectedCandidateIndex = null
+      handler(newCandidates, oldCandidates) {
+        // Only reset selection if candidates actually changed (not just re-fetched)
+        if (JSON.stringify(newCandidates) !== JSON.stringify(oldCandidates)) {
+          // Auto-select first candidate if only one exists
+          if (newCandidates && newCandidates.length === 1) {
+            this.selectedCandidateIndex = 0
+          } else {
+            this.selectedCandidateIndex = null
+          }
         }
       },
       immediate: true,
