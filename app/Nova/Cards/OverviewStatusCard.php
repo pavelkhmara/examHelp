@@ -1,0 +1,42 @@
+<?php
+
+namespace App\Nova\Cards;
+
+use App\Models\Exam;
+use Laravel\Nova\Card;
+
+class OverviewStatusCard extends Card
+{
+    public function __construct(private Exam $exam)
+    {
+        parent::__construct();
+    }
+
+    public function component()
+    {
+        return 'overview-status-card';
+    }
+
+    public function jsonSerialize(): array
+    {
+        $structure = $this->exam->meta['structure_v2'] ?? null;
+
+        $phaseA = [
+            'completed' => !empty($structure),
+            'sections_count' => count($structure['sections'] ?? []),
+            'generated_at' => $structure['generated_at'] ?? null,
+        ];
+
+        $phaseB = [
+            'completed' => !empty($structure['sections'][0]['assembly'] ?? null),
+            'assembly_mode' => $structure['sections'][0]['assembly']['mode'] ?? null,
+            'tasks_count' => collect($structure['sections'] ?? [])
+                ->sum(fn ($s) => count($s['tasks'] ?? [])),
+        ];
+
+        return array_merge(parent::jsonSerialize(), [
+            'phaseA' => $phaseA,
+            'phaseB' => $phaseB,
+        ]);
+    }
+}

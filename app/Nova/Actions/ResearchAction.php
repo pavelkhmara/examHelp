@@ -29,10 +29,6 @@ class ResearchAction extends Action
     public function fields(NovaRequest $request)
     {
         return [
-            Boolean::make('Without Confirmation', 'without_confirmation')
-                ->help('Skip identity confirmation step and auto-approve exam identity')
-                ->default(true),
-
             Select::make('Overview Model', 'overview_model')
                 ->options([
                     'gpt-5-mini' => 'GPT-5 Mini (faster, cheaper)',
@@ -40,6 +36,10 @@ class ResearchAction extends Action
                 ])
                 ->default('gpt-5-mini')
                 ->help('AI model for exam overview generation'),
+
+            Boolean::make('Use Two-Phase Generation (v2)', 'use_two_phase_generation')
+                ->help('V2: Generate skeleton (Phase A) + assembly plan (Phase B). V1 (legacy): Single-phase with immediate example generation')
+                ->default(true),
         ];
     }
 
@@ -49,8 +49,8 @@ class ResearchAction extends Action
             'timestamp' => now()->toDateTimeString(),
             'models_count' => $models->count(),
             'fields' => [
-                'without_confirmation' => $fields->without_confirmation ?? null,
                 'overview_model' => $fields->overview_model ?? null,
+                'use_two_phase_generation' => $fields->use_two_phase_generation ?? null,
             ],
         ]);
 
@@ -208,8 +208,9 @@ class ResearchAction extends Action
                 'source' => 'nova_action',
                 'user_input' => $userInput,
                 'document_id' => $documentId,
-                'without_confirmation' => $fields->without_confirmation ?? true,
+                'without_confirmation' => false, // Always require confirmation
                 'overview_model' => $fields->overview_model ?? 'gpt-5-mini',
+                'use_two_phase_generation' => $fields->use_two_phase_generation ?? true,
             ];
 
             // Generate unique idempotency key for this request
