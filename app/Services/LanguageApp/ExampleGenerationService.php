@@ -16,13 +16,47 @@ use Illuminate\Support\Facades\Log;
  * Responsibilities:
  * - Generate example questions for exam archetypes
  * - Validate and persist examples to database
+ * - Supports both V1 (question_archetypes) and V2 (task_archetypes from structure_v2)
  */
 class ExampleGenerationService extends AbstractAiService
 {
+    public function __construct(
+        AiProvider $ai,
+        protected readonly ParallelExampleGenerator $parallelGenerator
+    ) {
+        parent::__construct($ai);
+    }
+
     /**
-     * Generate example questions for exam question_archetypes
+     * Generate example questions - auto-detects V1 vs V2 architecture
      */
     public function generateExamples(Exam $exam, GenerationTask $task, int $examplesPerArchetype = 1): array
+    {
+        // Check if V2 architecture (structure_v2 exists with task_archetypes)
+        $structureV2 = $exam->meta['structure_v2'] ?? null;
+        $isV2 = !empty($structureV2);
+
+        if ($isV2) {
+            // V2 architecture: use ParallelExampleGenerator with task_archetypes
+            Log::info('Using V2 architecture for example generation', [
+                'exam_id' => $exam->id,
+            ]);
+
+            return $this->parallelGenerator->generateBatch($exam, $task, $examplesPerArchetype);
+        }
+
+        // V1 architecture: use legacy sequential generation with question_archetypes
+        Log::info('Using V1 architecture for example generation', [
+            'exam_id' => $exam->id,
+        ]);
+
+        return $this->generateExamplesV1($exam, $task, $examplesPerArchetype);
+    }
+
+    /**
+     * Generate example questions for exam question_archetypes (V1 architecture)
+     */
+    protected function generateExamplesV1(Exam $exam, GenerationTask $task, int $examplesPerArchetype = 1): array
     {
         // Get exam structure and question_archetypes from exam or task result
         $structure = $exam->exam_structure ?? $task->result['overview'] ?? [];
@@ -83,13 +117,13 @@ class ExampleGenerationService extends AbstractAiService
 
         return [
             'examples_created' => $createdCount,
-            'total_archetypes' => count($archetypes),
+            'total_archetypes' => count($questionArchetypes),
             'examples_per_archetype' => $examplesPerArchetype,
         ];
     }
 
     /**
-     * Persist examples to database
+     * Persist examples to database (V1 architecture)
      */
     protected function persistExamples(Exam $exam, array $questionArchetypes, array $examples): int
     {

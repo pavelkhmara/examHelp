@@ -712,28 +712,32 @@ class RunExamResearchJob implements ShouldQueue
             }
         }
 
-        // Generate example questions for each archetype
-        // SKIP for v2 architecture - examples will be generated in Stage 6 (QuestionSynthesizer)
-        if (!$useTwoPhaseGeneration) {
-            try {
-                \Illuminate\Support\Facades\Log::info('Starting example generation', [
-                    'exam_id' => $exam->id,
-                    'task_id' => $task->id,
-                ]);
+        // Generate example questions for each archetype (both V1 and V2)
+        try {
+            \Illuminate\Support\Facades\Log::info('Starting example generation', [
+                'exam_id' => $exam->id,
+                'task_id' => $task->id,
+                'architecture' => $useTwoPhaseGeneration ? 'v2' : 'v1',
+            ]);
 
-                $task->addActivity('example_generation_started', 'Generating example questions for archetypes');
+            $task->addActivity('example_generation_started', 'Generating example questions for archetypes');
+            $task->updateHeartbeat(); // Heartbeat before example generation
 
-                $exampleResult = $svc->generateExamples($exam, $task, 1); // 1 example per archetype
+            $exampleResult = $svc->generateExamples($exam, $task, 1); // 1 example per archetype
+
+            $task->updateHeartbeat(); // Heartbeat after example generation
 
             \Illuminate\Support\Facades\Log::info('Example generation completed', [
                 'exam_id' => $exam->id,
                 'task_id' => $task->id,
                 'examples_created' => $exampleResult['examples_created'] ?? 0,
+                'architecture' => $useTwoPhaseGeneration ? 'v2' : 'v1',
             ]);
 
             $examplesCount = $exampleResult['examples_created'] ?? 0;
             $task->addActivity('example_generation_completed', "Generated {$examplesCount} example questions", [
                 'examples_count' => $examplesCount,
+                'architecture' => $useTwoPhaseGeneration ? 'v2' : 'v1',
             ]);
 
             // Update task result with example generation info
@@ -747,25 +751,16 @@ class RunExamResearchJob implements ShouldQueue
                 'task_id' => $task->id,
                 'error' => $e->getMessage(),
                 'trace' => $e->getTraceAsString(),
+                'architecture' => $useTwoPhaseGeneration ? 'v2' : 'v1',
             ]);
 
             $task->addActivity('example_generation_failed', 'Example generation failed: '.$e->getMessage());
 
-                // Don't fail the whole job - examples are nice-to-have
-                $result = (array) ($task->result ?? []);
-                $result['examples_error'] = $e->getMessage();
-                $task->result = $result;
-                $task->save();
-            }
-        } else {
-            // V2 architecture: Skip example generation (will be done in Stage 6)
-            $task->addActivity('example_generation_skipped', 'Skipping example generation for v2 architecture (will be generated in Stage 6 via QuestionSynthesizer)');
-
-            \Illuminate\Support\Facades\Log::info('Skipping example generation for v2 architecture', [
-                'exam_id' => $exam->id,
-                'task_id' => $task->id,
-                'reason' => 'v2 uses assembly configs instead of question_archetypes',
-            ]);
+            // Don't fail the whole job - examples are nice-to-have
+            $result = (array) ($task->result ?? []);
+            $result['examples_error'] = $e->getMessage();
+            $task->result = $result;
+            $task->save();
         }
 
         // ========================================
