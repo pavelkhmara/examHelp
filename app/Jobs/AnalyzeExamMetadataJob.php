@@ -65,13 +65,25 @@ class AnalyzeExamMetadataJob implements ShouldQueue
                 'result' => $result,
             ]);
 
-            // Update exam with results
-            $exam->update([
+            // Prepare update data
+            $updateData = [
                 'user_meta' => $result['user_meta'],
                 'identity' => $result['identity'],
                 'system_analysis' => $result['system_analysis'],
                 'analysis_status' => 'completed',
-            ]);
+            ];
+
+            // Sync language_of_test from identity (if available)
+            if (!empty($result['identity']['exam_language'])) {
+                $updateData['language_of_test'] = $result['identity']['exam_language'];
+                Log::info("AnalyzeExamMetadataJob: Setting language_of_test from identity", [
+                    'exam_id' => $this->examId,
+                    'language' => $result['identity']['exam_language'],
+                ]);
+            }
+
+            // Update exam with results
+            $exam->update($updateData);
 
             // Auto-generate slug if empty
             if (empty($exam->slug)) {

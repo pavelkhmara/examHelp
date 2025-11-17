@@ -282,16 +282,10 @@ class CardManager
         // Сначала пробуем получить из result
         $result = $task->result ?? [];
 
-        // Check new structure first (verification_attempts)
-        if (isset($result['verification_attempts']) && !empty($result['verification_attempts'])) {
-            $latestAttempt = end($result['verification_attempts']);
-            $identityResult = $latestAttempt['identity_result'] ?? [];
-            $candidates = $identityResult['candidates'] ?? [];
-        } else {
-            // Fallback to old structure
-            $identity = $result['identity'] ?? [];
-            $candidates = $identity['candidates'] ?? [];
-        }
+        // IMPORTANT: Always prefer result['identity'] as it's the most current
+        // verification_attempts stores historical data, but identity is updated with latest candidates
+        $identity = $result['identity'] ?? [];
+        $candidates = $identity['candidates'] ?? [];
 
         // Если в result нет кандидатов, ищем в логах
         if (empty($candidates)) {
@@ -343,18 +337,11 @@ class CardManager
         // Сначала пробуем получить из result
         $result = $task->result ?? [];
 
-        // Check new structure first (verification_attempts)
-        if (isset($result['verification_attempts']) && !empty($result['verification_attempts'])) {
-            $latestAttempt = end($result['verification_attempts']);
-            $identityResult = $latestAttempt['identity_result'] ?? [];
-            $followups = $identityResult['followups'] ?? [];
-            $needFields = $identityResult['need_fields'] ?? [];
-        } else {
-            // Fallback to old structure
-            $identity = $result['identity'] ?? [];
-            $followups = $identity['followups'] ?? [];
-            $needFields = $identity['need_fields'] ?? [];
-        }
+        // IMPORTANT: Always prefer result['identity'] as it's the most current
+        // verification_attempts stores historical data, but identity is updated with latest followups
+        $identity = $result['identity'] ?? [];
+        $followups = $identity['followups'] ?? [];
+        $needFields = $identity['need_fields'] ?? [];
 
         // Если в result нет данных, ищем в логах
         if (empty($followups) && empty($needFields)) {

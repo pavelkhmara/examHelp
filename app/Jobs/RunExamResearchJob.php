@@ -126,6 +126,17 @@ class RunExamResearchJob implements ShouldQueue
         }
 
         if ((! $identityResult || $needsRerun) && ! $userConfirmed) {
+            // IMPORTANT: Save clarification flags before running AI (they will be lost otherwise)
+            $savedClarificationFlags = [];
+            if ($identityResult) {
+                $savedClarificationFlags = [
+                    'user_provided_clarification' => $identityResult['user_provided_clarification'] ?? false,
+                    'clarification_provided_at' => $identityResult['clarification_provided_at'] ?? null,
+                    'clarification_data' => $identityResult['clarification_data'] ?? null,
+                    'clarification_notes' => $identityResult['clarification_notes'] ?? null,
+                ];
+            }
+
             // Check if we should use iterative verification (default: true)
             $useIterativeVerification = $task->request['use_iterative_verification'] ?? true;
 
@@ -137,6 +148,15 @@ class RunExamResearchJob implements ShouldQueue
                 $identityResult = $svc->runIterativeIdentityVerification($exam, $task);
                 $task->refresh();
                 $task->updateHeartbeat(); // Heartbeat after identity verification
+
+                // IMPORTANT: Restore clarification flags after AI call
+                if (!empty($savedClarificationFlags['user_provided_clarification'])) {
+                    $identityResult = array_merge($identityResult, $savedClarificationFlags);
+                    \Illuminate\Support\Facades\Log::info('Restored clarification flags after AI call', [
+                        'task_id' => $task->id,
+                        'flags' => $savedClarificationFlags,
+                    ]);
+                }
 
                 // Check if verification needs clarification (low confidence, needs user input)
                 if (($identityResult['status'] ?? '') === 'needs_clarification') {
@@ -205,6 +225,15 @@ class RunExamResearchJob implements ShouldQueue
 
                 $identityResult = $svc->runIdentityGuard($exam, $task);
                 $task->refresh();
+
+                // IMPORTANT: Restore clarification flags after AI call (same as iterative method)
+                if (!empty($savedClarificationFlags['user_provided_clarification'])) {
+                    $identityResult = array_merge($identityResult, $savedClarificationFlags);
+                    \Illuminate\Support\Facades\Log::info('Restored clarification flags after AI call (legacy method)', [
+                        'task_id' => $task->id,
+                        'flags' => $savedClarificationFlags,
+                    ]);
+                }
             }
 
             $confidence = $identityResult['confidence'] ?? 0.0;
@@ -236,6 +265,11 @@ class RunExamResearchJob implements ShouldQueue
                     'without_confirmation' => false,
                     'decision' => 'pause_pending_confirmation',
                 ]);
+
+                // CRITICAL: Save identityResult to task->result['identity'] so CardManager can access it
+                $result = (array) ($task->result ?? []);
+                $result['identity'] = $identityResult;
+                $task->result = $result;
 
                 $task->status = 'pending_confirmation';
                 $task->save();

@@ -7,7 +7,9 @@ namespace App\Services\LanguageApp;
 use App\Models\Exam;
 use App\Models\ExamCategory;
 use App\Models\GenerationPlan;
+use App\Models\Question;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 
 class QuestionAttacher
 {
@@ -27,6 +29,57 @@ class QuestionAttacher
             ));
 
             $questionIds = array_values(array_filter($questionIds, fn ($id) => is_string($id) && $id !== ''));
+
+            // ========== CREATE QUESTION RECORDS IN DATABASE ==========
+            // Convert generated questions (array) to Question model records
+            $questionRecords = [];
+            foreach ($questions as $questionData) {
+                try {
+                    // CRITICAL: Question::insert() bypasses model casts, so we must manually
+                    // json_encode() all JSON fields before inserting into database
+                    $questionRecord = [
+                        'exam_id' => $exam->id,
+                        'section_id' => (int) $plan->section_id, // Cast to integer for database
+                        'question_id' => $questionData['id'] ?? 'q_' . uniqid(),
+                        'type' => $questionData['type'] ?? 'single_select',
+                        'skills_measured' => json_encode($questionData['skills_measured'] ?? [], JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE),
+                        'time_limit_sec' => $questionData['time_limit_sec'] ?? 0,
+                        'instructions' => json_encode($questionData['instructions'] ?? [], JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE),
+                        'stimulus' => json_encode($questionData['stimulus'] ?? [], JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE),
+                        'interaction' => json_encode($questionData['interaction'] ?? [], JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE),
+                        'response' => json_encode($questionData['response'] ?? [], JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE),
+                        'scoring' => json_encode($questionData['scoring'] ?? [], JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE),
+                        'metadata' => json_encode($questionData['metadata'] ?? [], JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE),
+                        'constraints' => isset($questionData['constraints']) ? json_encode($questionData['constraints'], JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE) : null,
+                        'randomization' => isset($questionData['randomization']) ? json_encode($questionData['randomization'], JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE) : null,
+                        'outcome_reporting' => isset($questionData['outcome_reporting']) ? json_encode($questionData['outcome_reporting'], JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE) : null,
+                        'io_signature' => isset($questionData['io_signature']) ? json_encode($questionData['io_signature'], JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE) : null,
+                        'typical_errors' => isset($questionData['typical_errors']) ? json_encode($questionData['typical_errors'], JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE) : null,
+                        'ui_hints' => isset($questionData['ui_hints']) ? json_encode($questionData['ui_hints'], JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE) : null,
+                        'accessibility' => isset($questionData['accessibility']) ? json_encode($questionData['accessibility'], JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE) : null,
+                        'status' => 'draft',
+                    ];
+
+                    $questionRecords[] = $questionRecord;
+                } catch (\Throwable $e) {
+                    Log::warning('[QuestionAttacher] Failed to prepare question record', [
+                        'question_id' => $questionData['id'] ?? 'unknown',
+                        'error' => $e->getMessage(),
+                    ]);
+                }
+            }
+
+            // Bulk insert questions (much faster than individual creates)
+            // Use insertOrIgnore to handle retry scenarios (idempotent insert)
+            if (!empty($questionRecords)) {
+                $inserted = Question::insertOrIgnore($questionRecords);
+                Log::info('[QuestionAttacher] Created question records in database', [
+                    'exam_id' => $exam->id,
+                    'section_id' => $plan->section_id,
+                    'count' => count($questionRecords),
+                    'inserted' => $inserted,
+                ]);
+            }
 
             // Update exam meta with generated questions
             $meta = $exam->meta ?? [];

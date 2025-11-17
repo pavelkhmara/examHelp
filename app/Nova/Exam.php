@@ -821,7 +821,23 @@ class Exam extends Resource
                 ->resolveUsing(function () use ($identity) {
                     $followups = $identity['followups'] ?? [];
 
-                    return ! empty($followups) ? implode("\n\n", array_map(fn ($q, $i) => ($i + 1).". $q", $followups, array_keys($followups))) : 'None';
+                    if (empty($followups)) {
+                        return 'None';
+                    }
+
+                    // Handle both formats: simple strings or arrays with 'q' and 'why' keys
+                    $formatted = array_map(function ($q, $i) {
+                        if (is_array($q)) {
+                            // Format: ['q' => 'Question?', 'why' => 'Reason']
+                            $question = $q['q'] ?? $q['question'] ?? 'Unknown question';
+                            $reason = isset($q['why']) ? " (Reason: {$q['why']})" : '';
+                            return ($i + 1).". {$question}{$reason}";
+                        }
+                        // Simple string format
+                        return ($i + 1).". {$q}";
+                    }, $followups, array_keys($followups));
+
+                    return implode("\n\n", $formatted);
                 })
                 ->readonly()
                 ->rows(8)
@@ -1715,7 +1731,6 @@ class Exam extends Resource
             new ResearchAction,
             new ConfirmIdentityAction,
             new \App\Nova\Actions\ConfidenceBoostAction,
-            new ProvideAnswersAction,
             new \App\Nova\Actions\RejectAllVariantsAction,
             new \App\Nova\Actions\CancelStalledTaskAction,
             (new \App\Nova\Actions\RunOverviewPhaseAAction())->onlyOnDetail(),

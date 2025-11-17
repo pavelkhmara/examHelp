@@ -40,41 +40,58 @@ class DocumentStructureExtractor extends AbstractAiService
 
         try {
             $payload = $this->buildExtractionPayload($document->extracted_text);
-            $response = $this->ai->generate($payload, [ 
-                'response_format' => [
-                    'type' => 'json_schema',
-                    'strict' => true,
-                    'json_schema' => [
-                        'schema' => [
-                            'name' => 'exam_structure',
-                            'schema' => [
-                                'type' => 'object',
-                                'properties' => [
-                                    'identity' => ['type' => 'object'],
-                                    'structure' => [
-                                    'type' => 'object',
-                                    'properties' => [
-                                        'sections' => [
-                                        'type' => 'array',
-                                        'items' => [
-                                            'type' => 'object',
-                                            'properties' => [
-                                            'name' => ['type' => 'string'],
-                                            'duration_minutes' => ['type' => 'integer'],
-                                            'tasks' => ['type' => 'array']
-                                            ],
-                                            'required' => ['name']
-                                        ]
-                                        ]
-                                    ],
-                                    'required' => ['sections']
-                                    ]
-                                ],
-                                'required' => ['identity', 'structure']
+            $response = $this->ai->generate($payload, [
+                'json_schema' => [
+                    'type' => 'object',
+                    'properties' => [
+                        'identity' => [
+                            'type' => 'object',
+                            'properties' => [
+                                'exam_name' => ['type' => ['string', 'null']],
+                                'provider' => ['type' => ['string', 'null']],
+                                'language' => ['type' => ['string', 'null']],
+                                'level' => ['type' => ['string', 'null']],
+                                'confidence' => ['type' => 'number', 'minimum' => 0.0, 'maximum' => 1.0],
                             ],
+                            'required' => ['exam_name', 'provider', 'language', 'level', 'confidence'],
+                            'additionalProperties' => false,
+                        ],
+                        'structure' => [
+                            'type' => 'object',
+                            'properties' => [
+                                'sections' => [
+                                    'type' => 'array',
+                                    'items' => [
+                                        'type' => 'object',
+                                        'properties' => [
+                                            'name' => ['type' => 'string'],
+                                            'duration_minutes' => ['type' => ['integer', 'null']],
+                                            'tasks' => [
+                                                'type' => 'array',
+                                                'items' => [
+                                                    'type' => 'object',
+                                                    'properties' => [
+                                                        'type' => ['type' => 'string'],
+                                                        'description' => ['type' => ['string', 'null']],
+                                                    ],
+                                                    'required' => ['type', 'description'],
+                                                    'additionalProperties' => false,
+                                                ],
+                                            ],
+                                        ],
+                                        'required' => ['name', 'duration_minutes', 'tasks'],
+                                        'additionalProperties' => false,
+                                    ],
+                                ],
+                            ],
+                            'required' => ['sections'],
+                            'additionalProperties' => false,
                         ],
                     ],
+                    'required' => ['identity', 'structure'],
+                    'additionalProperties' => false,
                 ],
+                'json_schema_name' => 'exam_structure',
             ]);
 
             if (!isset($response['content'])) {

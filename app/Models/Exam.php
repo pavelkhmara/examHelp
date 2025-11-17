@@ -19,7 +19,7 @@ class Exam extends Model
 
     protected $fillable = [
         'id',
-        'slug', 'title', 'description', 'level', 'is_active',
+        'slug', 'title', 'description', 'level', 'language_of_test', 'is_active',
         'user_input', 'user_meta', 'identity', 'system_analysis', 'analysis_status',
         'sources', 'meta', 'research_status',
         'categories_count', 'examples_count',

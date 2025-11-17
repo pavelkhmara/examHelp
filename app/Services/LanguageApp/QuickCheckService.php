@@ -117,8 +117,10 @@ class QuickCheckService
                 return !empty($exam->title) ? 'ok' : 'empty';
 
             case 'language_of_test':
-                // Check in identity (canonical first, then flat structure, then user_meta)
-                $lang = $exam->identity['canonical']['language_of_test']
+                // Check in exam model field first, then identity, then user_meta
+                $lang = $exam->language_of_test
+                    ?? $exam->identity['exam_language'] // Note: in identity it's 'exam_language', not 'language_of_test'
+                    ?? $exam->identity['canonical']['language_of_test']
                     ?? $exam->identity['language_of_test']
                     ?? $exam->user_meta['language_of_test']
                     ?? null;

@@ -9,6 +9,16 @@ export default {
         './resources/**/*.js',
         './resources/**/*.vue',
     ],
+    safelist: [
+        'bg-purple-600',
+        'bg-purple-700',
+        'hover:bg-purple-700',
+        'text-purple-700',
+        'text-purple-400',
+        'border-purple-500',
+        'focus:ring-purple-500',
+        'focus:border-purple-500',
+    ],
     theme: {
         extend: {
             fontFamily: {

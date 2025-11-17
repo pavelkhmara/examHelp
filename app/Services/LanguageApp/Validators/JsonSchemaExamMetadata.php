@@ -30,8 +30,7 @@ class JsonSchemaExamMetadata
                         ],
                         'exam_level' => [
                             'type' => ['string', 'null'],
-                            'enum' => ['A1', 'A2', 'B1', 'B2', 'C1', 'C2', null],
-                            'description' => 'CEFR level mentioned by user',
+                            'description' => 'CEFR level mentioned by user (A1-C2)',
                         ],
                         'target_score' => [
                             'type' => ['string', 'null'],
@@ -45,12 +44,16 @@ class JsonSchemaExamMetadata
                             'type' => ['boolean', 'null'],
                             'description' => 'Does user need official certificate',
                         ],
+                        'exam_modality' => [
+                            'type' => ['string', 'null'],
+                            'description' => 'How exam will be taken (online/offline)',
+                        ],
                         'additional_info' => [
                             'type' => ['string', 'null'],
                             'description' => 'Other relevant information',
                         ],
                     ],
-                    'required' => ['user_language', 'user_gender', 'exam_language'],
+                    'required' => ['user_language', 'user_gender', 'exam_language', 'exam_level', 'target_score', 'exam_purpose', 'needs_certificate', 'exam_modality', 'additional_info'],
                     'additionalProperties' => false,
                 ],
                 'identity' => [
@@ -81,6 +84,7 @@ class JsonSchemaExamMetadata
                             'description' => 'Language of the exam (ISO 639-1)',
                         ],
                     ],
+                    'required' => ['exam_family', 'exam_name', 'exam_code', 'provider', 'country', 'exam_language'],
                     'additionalProperties' => false,
                 ],
                 'confidence' => [
@@ -90,11 +94,11 @@ class JsonSchemaExamMetadata
                     'description' => 'Confidence level of the analysis',
                 ],
                 'reasoning' => [
-                    'type' => 'string',
+                    'type' => ['string', 'null'],
                     'description' => 'Brief explanation of analysis',
                 ],
             ],
-            'required' => ['user_meta', 'identity', 'confidence'],
+            'required' => ['user_meta', 'identity', 'confidence', 'reasoning'],
             'additionalProperties' => false,
         ];
     }

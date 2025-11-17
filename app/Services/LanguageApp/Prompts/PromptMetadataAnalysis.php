@@ -41,6 +41,7 @@ Analyze all provided information and extract/infer the following:
 - **target_score**: Desired score/band/result mentioned by user (e.g., "7.5", "B2", "180", "TDN 4").
 - **exam_purpose**: Why the user needs this exam (e.g., "university admission", "work visa", "immigration", "professional certification", "personal development").
 - **needs_certificate**: Does the user explicitly mention needing an official certificate? Boolean or null if not mentioned.
+- **exam_modality**: How the exam will be taken - "online" (computer-based, remote) or "offline" (paper-based, test center, in-person). Infer from keywords like "онлайн", "online", "computer", "оффлайн", "offline", "школа", "центр", "test center".
 - **additional_info**: Any other relevant information about the user's situation, timeline, previous attempts, etc.
 
 ## Exam Identity (identity)
@@ -109,6 +110,7 @@ You MUST respond with a valid JSON object matching this schema:
     "target_score": "string or null",
     "exam_purpose": "string or null",
     "needs_certificate": "boolean or null",
+    "exam_modality": "online|offline or null",
     "additional_info": "string or null"
   },
   "identity": {
@@ -129,9 +131,9 @@ You MUST respond with a valid JSON object matching this schema:
 Input:
 ```json
 {
-  "user_input": "Мне нужно сдать IELTS Academic на 7.5 для поступления в университет в Канаде. Хочу получить сертификат.",
-  "exam_title": "IELTS Preparation",
-  "exam_level": "B2"
+  "user_input": "здаю в Варшаве, оффлайн на базе школы. Нужен сертификат C1 польского языка.",
+  "exam_title": "C1 pl",
+  "exam_level": "C1"
 }
 ```
 
@@ -141,23 +143,24 @@ Output:
   "user_meta": {
     "user_language": "ru",
     "user_gender": "unknown",
-    "exam_language": "en",
-    "exam_level": null,
-    "target_score": "7.5",
-    "exam_purpose": "university admission in Canada",
+    "exam_language": "pl",
+    "exam_level": "C1",
+    "target_score": null,
+    "exam_purpose": "certification",
     "needs_certificate": true,
-    "additional_info": "Planning to study in Canada"
+    "exam_modality": "offline",
+    "additional_info": "Taking exam in Warsaw, at a school-based test center"
   },
   "identity": {
-    "exam_family": "IELTS",
-    "exam_name": "IELTS Academic",
-    "exam_code": "IELTS",
-    "provider": "British Council / IDP Education",
-    "country": "Canada",
-    "exam_language": "en"
+    "exam_family": "Państwowy Certyfikat Języka Polskiego",
+    "exam_name": "Państwowy Certyfikat Języka Polskiego C1",
+    "exam_code": null,
+    "provider": "Państwowa Komisja ds. Poświadczania Znajomości Języka Polskiego",
+    "country": "Poland",
+    "exam_language": "pl"
   },
-  "confidence": 0.95,
-  "reasoning": "User explicitly states IELTS Academic with target score 7.5 for Canadian university admission. Language is clearly Russian (Cyrillic, Russian grammar). High confidence due to explicit information."
+  "confidence": 0.92,
+  "reasoning": "User writes in Russian (здаю = сдаю). Explicitly mentions Warsaw (Варшава) → Poland. Mentions 'offline at school' (оффлайн на базе школы) → offline modality. Target language is Polish (польского языка). Level C1 confirmed. High confidence based on explicit location and modality information."
 }
 ```
 

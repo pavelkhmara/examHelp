@@ -32,10 +32,10 @@ class PromptQuestionSynthesis
         ?array $filters = null,
         ?string $contextHint = null
     ): string {
-        $priorityHints = self::getPriorityHints();
+        $priorityHints = self::getPriorityHints($examLanguage);
         $typeSpecificRequirements = self::getTypeSpecificRequirements($questionType);
         $schemaDescription = self::getSchemaDescription();
-        $checklist = self::getChecklist($questionType, $quantity);
+        $checklist = self::getChecklist($questionType, $quantity, $examLanguage);
 
         $archetypeJson = json_encode($archetypeConfig, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE);
         $filtersDescription = $filters ? self::formatFilters($filters) : 'No specific filters';
@@ -115,6 +115,7 @@ Example structure (for single_select):
 - Output MUST be valid JSON array (even for single question: `[{...}]`)
 - All required fields MUST be present
 - Follow the archetype config structure exactly
+- **ALL user-facing content (instructions, questions, answer options, stimulus text) MUST be in {$examLanguage} language**
 - Ensure logical consistency (e.g., answer_key must reference valid option IDs)
 - Use appropriate difficulty level for {$examLevel}
 - Questions must be realistic and relevant to {$sectionSkill} skill
@@ -125,9 +126,9 @@ EOT;
     /**
      * Get priority hints (CRITICAL > IMPORTANT > DESIRABLE)
      */
-    private static function getPriorityHints(): string
+    private static function getPriorityHints(string $examLanguage): string
     {
-        return <<<'HINTS'
+        return <<<HINTS
 # Priority Requirements (from critical to desirable)
 
 1. **CRITICAL (MUST)** - violation will break validation:
@@ -141,6 +142,12 @@ EOT;
      * scoring (method, answer_key/rubric, max_score)
      * metadata (cefr, difficulty, topic, language)
    - Data types match schema (string, integer, array, object)
+   - **LANGUAGE REQUIREMENT**: ALL user-facing content MUST be in exam language ({$examLanguage}):
+     * instructions.brief and instructions.full
+     * stimulus.text_html (questions, passages, prompts)
+     * interaction.options[].text (answer choices)
+     * Any other text that test-taker will see
+     * Exception: Technical fields (id, type, metadata) can be in English
    - Logical consistency:
      * interaction.response_type ↔ response.mode
      * scoring.method ↔ answer_key/rubric presence
@@ -286,7 +293,7 @@ SCHEMA;
     /**
      * Get end-of-prompt checklist for self-verification
      */
-    private static function getChecklist(string $type, int $quantity): string
+    private static function getChecklist(string $type, int $quantity, string $examLanguage): string
     {
         $plural = $quantity > 1 ? 's' : '';
         return <<<EOT
@@ -320,6 +327,7 @@ Before returning your response, verify:
   - Difficulty appropriate for target level
   - Instructions explain what to do
   - For selection types: distractors are plausible
+  - **ALL user-facing text is in {$examLanguage} language (not English unless exam is in English)**
 
 ✓ **Type-Specific Requirements**
   - Follows all requirements for '{$type}' question type

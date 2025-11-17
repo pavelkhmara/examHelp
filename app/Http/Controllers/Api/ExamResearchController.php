@@ -313,6 +313,12 @@ class ExamResearchController extends Controller
      */
     public function clarify(Request $request, string $examId, int $taskId)
     {
+        \Illuminate\Support\Facades\Log::info('🔍 [CLARIFY STEP 1] Endpoint called', [
+            'exam_id' => $examId,
+            'task_id' => $taskId,
+            'request_data' => $request->all(),
+        ]);
+
         /** @var Exam $exam */
         $exam = Exam::query()->findOrFail($examId);
 
@@ -330,6 +336,11 @@ class ExamResearchController extends Controller
             'answers' => ['required_if:clarification_type,answer_questions', 'array'],
             'user_input_updates' => ['required_if:clarification_type,provide_fields', 'array'],
             'notes' => ['nullable', 'string', 'max:1000'],
+        ]);
+
+        \Illuminate\Support\Facades\Log::info('🔍 [CLARIFY STEP 2] Validation passed', [
+            'clarification_type' => $validated['clarification_type'],
+            'validated_data' => $validated,
         ]);
 
         $identity = $task->result['identity'] ?? [];
@@ -370,18 +381,41 @@ class ExamResearchController extends Controller
                 ]);
 
             case 'answer_questions':
+                \Illuminate\Support\Facades\Log::info('🔍 [CLARIFY STEP 3] Processing answer_questions', [
+                    'answers' => $validated['answers'],
+                    'followups' => $identity['followups'] ?? [],
+                ]);
+
                 // Merge answers into user_input and re-run identity guard
                 $currentInput = $task->request['user_input'] ?? [];
-                $updates = $validated['answers'];
-                $mergedInput = array_merge($currentInput, $updates);
+
+                // Format answers as Q&A pairs so AI understands the context
+                $followups = $identity['followups'] ?? [];
+                $clarificationText = "=== Additional Information (User Answers) ===\n\n";
+
+                foreach ($validated['answers'] as $index => $answer) {
+                    if (isset($followups[$index]) && !empty(trim($answer))) {
+                        $question = $followups[$index];
+                        $questionText = is_string($question) ? $question : ($question['q'] ?? 'Question ' . ($index + 1));
+                        $clarificationText .= "Q: {$questionText}\n";
+                        $clarificationText .= "A: {$answer}\n\n";
+                    }
+                }
+
+                \Illuminate\Support\Facades\Log::info('🔍 [CLARIFY STEP 4] Formatted clarification text', [
+                    'clarification_text' => $clarificationText,
+                ]);
+
+                // Add formatted Q&A to user_input as a single string field
+                $currentInput['clarification'] = $clarificationText;
 
                 $request_data = (array) ($task->request ?? []);
-                $request_data['user_input'] = $mergedInput;
+                $request_data['user_input'] = $currentInput;
                 $task->request = $request_data;
 
                 $identity['user_provided_clarification'] = true;
                 $identity['clarification_provided_at'] = now()->toISOString();
-                $identity['clarification_data'] = $updates;
+                $identity['clarification_data'] = $validated['answers'];
 
                 if (! empty($validated['notes'])) {
                     $identity['clarification_notes'] = $validated['notes'];
@@ -393,9 +427,20 @@ class ExamResearchController extends Controller
                 $task->status = 'queued';
                 $task->save();
 
+                \Illuminate\Support\Facades\Log::info('🔍 [CLARIFY STEP 5] Task updated and saved', [
+                    'task_id' => $task->id,
+                    'new_status' => $task->status,
+                    'user_input' => $task->request['user_input'],
+                    'user_provided_clarification' => $identity['user_provided_clarification'],
+                ]);
+
                 // Re-run identity verification with updated data
                 \App\Jobs\RunExamResearchJob::dispatch($task->id)
                     ->delay(now()->addSeconds(1));
+
+                \Illuminate\Support\Facades\Log::info('🔍 [CLARIFY STEP 6] Job dispatched', [
+                    'task_id' => $task->id,
+                ]);
 
                 return response()->json([
                     'status' => 'clarified',
@@ -404,9 +449,11 @@ class ExamResearchController extends Controller
                 ]);
 
             case 'provide_fields':
-                // Same as answer_questions but with different field name
+                // Merge field values into user_input
                 $currentInput = $task->request['user_input'] ?? [];
                 $updates = $validated['user_input_updates'];
+
+                // Directly merge field updates (these are already key-value pairs)
                 $mergedInput = array_merge($currentInput, $updates);
 
                 $request_data = (array) ($task->request ?? []);

@@ -83,22 +83,52 @@
         <div class="flex gap-2">
           <button
             @click="confirmIdentity"
-            class="px-4 py-2 bg-gray-800 dark:bg-gray-700 text-white rounded hover:bg-gray-900 dark:hover:bg-gray-600 text-sm font-medium disabled:opacity-50 disabled:cursor-not-allowed"
             :disabled="actionLoading || selectedCandidateIndex === null"
+            :style="{
+              padding: '0.5rem 1rem',
+              backgroundColor: (actionLoading || selectedCandidateIndex === null) ? '#d1d5db' : '#1f2937',
+              color: '#ffffff',
+              borderRadius: '0.375rem',
+              fontSize: '0.875rem',
+              fontWeight: '500',
+              cursor: (actionLoading || selectedCandidateIndex === null) ? 'not-allowed' : 'pointer',
+              opacity: (actionLoading || selectedCandidateIndex === null) ? '0.5' : '1',
+              border: 'none'
+            }"
           >
             ✓ Confirm Selected
           </button>
           <button
             @click="rejectIdentity"
-            class="px-4 py-2 bg-gray-600 dark:bg-gray-500 text-white rounded hover:bg-gray-700 dark:hover:bg-gray-400 text-sm font-medium disabled:opacity-50 disabled:cursor-not-allowed"
             :disabled="actionLoading"
+            :style="{
+              padding: '0.5rem 1rem',
+              backgroundColor: actionLoading ? '#d1d5db' : '#4b5563',
+              color: '#ffffff',
+              borderRadius: '0.375rem',
+              fontSize: '0.875rem',
+              fontWeight: '500',
+              cursor: actionLoading ? 'not-allowed' : 'pointer',
+              opacity: actionLoading ? '0.5' : '1',
+              border: 'none'
+            }"
           >
             ↻ Reject & Re-run
           </button>
           <button
             @click="rejectAll"
-            class="px-4 py-2 bg-gray-600 dark:bg-gray-500 text-white rounded hover:bg-gray-700 dark:hover:bg-gray-400 text-sm font-medium disabled:opacity-50 disabled:cursor-not-allowed"
             :disabled="actionLoading"
+            :style="{
+              padding: '0.5rem 1rem',
+              backgroundColor: actionLoading ? '#d1d5db' : '#4b5563',
+              color: '#ffffff',
+              borderRadius: '0.375rem',
+              fontSize: '0.875rem',
+              fontWeight: '500',
+              cursor: actionLoading ? 'not-allowed' : 'pointer',
+              opacity: actionLoading ? '0.5' : '1',
+              border: 'none'
+            }"
           >
             ❌ Reject All
           </button>
@@ -116,49 +146,74 @@
         </h3>
         <p class="text-sm mb-3">
           Системе нужна дополнительная информация для уверенного определения экзамена.
+          Пожалуйста, ответьте на вопросы ниже.
         </p>
 
-        <!-- Followup questions -->
-        <div v-if="status.pending_task.followups && status.pending_task.followups.length > 0" class="mb-3">
-          <div class="font-semibold text-sm mb-2">Вопросы:</div>
-          <ol class="list-decimal list-inside space-y-1">
-            <li
-              v-for="(question, index) in status.pending_task.followups"
-              :key="index"
-              class="text-sm text-gray-700"
-            >
-              {{ question }}
-            </li>
-          </ol>
+        <!-- Followup questions with input fields -->
+        <div v-if="status.pending_task.followups && status.pending_task.followups.length > 0" class="mb-4 space-y-3">
+          <div
+            v-for="(question, index) in status.pending_task.followups"
+            :key="index"
+            class="border border-gray-300 dark:border-gray-600 rounded-lg p-3"
+          >
+            <label class="block text-sm font-semibold text-gray-900 dark:text-gray-100 mb-2">
+              {{ getQuestionText(question) }}
+            </label>
+            <div v-if="getQuestionWhy(question)" class="text-xs text-gray-600 dark:text-gray-400 mb-2 italic">
+              {{ getQuestionWhy(question) }}
+            </div>
+            <textarea
+              :value="clarificationAnswers[index]"
+              @input="updateClarificationAnswer(index, $event.target.value)"
+              rows="2"
+              class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md text-sm focus:ring-purple-500 focus:border-purple-500 dark:bg-gray-700 dark:text-gray-100"
+              :placeholder="'Введите ваш ответ...'"
+            ></textarea>
+          </div>
         </div>
 
-        <!-- Need fields -->
-        <div v-if="status.pending_task.need_fields && status.pending_task.need_fields.length > 0" class="mb-3">
+        <!-- Need fields with input fields -->
+        <div v-if="status.pending_task.need_fields && status.pending_task.need_fields.length > 0" class="mb-4 space-y-3">
           <div class="font-semibold text-sm mb-2">Недостающие поля:</div>
-          <ul class="list-disc list-inside space-y-1">
-            <li
-              v-for="(field, index) in status.pending_task.need_fields"
-              :key="index"
-              class="text-sm text-gray-700"
-            >
+          <div
+            v-for="(field, index) in status.pending_task.need_fields"
+            :key="'field-' + index"
+            class="border border-gray-300 dark:border-gray-600 rounded-lg p-3"
+          >
+            <label class="block text-sm font-semibold text-gray-900 dark:text-gray-100 mb-2">
               {{ field }}
-            </li>
-          </ul>
+            </label>
+            <input
+              :value="missingFieldsValues[field]"
+              @input="updateMissingFieldValue(field, $event.target.value)"
+              type="text"
+              class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md text-sm focus:ring-purple-500 focus:border-purple-500 dark:bg-gray-700 dark:text-gray-100"
+              :placeholder="'Введите значение для ' + field"
+            />
+          </div>
         </div>
 
-        <p class="text-xs text-gray-600 mb-3">
-          Используйте Nova Action "Provide Answers to AI Questions" чтобы ответить на вопросы.
-        </p>
-
-        <!-- Button -->
+        <!-- Submit Button -->
         <div class="flex gap-2">
           <button
-            @click="openProvideAnswers"
-            class="px-4 py-2 bg-purple-600 text-white rounded hover:bg-purple-700 text-sm"
+            @click="submitClarification"
+            class="px-4 py-2 text-white rounded text-sm font-medium transition-colors"
+            :style="{
+              backgroundColor: (actionLoading || !canSubmitClarification) ? '#c084fc' : '#9333ea',
+              cursor: (actionLoading || !canSubmitClarification) ? 'not-allowed' : 'pointer',
+              opacity: (actionLoading || !canSubmitClarification) ? '0.6' : '1'
+            }"
+            :disabled="actionLoading || !canSubmitClarification"
+            @mouseenter="!actionLoading && canSubmitClarification && ($event.target.style.backgroundColor = '#7e22ce')"
+            @mouseleave="!actionLoading && canSubmitClarification && ($event.target.style.backgroundColor = '#9333ea')"
           >
-            📝 Provide Answers
+            ✓ Submit Answers
           </button>
         </div>
+
+        <p v-if="actionLoading" class="text-xs text-gray-600 dark:text-gray-400 mt-2">
+          Отправляю ответы...
+        </p>
       </div>
 
       <!-- MODE 4: Fields Changed -->
@@ -245,6 +300,8 @@ export default {
       pollHandle: null,
       actionLoading: false,
       selectedCandidateIndex: null,
+      clarificationAnswers: {}, // Index-based answers for followup questions
+      missingFieldsValues: {}, // Field-based values for missing fields
     }
   },
 
@@ -303,6 +360,35 @@ export default {
       }
       return classes[status] || 'bg-gray-100 text-gray-700'
     },
+
+    canSubmitClarification() {
+      const hasFollowups = this.status.pending_task?.followups?.length > 0
+      const hasNeedFields = this.status.pending_task?.need_fields?.length > 0
+
+      if (!hasFollowups && !hasNeedFields) {
+        console.log('[canSubmitClarification] No followups or fields')
+        return false
+      }
+
+      // Check if at least one answer is provided
+      const answerValues = Object.values(this.clarificationAnswers)
+      const fieldValues = Object.values(this.missingFieldsValues)
+
+      const hasAnswers = answerValues.some(a => a && a.trim())
+      const hasFieldValues = fieldValues.some(v => v && v.trim())
+
+      console.log('[canSubmitClarification]', {
+        clarificationAnswers: this.clarificationAnswers,
+        missingFieldsValues: this.missingFieldsValues,
+        answerValues,
+        fieldValues,
+        hasAnswers,
+        hasFieldValues,
+        result: hasAnswers || hasFieldValues
+      })
+
+      return hasAnswers || hasFieldValues
+    },
   },
 
   mounted() {
@@ -320,6 +406,46 @@ export default {
             this.selectedCandidateIndex = 0
           } else {
             this.selectedCandidateIndex = null
+          }
+        }
+      },
+      immediate: true,
+    },
+
+    'status.pending_task.followups': {
+      handler(newFollowups, oldFollowups) {
+        // Only reinitialize if followups actually changed (not just re-fetched)
+        if (JSON.stringify(newFollowups) !== JSON.stringify(oldFollowups)) {
+          // Initialize clarificationAnswers with empty strings for each question
+          // to ensure Vue reactivity tracks changes
+          if (newFollowups && newFollowups.length > 0) {
+            const answers = {}
+            newFollowups.forEach((_, index) => {
+              answers[index] = this.clarificationAnswers[index] || ''
+            })
+            this.clarificationAnswers = answers
+          } else {
+            this.clarificationAnswers = {}
+          }
+        }
+      },
+      immediate: true,
+    },
+
+    'status.pending_task.need_fields': {
+      handler(newFields, oldFields) {
+        // Only reinitialize if fields actually changed (not just re-fetched)
+        if (JSON.stringify(newFields) !== JSON.stringify(oldFields)) {
+          // Initialize missingFieldsValues with empty strings for each field
+          // to ensure Vue reactivity tracks changes
+          if (newFields && newFields.length > 0) {
+            const values = {}
+            newFields.forEach(field => {
+              values[field] = this.missingFieldsValues[field] || ''
+            })
+            this.missingFieldsValues = values
+          } else {
+            this.missingFieldsValues = {}
           }
         }
       },
@@ -345,12 +471,57 @@ export default {
         )
 
         this.status = data
+
+        // Initialize reactive objects for followups and fields if first time loading
+        if (this.status.pending_task) {
+          // Initialize clarificationAnswers if not already initialized
+          if (this.status.pending_task.followups && this.status.pending_task.followups.length > 0) {
+            if (Object.keys(this.clarificationAnswers).length === 0) {
+              const answers = {}
+              this.status.pending_task.followups.forEach((_, index) => {
+                answers[index] = ''
+              })
+              this.clarificationAnswers = answers
+            }
+          }
+
+          // Initialize missingFieldsValues if not already initialized
+          if (this.status.pending_task.need_fields && this.status.pending_task.need_fields.length > 0) {
+            if (Object.keys(this.missingFieldsValues).length === 0) {
+              const values = {}
+              this.status.pending_task.need_fields.forEach(field => {
+                values[field] = ''
+              })
+              this.missingFieldsValues = values
+            }
+          }
+        }
       } catch (e) {
         console.error('[ExamWorkflowHub] Fetch status error:', e)
         this.error = 'Не удалось загрузить статус экзамена'
       } finally {
         this.loading = false
       }
+    },
+
+    updateClarificationAnswer(index, value) {
+      console.log('[updateClarificationAnswer]', index, value)
+      // Create new object to trigger reactivity
+      this.clarificationAnswers = {
+        ...this.clarificationAnswers,
+        [index]: value
+      }
+      console.log('[updateClarificationAnswer] Updated:', this.clarificationAnswers)
+    },
+
+    updateMissingFieldValue(field, value) {
+      console.log('[updateMissingFieldValue]', field, value)
+      // Create new object to trigger reactivity
+      this.missingFieldsValues = {
+        ...this.missingFieldsValues,
+        [field]: value
+      }
+      console.log('[updateMissingFieldValue] Updated:', this.missingFieldsValues)
     },
 
     getFieldLabel(field) {
@@ -440,12 +611,90 @@ export default {
       }
     },
 
-    openProvideAnswers() {
-      Nova.$toasted.show(
-        'Please use Nova Action "Provide Answers to AI Questions" from the Actions dropdown.',
-        { type: 'info', duration: 5000 }
-      )
+    getQuestionText(question) {
+      if (typeof question === 'string') {
+        return question
+      }
+      if (typeof question === 'object' && question !== null) {
+        return question.q || question.question || 'Unknown question'
+      }
+      return 'Unknown question'
+    },
+
+    getQuestionWhy(question) {
+      if (typeof question === 'object' && question !== null) {
+        return question.why || question.reason || null
+      }
+      return null
+    },
+
+    async submitClarification() {
+      if (!this.status.pending_task) return
+
+      this.actionLoading = true
+      try {
+        const hasFollowups = this.status.pending_task.followups && this.status.pending_task.followups.length > 0
+        const hasNeedFields = this.status.pending_task.need_fields && this.status.pending_task.need_fields.length > 0
+
+        // Determine which clarification type to use
+        let payload = {}
+
+        if (hasFollowups && Object.values(this.clarificationAnswers).some(a => a && a.trim())) {
+          // Send answer_questions if there are answered followup questions
+          const answers = []
+          this.status.pending_task.followups.forEach((question, index) => {
+            const answer = this.clarificationAnswers[index]
+            answers.push(answer && answer.trim() ? answer.trim() : '')
+          })
+
+          payload = {
+            clarification_type: 'answer_questions',
+            answers: answers,
+          }
+
+          await Nova.request().post(
+            `/api/exams/${this.examId}/research/${this.status.pending_task.id}/clarify`,
+            payload
+          )
+        }
+
+        if (hasNeedFields && Object.values(this.missingFieldsValues).some(v => v && v.trim())) {
+          // Send provide_fields if there are filled missing fields
+          const userInputUpdates = {}
+          this.status.pending_task.need_fields.forEach(field => {
+            const value = this.missingFieldsValues[field]
+            if (value && value.trim()) {
+              userInputUpdates[field] = value.trim()
+            }
+          })
+
+          payload = {
+            clarification_type: 'provide_fields',
+            user_input_updates: userInputUpdates,
+          }
+
+          await Nova.request().post(
+            `/api/exams/${this.examId}/research/${this.status.pending_task.id}/clarify`,
+            payload
+          )
+        }
+
+        Nova.$toasted.show('Answers submitted successfully! Continuing verification...', { type: 'success' })
+
+        // Reset forms
+        this.clarificationAnswers = {}
+        this.missingFieldsValues = {}
+
+        await this.fetchStatus() // Refresh status
+      } catch (e) {
+        console.error('[ExamWorkflowHub] Submit clarification error:', e)
+        const errorMsg = e.response?.data?.message || 'Failed to submit answers'
+        Nova.$toasted.show(errorMsg, { type: 'error' })
+      } finally {
+        this.actionLoading = false
+      }
     },
   },
 }
+
 </script>

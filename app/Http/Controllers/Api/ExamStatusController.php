@@ -103,13 +103,9 @@ class ExamStatusController extends Controller
         if ($pendingTask) {
             $result = $pendingTask->result ?? [];
 
-            // Extract identity data from new structure (verification_attempts) or fallback to old
-            if (isset($result['verification_attempts']) && !empty($result['verification_attempts'])) {
-                $latestAttempt = end($result['verification_attempts']);
-                $identity = $latestAttempt['identity_result'] ?? [];
-            } else {
-                $identity = $result['identity'] ?? [];
-            }
+            // IMPORTANT: Always prefer result['identity'] as it's the most current
+            // verification_attempts stores historical data, but identity is updated with latest followups
+            $identity = $result['identity'] ?? [];
 
             $pendingTaskData = [
                 'id' => $pendingTask->id,
