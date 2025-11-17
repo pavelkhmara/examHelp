@@ -153,11 +153,22 @@ class QuestionAudioProcessor
             return false;
         }
 
-        // Определяем по типу вопроса
+        // BLACKLIST: типы где НЕ нужно генерировать аудио (диалоги, пользователь говорит/пишет)
+        $noAudioTypes = [
+            'speaking_prompt',  // Пользователь говорит (монолог/диалог)
+            'roleplay',         // Диалог - пользователь говорит
+            'writing_prompt',   // Пользователь пишет
+            'translation',      // Перевод текста
+        ];
+
+        if (in_array($question->type, $noAudioTypes, true)) {
+            return false;
+        }
+
+        // WHITELIST: типы где НУЖНО генерировать аудио (пользователь слушает)
         $audioTypes = [
-            'listen_mcq',           // Listening comprehension - всегда с аудио
-            'dictation',            // Диктант - всегда с аудио
-            'speaking_prompt',      // Speaking - может быть с аудио инструкций
+            'listen_mcq',       // Listening comprehension - пользователь слушает и отвечает
+            'dictation',        // Диктант - пользователь слушает и пишет
         ];
 
         if (in_array($question->type, $audioTypes, true)) {
@@ -165,6 +176,7 @@ class QuestionAudioProcessor
         }
 
         // Проверяем metadata - если есть тег 'audio' или skill 'listening'
+        // НО только если тип не в blacklist
         $metadata = $question->metadata ?? [];
         $tags = $metadata['tags'] ?? [];
         if (in_array('audio', $tags, true)) {
