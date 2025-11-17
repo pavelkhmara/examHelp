@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Services\LanguageApp;
 
 use App\Models\ExamExampleQuestion;
+use App\Models\Question;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
@@ -26,7 +27,7 @@ class QuestionImageProcessor
     /**
      * Process questions and generate images where necessary
      *
-     * @param array<int, ExamExampleQuestion> $questions
+     * @param array<int, ExamExampleQuestion|Question> $questions
      * @return array{processed: int, images_generated: int, errors: int}
      */
     public function processQuestions(array $questions): array
@@ -67,9 +68,10 @@ class QuestionImageProcessor
     /**
      * Process one question and generate image if necessary
      *
+     * @param ExamExampleQuestion|Question $question
      * @return bool True if image was generated
      */
-    public function processQuestion(ExamExampleQuestion $question): bool
+    public function processQuestion(ExamExampleQuestion|Question $question): bool
     {
         // Check if image generation is needed
         if (!$this->shouldGenerateImage($question)) {
@@ -150,8 +152,10 @@ class QuestionImageProcessor
 
     /**
      * Determine if image generation is needed for this question
+     *
+     * @param ExamExampleQuestion|Question $question
      */
-    protected function shouldGenerateImage(ExamExampleQuestion $question): bool
+    protected function shouldGenerateImage(ExamExampleQuestion|Question $question): bool
     {
         // If image generation is disabled globally
         if (!config('ai.images.enabled', false)) {
@@ -163,24 +167,53 @@ class QuestionImageProcessor
             return false;
         }
 
-        // Check if question has stimulus field in payload that suggests image need
-        $payload = $question->payload ?? [];
+        // Handle ExamExampleQuestion (uses payload)
+        if ($question instanceof ExamExampleQuestion) {
+            $payload = $question->payload ?? [];
 
-        // Check for explicit image requirement flags
-        if (isset($payload['requires_image']) && $payload['requires_image'] === true) {
-            return true;
+            // Check for explicit image requirement flags
+            if (isset($payload['requires_image']) && $payload['requires_image'] === true) {
+                return true;
+            }
+
+            // Check if stimulus has image_description
+            if (isset($payload['stimulus']['image_description'])) {
+                return true;
+            }
+
+            // Check metadata tags
+            $metadata = $payload['metadata'] ?? [];
+            $tags = $metadata['tags'] ?? [];
+            if (in_array('image', $tags, true) || in_array('visual', $tags, true)) {
+                return true;
+            }
         }
 
-        // Check if stimulus has image_description or visual context
-        if (isset($payload['stimulus']['image_description'])) {
-            return true;
-        }
+        // Handle Question (v2 structure with stimulus and metadata as top-level fields)
+        if ($question instanceof Question) {
+            $stimulus = $question->stimulus ?? [];
 
-        // Check metadata tags
-        $metadata = $payload['metadata'] ?? [];
-        $tags = $metadata['tags'] ?? [];
-        if (in_array('image', $tags, true) || in_array('visual', $tags, true)) {
-            return true;
+            // Check if stimulus has image_description
+            if (isset($stimulus['image_description'])) {
+                return true;
+            }
+
+            // Check metadata tags
+            $metadata = $question->metadata ?? [];
+            $tags = $metadata['tags'] ?? [];
+            if (in_array('image', $tags, true) || in_array('visual', $tags, true)) {
+                return true;
+            }
+
+            // Check if stimulus has images array (might need replacement)
+            if (isset($stimulus['images']) && is_array($stimulus['images']) && !empty($stimulus['images'])) {
+                // Already has images, but might be placeholders
+                foreach ($stimulus['images'] as $img) {
+                    if (isset($img['generate']) && $img['generate'] === true) {
+                        return true;
+                    }
+                }
+            }
         }
 
         // For now, we don't auto-generate images for other types
@@ -190,33 +223,68 @@ class QuestionImageProcessor
 
     /**
      * Extract text for image search
+     *
+     * @param ExamExampleQuestion|Question $question
      */
-    protected function getTextForImageSearch(ExamExampleQuestion $question): ?string
+    protected function getTextForImageSearch(ExamExampleQuestion|Question $question): ?string
     {
-        $payload = $question->payload ?? [];
+        // Handle ExamExampleQuestion
+        if ($question instanceof ExamExampleQuestion) {
+            $payload = $question->payload ?? [];
 
-        // Priority 1: Explicit image_description in stimulus
-        if (isset($payload['stimulus']['image_description'])) {
-            return $payload['stimulus']['image_description'];
-        }
+            // Priority 1: Explicit image_description in stimulus
+            if (isset($payload['stimulus']['image_description'])) {
+                return $payload['stimulus']['image_description'];
+            }
 
-        // Priority 2: stimulus.text (if it's descriptive)
-        if (isset($payload['stimulus']['text']) && !empty($payload['stimulus']['text'])) {
-            $text = $payload['stimulus']['text'];
-            // Only use if it's descriptive (not too long, not too short)
-            if (mb_strlen($text) >= 10 && mb_strlen($text) <= 300) {
-                return $text;
+            // Priority 2: stimulus.text (if it's descriptive)
+            if (isset($payload['stimulus']['text']) && !empty($payload['stimulus']['text'])) {
+                $text = $payload['stimulus']['text'];
+                // Only use if it's descriptive (not too long, not too short)
+                if (mb_strlen($text) >= 10 && mb_strlen($text) <= 300) {
+                    return $text;
+                }
+            }
+
+            // Priority 3: question description field
+            if (!empty($question->description)) {
+                return $question->description;
+            }
+
+            // Priority 4: question field itself
+            if (!empty($question->question)) {
+                return $question->question;
             }
         }
 
-        // Priority 3: question description field
-        if (!empty($question->description)) {
-            return $question->description;
-        }
+        // Handle Question (v2)
+        if ($question instanceof Question) {
+            $stimulus = $question->stimulus ?? [];
 
-        // Priority 4: question field itself
-        if (!empty($question->question)) {
-            return $question->question;
+            // Priority 1: Explicit image_description in stimulus
+            if (isset($stimulus['image_description'])) {
+                return $stimulus['image_description'];
+            }
+
+            // Priority 2: stimulus.text_html (strip tags)
+            if (isset($stimulus['text_html']) && !empty($stimulus['text_html'])) {
+                $text = strip_tags($stimulus['text_html']);
+                // Only use if it's descriptive (not too long, not too short)
+                if (mb_strlen($text) >= 10 && mb_strlen($text) <= 300) {
+                    return $text;
+                }
+            }
+
+            // Priority 3: metadata.topic
+            $metadata = $question->metadata ?? [];
+            if (!empty($metadata['topic'])) {
+                return $metadata['topic'];
+            }
+
+            // Priority 4: question_id (last resort)
+            if (!empty($question->question_id)) {
+                return $question->question_id;
+            }
         }
 
         return null;

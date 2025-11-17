@@ -56,6 +56,11 @@ class Question extends Model
         // Audio fields
         'audio_file_path',
         'requires_audio',
+        // Image fields
+        'image_url',
+        'image_file_path',
+        'image_alternatives',
+        'image_metadata',
     ];
 
     protected $casts = [
@@ -73,6 +78,8 @@ class Question extends Model
         'typical_errors' => AsArrayWithUnescapedSlashes::class,
         'ui_hints' => AsArrayWithUnescapedSlashes::class,
         'accessibility' => AsArrayWithUnescapedSlashes::class,
+        'image_alternatives' => AsArrayWithUnescapedSlashes::class,
+        'image_metadata' => AsArrayWithUnescapedSlashes::class,
         'time_limit_sec' => 'integer',
         'frozen_at' => 'datetime',
     ];

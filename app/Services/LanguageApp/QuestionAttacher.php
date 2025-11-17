@@ -14,7 +14,8 @@ use Illuminate\Support\Facades\Log;
 class QuestionAttacher
 {
     public function __construct(
-        private readonly QuestionAudioProcessor $audioProcessor
+        private readonly QuestionAudioProcessor $audioProcessor,
+        private readonly QuestionImageProcessor $imageProcessor
     ) {}
     /**
      * @param array<int, array<string, mixed>> $questions
@@ -163,6 +164,40 @@ class QuestionAttacher
         } catch (\Exception $e) {
             // Не падаем если генерация аудио не удалась - это не критично
             Log::error('[QuestionAttacher] Failed to generate audio', [
+                'exam_id' => $exam->id,
+                'section_id' => $plan->section_id,
+                'error' => $e->getMessage(),
+            ]);
+        }
+
+        // Generate images for questions that need them
+        try {
+            $questions = Question::where('exam_id', $exam->id)
+                ->where('section_id', $plan->section_id)
+                ->whereNull('image_url') // только те, у кого еще нет изображений
+                ->get();
+
+            if ($questions->isEmpty()) {
+                return;
+            }
+
+            Log::info('[QuestionAttacher] Generating images for questions', [
+                'exam_id' => $exam->id,
+                'section_id' => $plan->section_id,
+                'count' => $questions->count(),
+            ]);
+
+            $result = $this->imageProcessor->processQuestions($questions->all());
+
+            Log::info('[QuestionAttacher] Image generation complete', [
+                'exam_id' => $exam->id,
+                'section_id' => $plan->section_id,
+                'result' => $result,
+            ]);
+
+        } catch (\Exception $e) {
+            // Не падаем если генерация изображений не удалась - это не критично
+            Log::error('[QuestionAttacher] Failed to generate images', [
                 'exam_id' => $exam->id,
                 'section_id' => $plan->section_id,
                 'error' => $e->getMessage(),
