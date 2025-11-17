@@ -15,7 +15,7 @@ use Laravel\Nova\Card;
  * - stalled: если задача зависла (heartbeat > 10 min)
  * - status: default (обычный статус экзамена)
  *
- * Приоритет режимов: missing > pending_* > fields_changed > stalled > status
+ * Приоритет режимов: pending_* > missing > fields_changed > stalled > status
  */
 class ExamWorkflowHub extends Card
 {

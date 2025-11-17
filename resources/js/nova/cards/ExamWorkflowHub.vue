@@ -310,21 +310,21 @@ export default {
       return this.card.examId
     },
 
-    // Determine viewMode based on priority: missing > pending_* > fields_changed > stalled > status
+    // Determine viewMode based on priority: pending_* > missing > fields_changed > stalled > status
     viewMode() {
-      // 1. Missing fields (highest priority)
-      if (this.status.quick_check && !this.status.quick_check.ready) {
-        return 'missing_fields'
-      }
-
-      // 2. Pending confirmation
+      // 1. Pending confirmation (highest priority)
       if (this.status.pending_task && this.status.pending_task.status === 'pending_confirmation') {
         return 'pending_confirmation'
       }
 
-      // 3. Pending clarification
+      // 2. Pending clarification
       if (this.status.pending_task && this.status.pending_task.status === 'pending_clarification') {
         return 'pending_clarification'
+      }
+
+      // 3. Missing fields
+      if (this.status.quick_check && !this.status.quick_check.ready) {
+        return 'missing_fields'
       }
 
       // 4. Fields changed

@@ -13,6 +13,9 @@ use Illuminate\Support\Facades\Log;
 
 class QuestionAttacher
 {
+    public function __construct(
+        private readonly QuestionAudioProcessor $audioProcessor
+    ) {}
     /**
      * @param array<int, array<string, mixed>> $questions
      */
@@ -113,10 +116,58 @@ class QuestionAttacher
             $plan->markAsAttached();
         });
 
+        // После создания вопросов - генерируем аудио где необходимо
+        $this->generateAudioForQuestions($exam, $plan);
+
         if ($exam->meta['generated_questions_v2']) {
             return $exam->meta['generated_questions_v2'];
         }
         return [];
+    }
+
+    /**
+     * Генерирует аудио для вопросов секции
+     */
+    protected function generateAudioForQuestions(Exam $exam, GenerationPlan $plan): void
+    {
+        // Пропускаем если TTS отключен
+        if (!config('ai.tts.enabled', false)) {
+            return;
+        }
+
+        try {
+            // Получаем вопросы для этой секции
+            $questions = Question::where('exam_id', $exam->id)
+                ->where('section_id', $plan->section_id)
+                ->whereNull('audio_file_path') // только те, у кого еще нет аудио
+                ->get();
+
+            if ($questions->isEmpty()) {
+                return;
+            }
+
+            Log::info('[QuestionAttacher] Generating audio for questions', [
+                'exam_id' => $exam->id,
+                'section_id' => $plan->section_id,
+                'count' => $questions->count(),
+            ]);
+
+            $result = $this->audioProcessor->processQuestions($questions->all());
+
+            Log::info('[QuestionAttacher] Audio generation complete', [
+                'exam_id' => $exam->id,
+                'section_id' => $plan->section_id,
+                'result' => $result,
+            ]);
+
+        } catch (\Exception $e) {
+            // Не падаем если генерация аудио не удалась - это не критично
+            Log::error('[QuestionAttacher] Failed to generate audio', [
+                'exam_id' => $exam->id,
+                'section_id' => $plan->section_id,
+                'error' => $e->getMessage(),
+            ]);
+        }
     }
 
     /**

@@ -73,5 +73,16 @@ return [
         'enable_llm' => env('AI_EVALUATION_LLM', false),
     ],
 
+    // Text-to-Speech configuration (OpenAI TTS)
+    'tts' => [
+        'enabled' => (bool) env('AI_TTS_ENABLED', false),
+        'api_key' => env('AI_TTS_API_KEY', env('AI_API_KEY')), // Use main API key if not specified
+        'base_url' => env('AI_TTS_BASE_URL', 'https://api.openai.com/v1'),
+        'model' => env('AI_TTS_MODEL', 'tts-1'), // tts-1 or tts-1-hd
+        'voice' => env('AI_TTS_VOICE', 'alloy'), // alloy, echo, fable, onyx, nova, shimmer
+        'speed' => (float) env('AI_TTS_SPEED', 1.0), // 0.25 to 4.0
+        'timeout' => (int) env('AI_TTS_TIMEOUT', 60),
+    ],
+
     // Schema has been moved to App\Services\LanguageApp\Prompts\PromptExamOverview::getSchemaArray()
 ];

@@ -53,6 +53,9 @@ class Question extends Model
         'accessibility',
         // Status
         'status',
+        // Audio fields
+        'audio_file_path',
+        'requires_audio',
     ];
 
     protected $casts = [

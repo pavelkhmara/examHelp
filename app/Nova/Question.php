@@ -9,7 +9,10 @@ use Laravel\Nova\Fields\Code;
 use Laravel\Nova\Fields\ID;
 use Laravel\Nova\Fields\Number;
 use Laravel\Nova\Fields\Select;
+use Laravel\Nova\Fields\Text;
+use Laravel\Nova\Fields\Boolean;
 use Laravel\Nova\Http\Requests\NovaRequest;
+use Laravel\Nova\Panel;
 use Laravel\Nova\Resource;
 
 class Question extends Resource
@@ -80,7 +83,79 @@ class Question extends Resource
             Code::make('Scoring', fn () => json_encode($this->scoring, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE))
                 ->language('json')
                 ->onlyOnDetail(),
+
+            // Audio fields
+            new Panel('Audio', $this->audioFields()),
         ];
+    }
+
+    /**
+     * Поля для секции Audio
+     */
+    protected function audioFields(): array
+    {
+        $fields = [
+            Boolean::make('Requires Audio', 'requires_audio')
+                ->help('Indicates if this question requires audio generation')
+                ->readonly(),
+
+            Text::make('Audio File Path', 'audio_file_path')
+                ->onlyOnDetail()
+                ->readonly()
+                ->help('Path to the generated audio file'),
+        ];
+
+        // Добавляем HTML плеер если есть аудио
+        if ($this->resource && $this->resource->audio_file_path) {
+            $audioUrl = $this->getAudioUrl();
+
+            $fields[] = Text::make('Audio Player')
+                ->asHtml()
+                ->readonly()
+                ->resolveUsing(function () use ($audioUrl) {
+                    if (!$audioUrl) {
+                        return '<p style="color: #999;">Audio file not found</p>';
+                    }
+
+                    return '
+                        <div style="padding: 10px; background: #f9fafb; border-radius: 6px;">
+                            <audio controls style="width: 100%; max-width: 500px;">
+                                <source src="' . htmlspecialchars($audioUrl) . '" type="audio/mpeg">
+                                Your browser does not support the audio element.
+                            </audio>
+                            <div style="margin-top: 10px;">
+                                <a href="' . htmlspecialchars($audioUrl) . '"
+                                   download
+                                   style="color: #4f46e5; text-decoration: none; font-weight: 500;">
+                                    📥 Download Audio File
+                                </a>
+                            </div>
+                        </div>
+                    ';
+                })
+                ->onlyOnDetail();
+        }
+
+        return $fields;
+    }
+
+    /**
+     * Получает URL аудио файла
+     */
+    protected function getAudioUrl(): ?string
+    {
+        if (!$this->resource || !$this->resource->audio_file_path) {
+            return null;
+        }
+
+        // Проверяем есть ли URL в instructions
+        $instructions = $this->resource->instructions ?? [];
+        if (!empty($instructions['audio_url'])) {
+            return $instructions['audio_url'];
+        }
+
+        // Или генерируем из пути
+        return \Illuminate\Support\Facades\Storage::disk('public')->url($this->resource->audio_file_path);
     }
 }
 
