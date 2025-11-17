@@ -18,6 +18,7 @@ class ExamExampleQuestion extends Model
         'description', 'duration_minutes', 'instructions', 'example_response', 'assessment_guide',
         'good_answer', 'average_answer', 'bad_answer', 'rubric_breakdown',
         'type', 'payload',
+        'image_url', 'image_file_path', 'image_alternatives', 'image_metadata',
     ];
 
     protected $casts = [
@@ -27,6 +28,8 @@ class ExamExampleQuestion extends Model
         'rubric_breakdown' => 'json',
         'payload' => 'json',
         'example_response' => 'json',
+        'image_alternatives' => 'json',
+        'image_metadata' => 'json',
         'type' => QuestionType::class,
     ];
 

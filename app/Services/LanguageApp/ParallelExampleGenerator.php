@@ -20,7 +20,8 @@ class ParallelExampleGenerator extends AbstractAiService
 {
     public function __construct(
         AiProvider $ai,
-        protected readonly JsonSchemaExamExamples $validator
+        protected readonly JsonSchemaExamExamples $validator,
+        protected readonly QuestionImageProcessor $imageProcessor
     ) {
         parent::__construct($ai);
     }
@@ -103,6 +104,29 @@ class ParallelExampleGenerator extends AbstractAiService
 
         $totalCreated = array_sum(array_column($results, 'examples_created'));
 
+        // Process images for newly created questions (if enabled)
+        $imageStats = ['processed' => 0, 'images_generated' => 0, 'errors' => 0];
+        if (config('ai.images.enabled', false) && $totalCreated > 0) {
+            try {
+                // Load recently created questions for this exam
+                $recentQuestions = ExamExampleQuestion::where('exam_id', $exam->id)
+                    ->whereNull('image_url') // Only process questions without images
+                    ->latest()
+                    ->limit($totalCreated)
+                    ->get()
+                    ->all();
+
+                if (!empty($recentQuestions)) {
+                    $imageStats = $this->imageProcessor->processQuestions($recentQuestions);
+                    Log::info('[ParallelExampleGenerator] Image processing completed', $imageStats);
+                }
+            } catch (\Exception $e) {
+                Log::error('[ParallelExampleGenerator] Image processing failed', [
+                    'error' => $e->getMessage(),
+                ]);
+            }
+        }
+
         // Update exam examples_count
         $exam->examples_count = $exam->examples()->count();
         $exam->save();
@@ -111,6 +135,7 @@ class ParallelExampleGenerator extends AbstractAiService
             'exam_id' => $exam->id,
             'total_archetypes' => $totalArchetypes,
             'total_examples_created' => $totalCreated,
+            'images_generated' => $imageStats['images_generated'],
         ]);
 
         return [
@@ -118,6 +143,7 @@ class ParallelExampleGenerator extends AbstractAiService
             'examples_created' => $totalCreated,
             'total_archetypes' => $totalArchetypes,
             'results' => $results,
+            'images_generated' => $imageStats['images_generated'],
         ];
     }
 
@@ -381,6 +407,29 @@ class ParallelExampleGenerator extends AbstractAiService
             }
         }
 
+        // Process images for newly created questions (if enabled)
+        $imageStats = ['processed' => 0, 'images_generated' => 0, 'errors' => 0];
+        if (config('ai.images.enabled', false) && $totalCreated > 0) {
+            try {
+                // Load recently created questions for this exam
+                $recentQuestions = ExamExampleQuestion::where('exam_id', $exam->id)
+                    ->whereNull('image_url')
+                    ->latest()
+                    ->limit($totalCreated)
+                    ->get()
+                    ->all();
+
+                if (!empty($recentQuestions)) {
+                    $imageStats = $this->imageProcessor->processQuestions($recentQuestions);
+                    Log::info('[ParallelExampleGenerator] Image processing completed (sequential)', $imageStats);
+                }
+            } catch (\Exception $e) {
+                Log::error('[ParallelExampleGenerator] Image processing failed (sequential)', [
+                    'error' => $e->getMessage(),
+                ]);
+            }
+        }
+
         // Update exam examples_count
         $exam->examples_count = $exam->examples()->count();
         $exam->save();
@@ -390,6 +439,7 @@ class ParallelExampleGenerator extends AbstractAiService
             'examples_created' => $totalCreated,
             'total_archetypes' => count($archetypesWithContext),
             'results' => $results,
+            'images_generated' => $imageStats['images_generated'],
         ];
     }
 

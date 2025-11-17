@@ -84,5 +84,35 @@ return [
         'timeout' => (int) env('AI_TTS_TIMEOUT', 60),
     ],
 
+    // Image Search and Selection configuration
+    'images' => [
+        'enabled' => (bool) env('AI_IMAGE_ENABLED', false),
+        'test_mode' => (bool) env('AI_IMAGE_TEST_MODE', true), // Return top-3 instead of top-1
+        'provider' => env('AI_IMAGE_PROVIDER', 'unsplash'), // unsplash, pexels, pixabay
+        'search_count' => (int) env('AI_IMAGE_SEARCH_COUNT', 15), // How many images to search
+        'timeout' => (int) env('AI_IMAGE_TIMEOUT', 30),
+
+        // Unsplash API configuration
+        'unsplash' => [
+            'api_key' => env('AI_IMAGE_UNSPLASH_KEY'),
+            'base_url' => 'https://api.unsplash.com',
+        ],
+
+        // Pexels API configuration
+        'pexels' => [
+            'api_key' => env('AI_IMAGE_PEXELS_KEY'),
+            'base_url' => 'https://api.pexels.com/v1',
+        ],
+
+        // Pixabay API configuration
+        'pixabay' => [
+            'api_key' => env('AI_IMAGE_PIXABAY_KEY'),
+            'base_url' => 'https://pixabay.com/api',
+        ],
+
+        // AI selection model (gpt-5-mini for image evaluation)
+        'selection_model' => env('AI_IMAGE_SELECTION_MODEL', 'gpt-5-mini'),
+    ],
+
     // Schema has been moved to App\Services\LanguageApp\Prompts\PromptExamOverview::getSchemaArray()
 ];
