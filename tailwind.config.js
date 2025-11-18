@@ -18,6 +18,23 @@ export default {
         'border-purple-500',
         'focus:ring-purple-500',
         'focus:border-purple-500',
+        // Progress bar styles
+        'bg-blue-500',
+        'bg-blue-700',
+        'bg-blue-400',
+        'text-blue-700',
+        'text-blue-400',
+        'h-2.5',
+        'bg-gray-200',
+        'bg-gray-700',
+        'bg-red-50',
+        'bg-red-900',
+        'border-red-200',
+        'border-red-800',
+        'text-red-600',
+        'text-red-400',
+        'text-red-700',
+        'text-red-300',
     ],
     theme: {
         extend: {

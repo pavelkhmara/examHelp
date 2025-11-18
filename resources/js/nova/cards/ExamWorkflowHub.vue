@@ -13,7 +13,7 @@
     <!-- Main content based on viewMode -->
     <div v-else>
       <!-- Progress Bar Section (always visible at top) -->
-      <div v-if="status.progress" class="mb-4 pb-4 border-b border-gray-200 dark:border-gray-700">
+      <div v-if="status.progress" class="mb-4 bg-white dark:bg-gray-800 rounded-lg p-4">
         <!-- Overall progress bar -->
         <div class="mb-3">
           <div class="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2.5">
