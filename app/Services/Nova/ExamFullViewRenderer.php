@@ -171,17 +171,8 @@ class ExamFullViewRenderer
 
         $html = '';
 
-        // Data source indicator
-        if ($dataSource) {
-            $sourceLabel = $dataSource === 'generated' ? 'Сгенерированные вопросы' : 'Примеры вопросов';
-            $sourceColor = $dataSource === 'generated' ? '#10b981' : '#f59e0b';
-            $html .= '<div style="margin-bottom: 16px; padding: 12px; background: #f9fafb; border-left: 4px solid ' . $sourceColor . '; border-radius: 4px;">';
-            $html .= '<p style="margin: 0; font-size: 14px; font-weight: 500; color: #374151;">';
-            $html .= '📊 Источник данных: ' . htmlspecialchars($sourceLabel);
-            $html .= ' (' . $questions->count() . ' ' . $this->pluralize($questions->count(), 'задание', 'задания', 'заданий') . ')';
-            $html .= '</p>';
-            $html .= '</div>';
-        }
+        // Assembly mode explanation - show before data source
+        $html .= $this->renderAssemblyModeExplanation($assemblyMode, $sectionData, $dataSource, $questions);
 
         // Render questions based on assembly mode
         if ($assemblyMode === 'inline') {
@@ -192,6 +183,97 @@ class ExamFullViewRenderer
             $html .= $this->renderPoolQuestions($sectionData, $questions, $dataSource);
         } else {
             $html .= $this->renderEmptyState('Неизвестный assembly mode: ' . $assemblyMode);
+        }
+
+        return $html;
+    }
+
+    /**
+     * Render assembly mode explanation
+     */
+    private function renderAssemblyModeExplanation(string $assemblyMode, array $sectionData, ?string $dataSource, $questions): string
+    {
+        $expectedCount = $sectionData['expected_task_count']['target'] ?? null;
+        $questionsCount = $questions->count();
+
+        $html = '';
+
+        // Get assembly config for more details
+        $assemblyConfig = $sectionData['assembly'] ?? [];
+
+        if ($assemblyMode === 'pool') {
+            // Pool mode explanation
+            $sourceLabel = $dataSource === 'generated' ? 'сгенерированных вопросов' : ($dataSource === 'examples' ? 'примеров вопросов' : 'вопросов');
+
+            $html .= '<div style="margin-bottom: 16px; padding: 16px; background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%); border-left: 4px solid #f59e0b; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.05);">';
+            $html .= '<div style="display: flex; align-items: start; gap: 12px;">';
+            $html .= '<div style="font-size: 24px; line-height: 1;">🎲</div>';
+            $html .= '<div style="flex: 1;">';
+            $html .= '<h4 style="margin: 0 0 8px; font-size: 15px; font-weight: 600; color: #92400e;">Режим пула (Pool Mode)</h4>';
+            $html .= '<p style="margin: 0 0 6px; font-size: 14px; color: #78350f; line-height: 1.5;">';
+            $html .= '<strong>Выбран режим Pool,</strong> потому что секция содержит однотипные задания с одинаковым форматом ответа.';
+            $html .= '</p>';
+
+            if ($expectedCount && $questionsCount > 0) {
+                $html .= '<p style="margin: 0; font-size: 14px; color: #78350f; line-height: 1.5;">';
+                $html .= '📊 <strong>Источник данных:</strong> ' . $questionsCount . ' ' . $sourceLabel . '<br>';
+                $html .= '🎯 <strong>Генерация:</strong> Из пула будет выбрано <strong>' . $expectedCount . ' ' . $this->pluralize($expectedCount, 'задание', 'задания', 'заданий') . '</strong> случайным образом';
+                $html .= '</p>';
+            }
+
+            $html .= '</div>';
+            $html .= '</div>';
+            $html .= '</div>';
+
+        } elseif ($assemblyMode === 'blueprint') {
+            // Blueprint mode explanation
+            $sourceLabel = $dataSource === 'generated' ? 'сгенерированных вопросов' : ($dataSource === 'examples' ? 'примеров вопросов' : 'вопросов');
+            $blueprint = $assemblyConfig['blueprint'] ?? [];
+            $slotsCount = count($blueprint);
+
+            $html .= '<div style="margin-bottom: 16px; padding: 16px; background: linear-gradient(135deg, #dbeafe 0%, #bfdbfe 100%); border-left: 4px solid #3b82f6; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.05);">';
+            $html .= '<div style="display: flex; align-items: start; gap: 12px;">';
+            $html .= '<div style="font-size: 24px; line-height: 1;">🏗️</div>';
+            $html .= '<div style="flex: 1;">';
+            $html .= '<h4 style="margin: 0 0 8px; font-size: 15px; font-weight: 600; color: #1e40af;">Режим чертежа (Blueprint Mode)</h4>';
+            $html .= '<p style="margin: 0 0 6px; font-size: 14px; color: #1e3a8a; line-height: 1.5;">';
+            $html .= '<strong>Выбран режим Blueprint,</strong> потому что секция содержит разнородные типы заданий с точными квотами и пропорциями.';
+            $html .= '</p>';
+
+            if ($expectedCount && $questionsCount > 0) {
+                $html .= '<p style="margin: 0; font-size: 14px; color: #1e3a8a; line-height: 1.5;">';
+                $html .= '📊 <strong>Источник данных:</strong> ' . $questionsCount . ' ' . $sourceLabel . '<br>';
+                $html .= '🎯 <strong>Генерация:</strong> По чертежу (' . $slotsCount . ' ' . $this->pluralize($slotsCount, 'слот', 'слота', 'слотов') . ') будет сгенерировано <strong>' . $expectedCount . ' ' . $this->pluralize($expectedCount, 'задание', 'задания', 'заданий') . '</strong>';
+                $html .= '</p>';
+            }
+
+            $html .= '</div>';
+            $html .= '</div>';
+            $html .= '</div>';
+
+        } elseif ($assemblyMode === 'inline') {
+            // Inline mode explanation
+            $sourceLabel = $dataSource === 'generated' ? 'сгенерированных заданий' : ($dataSource === 'examples' ? 'примеров заданий' : 'заданий');
+
+            $html .= '<div style="margin-bottom: 16px; padding: 16px; background: linear-gradient(135deg, #d1fae5 0%, #a7f3d0 100%); border-left: 4px solid #10b981; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.05);">';
+            $html .= '<div style="display: flex; align-items: start; gap: 12px;">';
+            $html .= '<div style="font-size: 24px; line-height: 1;">✨</div>';
+            $html .= '<div style="flex: 1;">';
+            $html .= '<h4 style="margin: 0 0 8px; font-size: 15px; font-weight: 600; color: #065f46;">Режим уникальных заданий (Inline Mode)</h4>';
+            $html .= '<p style="margin: 0 0 6px; font-size: 14px; color: #064e3b; line-height: 1.5;">';
+            $html .= '<strong>Выбран режим Inline,</strong> потому что каждое задание уникально и требует индивидуальной генерации (эссе, описание графика, ролевая игра).';
+            $html .= '</p>';
+
+            if ($questionsCount > 0) {
+                $html .= '<p style="margin: 0; font-size: 14px; color: #064e3b; line-height: 1.5;">';
+                $html .= '📊 <strong>Источник данных:</strong> ' . $questionsCount . ' ' . $sourceLabel . '<br>';
+                $html .= '🎯 <strong>Генерация:</strong> Каждое задание генерируется индивидуально с уникальным контентом';
+                $html .= '</p>';
+            }
+
+            $html .= '</div>';
+            $html .= '</div>';
+            $html .= '</div>';
         }
 
         return $html;
@@ -222,24 +304,12 @@ class ExamFullViewRenderer
      */
     private function renderBlueprintQuestions(array $sectionData, $questions, ?string $dataSource): string
     {
-        $expectedCount = $sectionData['expected_task_count']['target'] ?? null;
-
-        $html = '';
-
-        if ($expectedCount) {
-            $html .= '<div style="margin-bottom: 16px; padding: 12px; background: #dbeafe; border-left: 4px solid #3b82f6; border-radius: 4px;">';
-            $html .= '<p style="margin: 0; font-size: 14px; font-weight: 500; color: #1e40af;">';
-            $html .= '🏗️ Blueprint Mode: По шаблонам будет сгенерировано ' . $expectedCount . ' ' . $this->pluralize($expectedCount, 'задание', 'задания', 'заданий');
-            $html .= '</p>';
-            $html .= '</div>';
-        }
-
         // Show all available templates/questions
         if ($questions->isEmpty()) {
             return $this->renderEmptyState('Нет шаблонов для отображения');
         }
 
-        $html .= '<div class="questions-list">';
+        $html = '<div class="questions-list">';
 
         foreach ($questions as $index => $question) {
             $html .= $this->renderQuestion($question, $index + 1, $dataSource, true);
@@ -255,25 +325,12 @@ class ExamFullViewRenderer
      */
     private function renderPoolQuestions(array $sectionData, $questions, ?string $dataSource): string
     {
-        $expectedCount = $sectionData['expected_task_count']['target'] ?? null;
-        $poolSize = $questions->count();
-
-        $html = '';
-
-        if ($expectedCount) {
-            $html .= '<div style="margin-bottom: 16px; padding: 12px; background: #fef3c7; border-left: 4px solid #f59e0b; border-radius: 4px;">';
-            $html .= '<p style="margin: 0; font-size: 14px; font-weight: 500; color: #92400e;">';
-            $html .= '🎲 Pool Mode: Из пула (' . $poolSize . ' ' . $this->pluralize($poolSize, 'задание', 'задания', 'заданий') . ') будет выбрано ' . $expectedCount;
-            $html .= '</p>';
-            $html .= '</div>';
-        }
-
         // Show all pool questions
         if ($questions->isEmpty()) {
             return $this->renderEmptyState('Пул вопросов пуст');
         }
 
-        $html .= '<div class="questions-list">';
+        $html = '<div class="questions-list">';
 
         foreach ($questions as $index => $question) {
             $html .= $this->renderQuestion($question, $index + 1, $dataSource);

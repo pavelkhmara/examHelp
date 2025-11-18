@@ -35,6 +35,23 @@ export default {
         'text-red-400',
         'text-red-700',
         'text-red-300',
+        // Full Exam View button styles (Nova PHP classes)
+        'bg-blue-600',
+        'hover:bg-blue-700',
+        'text-white',
+        'inline-flex',
+        'items-center',
+        'px-4',
+        'py-2',
+        'font-semibold',
+        'rounded-lg',
+        'shadow-md',
+        'transition',
+        'duration-150',
+        'ease-in-out',
+        'w-5',
+        'h-5',
+        'mr-2',
     ],
     theme: {
         extend: {
