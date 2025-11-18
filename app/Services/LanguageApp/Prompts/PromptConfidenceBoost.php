@@ -200,13 +200,19 @@ PROMPT;
                 ],
                 'checks_performed' => [
                     'type' => 'object',
-                    'required' => ['sections_match', 'timing_match', 'scoring_match', 'signatures_found', 'red_flags'],
+                    'required' => [
+                        'sections_match', 'sections_score',
+                        'timing_exam_total_match', 'timing_exam_total_score',
+                        'timing_sections_match', 'timing_sections_score',
+                        'timing_steps_match', 'timing_steps_score',
+                        'scoring_match', 'scoring_score',
+                        'signatures_found', 'signatures_score',
+                        'red_flags', 'weighted_compliance', 'compliance_threshold',
+                    ],
                     'properties' => [
                         'sections_match' => [
-                            'oneOf' => [
-                                ['type' => 'boolean'],
-                                ['type' => 'string', 'enum' => ['partial', 'not_enough_data']],
-                            ],
+                            'type' => 'string',
+                            'enum' => ['true', 'false', 'partial', 'not_enough_data'],
                         ],
                         'sections_score' => [
                             'type' => 'number',
@@ -214,10 +220,8 @@ PROMPT;
                             'maximum' => 1.0,
                         ],
                         'timing_exam_total_match' => [
-                            'oneOf' => [
-                                ['type' => 'boolean'],
-                                ['type' => 'string', 'enum' => ['close', 'not_mentioned']],
-                            ],
+                            'type' => 'string',
+                            'enum' => ['true', 'false', 'close', 'not_mentioned'],
                         ],
                         'timing_exam_total_score' => [
                             'type' => 'number',
@@ -225,10 +229,8 @@ PROMPT;
                             'maximum' => 1.0,
                         ],
                         'timing_sections_match' => [
-                            'oneOf' => [
-                                ['type' => 'boolean'],
-                                ['type' => 'string', 'enum' => ['partial', 'not_mentioned']],
-                            ],
+                            'type' => 'string',
+                            'enum' => ['true', 'false', 'partial', 'not_mentioned'],
                         ],
                         'timing_sections_score' => [
                             'type' => 'number',
@@ -236,10 +238,8 @@ PROMPT;
                             'maximum' => 1.0,
                         ],
                         'timing_steps_match' => [
-                            'oneOf' => [
-                                ['type' => 'boolean'],
-                                ['type' => 'string', 'enum' => ['partial', 'not_mentioned']],
-                            ],
+                            'type' => 'string',
+                            'enum' => ['true', 'false', 'partial', 'not_mentioned'],
                         ],
                         'timing_steps_score' => [
                             'type' => 'number',
@@ -247,10 +247,8 @@ PROMPT;
                             'maximum' => 1.0,
                         ],
                         'scoring_match' => [
-                            'oneOf' => [
-                                ['type' => 'boolean'],
-                                ['type' => 'string', 'enum' => ['not_mentioned']],
-                            ],
+                            'type' => 'string',
+                            'enum' => ['true', 'false', 'not_mentioned'],
                         ],
                         'scoring_score' => [
                             'type' => 'number',
@@ -281,6 +279,7 @@ PROMPT;
                             'maximum' => 1.0,
                         ],
                     ],
+                    'additionalProperties' => false,
                 ],
                 'evidence_quality' => [
                     'type' => 'string',
@@ -291,6 +290,7 @@ PROMPT;
                     'enum' => ['proceed_with_hold', 'request_user_confirmation', 'request_more_info'],
                 ],
             ],
+            'additionalProperties' => false,
         ];
     }
 

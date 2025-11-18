@@ -29,10 +29,6 @@ class ResearchAction extends Action
     public function fields(NovaRequest $request)
     {
         return [
-            Boolean::make('Without Confirmation', 'without_confirmation')
-                ->help('Skip identity confirmation step and auto-approve exam identity')
-                ->default(true),
-
             Select::make('Overview Model', 'overview_model')
                 ->options([
                     'gpt-5-mini' => 'GPT-5 Mini (faster, cheaper)',
@@ -40,6 +36,10 @@ class ResearchAction extends Action
                 ])
                 ->default('gpt-5-mini')
                 ->help('AI model for exam overview generation'),
+
+            Boolean::make('Use Two-Phase Generation (v2)', 'use_two_phase_generation')
+                ->help('V2: Generate skeleton (Phase A) + assembly plan (Phase B). V1 (legacy): Single-phase with immediate example generation')
+                ->default(true),
         ];
     }
 
@@ -49,8 +49,8 @@ class ResearchAction extends Action
             'timestamp' => now()->toDateTimeString(),
             'models_count' => $models->count(),
             'fields' => [
-                'without_confirmation' => $fields->without_confirmation ?? null,
                 'overview_model' => $fields->overview_model ?? null,
+                'use_two_phase_generation' => $fields->use_two_phase_generation ?? null,
             ],
         ]);
 
@@ -105,18 +105,45 @@ class ResearchAction extends Action
                 'research_status' => $exam->research_status,
             ]);
 
-            // CRITICAL: Block if metadata analysis is still running
-            // This prevents race conditions between metadata_analysis and research tasks
-            if ($exam->analysis_status === 'running') {
+            // CRITICAL: Ensure metadata analysis completes BEFORE research
+            // This prevents race conditions and ensures research has identity data
+            $analysisStatus = $exam->analysis_status ?? 'not_started';
+
+            // If metadata analysis hasn't been done or failed, dispatch it now
+            if (in_array($analysisStatus, ['not_started', 'failed', null])) {
+                \Illuminate\Support\Facades\Log::info('🔵 [ResearchAction] Starting metadata analysis first', [
+                    'exam_id' => $exam->id,
+                    'current_analysis_status' => $analysisStatus,
+                ]);
+
+                // Dispatch metadata analysis job
+                dispatch(new \App\Jobs\AnalyzeExamMetadataJob($exam->id));
+
+                return Action::message(
+                    '🚀 Metadata analysis started (usually takes 10-30 seconds). ' .
+                    'Please wait for it to complete, then click "Run Exam Research" again to start the research phase.'
+                );
+            }
+
+            // If metadata analysis is still running, block
+            if ($analysisStatus === 'running') {
                 \Illuminate\Support\Facades\Log::warning('🔵 [ResearchAction] Blocked: metadata analysis in progress', [
                     'exam_id' => $exam->id,
-                    'analysis_status' => $exam->analysis_status,
+                    'analysis_status' => $analysisStatus,
                 ]);
 
                 return Action::danger(
                     '⏳ Please wait: Metadata analysis is in progress. ' .
                     'This usually takes 10-30 seconds. Please try again in a moment.'
                 );
+            }
+
+            // If we reach here, analysis_status should be 'completed'
+            if ($analysisStatus !== 'completed') {
+                \Illuminate\Support\Facades\Log::warning('🔵 [ResearchAction] Unexpected analysis_status', [
+                    'exam_id' => $exam->id,
+                    'analysis_status' => $analysisStatus,
+                ]);
             }
 
             // Check exam readiness using QuickCheckService but don't block
@@ -181,8 +208,9 @@ class ResearchAction extends Action
                 'source' => 'nova_action',
                 'user_input' => $userInput,
                 'document_id' => $documentId,
-                'without_confirmation' => $fields->without_confirmation ?? true,
+                'without_confirmation' => false, // Always require confirmation
                 'overview_model' => $fields->overview_model ?? 'gpt-5-mini',
+                'use_two_phase_generation' => $fields->use_two_phase_generation ?? true,
             ];
 
             // Generate unique idempotency key for this request
@@ -287,11 +315,11 @@ class ResearchAction extends Action
             $existingTask = $task ?? null; // Last task from the loop
             $statusInfo = $existingTask ? " (status: {$existingTask->status})" : '';
 
-            return Action::message("ℹ️ A research task is already running for this exam{$statusInfo}. Please wait for it to complete or use \"Reset & Restart Research\" to force a new run. DEBUG: {$debugSummary}");
+            return Action::message("ℹ️ A research task is already running for this exam{$statusInfo}. Please wait for it to complete. DEBUG: {$debugSummary}");
         } elseif ($existingCount > 0) {
             return Action::message("✅ {$createdCount} new task(s) started! {$existingCount} exam(s) already have tasks running. DEBUG: {$debugSummary}");
         } else {
-            return Action::message("✅ Research task started! DEBUG: {$debugSummary}. Check Nova -> Generation Tasks.");
+            return Action::message("✅ Research task started! {$debugSummary}");
         }
     }
 }

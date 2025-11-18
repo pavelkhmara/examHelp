@@ -202,9 +202,9 @@ Then expand with section timings, thresholds, and additional archetypes.
 ### QUALITY GATES (hard fail if not met)
 - Gate A: `total_exam_duration` is present and cited (prefer official).
 - Gate B: Domain diversity: ≤2 sources per domain; ≥4 sources in total (uploaded docs count).
-- Gate C: Every entry in `global_archetypes` has ≥1 `source_id`.
+- Gate C: Every entry in `question_archetypes` has ≥1 `source_id`.
 - Gate D: If section timings exist, check sum(section_duration) ≈ total (±5 min) or flag inconsistency.
-- Gate E: 100% `global_archetypes` MUST include `question_type` ∈ **ALLOWED QUESTION TYPES** and a non-empty `type_specific`.
+- Gate E: 100% `question_archetypes` MUST include `question_type` ∈ **ALLOWED QUESTION TYPES** and a non-empty `type_specific`.
 - Gate F: For every section in `category_map`, there is a corresponding `section_archetype` that lists those question types in `allowed_question_types`.
 
 Output strictly the JSON object described in the response_json_schema. If unsure, be conservative.
@@ -334,7 +334,7 @@ HINT;
         return <<<'HINT'
 
 CRITICAL REQUIREMENT - Section Distribution:
-Each task archetype MUST include a 'category_weights' field mapping it to appropriate exam sections.
+Each question archetype MUST include a 'category_weights' field mapping it to appropriate exam sections.
 Common sections: e.g.listening, reading, writing, speaking, grammar, vocabulary.  // this is example, you can use only existing sections
 Example:
 {
@@ -412,9 +412,9 @@ SCHEMA;
                     'source_ids' => ['number (indices of sources that informed this section blueprint)'],
                 ],
             ],
-            'global_archetypes' => [
+            'question_archetypes' => [
                 [
-                    'id' => 'string (unique identifier for this task archetype)',
+                    'id' => 'string (unique identifier for this question archetype)',
                     'name' => 'string (human-readable name)',
                     'source_ids' => ['number (indices of sources in sources array that provided info for this archetype - 0-based indices) REQUIRED'],
                     'question_type' => 'string REQUIRED (one of QuestionType enum keys: single_select, multi_select, true_false, yes_no_ng, dropdown_cloze, gap_cloze, banked_cloze, matching, order_sentences, order_words, highlight_text, short_answer, numeric, listen_mcq, dictation, error_correction, writing_prompt, speaking_prompt)',
@@ -481,7 +481,7 @@ SCHEMA;
                     'source_ids' => [['number']],
                 ],
             ],
-            'global_archetypes' => [
+            'question_archetypes' => [
                 [
                     'id' => 'string',
                     'name' => 'string',

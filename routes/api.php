@@ -72,6 +72,13 @@ Route::middleware('auth:sanctum')->group(function () {
 
 // Nova-specific endpoints - use web middleware (session-based auth like Nova itself)
 Route::middleware(['web'])->group(function () {
+    // ExamWorkflowHub card endpoints
+    Route::get('/nova-vendor/exam-status/{exam}', [\App\Http\Controllers\Api\ExamStatusController::class, 'show'])
+        ->name('nova.exam-status');
+
+    Route::post('/exams/{examId}/research/{taskId}/confirm-identity', [ExamResearchController::class, 'confirmIdentity'])
+        ->name('exams.research.confirm-identity-web');
+
     Route::post('/exams/{examId}/research/{taskId}/clarify', [ExamResearchController::class, 'clarify'])
         ->name('exams.research.clarify');
 

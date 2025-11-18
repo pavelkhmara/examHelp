@@ -144,29 +144,48 @@ class IdentityGuardService extends AbstractAiService
      */
     public function identityGuardFallback(Exam $exam, array $user, ?string $extracted): array
     {
-        // Check required fields
-        $need = [];
-        $lang = $user['language'] ?? $user['exam_language'] ?? null;
-        if (! is_string($lang) || $lang === '') {
-            $need[] = 'language';
+        // IMPORTANT: We no longer block on missing user_meta fields
+        // We try to extract what we can from available sources
+
+        // Try to extract language from multiple sources
+        $lang = $exam->language_of_test  // First: exam model field
+            ?? $exam->identity['exam_language'] // Second: identity
+            ?? $user['language'] // Third: user_meta
+            ?? $user['exam_language']
+            ?? null;
+
+        // Try to extract country from multiple sources
+        // Priority: identity (from AI analysis) → user input
+        $country = $exam->identity['country'] ?? null;
+        if (!$country) {
+            $where = (array) ($user['where'] ?? []);
+            $country = $where['country'] ?? null;
         }
 
-        $where = (array) ($user['where'] ?? []);
-        $country = $where['country'] ?? null;
-        if (! is_string($country) || $country === '') {
-            $need[] = 'where.country';
+        // Try to extract modality from user_meta (AI should determine this)
+        // Priority: user_meta (from AI analysis) → user input
+        $modality = $exam->user_meta['exam_modality'] ?? null;
+        if (!$modality) {
+            $where = (array) ($user['where'] ?? []);
+            $modality = $where['mode'] ?? $where['modality'] ?? null;
         }
 
-        $modality = $where['mode'] ?? $where['modality'] ?? null;
-        if (! is_string($modality) || $modality === '') {
-            $need[] = 'where.modality';
-        }
-
+        // Try to extract level from exam model
         $target = (array) ($user['target'] ?? []);
-        $level = $target['level'] ?? null;
+        $level = $exam->level // First: exam model field
+            ?? $target['level'] // Second: user_meta
+            ?? null;
         $score = $target['score'] ?? null;
-        if (! is_string($level) && ! is_numeric($score)) {
-            $need[] = 'target.level_or_score';
+
+        // We DON'T block if these fields are missing - just log it
+        if (!$lang) {
+            Log::info('[IdentityGuardFallback] Language not found, will continue anyway');
+        }
+        if (!$country) {
+            Log::info('[IdentityGuardFallback] Country not found, will continue anyway');
+        }
+        if (!$modality) {
+            Log::info('[IdentityGuardFallback] Modality not found, will continue anyway');
         }
 
         // Simple keyword matching
@@ -208,29 +227,14 @@ class IdentityGuardService extends AbstractAiService
             ];
         }
 
-        if (! empty($need)) {
-            return [
-                'status' => 'uncertain',
-                'confidence' => 0.30,
-                'canonical' => [
-                    'family' => $family,
-                    'name' => $exam->title ?? null,
-                    'provider' => $provider,
-                    'variant' => null,
-                    'language_of_test' => $lang,
-                ],
-                'candidates' => $candidates,
-                'followups' => [
-                    'Please provide missing fields: '.implode(', ', $need),
-                ],
-                'need_fields' => $need,
-                'anchors' => [],
-            ];
-        }
+        // Return result with whatever we could identify
+        // We proceed even if some fields are missing
+        $confidence = $family ? 0.75 : 0.50; // Lower confidence if no family identified
+        $status = $family ? 'certain' : 'uncertain';
 
         return [
-            'status' => 'certain',
-            'confidence' => 0.90,
+            'status' => $status,
+            'confidence' => $confidence,
             'canonical' => [
                 'family' => $family,
                 'name' => $exam->title ?? null,
@@ -239,10 +243,9 @@ class IdentityGuardService extends AbstractAiService
                 'language_of_test' => $lang,
             ],
             'candidates' => $candidates,
-            'followups' => [],
-            'need_fields' => [],
+            'followups' => [], // No followups - we continue with what we have
+            'need_fields' => [], // No blocking on missing fields
             'anchors' => [],
-            'hold' => true,
         ];
     }
 

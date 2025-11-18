@@ -3,18 +3,29 @@
 namespace App\Services\LanguageApp\Providers;
 
 use App\Services\LanguageApp\AiProvider;
+use App\Services\LanguageApp\AiRateLimiter;
 use GuzzleHttp\Client;
 use GuzzleHttp\Exception\GuzzleException;
 use Illuminate\Support\Facades\Log;
 
 final class OpenAiProvider implements AiProvider
 {
+    private ?AiRateLimiter $rateLimiter = null;
+
     public function __construct(
         private readonly Client $http,
         private readonly string $apiKey,
         private readonly string $baseUrl,
         private readonly string $model
     ) {
+        // Initialize rate limiter if enabled
+        if (config('ai.rate_limit_enabled', false)) {
+            $this->rateLimiter = new AiRateLimiter(
+                maxRequestsPerMinute: config('ai.rate_limit_rpm', 60),
+                maxRetries: config('ai.rate_limit_retries', 3),
+                retryDelayMs: config('ai.rate_limit_retry_delay_ms', 1000)
+            );
+        }
         // $this->http = new \GuzzleHttp\Client([
         //     'base_uri'        => rtrim(config('ai.openai.base_url'), '/').'/',
         //     'headers'         => ['Authorization' => 'Bearer '.config('ai.openai.api_key')],
@@ -86,29 +97,115 @@ final class OpenAiProvider implements AiProvider
             'messages' => $messages,
         ];
 
-        if ($openai_cfg['json_strict'] ?? false) {
+        // Support Structured Outputs via json_schema option
+        $jsonSchema = $opts['json_schema'] ?? null;
+        if ($jsonSchema) {
+            $body['response_format'] = [
+                'type' => 'json_schema',
+                'json_schema' => [
+                    'name' => $opts['json_schema_name'] ?? 'response',
+                    'strict' => true,
+                    'schema' => $jsonSchema,
+                ],
+            ];
+        } elseif ($openai_cfg['json_strict'] ?? false) {
             $body['response_format'] = ['type' => 'json_object'];
         }
 
-        if ($responseJsonSchema) {
+        if ($responseJsonSchema && !$jsonSchema) {
             $body['response_format'] = $body['response_format'] ?? ['type' => 'json_object'];
             $body['response_format']['response_json_schema'] = $responseJsonSchema;
         }
 
         Log::debug('OpenAiProvider: final request body', ['body' => $body]);
 
-        try {
-            $res = $this->http->post('chat/completions', [
-                'headers' => [
-                    'Authorization' => 'Bearer '.$this->apiKey,
-                    'Content-Type' => 'application/json',
-                ],
-                'json' => $body,
-            ]);
-        } catch (GuzzleException $e) {
-            throw new \RuntimeException('AI HTTP error: '.$e->getMessage());
+        
+        // Retry logic for 5xx errors, timeouts, and connection issues
+        $maxRetries = 3;
+        $attempt = 0;
+        $lastException = null;
+        
+        // Check rate limit before sending
+        if ($this->rateLimiter && ! $this->rateLimiter->attemptWithRetry('openai')) {
+            throw new \RuntimeException('OpenAI rate limit exceeded. Please try again later.');
+        }
 
-            return ['ok' => false, 'data' => null, 'usage' => [], 'raw' => ['error' => $e->getMessage()]];
+        while ($attempt < $maxRetries) {
+            $attempt++;
+
+            try {
+                Log::debug('OpenAiProvider: attempt', ['attempt' => $attempt, 'max_retries' => $maxRetries]);
+
+                $res = $this->http->post('chat/completions', [
+                    'headers' => [
+                        'Authorization' => 'Bearer '.$this->apiKey,
+                        'Content-Type' => 'application/json',
+                    ],
+                    'json' => $body,
+                ]);
+
+                // Success - break retry loop
+                break;
+
+            } catch (GuzzleException $e) {
+                $lastException = $e;
+                $shouldRetry = false;
+                $retryReason = null;
+
+                // Check if this is a retryable error
+                if ($e instanceof \GuzzleHttp\Exception\ConnectException) {
+                    $shouldRetry = true;
+                    $retryReason = 'connection_error';
+                } elseif ($e instanceof \GuzzleHttp\Exception\RequestException) {
+                    // Check for timeout (cURL error 28)
+                    $handlerContext = $e->getHandlerContext();
+                    if (isset($handlerContext['errno']) && $handlerContext['errno'] === 28) {
+                        $shouldRetry = true;
+                        $retryReason = 'timeout';
+                    }
+
+                    // Check for 5xx server errors
+                    if ($e->hasResponse()) {
+                        $statusCode = $e->getResponse()->getStatusCode();
+                        if ($statusCode >= 500 && $statusCode < 600) {
+                            $shouldRetry = true;
+                            $retryReason = "server_error_{$statusCode}";
+                        }
+                    }
+                }
+
+                // If not retryable or last attempt, throw exception
+                if (!$shouldRetry || $attempt >= $maxRetries) {
+                    Log::error('OpenAiProvider: request failed', [
+                        'attempt' => $attempt,
+                        'max_retries' => $maxRetries,
+                        'error' => $e->getMessage(),
+                        'retryable' => $shouldRetry,
+                        'retry_reason' => $retryReason,
+                    ]);
+
+                    throw new \RuntimeException('AI HTTP error: '.$e->getMessage());
+                }
+
+                // Calculate exponential backoff delay (1s, 2s, 4s)
+                $delayMs = 1000 * (2 ** ($attempt - 1));
+
+                Log::warning('OpenAiProvider: retrying after error', [
+                    'attempt' => $attempt,
+                    'max_retries' => $maxRetries,
+                    'retry_reason' => $retryReason,
+                    'delay_ms' => $delayMs,
+                    'error' => $e->getMessage(),
+                ]);
+
+                // Wait before retrying
+                usleep($delayMs * 1000); // Convert ms to microseconds
+            }
+        }
+
+        // If we exited the loop without a response, throw the last exception
+        if (!isset($res)) {
+            throw new \RuntimeException('AI HTTP error after '.$maxRetries.' retries: '.($lastException ? $lastException->getMessage() : 'unknown error'));
         }
 
         $status = $res->getStatusCode();

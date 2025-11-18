@@ -10,33 +10,33 @@ final class JsonSchemaExamIdentity
     {
         return [
             'type' => 'object',
-            'required' => ['status', 'confidence', 'canonical', 'candidates', 'followups', 'need_fields', 'anchors'],
+            'required' => ['status', 'confidence', 'canonical', 'candidates', 'followups', 'need_fields', 'anchors', 'hold'],
             'properties' => [
                 'status' => ['type' => 'string', 'enum' => ['certain', 'uncertain']],
                 'confidence' => ['type' => 'number', 'minimum' => 0.0, 'maximum' => 1.0],
                 'canonical' => [
                     'type' => 'object',
-                    'required' => ['family', 'name', 'provider', 'variant', 'language_of_test'],
                     'properties' => [
-                        'family' => ['type' => ['string', 'null']],
-                        'name' => ['type' => ['string', 'null']],
-                        'provider' => ['type' => ['string', 'null']],
-                        'variant' => ['type' => ['string', 'null']],
-                        'language_of_test' => ['type' => ['string', 'null']],
+                        'family' => ['type' => ['string', 'null'], 'description' => 'Exam family (e.g., IELTS, TOEFL)'],
+                        'name' => ['type' => ['string', 'null'], 'description' => 'Full exam name'],
+                        'provider' => ['type' => ['string', 'null'], 'description' => 'Exam provider organization'],
+                        'variant' => ['type' => ['string', 'null'], 'description' => 'Exam variant if applicable'],
+                        'language_of_test' => ['type' => ['string', 'null'], 'description' => 'Language being tested'],
                     ],
+                    'required' => ['family', 'name', 'provider', 'variant', 'language_of_test'],
                     'additionalProperties' => false,
                 ],
                 'candidates' => [
                     'type' => 'array',
                     'items' => [
                         'type' => 'object',
-                        'required' => ['family', 'name', 'provider', 'score'],
                         'properties' => [
                             'family' => ['type' => ['string', 'null']],
                             'name' => ['type' => ['string', 'null']],
                             'provider' => ['type' => ['string', 'null']],
                             'score' => ['type' => 'number', 'minimum' => 0.0, 'maximum' => 1.0],
                         ],
+                        'required' => ['family', 'name', 'provider', 'score'],
                         'additionalProperties' => false,
                     ],
                 ],
@@ -46,16 +46,16 @@ final class JsonSchemaExamIdentity
                     'type' => 'array',
                     'items' => [
                         'type' => 'object',
-                        'required' => ['page', 'snippet'],
                         'properties' => [
-                            'page' => ['type' => ['integer', 'null']],
-                            'snippet' => ['type' => 'string'],
+                            'page' => ['type' => ['integer', 'null'], 'description' => 'Page number where evidence was found'],
+                            'snippet' => ['type' => 'string', 'description' => 'Text snippet from document'],
                         ],
+                        'required' => ['page', 'snippet'],
                         'additionalProperties' => false,
                     ],
                 ],
 
-                'hold' => ['type' => ['boolean', 'null']],
+                'hold' => ['type' => ['boolean', 'null'], 'description' => 'Whether to pause processing'],
             ],
             'additionalProperties' => false,
         ];

@@ -4,6 +4,16 @@ return [
     // openai | gateway | mock
     'provider' => env('AI_PROVIDER', 'mock'),
 
+    // Async processing configuration
+    'async_enabled' => (bool) env('AI_ASYNC_ENABLED', false),
+    'parallel_max' => (int) env('AI_PARALLEL_MAX', 5), // Max parallel AI requests
+
+    // Rate limiting configuration
+    'rate_limit_enabled' => (bool) env('AI_RATE_LIMIT_ENABLED', true),
+    'rate_limit_rpm' => (int) env('AI_RATE_LIMIT_RPM', 60), // Requests per minute
+    'rate_limit_retries' => (int) env('AI_RATE_LIMIT_RETRIES', 3),
+    'rate_limit_retry_delay_ms' => (int) env('AI_RATE_LIMIT_RETRY_DELAY_MS', 1000),
+
     'openai' => [
         'base_url' => rtrim(env('AI_BASE_URL', 'https://api.openai.com/v1'), '/'),
         'api_key' => env('AI_API_KEY'),
@@ -61,6 +71,47 @@ return [
     'evaluation' => [
         // включить LLM-подсказки в фидбек (пока по умолчанию выкл — Stage 1)
         'enable_llm' => env('AI_EVALUATION_LLM', false),
+    ],
+
+    // Text-to-Speech configuration (OpenAI TTS)
+    'tts' => [
+        'enabled' => (bool) env('AI_TTS_ENABLED', false),
+        'api_key' => env('AI_TTS_API_KEY', env('AI_API_KEY')), // Use main API key if not specified
+        'base_url' => env('AI_TTS_BASE_URL', 'https://api.openai.com/v1'),
+        'model' => env('AI_TTS_MODEL', 'tts-1'), // tts-1 or tts-1-hd
+        'voice' => env('AI_TTS_VOICE', 'alloy'), // alloy, echo, fable, onyx, nova, shimmer
+        'speed' => (float) env('AI_TTS_SPEED', 1.0), // 0.25 to 4.0
+        'timeout' => (int) env('AI_TTS_TIMEOUT', 60),
+    ],
+
+    // Image Search and Selection configuration
+    'images' => [
+        'enabled' => (bool) env('AI_IMAGE_ENABLED', false),
+        'test_mode' => (bool) env('AI_IMAGE_TEST_MODE', true), // Return top-3 instead of top-1
+        'provider' => env('AI_IMAGE_PROVIDER', 'unsplash'), // unsplash, pexels, pixabay
+        'search_count' => (int) env('AI_IMAGE_SEARCH_COUNT', 15), // How many images to search
+        'timeout' => (int) env('AI_IMAGE_TIMEOUT', 30),
+
+        // Unsplash API configuration
+        'unsplash' => [
+            'api_key' => env('AI_IMAGE_UNSPLASH_KEY'),
+            'base_url' => 'https://api.unsplash.com',
+        ],
+
+        // Pexels API configuration
+        'pexels' => [
+            'api_key' => env('AI_IMAGE_PEXELS_KEY'),
+            'base_url' => 'https://api.pexels.com/v1',
+        ],
+
+        // Pixabay API configuration
+        'pixabay' => [
+            'api_key' => env('AI_IMAGE_PIXABAY_KEY'),
+            'base_url' => 'https://pixabay.com/api',
+        ],
+
+        // AI selection model (gpt-5-mini for image evaluation)
+        'selection_model' => env('AI_IMAGE_SELECTION_MODEL', 'gpt-5-mini'),
     ],
 
     // Schema has been moved to App\Services\LanguageApp\Prompts\PromptExamOverview::getSchemaArray()

@@ -165,11 +165,28 @@ class ExamResearchController extends Controller
             abort(400, 'Task does not belong to this exam');
         }
 
-        // Check if there's a hold to confirm
-        $identity = $task->result['identity'] ?? null;
-        if (! $identity || ! ($identity['hold'] ?? false)) {
+        // Extract identity from new structure (verification_attempts) or fallback to old
+        $result = $task->result ?? [];
+        $identity = null;
+
+        if (isset($result['verification_attempts']) && !empty($result['verification_attempts'])) {
+            $latestAttempt = end($result['verification_attempts']);
+            $identity = $latestAttempt['identity_result'] ?? null;
+        } else {
+            $identity = $result['identity'] ?? null;
+        }
+
+        if (! $identity) {
             return response()->json([
-                'error' => 'No identity hold to confirm',
+                'error' => 'No identity data to confirm',
+                'current_status' => $task->status,
+            ], 400);
+        }
+
+        // Check if task is in pending_confirmation status
+        if ($task->status !== 'pending_confirmation') {
+            return response()->json([
+                'error' => 'Task is not in pending_confirmation status',
                 'current_status' => $task->status,
             ], 400);
         }
@@ -183,19 +200,58 @@ class ExamResearchController extends Controller
         $notes = $validated['notes'] ?? null;
 
         if ($confirmed) {
-            // User confirmed the identity - remove hold and continue pipeline
-            $identity['hold'] = false;
+            // User confirmed the identity - boost confidence and continue pipeline
+            $originalConfidence = $identity['confidence'] ?? 0;
             $identity['user_confirmed'] = true;
             $identity['confirmed_at'] = now()->toISOString();
+
+            // Boost confidence to 1.0 if user manually confirmed
+            if ($originalConfidence < 0.97) {
+                $identity['confidence'] = 1.0;
+                $identity['confidence_boosted_by'] = 'user_confirmation';
+                $identity['original_confidence'] = $originalConfidence;
+            }
+
             if ($notes) {
                 $identity['confirmation_notes'] = $notes;
             }
 
+            // Update identity in verification_attempts structure
             $result = (array) ($task->result ?? []);
-            $result['identity'] = $identity;
+            if (isset($result['verification_attempts']) && !empty($result['verification_attempts'])) {
+                $attemptIndex = count($result['verification_attempts']) - 1;
+                $result['verification_attempts'][$attemptIndex]['identity_result'] = $identity;
+            } else {
+                // Fallback to old structure
+                $result['identity'] = $identity;
+            }
+
             $task->result = $result;
             $task->status = 'queued';  // Reset status so job can continue
             $task->save();
+
+            // Add activity log
+            $task->addActivity('user_confirmed_identity', 'User confirmed identity via API', [
+                'original_confidence' => $originalConfidence,
+                'notes' => $notes,
+            ]);
+
+            // Phase 9: Create ConfirmedIdentity for future reuse
+            try {
+                /** @var \App\Services\LanguageApp\ConfirmedIdentityService $confirmedIdentityService */
+                $confirmedIdentityService = app(\App\Services\LanguageApp\ConfirmedIdentityService::class);
+                $confirmedIdentity = $confirmedIdentityService->createConfirmedIdentity($exam, $identity, $task);
+
+                $task->addActivity('confirmed_identity_created', 'ConfirmedIdentity record created', [
+                    'confirmed_identity_id' => $confirmedIdentity->id,
+                ]);
+            } catch (\Throwable $e) {
+                \Illuminate\Support\Facades\Log::error('Failed to create ConfirmedIdentity in confirmIdentity', [
+                    'exam_id' => $exam->id,
+                    'task_id' => $task->id,
+                    'error' => $e->getMessage(),
+                ]);
+            }
 
             // Continue the pipeline (dispatch job again to run structure building)
             \App\Jobs\RunExamResearchJob::dispatch($task->id)
@@ -208,26 +264,43 @@ class ExamResearchController extends Controller
                 'task_id' => $task->id,
             ]);
         } else {
-            // User rejected - mark as uncertain and request clarification
+            // User rejected - re-run identity verification
             $identity['status'] = 'uncertain';
             $identity['confidence'] = 0.3;
             $identity['user_rejected'] = true;
             $identity['rejected_at'] = now()->toISOString();
-            $identity['hold'] = true; // Keep hold until we get better info
+            $identity['user_provided_clarification'] = true; // Signal to job to re-run identity guard
             if ($notes) {
                 $identity['rejection_notes'] = $notes;
+                $identity['clarification_data'] = ['user_notes' => $notes];
             }
 
+            // Update identity in verification_attempts structure
             $result = (array) ($task->result ?? []);
-            $result['identity'] = $identity;
+            if (isset($result['verification_attempts']) && !empty($result['verification_attempts'])) {
+                $attemptIndex = count($result['verification_attempts']) - 1;
+                $result['verification_attempts'][$attemptIndex]['identity_result'] = $identity;
+            } else {
+                // Fallback to old structure
+                $result['identity'] = $identity;
+            }
+
             $task->result = $result;
             $task->status = 'queued'; // Need more input
             $task->save();
 
+            // Add activity log
+            $task->addActivity('user_rejected_identity', 'User rejected identity, re-running verification', [
+                'notes' => $notes,
+            ]);
+
+            // Re-run the research job to verify identity again
+            \App\Jobs\RunExamResearchJob::dispatch($task->id)
+                ->delay(now()->addSeconds(1));
+
             return response()->json([
                 'status' => 'rejected',
-                'message' => 'Identity rejected. Please provide additional information.',
-                'followups' => $identity['followups'] ?? ['Please provide more specific information about the exam'],
+                'message' => 'Identity rejected. Re-running identity verification.',
                 'task_id' => $task->id,
             ]);
         }
@@ -240,6 +313,12 @@ class ExamResearchController extends Controller
      */
     public function clarify(Request $request, string $examId, int $taskId)
     {
+        \Illuminate\Support\Facades\Log::info('🔍 [CLARIFY STEP 1] Endpoint called', [
+            'exam_id' => $examId,
+            'task_id' => $taskId,
+            'request_data' => $request->all(),
+        ]);
+
         /** @var Exam $exam */
         $exam = Exam::query()->findOrFail($examId);
 
@@ -257,6 +336,11 @@ class ExamResearchController extends Controller
             'answers' => ['required_if:clarification_type,answer_questions', 'array'],
             'user_input_updates' => ['required_if:clarification_type,provide_fields', 'array'],
             'notes' => ['nullable', 'string', 'max:1000'],
+        ]);
+
+        \Illuminate\Support\Facades\Log::info('🔍 [CLARIFY STEP 2] Validation passed', [
+            'clarification_type' => $validated['clarification_type'],
+            'validated_data' => $validated,
         ]);
 
         $identity = $task->result['identity'] ?? [];
@@ -297,18 +381,41 @@ class ExamResearchController extends Controller
                 ]);
 
             case 'answer_questions':
+                \Illuminate\Support\Facades\Log::info('🔍 [CLARIFY STEP 3] Processing answer_questions', [
+                    'answers' => $validated['answers'],
+                    'followups' => $identity['followups'] ?? [],
+                ]);
+
                 // Merge answers into user_input and re-run identity guard
                 $currentInput = $task->request['user_input'] ?? [];
-                $updates = $validated['answers'];
-                $mergedInput = array_merge($currentInput, $updates);
+
+                // Format answers as Q&A pairs so AI understands the context
+                $followups = $identity['followups'] ?? [];
+                $clarificationText = "=== Additional Information (User Answers) ===\n\n";
+
+                foreach ($validated['answers'] as $index => $answer) {
+                    if (isset($followups[$index]) && !empty(trim($answer))) {
+                        $question = $followups[$index];
+                        $questionText = is_string($question) ? $question : ($question['q'] ?? 'Question ' . ($index + 1));
+                        $clarificationText .= "Q: {$questionText}\n";
+                        $clarificationText .= "A: {$answer}\n\n";
+                    }
+                }
+
+                \Illuminate\Support\Facades\Log::info('🔍 [CLARIFY STEP 4] Formatted clarification text', [
+                    'clarification_text' => $clarificationText,
+                ]);
+
+                // Add formatted Q&A to user_input as a single string field
+                $currentInput['clarification'] = $clarificationText;
 
                 $request_data = (array) ($task->request ?? []);
-                $request_data['user_input'] = $mergedInput;
+                $request_data['user_input'] = $currentInput;
                 $task->request = $request_data;
 
                 $identity['user_provided_clarification'] = true;
                 $identity['clarification_provided_at'] = now()->toISOString();
-                $identity['clarification_data'] = $updates;
+                $identity['clarification_data'] = $validated['answers'];
 
                 if (! empty($validated['notes'])) {
                     $identity['clarification_notes'] = $validated['notes'];
@@ -320,9 +427,20 @@ class ExamResearchController extends Controller
                 $task->status = 'queued';
                 $task->save();
 
+                \Illuminate\Support\Facades\Log::info('🔍 [CLARIFY STEP 5] Task updated and saved', [
+                    'task_id' => $task->id,
+                    'new_status' => $task->status,
+                    'user_input' => $task->request['user_input'],
+                    'user_provided_clarification' => $identity['user_provided_clarification'],
+                ]);
+
                 // Re-run identity verification with updated data
                 \App\Jobs\RunExamResearchJob::dispatch($task->id)
                     ->delay(now()->addSeconds(1));
+
+                \Illuminate\Support\Facades\Log::info('🔍 [CLARIFY STEP 6] Job dispatched', [
+                    'task_id' => $task->id,
+                ]);
 
                 return response()->json([
                     'status' => 'clarified',
@@ -331,9 +449,11 @@ class ExamResearchController extends Controller
                 ]);
 
             case 'provide_fields':
-                // Same as answer_questions but with different field name
+                // Merge field values into user_input
                 $currentInput = $task->request['user_input'] ?? [];
                 $updates = $validated['user_input_updates'];
+
+                // Directly merge field updates (these are already key-value pairs)
                 $mergedInput = array_merge($currentInput, $updates);
 
                 $request_data = (array) ($task->request ?? []);

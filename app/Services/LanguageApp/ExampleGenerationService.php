@@ -16,13 +16,48 @@ use Illuminate\Support\Facades\Log;
  * Responsibilities:
  * - Generate example questions for exam archetypes
  * - Validate and persist examples to database
+ * - Supports both V1 (question_archetypes) and V2 (question_archetypes from structure_v2)
  */
 class ExampleGenerationService extends AbstractAiService
 {
+    public function __construct(
+        AiProvider $ai,
+        protected readonly ParallelExampleGenerator $parallelGenerator,
+        protected readonly QuestionImageProcessor $imageProcessor
+    ) {
+        parent::__construct($ai);
+    }
+
     /**
-     * Generate example questions for exam question_archetypes
+     * Generate example questions - auto-detects V1 vs V2 architecture
      */
     public function generateExamples(Exam $exam, GenerationTask $task, int $examplesPerArchetype = 1): array
+    {
+        // Check if V2 architecture (structure_v2 exists with question_archetypes)
+        $structureV2 = $exam->meta['structure_v2'] ?? null;
+        $isV2 = !empty($structureV2);
+
+        if ($isV2) {
+            // V2 architecture: use ParallelExampleGenerator with question_archetypes
+            Log::info('Using V2 architecture for example generation', [
+                'exam_id' => $exam->id,
+            ]);
+
+            return $this->parallelGenerator->generateBatch($exam, $task, $examplesPerArchetype);
+        }
+
+        // V1 architecture: use legacy sequential generation with question_archetypes
+        Log::info('Using V1 architecture for example generation', [
+            'exam_id' => $exam->id,
+        ]);
+
+        return $this->generateExamplesV1($exam, $task, $examplesPerArchetype);
+    }
+
+    /**
+     * Generate example questions for exam question_archetypes (V1 architecture)
+     */
+    protected function generateExamplesV1(Exam $exam, GenerationTask $task, int $examplesPerArchetype = 1): array
     {
         // Get exam structure and question_archetypes from exam or task result
         $structure = $exam->exam_structure ?? $task->result['overview'] ?? [];
@@ -75,25 +110,41 @@ class ExampleGenerationService extends AbstractAiService
         $examples = $validated['examples'] ?? [];
 
         // Persist examples to database
-        $createdCount = $this->persistExamples($exam, $questionArchetypes, $examples);
+        $createdQuestions = $this->persistExamples($exam, $questionArchetypes, $examples);
+
+        // Process images for questions (if enabled)
+        $imageStats = ['processed' => 0, 'images_generated' => 0, 'errors' => 0];
+        if (config('ai.images.enabled', false) && !empty($createdQuestions)) {
+            try {
+                $imageStats = $this->imageProcessor->processQuestions($createdQuestions);
+                Log::info('[ExampleGenerationService] Image processing completed', $imageStats);
+            } catch (\Exception $e) {
+                Log::error('[ExampleGenerationService] Image processing failed', [
+                    'error' => $e->getMessage(),
+                ]);
+            }
+        }
 
         // Update exam examples_count
         $exam->examples_count = $exam->examples()->count();
         $exam->save();
 
         return [
-            'examples_created' => $createdCount,
-            'total_archetypes' => count($archetypes),
+            'examples_created' => count($createdQuestions),
+            'total_archetypes' => count($questionArchetypes),
             'examples_per_archetype' => $examplesPerArchetype,
+            'images_generated' => $imageStats['images_generated'],
         ];
     }
 
     /**
-     * Persist examples to database
+     * Persist examples to database (V1 architecture)
+     *
+     * @return array<ExamExampleQuestion>
      */
-    protected function persistExamples(Exam $exam, array $questionArchetypes, array $examples): int
+    protected function persistExamples(Exam $exam, array $questionArchetypes, array $examples): array
     {
-        $createdCount = 0;
+        $createdQuestions = [];
 
         foreach ($examples as $example) {
             // Find category for this question_archetype
@@ -122,7 +173,7 @@ class ExampleGenerationService extends AbstractAiService
             );
 
             // Create example question
-            ExamExampleQuestion::create([
+            $question = ExamExampleQuestion::create([
                 'exam_id' => $exam->id,
                 'exam_category_id' => $category->id,
                 'question' => $example['question'],
@@ -135,10 +186,10 @@ class ExampleGenerationService extends AbstractAiService
                 'payload' => $example['payload'],
             ]);
 
-            $createdCount++;
+            $createdQuestions[] = $question;
         }
 
-        return $createdCount;
+        return $createdQuestions;
     }
 
     /**

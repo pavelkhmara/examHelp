@@ -36,27 +36,32 @@ class ConfirmIdentityAction extends Action
                 return Action::danger('No pending identity confirmation for this exam.');
             }
 
-            $identity = $task->result['identity'] ?? null;
+            // Extract identity from new structure (verification_attempts) or fallback to old
+            $result = $task->result ?? [];
+            $identity = null;
+
+            if (isset($result['verification_attempts']) && !empty($result['verification_attempts'])) {
+                $latestAttempt = end($result['verification_attempts']);
+                $identity = $latestAttempt['identity_result'] ?? null;
+            } else {
+                $identity = $result['identity'] ?? null;
+            }
+
             if (! $identity) {
                 return Action::danger('No identity data found for this exam.');
             }
 
-            // Check if confirmation is needed:
-            // 1. Old logic: hold = true (high confidence but requires user confirmation)
-            // 2. New logic: confidence < 0.97 (low confidence, must confirm)
-            $needsConfirmation = ($identity['hold'] ?? false) || ($identity['confidence'] ?? 0) < 0.97;
-
-            if (! $needsConfirmation) {
-                return Action::danger('This exam does not require identity confirmation (confidence >= 0.97 and no hold).');
+            // Check if task is in pending_confirmation status
+            if ($task->status !== 'pending_confirmation') {
+                return Action::danger('This task is not in pending_confirmation status (current: '.$task->status.').');
             }
 
             $confirmed = $fields->get('confirmed');
             $notes = $fields->get('notes');
 
             if ($confirmed) {
-                // User confirmed - remove hold and boost confidence
+                // User confirmed - boost confidence and continue pipeline
                 $originalConfidence = $identity['confidence'] ?? 0;
-                $identity['hold'] = false;
                 $identity['user_confirmed'] = true;
                 $identity['confirmed_at'] = now()->toISOString();
 
@@ -72,8 +77,16 @@ class ConfirmIdentityAction extends Action
                     $identity['confirmation_notes'] = $notes;
                 }
 
+                // Update identity in verification_attempts structure
                 $result = (array) ($task->result ?? []);
-                $result['identity'] = $identity;
+                if (isset($result['verification_attempts']) && !empty($result['verification_attempts'])) {
+                    $attemptIndex = count($result['verification_attempts']) - 1;
+                    $result['verification_attempts'][$attemptIndex]['identity_result'] = $identity;
+                } else {
+                    // Fallback to old structure
+                    $result['identity'] = $identity;
+                }
+
                 $task->result = $result;
                 $task->status = 'queued'; // Reset to queued so job can pick it up
                 $task->save();
@@ -119,15 +132,22 @@ class ConfirmIdentityAction extends Action
                 $identity['confidence'] = 0.3;
                 $identity['user_rejected'] = true;
                 $identity['rejected_at'] = now()->toISOString();
-                $identity['hold'] = true;
                 $identity['user_provided_clarification'] = true; // Signal to job to re-run identity guard
                 if ($notes) {
                     $identity['rejection_notes'] = $notes;
                     $identity['clarification_data'] = ['user_notes' => $notes];
                 }
 
+                // Update identity in verification_attempts structure
                 $result = (array) ($task->result ?? []);
-                $result['identity'] = $identity;
+                if (isset($result['verification_attempts']) && !empty($result['verification_attempts'])) {
+                    $attemptIndex = count($result['verification_attempts']) - 1;
+                    $result['verification_attempts'][$attemptIndex]['identity_result'] = $identity;
+                } else {
+                    // Fallback to old structure
+                    $result['identity'] = $identity;
+                }
+
                 $task->result = $result;
                 $task->status = 'queued'; // Set to queued so job can pick it up
                 $task->save();

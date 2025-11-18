@@ -33,6 +33,8 @@ class CustomMenu extends Tool
                 ->name('All Categories'),
             MenuItem::resource(\App\Nova\ExamExampleQuestion::class)
                 ->name('All Example Questions'),
+            MenuItem::resource(\App\Nova\Question::class)
+                ->name('Real Exam Questions'),
             MenuItem::resource(\App\Nova\GenerationTask::class)
                 ->name('All Generation Tasks'),
             MenuItem::resource(\App\Nova\GenerationLog::class)

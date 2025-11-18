@@ -16,7 +16,7 @@ class GenerationTask extends Model
         'exam_id', 'type', 'status',
         'request', 'response', 'result',
         'error', 'attempts',
-        'idempotency_key', 'activities',
+        'idempotency_key', 'activities', 'heartbeat_at',
     ];
 
     protected $casts = [
@@ -24,6 +24,7 @@ class GenerationTask extends Model
         'response' => AsArrayWithUnescapedSlashes::class,
         'result' => AsArrayWithUnescapedSlashes::class,
         'activities' => AsArrayWithUnescapedSlashes::class,
+        'heartbeat_at' => 'datetime',
     ];
 
     public function exam(): BelongsTo

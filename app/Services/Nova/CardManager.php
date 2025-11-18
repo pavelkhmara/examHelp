@@ -178,15 +178,27 @@ class CardManager
         }
 
         $sourceFields = $confirmedIdentity->source_fields ?? [];
+
+        // Build current fields including document_ids_hash
+        $documentIds = $exam->documents()->pluck('id')->toArray();
         $currentFields = [
             'title' => $exam->title,
             'user_input' => $exam->user_input,
             'level' => $exam->level,
             'description' => $exam->description,
+            'document_ids_hash' => md5(json_encode($documentIds)),
         ];
+
+        // Technical fields that shouldn't be shown to user
+        $technicalFields = ['document_ids_hash'];
 
         $changedFields = [];
         foreach ($sourceFields as $field => $oldValue) {
+            // Skip technical fields in the display
+            if (in_array($field, $technicalFields)) {
+                continue;
+            }
+
             if (!isset($currentFields[$field]) || $currentFields[$field] !== $oldValue) {
                 $changedFields[] = $field;
             }
@@ -269,6 +281,9 @@ class CardManager
 
         // Сначала пробуем получить из result
         $result = $task->result ?? [];
+
+        // IMPORTANT: Always prefer result['identity'] as it's the most current
+        // verification_attempts stores historical data, but identity is updated with latest candidates
         $identity = $result['identity'] ?? [];
         $candidates = $identity['candidates'] ?? [];
 
@@ -321,6 +336,9 @@ class CardManager
 
         // Сначала пробуем получить из result
         $result = $task->result ?? [];
+
+        // IMPORTANT: Always prefer result['identity'] as it's the most current
+        // verification_attempts stores historical data, but identity is updated with latest followups
         $identity = $result['identity'] ?? [];
         $followups = $identity['followups'] ?? [];
         $needFields = $identity['need_fields'] ?? [];

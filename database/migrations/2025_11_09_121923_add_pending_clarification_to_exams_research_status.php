@@ -10,8 +10,12 @@ return new class extends Migration
      */
     public function up(): void
     {
-        // MySQL doesn't support adding enum values directly
-        // We need to alter the column with the full new enum list
+        $driver = DB::getDriverName();
+        if ($driver !== 'mysql') {
+            // Skip enum alteration for non-MySQL (e.g., sqlite in tests)
+            return;
+        }
+
         DB::statement("
             ALTER TABLE exams
             MODIFY COLUMN research_status ENUM(
@@ -29,7 +33,11 @@ return new class extends Migration
      */
     public function down(): void
     {
-        // Revert to original enum values
+        $driver = DB::getDriverName();
+        if ($driver !== 'mysql') {
+            return;
+        }
+
         DB::statement("
             UPDATE exams
             SET research_status = 'failed'

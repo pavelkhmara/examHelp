@@ -67,14 +67,17 @@ export default {
               @click="confirmSelection"
               :disabled="selectedIndex === null || submitting"
               class="px-4 py-2 rounded-lg font-medium transition-colors"
-              :style="{
-                backgroundColor: selectedIndex !== null && !submitting ? '#3b82f6' : '#d1d5db',
-                color: selectedIndex !== null && !submitting ? '#ffffff' : '#6b7280',
-                cursor: selectedIndex === null || submitting ? 'not-allowed' : 'pointer',
-                opacity: selectedIndex === null || submitting ? '0.6' : '1',
+              :class="{
+                'bg-blue-600 hover:bg-blue-700 text-white': selectedIndex !== null && !submitting,
+                'bg-gray-300 text-gray-600 cursor-not-allowed': selectedIndex === null || submitting,
               }">
-              {{ submitting ? 'Submitting...' : 'Confirm Selection' }}
+              {{ submitting ? 'Submitting...' : '✓ Confirm Selected' }}
             </button>
+          </div>
+
+          <!-- Debug info -->
+          <div class="text-xs text-gray-500 mt-2">
+            Debug: selectedIndex = {{ selectedIndex }}, submitting = {{ submitting }}, disabled = {{ selectedIndex === null || submitting }}
           </div>
 
           <div v-if="successMessage" class="mt-4 p-3 bg-green-100 border border-green-300 rounded-lg">
@@ -188,6 +191,12 @@ export default {
       answerInputs: {}, // Ответы на вопросы
       fieldInputs: {},  // Значения полей
     }
+  },
+
+  watch: {
+    selectedIndex(newVal, oldVal) {
+      console.log('[ToolInline] selectedIndex changed:', { old: oldVal, new: newVal })
+    },
   },
 
   computed: {

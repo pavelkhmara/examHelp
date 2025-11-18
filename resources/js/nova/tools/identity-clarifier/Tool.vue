@@ -268,7 +268,14 @@ const fetchTask = async () => {
     console.log('[Identity Clarifier] Response received:', response.data)
 
     task.value = response.data.task
-    identity.value = task.value?.result?.identity || null
+
+    // Extract identity from new structure (verification_attempts) or fallback to old structure
+    if (task.value?.result?.verification_attempts?.length > 0) {
+      const latestAttempt = task.value.result.verification_attempts[task.value.result.verification_attempts.length - 1]
+      identity.value = latestAttempt.identity_result || null
+    } else {
+      identity.value = task.value?.result?.identity || null
+    }
 
     // Force Vue to update
     await nextTick()

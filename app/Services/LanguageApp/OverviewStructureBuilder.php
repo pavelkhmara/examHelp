@@ -7,7 +7,10 @@ use App\Models\ExamCategory;
 use App\Models\ExamDocument;
 use App\Models\GenerationTask;
 use App\Services\LanguageApp\Validators\JsonSchemaExamOverview;
+use App\Services\LanguageApp\Validators\JsonSchemaExamV2;
 use App\Services\LanguageApp\Validators\QuestionTypeContract;
+use App\Services\LanguageApp\Prompts\PromptOverviewPhaseA;
+use App\Services\LanguageApp\Prompts\PromptOverviewPhaseB;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
@@ -140,7 +143,7 @@ class OverviewStructureBuilder extends AbstractAiService
             $this->log($task, $retryAttempt > 0 ? "overview_retry_{$retryAttempt}" : 'overview', $payload, $res1);
 
             $exam->update(['research_status' => 'running_overview']);
-            $task->update(['result' => $res1['body'] ?? $res1['content'] ?? $res1['raw'] ?? null]);
+            $task->update(['result' => $res1['content'] ?? $res1['body'] ?? $res1['raw'] ?? null]);
 
             Log::debug('OverviewStructureBuilder overview result', ['result' => $res1['content'] ?? null]);
 
@@ -985,5 +988,195 @@ class OverviewStructureBuilder extends AbstractAiService
             ]);
             return null;
         }
+    }
+
+    /**
+     * Run Phase A: Generate exam skeleton structure (sections without tasks)
+     *
+     * This is the first phase of v2 two-phase generation.
+     * Output: exam structure with sections[] but NO tasks[] or assembly{}
+     *
+     * @param Exam $exam
+     * @param GenerationTask $task
+     * @return array Validated exam skeleton structure
+     */
+    public function runPhaseA(Exam $exam, GenerationTask $task): array
+    {
+        Log::debug('OverviewStructureBuilder: starting Phase A (skeleton generation)', [
+            'exam_id' => $exam->id,
+            'task_id' => $task->id
+        ]);
+
+        $files = $this->buildFilesForExam($exam);
+        $preferDocs = (bool) (config('ai.documents.prefer_documents') ?? true);
+
+        $task->addActivity('phase_a_started', 'Generating exam skeleton (Phase A - v2 architecture)');
+
+        // Build payload
+        $payload = [
+            'exam_slug' => $exam->slug,
+            'stage' => 'phase_a_skeleton',
+            'exam_title' => $exam->title,
+            'exam_level' => $exam->level,
+            'exam_description' => trim($exam->description),
+            'input' => trim($task->notes) ?? null,
+            'context_policy' => $preferDocs
+                ? 'Prefer insights derived from provided exam documents over generic web sources.'
+                : 'Use both files and web sources.',
+        ];
+
+        // Use GPT-5 for Phase A (highest quality reasoning)
+        $modelAlias = 'thinking'; // Maps to AI_MODEL_THINKING (gpt-5)
+
+        $opts = [
+            'web' => true,
+            'files' => $files,
+            'model' => $modelAlias,
+            'prompt_class' => PromptOverviewPhaseA::class,
+        ];
+
+        // Call AI
+        $res1 = $this->callAi($payload, $opts);
+        $this->log($task, 'phase_a_skeleton', $payload, $res1);
+
+        $exam->update(['research_status' => 'running_overview']);
+        $task->update(['result' => $res1['content'] ?? $res1['body'] ?? $res1['raw'] ?? null]);
+
+        Log::debug('OverviewStructureBuilder Phase A result', ['result' => $res1['content'] ?? null]);
+
+        // Decode and validate response
+        $decoded = $this->decodeOverview($res1);
+
+        try {
+            $validator = new JsonSchemaExamV2();
+            $skeleton_normalized = $validator->validate($decoded);
+            $this->log($task, 'phase_a_validated', $payload, ['result' => $skeleton_normalized]);
+
+            $task->addActivity('phase_a_validated', 'Phase A skeleton validated successfully (v2 schema)');
+        } catch (\Throwable $ve) {
+            Log::error('OverviewStructureBuilder Phase A validation failed', [
+                'exam_id' => $exam->id,
+                'task_id' => $task->id,
+                'error' => $ve->getMessage(),
+                'decoded' => $decoded,
+            ]);
+
+            $task->addActivity('phase_a_validation_failed', 'Phase A validation error: ' . $ve->getMessage());
+
+            throw new \RuntimeException('Phase A validation failed: ' . $ve->getMessage(), 0, $ve);
+        }
+
+        // Store skeleton in exam.meta.structure_v2
+        $exam->structure_v2 = $skeleton_normalized;
+        $exam->save();
+
+        $task->addActivity('phase_a_persisted', 'Skeleton structure saved to exam.meta.structure_v2');
+
+        Log::info('OverviewStructureBuilder: Phase A completed', [
+            'exam_id' => $exam->id,
+            'sections_count' => count($skeleton_normalized['sections'] ?? []),
+        ]);
+
+        return $skeleton_normalized;
+    }
+
+    /**
+     * Run Phase B: Generate assembly plan for exam sections
+     *
+     * This is the second phase of v2 two-phase generation.
+     * Takes skeleton from Phase A and adds assembly{} configuration to sections.
+     *
+     * @param Exam $exam
+     * @param GenerationTask $task
+     * @param array $phaseASkeleton Validated skeleton from Phase A
+     * @return array Complete exam structure with assembly configuration
+     */
+    public function runPhaseB(Exam $exam, GenerationTask $task, array $phaseASkeleton): array
+    {
+        Log::debug('OverviewStructureBuilder: starting Phase B (assembly plan)', [
+            'exam_id' => $exam->id,
+            'task_id' => $task->id
+        ]);
+
+        $files = $this->buildFilesForExam($exam);
+
+        $task->addActivity('phase_b_started', 'Generating assembly plan (Phase B - v2 architecture)');
+
+        // Build payload with Phase A skeleton
+        $payload = [
+            'exam_slug' => $exam->slug,
+            'stage' => 'phase_b_assembly',
+            'exam_title' => $exam->title,
+            'exam_level' => $exam->level,
+            'exam_description' => trim($exam->description),
+            'input' => trim($task->notes) ?? null,
+            'phase_a_skeleton' => $phaseASkeleton,
+        ];
+
+        // Use GPT-5 for Phase B
+        $modelAlias = 'thinking'; // Maps to AI_MODEL_THINKING (gpt-5)
+
+        // Build prompt args for Phase B (different signature than Phase A)
+        $promptArgs = [
+            $exam->title,                     // examTitle
+            trim($task->notes) ?? '',        // userInput
+            trim($exam->description),         // contextNotes
+            $phaseASkeleton,                  // phaseASkeleton
+            null,                             // retryHint
+            null,                             // userInputParsed
+            '',                               // documentsHint
+        ];
+
+        $opts = [
+            'web' => false, // Phase B doesn't need web search
+            'files' => $files,
+            'model' => $modelAlias,
+            'prompt_class' => PromptOverviewPhaseB::class,
+            'prompt_args' => $promptArgs,
+        ];
+
+        // Call AI
+        $res2 = $this->callAi($payload, $opts);
+        $this->log($task, 'phase_b_assembly', $payload, $res2);
+
+        $exam->update(['research_status' => 'running_overview']);
+        $task->update(['result' => $res2['content'] ?? $res2['body'] ?? $res2['raw'] ?? null]);
+
+        Log::debug('OverviewStructureBuilder Phase B result', ['result' => $res2['content'] ?? null]);
+
+        // Decode and validate response
+        $decoded = $this->decodeOverview($res2);
+
+        try {
+            $validator = new JsonSchemaExamV2();
+            $structure_normalized = $validator->validate($decoded);
+            $this->log($task, 'phase_b_validated', $payload, ['result' => $structure_normalized]);
+
+            $task->addActivity('phase_b_validated', 'Phase B assembly plan validated successfully (v2 schema)');
+        } catch (\Throwable $ve) {
+            Log::error('OverviewStructureBuilder Phase B validation failed', [
+                'exam_id' => $exam->id,
+                'task_id' => $task->id,
+                'error' => $ve->getMessage(),
+                'decoded' => $decoded,
+            ]);
+
+            $task->addActivity('phase_b_validation_failed', 'Phase B validation error: ' . $ve->getMessage());
+
+            throw new \RuntimeException('Phase B validation failed: ' . $ve->getMessage(), 0, $ve);
+        }
+
+        // Update structure_v2 with complete assembly plan
+        $exam->structure_v2 = $structure_normalized;
+        $exam->save();
+
+        $task->addActivity('phase_b_persisted', 'Complete structure with assembly plan saved');
+
+        Log::info('OverviewStructureBuilder: Phase B completed', [
+            'exam_id' => $exam->id,
+            'sections_count' => count($structure_normalized['sections'] ?? []),
+        ]);
+
+        return $structure_normalized;
     }
 }

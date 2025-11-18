@@ -130,7 +130,19 @@ class IterativeIdentityVerificationService extends AbstractAiService
 
             // Check if this is first attempt - if so, STOP and request user clarification
             // (unless this attempt already has user clarification from previous pause)
-            $hasUserClarification = !empty($task->request['user_input']['clarification_answers'] ?? []);
+            // IMPORTANT: Check for clarification in both old ('clarification_answers') and new ('clarification') format
+            // Also check the saved flag from task.result['identity']['user_provided_clarification']
+            $hasUserClarification = !empty($task->request['user_input']['clarification_answers'] ?? [])
+                || !empty($task->request['user_input']['clarification'] ?? '')
+                || !empty($task->result['identity']['user_provided_clarification'] ?? false);
+
+            \Illuminate\Support\Facades\Log::info('🔍 [ITERATIVE] Checking user clarification', [
+                'attempt' => $attempt,
+                'hasUserClarification' => $hasUserClarification,
+                'has_clarification_answers' => !empty($task->request['user_input']['clarification_answers'] ?? []),
+                'has_clarification' => !empty($task->request['user_input']['clarification'] ?? ''),
+                'has_flag' => !empty($task->result['identity']['user_provided_clarification'] ?? false),
+            ]);
 
             if ($attempt === 1 && !$hasUserClarification) {
                 // First attempt with low confidence and no user clarification yet
