@@ -23,7 +23,7 @@ return Application::configure(basePath: dirname(__DIR__))
             }
 
             // Skip if not a server error (500-level)
-            if (!$this->isServerError($e)) {
+            if (!isServerError($e)) {
                 return;
             }
 
@@ -61,14 +61,16 @@ return Application::configure(basePath: dirname(__DIR__))
 /**
  * Check if exception is a server error (500-level)
  */
-function isServerError(Throwable $e): bool
-{
-    // If it's an HTTP exception, check status code
-    if (method_exists($e, 'getStatusCode')) {
-        $code = $e->getStatusCode();
-        return $code >= 500 && $code < 600;
-    }
+if (!function_exists('isServerError')) {
+    function isServerError(Throwable $e): bool
+    {
+        // If it's an HTTP exception, check status code
+        if (method_exists($e, 'getStatusCode')) {
+            $code = $e->getStatusCode();
+            return $code >= 500 && $code < 600;
+        }
 
-    // For non-HTTP exceptions, consider them server errors
-    return true;
+        // For non-HTTP exceptions, consider them server errors
+        return true;
+    }
 }
