@@ -119,6 +119,9 @@ class ExamStatusController extends Controller
             ];
         }
 
+        // Progress data
+        $progressData = $this->buildProgressData($exam, $quickCheck, $confirmedIdentity, $latestTask);
+
         return response()->json([
             'exam_id' => $exam->id,
             'research_status' => $exam->research_status,
@@ -132,6 +135,7 @@ class ExamStatusController extends Controller
             'quick_check' => $quickCheck,
             'confirmed_identity' => $confirmedIdentityStatus,
             'stalled_task' => $stalledTaskData,
+            'progress' => $progressData,
         ]);
     }
 
@@ -182,5 +186,278 @@ class ExamStatusController extends Controller
             })
             ->latest()
             ->first();
+    }
+
+    /**
+     * Построить данные прогресса экзамена
+     *
+     * @param  Exam  $exam
+     * @param  array  $quickCheck
+     * @param  \App\Models\ConfirmedIdentity|null  $confirmedIdentity
+     * @param  \App\Models\GenerationTask|null  $latestTask
+     * @return array
+     */
+    protected function buildProgressData(
+        Exam $exam,
+        array $quickCheck,
+        $confirmedIdentity,
+        $latestTask
+    ): array {
+        // Определяем статус и метрики для каждого этапа
+        $stages = [];
+
+        // 1. Данные
+        $dataStatus = $quickCheck['ready'] ? 'completed' : 'pending';
+        $stages[] = [
+            'id' => 'data',
+            'label' => 'Данные',
+            'status' => $dataStatus,
+            'metrics' => [
+                'completion' => $quickCheck['completion_percentage'] . '%',
+            ],
+            'duration' => null,
+        ];
+
+        // 2. Идентификация
+        $identityStatus = 'pending';
+        $identityMetrics = ['confirmed' => false];
+        $identityDuration = null;
+
+        if ($confirmedIdentity && $confirmedIdentity->is_valid) {
+            $identityStatus = 'completed';
+            $identityMetrics['confirmed'] = true;
+
+            // Попытка вычислить duration из tasks
+            $identityTask = $exam->generationTasks()
+                ->where('type', 'research')
+                ->where('status', 'completed')
+                ->latest()
+                ->first();
+
+            if ($identityTask && $identityTask->created_at && $identityTask->updated_at) {
+                $identityDuration = $identityTask->created_at->diffInSeconds($identityTask->updated_at);
+            }
+        } elseif ($latestTask && $latestTask->status === 'running') {
+            // Проверяем, не идет ли сейчас Identity stage
+            $activities = $latestTask->activities ?? [];
+            foreach ($activities as $activity) {
+                if (in_array($activity['event'] ?? '', [
+                    'identity_guard_started',
+                    'identity_verification_started',
+                    'identity_low_confidence',
+                ])) {
+                    $identityStatus = 'in_progress';
+                    break;
+                }
+            }
+        }
+
+        // Проверяем на ошибки в Identity
+        $identityErrorTask = $exam->generationTasks()
+            ->where('status', 'failed')
+            ->where('type', 'research')
+            ->latest()
+            ->first();
+
+        if ($identityErrorTask && $identityErrorTask->error) {
+            // Проверяем, содержит ли ошибка слова identity/identification
+            if (stripos($identityErrorTask->error, 'identity') !== false ||
+                stripos($identityErrorTask->error, 'identification') !== false) {
+                $identityStatus = 'error';
+            }
+        }
+
+        $stages[] = [
+            'id' => 'identity',
+            'label' => 'Идентификация',
+            'status' => $identityStatus,
+            'metrics' => $identityMetrics,
+            'duration' => $identityDuration,
+        ];
+
+        // 3. Структура
+        $structureStatus = 'pending';
+        $categoriesCount = $exam->categories_count ?? $exam->categories()->count();
+
+        if ($categoriesCount > 0 || !empty($exam->meta['structure_v2'])) {
+            $structureStatus = 'completed';
+        } elseif ($latestTask && $latestTask->status === 'running') {
+            // Проверяем, не идет ли сейчас Overview/Structure generation
+            $activities = $latestTask->activities ?? [];
+            foreach ($activities as $activity) {
+                if (in_array($activity['event'] ?? '', [
+                    'overview_generation_started',
+                    'structure_building_started',
+                    'categories_creation_started',
+                ])) {
+                    $structureStatus = 'in_progress';
+                    break;
+                }
+            }
+
+            // Также проверяем по research_status
+            if (in_array($exam->research_status, ['running_overview', 'running_categories'])) {
+                $structureStatus = 'in_progress';
+            }
+        }
+
+        $stages[] = [
+            'id' => 'structure',
+            'label' => 'Структура',
+            'status' => $structureStatus,
+            'metrics' => [
+                'categories' => $categoriesCount,
+            ],
+            'duration' => null,
+        ];
+
+        // 4. Примеры
+        $examplesStatus = 'pending';
+        $examplesCount = $exam->examples_count ?? $exam->examples()->count();
+
+        if ($examplesCount > 0) {
+            $examplesStatus = 'completed';
+        } elseif ($latestTask && $latestTask->status === 'running') {
+            if (in_array($exam->research_status, ['running_examples'])) {
+                $examplesStatus = 'in_progress';
+            }
+        }
+
+        $stages[] = [
+            'id' => 'examples',
+            'label' => 'Примеры',
+            'status' => $examplesStatus,
+            'metrics' => [
+                'examples' => $examplesCount,
+            ],
+            'duration' => null,
+        ];
+
+        // 5. Вопросы
+        $questionsStatus = 'pending';
+        $questionsCount = $exam->questions()->count();
+
+        if ($questionsCount > 0) {
+            $questionsStatus = 'completed';
+        } elseif ($latestTask && $latestTask->status === 'running') {
+            // Проверяем по типу задачи
+            if ($latestTask->type === 'generate_questions') {
+                $questionsStatus = 'in_progress';
+            }
+        }
+
+        $stages[] = [
+            'id' => 'questions',
+            'label' => 'Вопросы',
+            'status' => $questionsStatus,
+            'metrics' => [
+                'questions' => $questionsCount,
+            ],
+            'duration' => null,
+        ];
+
+        // Вычисляем общий процент готовности
+        $completedStages = array_filter($stages, fn ($s) => $s['status'] === 'completed');
+        $overallPercentage = round((count($completedStages) / count($stages)) * 100);
+
+        // Current task
+        $currentTaskData = null;
+        if ($latestTask && $latestTask->status === 'running') {
+            $elapsedSeconds = $latestTask->created_at
+                ? now()->diffInSeconds($latestTask->created_at)
+                : 0;
+
+            // Определяем stage и message
+            $currentStage = 'unknown';
+            $currentMessage = 'Обработка...';
+
+            $activities = $latestTask->activities ?? [];
+            $lastActivity = end($activities);
+
+            if ($lastActivity) {
+                $event = $lastActivity['event'] ?? '';
+
+                // Map events to stages
+                if (strpos($event, 'identity') !== false) {
+                    $currentStage = 'identity';
+                    $currentMessage = 'Проверка идентичности...';
+                } elseif (strpos($event, 'overview') !== false || strpos($event, 'structure') !== false) {
+                    $currentStage = 'overview';
+                    $currentMessage = 'Генерация структуры...';
+                } elseif (strpos($event, 'example') !== false) {
+                    $currentStage = 'examples';
+                    $currentMessage = 'Генерация примеров...';
+                }
+            }
+
+            // Fallback to research_status
+            if ($currentStage === 'unknown') {
+                switch ($exam->research_status) {
+                    case 'running_overview':
+                        $currentStage = 'overview';
+                        $currentMessage = 'Генерация структуры...';
+                        break;
+                    case 'running_examples':
+                        $currentStage = 'examples';
+                        $currentMessage = 'Генерация примеров...';
+                        break;
+                    default:
+                        $currentMessage = 'Обработка задачи...';
+                }
+            }
+
+            $currentTaskData = [
+                'id' => $latestTask->id,
+                'type' => $latestTask->type,
+                'stage' => $currentStage,
+                'elapsed_seconds' => $elapsedSeconds,
+                'message' => $currentMessage,
+            ];
+        }
+
+        // Latest error
+        $latestErrorData = null;
+        $failedTask = $exam->generationTasks()
+            ->where('status', 'failed')
+            ->latest()
+            ->first();
+
+        if ($failedTask && $failedTask->error) {
+            $errorStage = 'unknown';
+
+            // Попытка определить stage из activities
+            $activities = $failedTask->activities ?? [];
+            foreach (array_reverse($activities) as $activity) {
+                $event = $activity['event'] ?? '';
+                if (strpos($event, 'identity') !== false) {
+                    $errorStage = 'identity';
+                    break;
+                } elseif (strpos($event, 'overview') !== false || strpos($event, 'structure') !== false) {
+                    $errorStage = 'overview';
+                    break;
+                }
+            }
+
+            // Укоротить сообщение об ошибке для компактного отображения
+            $shortError = strlen($failedTask->error) > 100
+                ? substr($failedTask->error, 0, 100) . '...'
+                : $failedTask->error;
+
+            $latestErrorData = [
+                'task_id' => $failedTask->id,
+                'type' => $failedTask->type,
+                'stage' => $errorStage,
+                'message' => $shortError,
+                'full_error' => $failedTask->error,
+                'occurred_at' => $failedTask->updated_at?->toIso8601String(),
+            ];
+        }
+
+        return [
+            'overall_percentage' => $overallPercentage,
+            'stages' => $stages,
+            'current_task' => $currentTaskData,
+            'latest_error' => $latestErrorData,
+        ];
     }
 }

@@ -12,6 +12,76 @@
 
     <!-- Main content based on viewMode -->
     <div v-else>
+      <!-- Progress Bar Section (always visible at top) -->
+      <div v-if="status.progress" class="mb-4 pb-4 border-b border-gray-200 dark:border-gray-700">
+        <!-- Overall progress bar -->
+        <div class="mb-3">
+          <div class="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2.5">
+            <div
+              class="bg-blue-500 h-2.5 rounded-full transition-all duration-300"
+              :style="{ width: status.progress.overall_percentage + '%' }"
+            ></div>
+          </div>
+          <div class="text-xs text-gray-600 dark:text-gray-400 mt-1 text-right">
+            {{ status.progress.overall_percentage }}% готовности
+          </div>
+        </div>
+
+        <!-- Stages -->
+        <div class="flex justify-between items-start mb-3">
+          <div
+            v-for="(stage, index) in status.progress.stages"
+            :key="stage.id"
+            class="flex-1 text-center px-1"
+          >
+            <div class="text-2xl mb-1" :title="getStageStatusText(stage.status)">
+              {{ getStageIcon(stage.status) }}
+            </div>
+            <div class="text-xs font-semibold text-gray-900 dark:text-gray-100">
+              {{ stage.label }}
+            </div>
+            <div class="text-xs text-gray-600 dark:text-gray-400">
+              {{ formatStageMetrics(stage) }}
+            </div>
+            <div v-if="stage.duration" class="text-xs text-gray-500 dark:text-gray-500 italic">
+              {{ formatDuration(stage.duration) }}
+            </div>
+          </div>
+        </div>
+
+        <!-- Current task -->
+        <div v-if="status.progress.current_task" class="text-sm text-blue-700 dark:text-blue-400 mb-2 flex items-center">
+          <span class="animate-pulse mr-2">🔄</span>
+          <span>
+            {{ status.progress.current_task.message }}
+            <span class="text-xs text-gray-600 dark:text-gray-400">
+              (task #{{ status.progress.current_task.id }}, {{ status.progress.current_task.elapsed_seconds }}s)
+            </span>
+          </span>
+        </div>
+
+        <!-- Latest error (compact with expand) -->
+        <div v-if="status.progress.latest_error" class="text-sm">
+          <div class="flex items-start p-2 bg-red-50 dark:bg-red-900/20 rounded border border-red-200 dark:border-red-800">
+            <span class="text-red-600 dark:text-red-400 mr-2">⚠️</span>
+            <div class="flex-1">
+              <div class="text-red-700 dark:text-red-300">
+                <strong>Ошибка (task #{{ status.progress.latest_error.task_id }}):</strong>
+                {{ status.progress.latest_error.message }}
+              </div>
+              <button
+                @click="toggleErrorDetails"
+                class="mt-1 text-xs text-red-600 dark:text-red-400 underline hover:no-underline"
+              >
+                {{ showErrorDetails ? 'Скрыть ▲' : 'Детали ▼' }}
+              </button>
+              <div v-if="showErrorDetails" class="mt-2 p-2 bg-red-100 dark:bg-red-900/40 rounded text-xs font-mono text-red-900 dark:text-red-200 whitespace-pre-wrap">
+                {{ status.progress.latest_error.full_error }}
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
       <!-- MODE 1: Missing Fields (highest priority) -->
       <div v-if="viewMode === 'missing_fields'" class="bg-white dark:bg-gray-800 rounded-lg p-4">
         <h3 class="text-base font-bold mb-3 text-yellow-700 dark:text-yellow-500">
@@ -296,12 +366,14 @@ export default {
         quick_check: null,
         confirmed_identity: null,
         stalled_task: null,
+        progress: null,
       },
       pollHandle: null,
       actionLoading: false,
       selectedCandidateIndex: null,
       clarificationAnswers: {}, // Index-based answers for followup questions
       missingFieldsValues: {}, // Field-based values for missing fields
+      showErrorDetails: false, // For progress bar error expansion
     }
   },
 
@@ -693,6 +765,65 @@ export default {
       } finally {
         this.actionLoading = false
       }
+    },
+
+    // ========== Progress Bar Methods ==========
+
+    getStageIcon(status) {
+      const icons = {
+        completed: '✓',
+        in_progress: '●',
+        pending: '○',
+        error: '✗',
+      }
+      return icons[status] || '○'
+    },
+
+    getStageStatusText(status) {
+      const texts = {
+        completed: 'Завершено',
+        in_progress: 'В процессе',
+        pending: 'Не начат',
+        error: 'Ошибка',
+      }
+      return texts[status] || 'Неизвестно'
+    },
+
+    formatStageMetrics(stage) {
+      // Форматирование метрик для каждого этапа
+      if (stage.id === 'data') {
+        return stage.metrics.completion || '0%'
+      }
+      if (stage.id === 'identity') {
+        return stage.metrics.confirmed ? 'Confirmed' : 'Нет'
+      }
+      if (stage.id === 'structure') {
+        const count = stage.metrics.categories || 0
+        return count > 0 ? `${count} кат.` : 'Нет'
+      }
+      if (stage.id === 'examples') {
+        const count = stage.metrics.examples || 0
+        return count > 0 ? `${count} прим.` : 'Нет'
+      }
+      if (stage.id === 'questions') {
+        const count = stage.metrics.questions || 0
+        return count > 0 ? `${count} вопр.` : 'Нет'
+      }
+      return ''
+    },
+
+    formatDuration(seconds) {
+      if (!seconds || seconds === 0) return ''
+      const minutes = Math.floor(seconds / 60)
+      const secs = seconds % 60
+      if (minutes > 0) {
+        return `${minutes} мин ${secs} с`
+      }
+      return `${secs} с`
+    },
+
+    toggleErrorDetails() {
+      this.showErrorDetails = !this.showErrorDetails
     },
   },
 }
