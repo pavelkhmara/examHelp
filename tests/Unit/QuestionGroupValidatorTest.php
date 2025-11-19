@@ -260,7 +260,8 @@ class QuestionGroupValidatorTest extends TestCase
 
         // Act & Assert
         $this->expectException(ValidationException::class);
-        $this->expectExceptionMessage('at least 2 questions');
+        // JSON Schema validator throws first with its own message
+        $this->expectExceptionMessage('minItems 2 violated');
 
         $this->validator->validate($data);
     }
