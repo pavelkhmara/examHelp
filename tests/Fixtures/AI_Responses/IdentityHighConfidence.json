@@ -1,0 +1,15 @@
+{
+  "confidence": 0.98,
+  "candidates": [
+    {
+      "id": "ielts-academic",
+      "name": "IELTS Academic",
+      "family": "IELTS",
+      "provider": "IDP/British Council",
+      "level": "B2-C1",
+      "language": "en",
+      "rationale": "High confidence based on user input and document analysis"
+    }
+  ],
+  "reasoning": "User explicitly mentioned 'IELTS Academic' with clear context"
+}

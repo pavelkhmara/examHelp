@@ -81,6 +81,7 @@ class Question extends Model
         'image_alternatives' => AsArrayWithUnescapedSlashes::class,
         'image_metadata' => AsArrayWithUnescapedSlashes::class,
         'time_limit_sec' => 'integer',
+        'requires_audio' => 'boolean',
         'frozen_at' => 'datetime',
     ];
 

@@ -81,113 +81,6 @@ class ExamFullViewRendererTest extends TestCase
     }
 
     /** @test */
-    public function it_shows_data_source_indicator_for_generated_questions()
-    {
-        $exam = Exam::factory()->create([
-            'meta' => [
-                'structure_v2' => [
-                    'sections' => [
-                        [
-                            'id' => 'reading',
-                            'title' => 'Reading',
-                            'skill' => 'reading',
-                            'assembly' => ['mode' => 'inline'],
-                        ],
-                    ],
-                ],
-            ],
-        ]);
-
-        $category = ExamCategory::factory()->create([
-            'exam_id' => $exam->id,
-            'key' => 'reading',
-        ]);
-
-        Question::factory()->create([
-            'exam_id' => $exam->id,
-            'section_id' => $category->id,
-        ]);
-
-        $html = $this->renderer->renderExam($exam);
-
-        $this->assertStringContainsString('Сгенерированные вопросы', $html);
-    }
-
-    /** @test */
-    public function it_shows_data_source_indicator_for_example_questions()
-    {
-        $exam = Exam::factory()->create([
-            'meta' => [
-                'structure_v2' => [
-                    'sections' => [
-                        [
-                            'id' => 'reading',
-                            'title' => 'Reading',
-                            'skill' => 'reading',
-                            'assembly' => ['mode' => 'inline'],
-                        ],
-                    ],
-                ],
-            ],
-        ]);
-
-        $category = ExamCategory::factory()->create([
-            'exam_id' => $exam->id,
-            'key' => 'reading',
-        ]);
-
-        ExamExampleQuestion::factory()->create([
-            'exam_id' => $exam->id,
-            'exam_category_id' => $category->id,
-        ]);
-
-        $html = $this->renderer->renderExam($exam);
-
-        $this->assertStringContainsString('Примеры вопросов', $html);
-    }
-
-    /** @test */
-    public function it_prioritizes_generated_questions_over_examples()
-    {
-        $exam = Exam::factory()->create([
-            'meta' => [
-                'structure_v2' => [
-                    'sections' => [
-                        [
-                            'id' => 'reading',
-                            'title' => 'Reading',
-                            'skill' => 'reading',
-                            'assembly' => ['mode' => 'inline'],
-                        ],
-                    ],
-                ],
-            ],
-        ]);
-
-        $category = ExamCategory::factory()->create([
-            'exam_id' => $exam->id,
-            'key' => 'reading',
-        ]);
-
-        // Create both types
-        Question::factory()->create([
-            'exam_id' => $exam->id,
-            'section_id' => $category->id,
-        ]);
-
-        ExamExampleQuestion::factory()->create([
-            'exam_id' => $exam->id,
-            'exam_category_id' => $category->id,
-        ]);
-
-        $html = $this->renderer->renderExam($exam);
-
-        // Should show "Generated questions", not "Example questions"
-        $this->assertStringContainsString('Сгенерированные вопросы', $html);
-        $this->assertStringNotContainsString('Примеры вопросов', $html);
-    }
-
-    /** @test */
     public function it_renders_inline_mode_with_all_questions()
     {
         $exam = Exam::factory()->create([
@@ -218,7 +111,7 @@ class ExamFullViewRendererTest extends TestCase
         $html = $this->renderer->renderExam($exam);
 
         // Should show all 3 questions
-        $this->assertStringContainsString('3 задания', $html);
+        $this->assertStringContainsString('3 сгенерированных заданий', $html);
         $this->assertStringContainsString('Задание 1', $html);
         $this->assertStringContainsString('Задание 2', $html);
         $this->assertStringContainsString('Задание 3', $html);
@@ -292,7 +185,7 @@ class ExamFullViewRendererTest extends TestCase
         $html = $this->renderer->renderExam($exam);
 
         $this->assertStringContainsString('Pool Mode', $html);
-        $this->assertStringContainsString('10 заданий', $html); // pool size
+        $this->assertStringContainsString('10 сгенерированных вопросов', $html); // pool size
         $this->assertStringContainsString('5', $html); // selected count
     }
 

@@ -29,6 +29,7 @@ class IdentitySchemaTest extends TestCase
             'followups' => [],
             'need_fields' => [],
             'anchors' => [['page' => null, 'snippet' => '...']],
+            'hold' => false,
         ];
         $this->assertIsArray($v->validate($ok));
     }

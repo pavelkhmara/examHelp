@@ -1,0 +1,105 @@
+{
+  "id": "ielts-academic-test",
+  "version": "2.0",
+  "meta": {
+    "name": "IELTS Academic",
+    "language": "en",
+    "level": "B2",
+    "provider": "IDP/British Council"
+  },
+  "pass_policy": {
+    "mode": "mixed",
+    "overall_threshold_percent": 60,
+    "per_section_threshold_percent": 50
+  },
+  "policies": {},
+  "sections": [
+    {
+      "id": "sec-listening",
+      "skill": "listening",
+      "duration_min": 30,
+      "max_score": 40,
+      "min_pass_percent": 50,
+      "assembly": {
+        "mode": "blueprint",
+        "blueprint": [
+          {
+            "slot": "slot-1",
+            "from_pool": "listening-pool",
+            "pick": 10,
+            "filters": {
+              "type": ["single_select"]
+            }
+          }
+        ],
+        "assertions": {
+          "total_tasks_equals": 10
+        }
+      }
+    },
+    {
+      "id": "sec-reading",
+      "skill": "reading",
+      "duration_min": 60,
+      "max_score": 40,
+      "min_pass_percent": 50,
+      "assembly": {
+        "mode": "pool",
+        "pool_id": "reading-pool",
+        "pick": 40,
+        "seed": "test-seed",
+        "filters": {
+          "type": ["single_select", "true_false"]
+        },
+        "assertions": {
+          "total_tasks_equals": 40
+        }
+      }
+    },
+    {
+      "id": "sec-writing",
+      "skill": "writing",
+      "duration_min": 60,
+      "max_score": 9,
+      "min_pass_percent": 50,
+      "assembly": {
+        "mode": "inline",
+        "tasks": [
+          {
+            "id": "writing-task-1",
+            "type": "writing_prompt",
+            "weight": 1
+          },
+          {
+            "id": "writing-task-2",
+            "type": "writing_prompt",
+            "weight": 1
+          }
+        ],
+        "assertions": {
+          "total_tasks_equals": 2
+        }
+      }
+    },
+    {
+      "id": "sec-speaking",
+      "skill": "speaking",
+      "duration_min": 15,
+      "max_score": 9,
+      "min_pass_percent": 50,
+      "assembly": {
+        "mode": "inline",
+        "tasks": [
+          {
+            "id": "speaking-task-1",
+            "type": "speaking_prompt",
+            "weight": 1
+          }
+        ],
+        "assertions": {
+          "total_tasks_equals": 1
+        }
+      }
+    }
+  ]
+}

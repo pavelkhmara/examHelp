@@ -124,6 +124,6 @@ class PromptExecutorTest extends TestCase
 
         $this->assertEquals(141, $res['usage']['total_tokens']);
         $this->assertDatabaseHas('generation_tasks', ['id' => $task->id, 'attempts' => 2]);
-        $this->assertDatabaseCount('generation_logs', 2);
+        $this->assertDatabaseCount('generation_logs', 2); // attempt 1 (fail) + attempt 2 (success)
     }
 }

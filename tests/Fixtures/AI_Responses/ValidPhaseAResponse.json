@@ -1,0 +1,46 @@
+{
+  "id": "ielts-academic-test",
+  "version": "2.0",
+  "meta": {
+    "name": "IELTS Academic",
+    "language": "en",
+    "level": "B2",
+    "provider": "IDP/British Council"
+  },
+  "pass_policy": {
+    "mode": "mixed",
+    "overall_threshold_percent": 60,
+    "per_section_threshold_percent": 50
+  },
+  "policies": {},
+  "sections": [
+    {
+      "id": "sec-listening",
+      "skill": "listening",
+      "duration_min": 30,
+      "max_score": 40,
+      "min_pass_percent": 50
+    },
+    {
+      "id": "sec-reading",
+      "skill": "reading",
+      "duration_min": 60,
+      "max_score": 40,
+      "min_pass_percent": 50
+    },
+    {
+      "id": "sec-writing",
+      "skill": "writing",
+      "duration_min": 60,
+      "max_score": 9,
+      "min_pass_percent": 50
+    },
+    {
+      "id": "sec-speaking",
+      "skill": "speaking",
+      "duration_min": 15,
+      "max_score": 9,
+      "min_pass_percent": 50
+    }
+  ]
+}
