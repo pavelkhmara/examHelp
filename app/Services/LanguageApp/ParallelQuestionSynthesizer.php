@@ -325,7 +325,8 @@ class ParallelQuestionSynthesizer extends AbstractAiService
             contextHint: "Generate questions for blueprint mode ({$totalQuestions} questions total)"
         );
 
-        $userPrompt = "Generate exactly {$totalQuestions} questions of type {$questionType}. Return ONLY a valid JSON array with {$totalQuestions} question objects.";
+        $examLanguage = \App\Support\LanguageHelper::getLanguageName($exam->language_of_test);
+        $userPrompt = "Generate exactly {$totalQuestions} questions of type {$questionType} for a {$examLanguage} language exam at {$exam->level} level. ALL user-facing content (instructions, stimulus, options) MUST be in {$examLanguage}. Return ONLY a valid JSON array with {$totalQuestions} question objects.";
 
         return [
             'payload' => [
@@ -379,7 +380,8 @@ class ParallelQuestionSynthesizer extends AbstractAiService
             contextHint: "Generate questions for inline mode ({$totalQuestions} questions total)"
         );
 
-        $userPrompt = "Generate exactly {$totalQuestions} questions of type {$questionType}. Return ONLY a valid JSON array with {$totalQuestions} question objects.";
+        $examLanguage = \App\Support\LanguageHelper::getLanguageName($exam->language_of_test);
+        $userPrompt = "Generate exactly {$totalQuestions} questions of type {$questionType} for a {$examLanguage} language exam at {$exam->level} level. ALL user-facing content (instructions, stimulus, options) MUST be in {$examLanguage}. Return ONLY a valid JSON array with {$totalQuestions} question objects.";
 
         return [
             'payload' => [
