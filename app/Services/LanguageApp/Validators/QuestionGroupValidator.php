@@ -200,6 +200,13 @@ final class QuestionGroupValidator
             }
         }
 
+        // Rule 4: Validate order is non-negative
+        if (isset($data['order'])) {
+            if (! is_int($data['order']) || $data['order'] < 0) {
+                $errors['order'] = 'order must be a non-negative integer';
+            }
+        }
+
         if (! empty($errors)) {
             throw ValidationException::withMessages($errors);
         }
