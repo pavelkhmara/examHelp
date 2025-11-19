@@ -17,10 +17,16 @@ use Illuminate\Support\Facades\Log;
  * Supports three assembly modes:
  * - pool: Generate questions from a pool with filters
  * - blueprint: Generate questions using multi-slot blueprint
- * - inline: Use predefined question placeholders
+ * - inline: Use predefined question placeholders (supports question_groups)
  */
 class AssemblyResolver
 {
+    protected QuestionGroupAssembler $questionGroupAssembler;
+
+    public function __construct(QuestionGroupAssembler $questionGroupAssembler)
+    {
+        $this->questionGroupAssembler = $questionGroupAssembler;
+    }
     /**
      * Resolve all sections from Phase B structure and create generation plans
      *
@@ -288,10 +294,29 @@ class AssemblyResolver
     /**
      * Resolve inline assembly mode
      *
-     * Inline mode uses predefined question placeholders.
-     * Each placeholder represents a single question that will be generated inline.
+     * Inline mode supports two formats:
+     * 1. Question groups (NEW) - multiple questions sharing common stimulus
+     * 2. Placeholders (LEGACY) - individual question placeholders
      *
-     * Input:
+     * Input with question_groups:
+     * {
+     *   "mode": "inline",
+     *   "question_groups": [
+     *     {
+     *       "id": "listening-group-1",
+     *       "title": "Zadanie I",
+     *       "stimulus": { "audio": ["https://example.com/audio.mp3"] },
+     *       "playback_settings": { "max_plays": 1, "enforcement": "strict" },
+     *       "questions": [
+     *         { "id": "q1", "type": "single_select", ... },
+     *         { "id": "q2", "type": "single_select", ... }
+     *       ]
+     *     }
+     *   ],
+     *   "assertions": { "total_tasks_equals": 2 }
+     * }
+     *
+     * Input with placeholders (legacy):
      * {
      *   "mode": "inline",
      *   "placeholders": [
@@ -304,20 +329,48 @@ class AssemblyResolver
      * Output:
      * {
      *   "plan_data": {
-     *     "placeholders": [
-     *       { "id": "writing-task-1", "type": "graph_description" },
-     *       { "id": "writing-task-2", "type": "essay" }
-     *     ]
+     *     "question_groups": [ ... ] OR "placeholders": [ ... ]
      *   },
      *   "total_questions": 2
      * }
      */
     public function resolveInline(array $section, array $assembly): array
     {
-        // For inline mode, placeholders can be in assembly OR tasks can be in section
+        $sectionId = $section['id'] ?? 'unknown';
+        $assertions = $assembly['assertions'] ?? [];
+
+        // NEW: Check for question_groups (priority over placeholders)
+        if (isset($assembly['question_groups']) && !empty($assembly['question_groups'])) {
+            Log::info('[AssemblyResolver] Using question_groups for inline mode', [
+                'section_id' => $sectionId,
+                'groups_count' => count($assembly['question_groups']),
+            ]);
+
+            // Use QuestionGroupAssembler to process groups
+            $result = $this->questionGroupAssembler->assemble(
+                $assembly['question_groups'],
+                $sectionId
+            );
+
+            // Validate assertions if present
+            $expectedTotal = $assertions['total_tasks_equals'] ?? null;
+            if ($expectedTotal !== null && $result['total_questions'] !== $expectedTotal) {
+                throw new \Exception(
+                    "Question groups total mismatch for section {$sectionId}: " .
+                    "{$result['total_questions']} questions, but assertions expect {$expectedTotal}"
+                );
+            }
+
+            return $result;
+        }
+
+        // LEGACY: Fall back to placeholders/tasks (existing behavior)
+        Log::info('[AssemblyResolver] Using placeholders for inline mode (legacy)', [
+            'section_id' => $sectionId,
+        ]);
+
         $placeholders = $assembly['placeholders'] ?? [];
         $tasks = $section['tasks'] ?? [];
-        $assertions = $assembly['assertions'] ?? [];
 
         // If placeholders not in assembly, use tasks from section
         if (empty($placeholders) && !empty($tasks)) {
@@ -332,7 +385,7 @@ class AssemblyResolver
         }
 
         if (empty($placeholders)) {
-            throw new \Exception("Inline mode requires placeholders in assembly or tasks in section for {$section['id']}");
+            throw new \Exception("Inline mode requires question_groups or placeholders in assembly or tasks in section for {$sectionId}");
         }
 
         // Calculate total questions from placeholders
@@ -342,7 +395,7 @@ class AssemblyResolver
         $expectedTotal = $assertions['total_tasks_equals'] ?? null;
         if ($expectedTotal !== null && $totalQuestions !== $expectedTotal) {
             throw new \Exception(
-                "Inline total mismatch for section {$section['id']}: " .
+                "Inline total mismatch for section {$sectionId}: " .
                 "{$totalQuestions} placeholders, but assertions expect {$expectedTotal}"
             );
         }
