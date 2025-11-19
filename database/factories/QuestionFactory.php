@@ -3,6 +3,7 @@
 namespace Database\Factories;
 
 use App\Models\Exam;
+use App\Models\ExamCategory;
 use Illuminate\Database\Eloquent\Factories\Factory;
 use Illuminate\Support\Str;
 
@@ -17,9 +18,15 @@ class QuestionFactory extends Factory
     {
         $type = $this->faker->randomElement(['single_select', 'multi_select', 'short_answer', 'writing_prompt']);
 
+        // Create exam and category
+        $exam = Exam::factory()->create();
+        $category = ExamCategory::factory()->create(['exam_id' => $exam->id]);
+
         return [
-            'id' => (string) Str::uuid(),
-            'exam_id' => Exam::factory(),
+            // id auto-increment, don't set manually
+            'exam_id' => $exam->id,
+            'section_id' => $category->id,
+            'question_id' => 'q-' . Str::random(10),  // unique question identifier
             'type' => $type,
             'skills_measured' => ['reading'],
             'time_limit_sec' => 300,

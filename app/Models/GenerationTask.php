@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use App\Casts\AsArrayWithUnescapedSlashes;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\MorphTo;
@@ -12,6 +13,7 @@ use Illuminate\Database\Eloquent\Relations\MorphTo;
  */
 class GenerationTask extends Model
 {
+    use HasFactory;
     protected $fillable = [
         'exam_id', 'type', 'status',
         'request', 'response', 'result',

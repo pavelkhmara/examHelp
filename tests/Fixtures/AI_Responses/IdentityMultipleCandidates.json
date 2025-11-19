@@ -1,0 +1,24 @@
+{
+  "confidence": 0.65,
+  "candidates": [
+    {
+      "id": "ielts-academic",
+      "name": "IELTS Academic",
+      "family": "IELTS",
+      "provider": "IDP/British Council",
+      "level": "B2-C1",
+      "language": "en",
+      "rationale": "Matches user input but unclear which variant"
+    },
+    {
+      "id": "ielts-general",
+      "name": "IELTS General Training",
+      "family": "IELTS",
+      "provider": "IDP/British Council",
+      "level": "B1-C1",
+      "language": "en",
+      "rationale": "Alternative IELTS variant"
+    }
+  ],
+  "reasoning": "User mentioned IELTS but did not specify Academic vs General"
+}
