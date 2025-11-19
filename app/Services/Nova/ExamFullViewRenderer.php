@@ -351,7 +351,7 @@ class ExamFullViewRenderer
         if (isset($instructions['brief'])) {
             $html .= '<div style="background: #fef3c7; border-left: 4px solid #f59e0b; padding: 12px; border-radius: 4px; margin-bottom: 16px;">';
             $html .= '<p style="margin: 0; font-size: 14px; color: #92400e; font-weight: 500;">';
-            $html .= '📋 ' . nl2br(htmlspecialchars($instructions['brief']));
+            $html .= '📋 ' . $instructions['brief'];
             $html .= '</p>';
             $html .= '</div>';
         }
@@ -389,7 +389,7 @@ class ExamFullViewRenderer
         if (!empty($stimulus['text_html'])) {
             $html .= '<div style="margin-bottom: 12px; padding: 12px; background: #f9fafb; border-radius: 4px; border: 1px solid #e5e7eb;">';
             $html .= '<div style="font-size: 15px; line-height: 1.6; color: #374151;">';
-            $html .= nl2br(htmlspecialchars($stimulus['text_html']));
+            $html .= $stimulus['text_html'];
             $html .= '</div>';
             $html .= '</div>';
         }
@@ -551,7 +551,7 @@ JS;
         if (isset($instructions['brief'])) {
             $html .= '<div style="background: #fef3c7; border-left: 4px solid #f59e0b; padding: 12px; border-radius: 4px; margin-bottom: 12px;">';
             $html .= '<p style="margin: 0; font-size: 14px; color: #92400e; font-weight: 500;">';
-            $html .= '📋 ' . nl2br(htmlspecialchars($instructions['brief']));
+            $html .= '📋 ' . $instructions['brief'];
             $html .= '</p>';
             $html .= '</div>';
         }
@@ -656,7 +656,7 @@ JS;
         if (isset($instructions['brief'])) {
             $html .= '<div style="background: #fef3c7; border-left: 4px solid #f59e0b; padding: 12px; border-radius: 4px; margin-bottom: 12px;">';
             $html .= '<p style="margin: 0; font-size: 14px; color: #92400e; font-weight: 500;">';
-            $html .= '📋 ' . nl2br(htmlspecialchars($instructions['brief']));
+            $html .= '📋 ' . $instructions['brief'];
             $html .= '</p>';
             $html .= '</div>';
         }
@@ -665,9 +665,8 @@ JS;
         $stimulus = $question->stimulus ?? [];
         if (isset($stimulus['text_html']) && $stimulus['text_html']) {
             $html .= '<div style="margin-bottom: 12px; padding: 12px; background: #ffffff; border-radius: 4px; border: 1px solid #e5e7eb;">';
-            // Note: We're displaying text_html as escaped HTML for safety
             $html .= '<div style="font-size: 15px; line-height: 1.6; color: #374151;">';
-            $html .= nl2br(htmlspecialchars($stimulus['text_html']));
+            $html .= $stimulus['text_html'];
             $html .= '</div>';
             $html .= '</div>';
         }
@@ -718,7 +717,7 @@ JS;
         if ($question->instructions) {
             $html .= '<div style="background: #fef3c7; border-left: 4px solid #f59e0b; padding: 12px; border-radius: 4px; margin-bottom: 12px;">';
             $html .= '<p style="margin: 0; font-size: 14px; color: #92400e; font-weight: 500;">';
-            $html .= '📋 ' . nl2br(htmlspecialchars($question->instructions));
+            $html .= '📋 ' . $question->instructions;
             $html .= '</p>';
             $html .= '</div>';
         }
@@ -727,7 +726,7 @@ JS;
         if ($question->question) {
             $html .= '<div style="margin-bottom: 12px; padding: 12px; background: #ffffff; border-radius: 4px; border: 1px solid #e5e7eb;">';
             $html .= '<div style="font-size: 15px; line-height: 1.6; color: #374151;">';
-            $html .= nl2br(htmlspecialchars($question->question));
+            $html .= $question->question;
             $html .= '</div>';
             $html .= '</div>';
         }
@@ -739,7 +738,7 @@ JS;
         if ($question->assessment_guide) {
             $html .= '<div style="background: #ecfdf5; border-left: 4px solid #10b981; padding: 12px; border-radius: 4px; margin-top: 12px;">';
             $html .= '<p style="margin: 0; font-size: 13px; color: #065f46; font-weight: 500;">';
-            $html .= '✅ ' . nl2br(htmlspecialchars($question->assessment_guide));
+            $html .= '✅ ' . $question->assessment_guide;
             $html .= '</p>';
             $html .= '</div>';
         }

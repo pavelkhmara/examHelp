@@ -70,9 +70,17 @@ final class AiJsonValidator
             if (! is_numeric($data)) {
                 throw new LiteValidationException([], "{$path}: expected number");
             }
+            $min = $schema['minimum'] ?? null;
+            if ($min !== null && $data < $min) {
+                throw new LiteValidationException([], "{$path}: minimum {$min} violated (got {$data})");
+            }
         } elseif ($type === 'integer') {
             if (! is_int($data)) {
                 throw new LiteValidationException([], "{$path}: expected integer");
+            }
+            $min = $schema['minimum'] ?? null;
+            if ($min !== null && $data < $min) {
+                throw new LiteValidationException([], "{$path}: minimum {$min} violated (got {$data})");
             }
         } else {
             // pass-through for unknown (string|number) combos etc.

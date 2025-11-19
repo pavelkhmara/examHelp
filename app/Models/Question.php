@@ -33,6 +33,7 @@ class Question extends Model
         'exam_id',
         'section_id',
         'question_group_id',
+        'order',
         'question_id',
         'type',
         'skills_measured',
