@@ -75,6 +75,11 @@ class Exam extends Model
         return $this->hasMany(Question::class, 'exam_id', 'id');
     }
 
+    public function questionGroups(): HasMany
+    {
+        return $this->hasMany(QuestionGroup::class, 'exam_id', 'id');
+    }
+
     public function loadAllCounts()
     {
         return $this->loadCount([
@@ -83,6 +88,7 @@ class Exam extends Model
             'generationTasks',
             'generationLogs',
             'questions',
+            'questionGroups',
         ]);
     }
 

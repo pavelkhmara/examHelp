@@ -22,7 +22,8 @@ class AssemblyResolverTest extends TestCase
     protected function setUp(): void
     {
         parent::setUp();
-        $this->resolver = new AssemblyResolver();
+        // Use Laravel's service container to resolve dependencies
+        $this->resolver = app(AssemblyResolver::class);
     }
 
     /**
@@ -349,5 +350,479 @@ class AssemblyResolverTest extends TestCase
         $this->assertEquals(20, $plan->total_questions, 'Total questions should be updated');
         $this->assertEquals('pending', $plan->status, 'Status should be reset to pending');
         $this->assertEquals(0, $plan->generated_questions, 'Generated count should be reset');
+    }
+
+    /**
+     * Тест: resolve() с inline mode + question_groups создает правильный plan
+     */
+    public function test_resolve_inline_mode_with_question_groups_creates_correct_plan(): void
+    {
+        // Arrange
+        $exam = ExamTestHelper::createExamWithAllFields();
+        $category = ExamCategory::factory()->create([
+            'exam_id' => $exam->id,
+            'skill' => 'listening',
+        ]);
+
+        $exam->meta = [
+            'structure_v2' => [
+                'sections' => [
+                    [
+                        'id' => 'listening',
+                        'skill' => 'listening',
+                        'assembly' => [
+                            'mode' => 'inline',
+                            'question_groups' => [
+                                [
+                                    'id' => 'listening-group-1',
+                                    'title' => 'Zadanie I',
+                                    'stimulus' => [
+                                        'audio' => ['https://example.com/audio-1.mp3'],
+                                    ],
+                                    'playback_settings' => [
+                                        'max_plays' => 1,
+                                        'enforcement' => 'strict',
+                                    ],
+                                    'questions' => [
+                                        ['id' => 'q1', 'type' => 'single_select'],
+                                        ['id' => 'q2', 'type' => 'single_select'],
+                                    ],
+                                ],
+                            ],
+                            'assertions' => ['total_tasks_equals' => 2],
+                        ],
+                    ],
+                ],
+            ],
+        ];
+        $exam->save();
+
+        // Act
+        $plans = $this->resolver->resolve($exam);
+
+        // Assert
+        $plan = $plans[0];
+        $this->assertEquals('inline', $plan->assembly_mode);
+        $this->assertEquals(2, $plan->total_questions);
+        $this->assertArrayHasKey('question_groups', $plan->plan_data);
+        $this->assertCount(1, $plan->plan_data['question_groups']);
+
+        $group = $plan->plan_data['question_groups'][0];
+        $this->assertEquals('listening-group-1', $group['id']);
+        $this->assertEquals('Zadanie I', $group['title']);
+        $this->assertCount(2, $group['questions']);
+        $this->assertEquals(1, $group['playback_settings']['max_plays']);
+        $this->assertEquals('strict', $group['playback_settings']['enforcement']);
+    }
+
+    /**
+     * Тест: resolve() с несколькими question_groups правильно считает total_questions
+     */
+    public function test_resolve_inline_mode_with_multiple_question_groups_calculates_total(): void
+    {
+        // Arrange
+        $exam = ExamTestHelper::createExamWithAllFields();
+        $category = ExamCategory::factory()->create([
+            'exam_id' => $exam->id,
+            'skill' => 'listening',
+        ]);
+
+        $exam->meta = [
+            'structure_v2' => [
+                'sections' => [
+                    [
+                        'id' => 'listening',
+                        'skill' => 'listening',
+                        'assembly' => [
+                            'mode' => 'inline',
+                            'question_groups' => [
+                                [
+                                    'id' => 'group-1',
+                                    'title' => 'Task I',
+                                    'stimulus' => ['audio' => ['audio1.mp3']],
+                                    'questions' => [
+                                        ['id' => 'q1', 'type' => 'single_select'],
+                                        ['id' => 'q2', 'type' => 'single_select'],
+                                        ['id' => 'q3', 'type' => 'single_select'],
+                                    ],
+                                ],
+                                [
+                                    'id' => 'group-2',
+                                    'title' => 'Task II',
+                                    'stimulus' => ['audio' => ['audio2.mp3']],
+                                    'questions' => [
+                                        ['id' => 'q4', 'type' => 'true_false'],
+                                        ['id' => 'q5', 'type' => 'true_false'],
+                                    ],
+                                ],
+                            ],
+                            'assertions' => ['total_tasks_equals' => 5],
+                        ],
+                    ],
+                ],
+            ],
+        ];
+        $exam->save();
+
+        // Act
+        $plans = $this->resolver->resolve($exam);
+
+        // Assert
+        $plan = $plans[0];
+        $this->assertEquals(5, $plan->total_questions, 'Should sum questions from all groups (3 + 2)');
+        $this->assertCount(2, $plan->plan_data['question_groups']);
+    }
+
+    /**
+     * Тест: resolve() с question_groups добавляет question_group_ref к каждому вопросу
+     */
+    public function test_resolve_inline_mode_adds_question_group_ref_to_questions(): void
+    {
+        // Arrange
+        $exam = ExamTestHelper::createExamWithAllFields();
+        $category = ExamCategory::factory()->create([
+            'exam_id' => $exam->id,
+            'skill' => 'listening',
+        ]);
+
+        $exam->meta = [
+            'structure_v2' => [
+                'sections' => [
+                    [
+                        'id' => 'listening',
+                        'skill' => 'listening',
+                        'assembly' => [
+                            'mode' => 'inline',
+                            'question_groups' => [
+                                [
+                                    'id' => 'test-group',
+                                    'title' => 'Test Group',
+                                    'stimulus' => ['text_html' => '<p>Test stimulus</p>'],
+                                    'questions' => [
+                                        ['id' => 'q1', 'type' => 'single_select'],
+                                        ['id' => 'q2', 'type' => 'multi_select'],
+                                    ],
+                                ],
+                            ],
+                            'assertions' => ['total_tasks_equals' => 2],
+                        ],
+                    ],
+                ],
+            ],
+        ];
+        $exam->save();
+
+        // Act
+        $plans = $this->resolver->resolve($exam);
+
+        // Assert
+        $group = $plans[0]->plan_data['question_groups'][0];
+        foreach ($group['questions'] as $question) {
+            $this->assertEquals('test-group', $question['question_group_ref'], 'Each question should have question_group_ref');
+        }
+    }
+
+    /**
+     * Тест: resolve() с question_groups устанавливает defaults для playback_settings
+     */
+    public function test_resolve_inline_mode_normalizes_playback_settings(): void
+    {
+        // Arrange
+        $exam = ExamTestHelper::createExamWithAllFields();
+        $category = ExamCategory::factory()->create([
+            'exam_id' => $exam->id,
+            'skill' => 'listening',
+        ]);
+
+        $exam->meta = [
+            'structure_v2' => [
+                'sections' => [
+                    [
+                        'id' => 'listening',
+                        'skill' => 'listening',
+                        'assembly' => [
+                            'mode' => 'inline',
+                            'question_groups' => [
+                                [
+                                    'id' => 'group-1',
+                                    'title' => 'Test',
+                                    'stimulus' => ['audio' => ['audio.mp3']],
+                                    'playback_settings' => [
+                                        'max_plays' => 2,
+                                        // Остальные поля не указаны - должны быть defaults
+                                    ],
+                                    'questions' => [
+                                        ['id' => 'q1', 'type' => 'single_select'],
+                                        ['id' => 'q2', 'type' => 'single_select'],
+                                    ],
+                                ],
+                            ],
+                            'assertions' => ['total_tasks_equals' => 2],
+                        ],
+                    ],
+                ],
+            ],
+        ];
+        $exam->save();
+
+        // Act
+        $plans = $this->resolver->resolve($exam);
+
+        // Assert
+        $settings = $plans[0]->plan_data['question_groups'][0]['playback_settings'];
+        $this->assertEquals(2, $settings['max_plays']);
+        $this->assertEquals('none', $settings['enforcement'], 'Default enforcement should be "none"');
+        $this->assertTrue($settings['show_counter'], 'Default show_counter should be true');
+        $this->assertTrue($settings['reset_on_navigation'], 'Default reset_on_navigation should be true');
+    }
+
+    /**
+     * Тест: resolve() приоритизирует question_groups над placeholders (backward compatibility)
+     */
+    public function test_resolve_inline_mode_prioritizes_question_groups_over_placeholders(): void
+    {
+        // Arrange
+        $exam = ExamTestHelper::createExamWithAllFields();
+        $category = ExamCategory::factory()->create([
+            'exam_id' => $exam->id,
+            'skill' => 'listening',
+        ]);
+
+        // Assembly с ОБОИМИ: question_groups и placeholders
+        $exam->meta = [
+            'structure_v2' => [
+                'sections' => [
+                    [
+                        'id' => 'listening',
+                        'skill' => 'listening',
+                        'assembly' => [
+                            'mode' => 'inline',
+                            'question_groups' => [
+                                [
+                                    'id' => 'group-1',
+                                    'title' => 'Test',
+                                    'stimulus' => ['audio' => ['audio.mp3']],
+                                    'questions' => [
+                                        ['id' => 'q1', 'type' => 'single_select'],
+                                        ['id' => 'q2', 'type' => 'single_select'],
+                                    ],
+                                ],
+                            ],
+                            'placeholders' => [
+                                ['id' => 'legacy-task', 'type' => 'essay'],
+                            ],
+                            'assertions' => ['total_tasks_equals' => 2],
+                        ],
+                    ],
+                ],
+            ],
+        ];
+        $exam->save();
+
+        // Act
+        $plans = $this->resolver->resolve($exam);
+
+        // Assert
+        $plan = $plans[0];
+        $this->assertArrayHasKey('question_groups', $plan->plan_data, 'Should use question_groups');
+        $this->assertArrayNotHasKey('placeholders', $plan->plan_data, 'Should NOT use placeholders');
+        $this->assertEquals(2, $plan->total_questions);
+    }
+
+    /**
+     * Тест: resolve() выбрасывает исключение при невалидной question_group (< 2 вопросов)
+     */
+    public function test_resolve_inline_mode_throws_exception_for_invalid_question_group(): void
+    {
+        // Arrange
+        $exam = ExamTestHelper::createExamWithAllFields();
+        $category = ExamCategory::factory()->create([
+            'exam_id' => $exam->id,
+            'skill' => 'listening',
+        ]);
+
+        // question_group с только 1 вопросом (минимум 2)
+        $exam->meta = [
+            'structure_v2' => [
+                'sections' => [
+                    [
+                        'id' => 'listening',
+                        'skill' => 'listening',
+                        'assembly' => [
+                            'mode' => 'inline',
+                            'question_groups' => [
+                                [
+                                    'id' => 'invalid-group',
+                                    'title' => 'Invalid',
+                                    'stimulus' => ['audio' => ['audio.mp3']],
+                                    'questions' => [
+                                        ['id' => 'q1', 'type' => 'single_select'],
+                                        // Только 1 вопрос!
+                                    ],
+                                ],
+                            ],
+                            'assertions' => ['total_tasks_equals' => 1],
+                        ],
+                    ],
+                ],
+            ],
+        ];
+        $exam->save();
+
+        // Assert
+        $this->expectException(\Exception::class);
+        $this->expectExceptionMessageMatches('/at least 2 questions/');
+
+        // Act
+        $this->resolver->resolve($exam);
+    }
+
+    /**
+     * Тест: resolve() выбрасывает исключение при пустом stimulus в question_group
+     */
+    public function test_resolve_inline_mode_throws_exception_for_empty_stimulus(): void
+    {
+        // Arrange
+        $exam = ExamTestHelper::createExamWithAllFields();
+        $category = ExamCategory::factory()->create([
+            'exam_id' => $exam->id,
+            'skill' => 'listening',
+        ]);
+
+        $exam->meta = [
+            'structure_v2' => [
+                'sections' => [
+                    [
+                        'id' => 'listening',
+                        'skill' => 'listening',
+                        'assembly' => [
+                            'mode' => 'inline',
+                            'question_groups' => [
+                                [
+                                    'id' => 'empty-stimulus-group',
+                                    'title' => 'Test',
+                                    'stimulus' => [], // Пустой stimulus
+                                    'questions' => [
+                                        ['id' => 'q1', 'type' => 'single_select'],
+                                        ['id' => 'q2', 'type' => 'single_select'],
+                                    ],
+                                ],
+                            ],
+                            'assertions' => ['total_tasks_equals' => 2],
+                        ],
+                    ],
+                ],
+            ],
+        ];
+        $exam->save();
+
+        // Assert
+        $this->expectException(\Exception::class);
+        $this->expectExceptionMessageMatches('/stimulus must contain at least one/');
+
+        // Act
+        $this->resolver->resolve($exam);
+    }
+
+    /**
+     * Тест: resolve() выбрасывает исключение при несовпадении assertions.total_tasks_equals
+     */
+    public function test_resolve_inline_mode_throws_exception_for_assertion_mismatch(): void
+    {
+        // Arrange
+        $exam = ExamTestHelper::createExamWithAllFields();
+        $category = ExamCategory::factory()->create([
+            'exam_id' => $exam->id,
+            'skill' => 'listening',
+        ]);
+
+        $exam->meta = [
+            'structure_v2' => [
+                'sections' => [
+                    [
+                        'id' => 'listening',
+                        'skill' => 'listening',
+                        'assembly' => [
+                            'mode' => 'inline',
+                            'question_groups' => [
+                                [
+                                    'id' => 'group-1',
+                                    'title' => 'Test',
+                                    'stimulus' => ['audio' => ['audio.mp3']],
+                                    'questions' => [
+                                        ['id' => 'q1', 'type' => 'single_select'],
+                                        ['id' => 'q2', 'type' => 'single_select'],
+                                        ['id' => 'q3', 'type' => 'single_select'],
+                                    ],
+                                ],
+                            ],
+                            'assertions' => ['total_tasks_equals' => 10], // Ожидается 10, но только 3
+                        ],
+                    ],
+                ],
+            ],
+        ];
+        $exam->save();
+
+        // Assert
+        $this->expectException(\Exception::class);
+        $this->expectExceptionMessageMatches('/total mismatch.*3 questions.*expect 10/');
+
+        // Act
+        $this->resolver->resolve($exam);
+    }
+
+    /**
+     * Тест: resolve() правильно обрабатывает question_group с несколькими типами stimulus
+     */
+    public function test_resolve_inline_mode_handles_multiple_stimulus_types(): void
+    {
+        // Arrange
+        $exam = ExamTestHelper::createExamWithAllFields();
+        $category = ExamCategory::factory()->create([
+            'exam_id' => $exam->id,
+            'skill' => 'reading',
+        ]);
+
+        $exam->meta = [
+            'structure_v2' => [
+                'sections' => [
+                    [
+                        'id' => 'reading',
+                        'skill' => 'reading',
+                        'assembly' => [
+                            'mode' => 'inline',
+                            'question_groups' => [
+                                [
+                                    'id' => 'multi-stimulus-group',
+                                    'title' => 'Combined Stimulus',
+                                    'stimulus' => [
+                                        'text_html' => '<p>Read this passage</p>',
+                                        'images' => ['https://example.com/image1.jpg'],
+                                        'audio' => ['https://example.com/audio.mp3'],
+                                    ],
+                                    'questions' => [
+                                        ['id' => 'q1', 'type' => 'single_select'],
+                                        ['id' => 'q2', 'type' => 'multi_select'],
+                                    ],
+                                ],
+                            ],
+                            'assertions' => ['total_tasks_equals' => 2],
+                        ],
+                    ],
+                ],
+            ],
+        ];
+        $exam->save();
+
+        // Act
+        $plans = $this->resolver->resolve($exam);
+
+        // Assert
+        $plan = $plans[0];
+        $group = $plan->plan_data['question_groups'][0];
+        $this->assertNotEmpty($group['stimulus']['text_html']);
+        $this->assertNotEmpty($group['stimulus']['images']);
+        $this->assertNotEmpty($group['stimulus']['audio']);
     }
 }

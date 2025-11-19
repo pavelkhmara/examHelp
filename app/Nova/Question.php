@@ -29,6 +29,10 @@ class Question extends Resource
 
             BelongsTo::make('Exam')->searchable(),
             BelongsTo::make('Section', 'section', ExamCategory::class)->searchable(),
+            BelongsTo::make('Question Group', 'questionGroup', QuestionGroup::class)
+                ->nullable()
+                ->searchable()
+                ->help('Question group this question belongs to (for grouped tasks with shared stimulus)'),
 
             Code::make('Question ID', 'question_id')
                 ->onlyOnDetail(),

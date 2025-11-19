@@ -449,6 +449,7 @@ class Exam extends Resource
         // ============== STAGE 3: Categories ==============
         // Always show, even if count is 0 - Nova will show empty state
         $fields[] = HasMany::make('Categories', 'categories', ExamCategory::class);
+        $fields[] = HasMany::make('Question Groups', 'questionGroups', QuestionGroup::class);
         $fields[] = HasMany::make('Questions', 'questions', \App\Nova\Question::class);
 
         // ============== STAGE 4: Examples ==============

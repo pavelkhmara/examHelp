@@ -225,6 +225,53 @@ REQ,
 - response.mode = "matching"
 - interaction.response_type = "matching"
 REQ,
+            'listen_mcq' => <<<'REQ'
+# Type-Specific Requirements: listen_mcq (Listening Multiple Choice)
+- Must have 3-5 options in interaction.options[]
+- scoring.answer_key must contain exactly 1 correct option ID
+- interaction.response_type = "selection"
+- response.mode = "selection"
+- **CRITICAL - Audio Stimulus Requirements:**
+  * stimulus.text_html MUST contain the ACTUAL SPOKEN TEXT (dialogue, monologue, announcement)
+  * Generate realistic conversation or speech that would be read aloud
+  * DO NOT write meta-descriptions like "Fragment dyskusji o..." or "Nagranie zawiera..."
+  * DO NOT include prefixes like "Nagranie:", "Audio:", "Wysłuchaj:"
+  * DO NOT include playback instructions like "(Kliknij ▶, aby odtworzyć.)"
+  * Format as direct speech with speaker labels if dialogue (e.g., "Ekspert 1: ...\nProfesor: ...")
+  * For monologues, provide the full spoken text as paragraphs
+  * Text should be what test-taker would HEAR, not what they would READ ABOUT the audio
+- Example CORRECT format for dialogue:
+  ```
+  Dziennikarz: Witam państwa w dzisiejszym programie. Naszym gościem jest profesor Jan Kowalski...
+  Profesor: Dziękuję za zaproszenie. Chciałbym omówić kwestię...
+  ```
+- Example INCORRECT format (meta-description):
+  ```
+  Nagranie: Fragment wywiadu radiowego, w którym dziennikarz rozmawia z profesorem o...
+  ```
+REQ,
+            'dictation' => <<<'REQ'
+# Type-Specific Requirements: dictation
+- scoring.method = "keyed" or "partial"
+- scoring.answer_key contains the exact text to be dictated
+- response.mode = "text"
+- response.max_words should match expected dictation length
+- **CRITICAL - Audio Stimulus Requirements:**
+  * stimulus.text_html MUST contain the ACTUAL TEXT TO BE DICTATED
+  * This is the exact sentence/paragraph that would be read aloud
+  * DO NOT write meta-descriptions like "Zdanie do dyktowania:" or "Tekst zawiera..."
+  * DO NOT include prefixes like "Nagranie:", "Dyktando:", "Usłyszysz:"
+  * DO NOT include playback instructions
+  * Provide only the raw text that would be spoken
+- Example CORRECT format:
+  ```
+  W dzisiejszych czasach technologia odgrywa coraz większą rolę w naszym codziennym życiu.
+  ```
+- Example INCORRECT format:
+  ```
+  Nagranie: Zdanie opisujące rolę technologii w życiu codziennym. (Kliknij ▶, aby odtworzyć.)
+  ```
+REQ,
         ];
 
         return $requirements[$type] ?? "# Type-Specific Requirements: {$type}\nFollow general schema requirements for this type.";

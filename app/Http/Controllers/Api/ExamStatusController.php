@@ -415,7 +415,7 @@ class ExamStatusController extends Controller
             ];
         }
 
-        // Latest error
+        // Latest error - show only if it's relevant (no successful task of same type after it)
         $latestErrorData = null;
         $failedTask = $exam->generationTasks()
             ->where('status', 'failed')
@@ -423,34 +423,44 @@ class ExamStatusController extends Controller
             ->first();
 
         if ($failedTask && $failedTask->error) {
-            $errorStage = 'unknown';
+            // Check if there's a more recent successful task of the same type
+            $hasSuccessfulTaskAfter = $exam->generationTasks()
+                ->where('type', $failedTask->type)
+                ->where('status', 'completed')
+                ->where('id', '>', $failedTask->id)
+                ->exists();
 
-            // Попытка определить stage из activities
-            $activities = $failedTask->activities ?? [];
-            foreach (array_reverse($activities) as $activity) {
-                $event = $activity['event'] ?? '';
-                if (strpos($event, 'identity') !== false) {
-                    $errorStage = 'identity';
-                    break;
-                } elseif (strpos($event, 'overview') !== false || strpos($event, 'structure') !== false) {
-                    $errorStage = 'overview';
-                    break;
+            // Only show error if no successful task of same type came after
+            if (!$hasSuccessfulTaskAfter) {
+                $errorStage = 'unknown';
+
+                // Попытка определить stage из activities
+                $activities = $failedTask->activities ?? [];
+                foreach (array_reverse($activities) as $activity) {
+                    $event = $activity['event'] ?? '';
+                    if (strpos($event, 'identity') !== false) {
+                        $errorStage = 'identity';
+                        break;
+                    } elseif (strpos($event, 'overview') !== false || strpos($event, 'structure') !== false) {
+                        $errorStage = 'overview';
+                        break;
+                    }
                 }
+
+                // Укоротить сообщение об ошибке для компактного отображения
+                $shortError = strlen($failedTask->error) > 100
+                    ? substr($failedTask->error, 0, 100) . '...'
+                    : $failedTask->error;
+
+                $latestErrorData = [
+                    'task_id' => $failedTask->id,
+                    'type' => $failedTask->type,
+                    'stage' => $errorStage,
+                    'message' => $shortError,
+                    'full_error' => $failedTask->error,
+                    'occurred_at' => $failedTask->updated_at?->toIso8601String(),
+                ];
             }
-
-            // Укоротить сообщение об ошибке для компактного отображения
-            $shortError = strlen($failedTask->error) > 100
-                ? substr($failedTask->error, 0, 100) . '...'
-                : $failedTask->error;
-
-            $latestErrorData = [
-                'task_id' => $failedTask->id,
-                'type' => $failedTask->type,
-                'stage' => $errorStage,
-                'message' => $shortError,
-                'full_error' => $failedTask->error,
-                'occurred_at' => $failedTask->updated_at?->toIso8601String(),
-            ];
         }
 
         return [
