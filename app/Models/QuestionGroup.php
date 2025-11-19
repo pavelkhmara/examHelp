@@ -64,8 +64,7 @@ class QuestionGroup extends Model
 
     public function questions(): HasMany
     {
-        return $this->hasMany(Question::class, 'question_group_id')
-            ->orderBy('order');
+        return $this->hasMany(Question::class, 'question_group_id');
     }
 
     // ========== ACCESSORS ==========

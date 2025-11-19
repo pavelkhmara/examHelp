@@ -32,6 +32,7 @@ class Question extends Model
     protected $fillable = [
         'exam_id',
         'section_id',
+        'question_group_id',
         'question_id',
         'type',
         'skills_measured',
@@ -97,6 +98,11 @@ class Question extends Model
         return $this->belongsTo(ExamCategory::class, 'section_id');
     }
 
+    public function questionGroup(): BelongsTo
+    {
+        return $this->belongsTo(QuestionGroup::class, 'question_group_id');
+    }
+
     // ========== HELPERS ==========
 
     /**
@@ -123,6 +129,44 @@ class Question extends Model
     {
         $this->frozen_at = null;
         $this->save();
+    }
+
+    /**
+     * Check if question belongs to a group
+     */
+    public function isGrouped(): bool
+    {
+        return ! is_null($this->question_group_id);
+    }
+
+    /**
+     * Get resolved stimulus (group stimulus merged with question stimulus)
+     *
+     * Priority: question stimulus overrides/extends group stimulus
+     */
+    public function getResolvedStimulus(): array
+    {
+        $stimulus = [];
+
+        // 1. Start with group stimulus (if exists)
+        if ($this->isGrouped() && $this->questionGroup) {
+            $stimulus = $this->questionGroup->stimulus ?? [];
+        }
+
+        // 2. Merge with question stimulus (question overrides group)
+        $questionStimulus = $this->stimulus ?? [];
+
+        foreach ($questionStimulus as $key => $value) {
+            if (is_array($value) && isset($stimulus[$key]) && is_array($stimulus[$key])) {
+                // Array merge for audio, images, video arrays
+                $stimulus[$key] = array_merge($stimulus[$key], $value);
+            } else {
+                // Direct override for text_html and other scalar values
+                $stimulus[$key] = $value;
+            }
+        }
+
+        return $stimulus;
     }
 
     /**
