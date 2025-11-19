@@ -764,7 +764,7 @@ JS;
                 $html .= '<ol style="list-style: none; padding: 0; margin: 0;">';
 
                 foreach ($options as $option) {
-                    $label = is_array($option) ? ($option['label'] ?? '') : $option;
+                    $label = is_array($option) ? ($option['text'] ?? $option['label'] ?? '') : $option;
                     $optionId = is_array($option) ? ($option['id'] ?? '') : '';
 
                     // Check if correct answer
