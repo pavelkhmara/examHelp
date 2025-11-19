@@ -326,7 +326,14 @@ class ParallelQuestionSynthesizer extends AbstractAiService
         );
 
         $examLanguage = \App\Support\LanguageHelper::getLanguageName($exam->language_of_test);
-        $userPrompt = "Generate exactly {$totalQuestions} questions of type {$questionType} for a {$examLanguage} language exam at {$exam->level} level. ALL user-facing content (instructions, stimulus, options) MUST be in {$examLanguage}. Return ONLY a valid JSON array with {$totalQuestions} question objects.";
+
+        // Special instructions for audio-based question types
+        $audioInstructions = '';
+        if (in_array($questionType, ['listen_mcq', 'dictation'])) {
+            $audioInstructions = " CRITICAL FOR AUDIO TYPES: The stimulus.text_html field MUST contain the ACTUAL SPOKEN TEXT (dialogue, monologue, or sentence) that would be read aloud. DO NOT write meta-descriptions like 'Fragment dyskusji o...' or 'Nagranie zawiera...'. DO NOT include prefixes like 'Nagranie:', 'Audio:', 'Wysłuchaj:', 'Odtwórz nagranie'. DO NOT include playback instructions. Generate realistic conversation/speech text that test-takers would HEAR. For dialogues, use speaker labels (e.g., 'Ekspert 1: ... Professor: ...'). For monologues, provide full spoken text as paragraphs.";
+        }
+
+        $userPrompt = "Generate exactly {$totalQuestions} questions of type {$questionType} for a {$examLanguage} language exam at {$exam->level} level. ALL user-facing content (instructions, stimulus, options) MUST be in {$examLanguage}.{$audioInstructions} Return ONLY a valid JSON array with {$totalQuestions} question objects.";
 
         return [
             'payload' => [
@@ -381,7 +388,14 @@ class ParallelQuestionSynthesizer extends AbstractAiService
         );
 
         $examLanguage = \App\Support\LanguageHelper::getLanguageName($exam->language_of_test);
-        $userPrompt = "Generate exactly {$totalQuestions} questions of type {$questionType} for a {$examLanguage} language exam at {$exam->level} level. ALL user-facing content (instructions, stimulus, options) MUST be in {$examLanguage}. Return ONLY a valid JSON array with {$totalQuestions} question objects.";
+
+        // Special instructions for audio-based question types
+        $audioInstructions = '';
+        if (in_array($questionType, ['listen_mcq', 'dictation'])) {
+            $audioInstructions = " CRITICAL FOR AUDIO TYPES: The stimulus.text_html field MUST contain the ACTUAL SPOKEN TEXT (dialogue, monologue, or sentence) that would be read aloud. DO NOT write meta-descriptions like 'Fragment dyskusji o...' or 'Nagranie zawiera...'. DO NOT include prefixes like 'Nagranie:', 'Audio:', 'Wysłuchaj:', 'Odtwórz nagranie'. DO NOT include playback instructions. Generate realistic conversation/speech text that test-takers would HEAR. For dialogues, use speaker labels (e.g., 'Ekspert 1: ... Professor: ...'). For monologues, provide full spoken text as paragraphs.";
+        }
+
+        $userPrompt = "Generate exactly {$totalQuestions} questions of type {$questionType} for a {$examLanguage} language exam at {$exam->level} level. ALL user-facing content (instructions, stimulus, options) MUST be in {$examLanguage}.{$audioInstructions} Return ONLY a valid JSON array with {$totalQuestions} question objects.";
 
         return [
             'payload' => [
