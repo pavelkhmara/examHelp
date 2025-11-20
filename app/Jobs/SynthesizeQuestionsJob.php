@@ -50,14 +50,22 @@ class SynthesizeQuestionsJob implements ShouldQueue
                 'exam_id' => $exam->id,
             ]);
 
-            // Load all generation plans
+            // Load all generation plans (pending or failed - allow retries for failed plans)
             $plans = GenerationPlan::where('exam_id', $exam->id)
-                ->where('status', 'pending')
+                ->whereIn('status', ['pending', 'failed'])
                 ->get();
 
             if ($plans->isEmpty()) {
-                throw new \Exception('No pending generation plans found');
+                throw new \Exception('No generation plans found (pending or failed). All plans may already be completed.');
             }
+
+            $task->addActivity('plans_status_check', 'Generation plans status', [
+                'total_plans' => GenerationPlan::where('exam_id', $exam->id)->count(),
+                'pending' => GenerationPlan::where('exam_id', $exam->id)->where('status', 'pending')->count(),
+                'failed' => GenerationPlan::where('exam_id', $exam->id)->where('status', 'failed')->count(),
+                'completed' => GenerationPlan::where('exam_id', $exam->id)->where('status', 'completed')->count(),
+                'retry_count' => $plans->where('status', 'failed')->count(),
+            ]);
 
             $task->addActivity('plans_loaded', "Loaded {$plans->count()} generation plans", [
                 'plans_count' => $plans->count(),

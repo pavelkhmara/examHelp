@@ -279,7 +279,13 @@ class ExamStatusController extends Controller
         $structureStatus = 'pending';
         $categoriesCount = $exam->categories_count ?? $exam->categories()->count();
 
-        if ($categoriesCount > 0 || !empty($exam->meta['structure_v2'])) {
+        // If structure_v2 exists but categories not yet created, count sections from structure
+        $structureV2 = $exam->meta['structure_v2'] ?? null;
+        if (!empty($structureV2) && $categoriesCount === 0) {
+            $categoriesCount = count($structureV2['sections'] ?? []);
+        }
+
+        if ($categoriesCount > 0 || !empty($structureV2)) {
             $structureStatus = 'completed';
         } elseif ($latestTask && $latestTask->status === 'running') {
             // Проверяем, не идет ли сейчас Overview/Structure generation

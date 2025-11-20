@@ -20,6 +20,17 @@ final class MockAiProvider implements AiProvider
             return $this->generateIdentityResponse($payload, $opts);
         }
 
+        // Check for v2 architecture stages
+        $stage = $payload['stage'] ?? null;
+
+        if ($stage === 'phase_a_skeleton') {
+            return $this->generatePhaseAResponse($payload, $opts);
+        }
+
+        if ($stage === 'phase_b_assembly' || $stage === 'section_assembly') {
+            return $this->generatePhaseBOrSectionResponse($payload, $opts);
+        }
+
         // Original overview generation logic
         $files = is_array($opts['files'] ?? null) ? $opts['files'] : [];
 
@@ -277,5 +288,287 @@ final class MockAiProvider implements AiProvider
         }
 
         return null;
+    }
+
+    /**
+     * Generate mock Phase A response (skeleton structure)
+     */
+    private function generatePhaseAResponse(array $payload, array $opts): array
+    {
+        $examTitle = $payload['exam_title'] ?? 'Mock Exam';
+
+        // Mock skeleton with 3 sections (listening, reading, writing)
+        $content = [
+            'canonical' => [
+                'family' => $this->guessFamily($examTitle),
+                'name' => $examTitle,
+                'provider' => $this->guessProvider($examTitle),
+                'language_of_test' => 'English',
+            ],
+            'administration' => [
+                'total_time_minutes' => 150,
+                'break_time_minutes' => 10,
+            ],
+            'sections' => [
+                [
+                    'id' => 'listening',
+                    'title' => 'Listening',
+                    'skill' => 'listening',
+                    'duration_min' => 30,
+                    'max_score' => 40,
+                    'min_pass_percent' => null,
+                    'tasks' => [
+                        [
+                            'id' => 'task_1',
+                            'title' => 'Task 1',
+                            'description' => 'Listen to a conversation',
+                        ],
+                    ],
+                ],
+                [
+                    'id' => 'reading',
+                    'title' => 'Reading',
+                    'skill' => 'reading',
+                    'duration_min' => 60,
+                    'max_score' => 40,
+                    'min_pass_percent' => null,
+                    'tasks' => [
+                        [
+                            'id' => 'task_1',
+                            'title' => 'Task 1',
+                            'description' => 'Read a passage',
+                        ],
+                    ],
+                ],
+                [
+                    'id' => 'writing',
+                    'title' => 'Writing',
+                    'skill' => 'writing',
+                    'duration_min' => 60,
+                    'max_score' => 20,
+                    'min_pass_percent' => null,
+                    'tasks' => [
+                        [
+                            'id' => 'task_1',
+                            'title' => 'Task 1',
+                            'description' => 'Write an essay',
+                        ],
+                    ],
+                ],
+            ],
+        ];
+
+        $contentText = json_encode($content, JSON_UNESCAPED_UNICODE);
+        $body = [
+            'id' => 'mock-phase-a-resp',
+            'choices' => [
+                [
+                    'index' => 0,
+                    'message' => [
+                        'role' => 'assistant',
+                        'content' => $contentText,
+                    ],
+                    'finish_reason' => 'stop',
+                ],
+            ],
+            'usage' => [
+                'prompt_tokens' => 20,
+                'completion_tokens' => 100,
+                'total_tokens' => 120,
+            ],
+        ];
+        $raw = json_encode($body, JSON_UNESCAPED_UNICODE);
+
+        return [
+            'ok' => true,
+            'raw' => $raw,
+            'body' => $body,
+            'content' => $contentText,
+            'content_json' => $content,
+            'usage' => $body['usage'],
+            'model' => 'mock_model',
+            'model_alias' => $opts['model'] ?? null,
+            'sent_messages' => [],
+        ];
+    }
+
+    /**
+     * Generate mock Phase B or Section Assembly response
+     */
+    private function generatePhaseBOrSectionResponse(array $payload, array $opts): array
+    {
+        $stage = $payload['stage'] ?? 'section_assembly';
+        $isSection = $stage === 'section_assembly';
+
+        if ($isSection) {
+            // Single section assembly
+            $sectionSkeleton = $payload['section_skeleton'] ?? [];
+            $sectionId = $sectionSkeleton['id'] ?? 'unknown';
+            $sectionTitle = $sectionSkeleton['title'] ?? 'Unknown Section';
+            $skill = $sectionSkeleton['skill'] ?? 'listening';
+
+            $content = [
+                'id' => $sectionId,
+                'title' => $sectionTitle,
+                'skill' => $skill,
+                'duration_min' => $sectionSkeleton['duration_min'] ?? 30,
+                'max_score' => $sectionSkeleton['max_score'] ?? 40,
+                'tasks' => $sectionSkeleton['tasks'] ?? [],
+                'question_archetypes' => [
+                    [
+                        'id' => "{$sectionId}_mcq_01",
+                        'type' => $skill === 'listening' ? 'listen_mcq' : 'read_mcq',
+                        'name' => ucfirst($skill).' MCQ',
+                        'difficulty' => 'medium',
+                        'config' => [
+                            'options_count' => 4,
+                            'duration_sec' => 120,
+                            'scoring' => [
+                                'max_points' => 1,
+                                'partial_credit' => false,
+                            ],
+                        ],
+                    ],
+                ],
+                'assembly' => $this->generateMockAssembly($skill, $sectionId),
+            ];
+        } else {
+            // Full Phase B - all sections with assembly
+            $phaseASkeleton = $payload['phase_a_skeleton'] ?? [];
+            $sections = [];
+
+            foreach ($phaseASkeleton['sections'] ?? [] as $section) {
+                $sectionId = $section['id'] ?? 'unknown';
+                $skill = $section['skill'] ?? 'listening';
+
+                $sections[] = [
+                    'id' => $sectionId,
+                    'title' => $section['title'] ?? 'Unknown',
+                    'skill' => $skill,
+                    'duration_min' => $section['duration_min'] ?? 30,
+                    'max_score' => $section['max_score'] ?? 40,
+                    'tasks' => $section['tasks'] ?? [],
+                    'question_archetypes' => [
+                        [
+                            'id' => "{$sectionId}_mcq_01",
+                            'type' => $skill === 'listening' ? 'listen_mcq' : 'read_mcq',
+                            'name' => ucfirst($skill).' MCQ',
+                            'difficulty' => 'medium',
+                            'config' => [
+                                'options_count' => 4,
+                                'duration_sec' => 120,
+                                'scoring' => [
+                                    'max_points' => 1,
+                                    'partial_credit' => false,
+                                ],
+                            ],
+                        ],
+                    ],
+                    'assembly' => [
+                        'mode' => 'pool',
+                        'filters' => [
+                            [
+                                'type' => $skill === 'listening' ? 'listen_mcq' : 'read_mcq',
+                                'difficulty' => ['easy', 'medium'],
+                                'pick' => 10,
+                            ],
+                        ],
+                        'assertions' => [
+                            'total_tasks_equals' => 10,
+                            'max_points_sum_equals' => 10,
+                        ],
+                    ],
+                ];
+            }
+
+            $content = [
+                'canonical' => $phaseASkeleton['canonical'] ?? [],
+                'administration' => $phaseASkeleton['administration'] ?? [],
+                'sections' => $sections,
+            ];
+        }
+
+        $contentText = json_encode($content, JSON_UNESCAPED_UNICODE);
+        $body = [
+            'id' => $isSection ? 'mock-section-resp' : 'mock-phase-b-resp',
+            'choices' => [
+                [
+                    'index' => 0,
+                    'message' => [
+                        'role' => 'assistant',
+                        'content' => $contentText,
+                    ],
+                    'finish_reason' => 'stop',
+                ],
+            ],
+            'usage' => [
+                'prompt_tokens' => 30,
+                'completion_tokens' => 150,
+                'total_tokens' => 180,
+            ],
+        ];
+        $raw = json_encode($body, JSON_UNESCAPED_UNICODE);
+
+        return [
+            'ok' => true,
+            'raw' => $raw,
+            'body' => $body,
+            'content' => $contentText,
+            'content_json' => $content,
+            'usage' => $body['usage'],
+            'model' => 'mock_model',
+            'model_alias' => $opts['model'] ?? null,
+            'sent_messages' => [],
+        ];
+    }
+
+    /**
+     * Generate appropriate assembly configuration based on skill type
+     */
+    private function generateMockAssembly(string $skill, string $sectionId): array
+    {
+        // Listening and Reading sections use pool mode (filters)
+        if (in_array($skill, ['listening', 'reading'])) {
+            return [
+                'mode' => 'pool',
+                'filters' => [
+                    [
+                        'type' => $skill === 'listening' ? 'listen_mcq' : 'read_mcq',
+                        'difficulty' => ['easy', 'medium'],
+                        'pick' => 10,
+                    ],
+                ],
+                'assertions' => [
+                    'total_tasks_equals' => 10,
+                    'max_points_sum_equals' => 10,
+                ],
+            ];
+        }
+
+        // Writing and Speaking sections use blueprint mode with slots
+        if (in_array($skill, ['writing', 'speaking'])) {
+            return [
+                'mode' => 'blueprint',
+                'slots' => [  // Use 'slots' like real AI provider (AssemblyResolver supports both)
+                    [
+                        'slot_id' => "{$sectionId}_task_1",
+                        'type' => $skill === 'writing' ? 'writing_prompt' : 'speaking_prompt',
+                        'difficulty' => 'medium',
+                        'pick' => 1,
+                        'tags' => [],
+                    ],
+                ],
+                'assertions' => [
+                    'total_tasks_equals' => 1,
+                    'max_points_sum_equals' => 10,
+                ],
+            ];
+        }
+
+        // Fallback to inline mode with empty questions
+        return [
+            'mode' => 'inline',
+            'questions' => [],
+        ];
     }
 }

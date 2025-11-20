@@ -17,6 +17,42 @@ class ResolveGenerationPlanAction extends Action
 
     public $name = 'Resolve Generation Plans (v2)';
 
+    /**
+     * Determine if the action should be available for the given request.
+     *
+     * @param  \Illuminate\Http\Request  $request
+     * @return bool
+     */
+    public function authorizedToSee(\Illuminate\Http\Request $request)
+    {
+        // Only show if viewing a single exam resource
+        if (! $request->route('resourceId')) {
+            return false;
+        }
+
+        // Check if exam has complete structure_v2 with assembly
+        $exam = \App\Models\Exam::find($request->route('resourceId'));
+        if (! $exam) {
+            return false;
+        }
+
+        // Must have structure_v2
+        $structure = $exam->meta['structure_v2'] ?? null;
+        if (! $structure) {
+            return false;
+        }
+
+        // At least one section must have assembly
+        $sections = $structure['sections'] ?? [];
+        foreach ($sections as $section) {
+            if (! empty($section['assembly'])) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
     public function handle(ActionFields $fields, Collection $models)
     {
         /** @var \App\Models\Exam $exam */

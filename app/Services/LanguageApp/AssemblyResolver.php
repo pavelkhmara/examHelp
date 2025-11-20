@@ -185,19 +185,26 @@ class AssemblyResolver
      */
     public function resolvePool(array $section, array $assembly): array
     {
-        $poolId = $assembly['pool_id'] ?? null;
+        // Auto-generate pool_id if not provided (AI may omit it)
+        $poolId = $assembly['pool_id'] ?? "pool_{$section['id']}_" . md5(json_encode($assembly['filters'] ?? []));
         $filters = $assembly['filters'] ?? [];
 
         // Support both pick (old) and questions_count (new) for backward compatibility
-        $questionsCount = $assembly['questions_count'] ?? $assembly['pick'] ?? 0;
+        // If not specified at assembly level, sum from filters
+        $questionsCount = $assembly['questions_count'] ?? $assembly['pick'] ?? null;
+
+        if ($questionsCount === null && !empty($filters)) {
+            // Sum pick from all filters
+            $questionsCount = 0;
+            foreach ($filters as $filter) {
+                $questionsCount += $filter['pick'] ?? $filter['questions_count'] ?? 0;
+            }
+        }
+
         $pick = $questionsCount; // Keep $pick for backward compatibility in plan_data
 
         $seed = $assembly['seed'] ?? null;
         $assertions = $assembly['assertions'] ?? [];
-
-        if (!$poolId) {
-            throw new \Exception("Pool mode requires pool_id for section {$section['id']}");
-        }
 
         if ($questionsCount <= 0) {
             throw new \Exception("Pool mode requires questions_count (or pick) > 0 for section {$section['id']}");
@@ -280,11 +287,12 @@ class AssemblyResolver
      */
     public function resolveBlueprint(array $section, array $assembly): array
     {
-        $blueprint = $assembly['blueprint'] ?? [];
+        // Support both 'blueprint' and 'slots' keys for backward compatibility
+        $blueprint = $assembly['blueprint'] ?? $assembly['slots'] ?? [];
         $assertions = $assembly['assertions'] ?? [];
 
         if (empty($blueprint)) {
-            throw new \Exception("Blueprint mode requires blueprint array for section {$section['id']}");
+            throw new \Exception("Blueprint mode requires blueprint or slots array for section {$section['id']}");
         }
 
         // Calculate total questions from slots

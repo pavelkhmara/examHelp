@@ -593,6 +593,9 @@ class RunExamResearchJob implements ShouldQueue
             // Check if two-phase generation is enabled (v2 architecture)
             $useTwoPhaseGeneration = $task->request['use_two_phase_generation'] ?? true; // Default to v2
 
+            // Check if parallel section generation is enabled (v2_parallel)
+            $useParallelSections = $task->request['use_parallel_sections'] ?? true; // Default to parallel
+
             if ($useTwoPhaseGeneration) {
                 // V2 ARCHITECTURE: Two-phase generation (Phase A + Phase B)
                 $task->addActivity('two_phase_mode_enabled', 'Using v2 two-phase generation (Phase A: skeleton, Phase B: assembly plan)');
@@ -604,22 +607,64 @@ class RunExamResearchJob implements ShouldQueue
                 $phaseASkeleton = $svc->runPhaseA($exam, $task);
                 $task->updateHeartbeat(); // Heartbeat after Phase A
 
-                // Phase B: Generate assembly plan
-                $exam->research_status = 'running_phase_b';
-                $exam->save();
-                $task->updateHeartbeat(); // Heartbeat before Phase B
-                $phaseBStructure = $svc->runPhaseB($exam, $task, $phaseASkeleton);
-                $task->updateHeartbeat(); // Heartbeat after Phase B
+                // Phase B: Choose between parallel or sequential generation
+                if ($useParallelSections) {
+                    // PARALLEL MODE: Dispatch separate jobs for each section
+                    $task->addActivity('parallel_mode_enabled', 'Using parallel section generation (v2_parallel)');
 
-                // Build compatible pipelineResult structure for downstream code
-                $pipelineResult = [
-                    'ok' => true,
-                    'overview' => $phaseBStructure, // Complete structure with assembly
-                    'structure' => $phaseBStructure,
-                    'phase_a_skeleton' => $phaseASkeleton,
-                    'phase_b_complete' => $phaseBStructure,
-                    'generation_mode' => 'two_phase_v2',
-                ];
+                    $sections = $phaseASkeleton['sections'] ?? [];
+                    $sectionIds = array_column($sections, 'id');
+
+                    // Initialize section tracking in task.request
+                    $request = (array) ($task->request ?? []);
+                    $request['expected_sections'] = $sectionIds;
+                    $request['sections_status'] = array_fill_keys($sectionIds, 'pending');
+                    $task->request = $request;
+                    $task->save();
+
+                    $task->addActivity('dispatching_sections', "Dispatching " . count($sections) . " section assembly jobs", [
+                        'sections' => $sectionIds,
+                        'mode' => 'parallel',
+                    ]);
+
+                    // Dispatch GenerateSectionAssemblyJob for each section
+                    foreach ($sections as $section) {
+                        GenerateSectionAssemblyJob::dispatch($task->id, $section['id'], $section);
+                    }
+
+                    // Dispatch FinalizeSectionGenerationJob to wait and finalize
+                    FinalizeSectionGenerationJob::dispatch($task->id)->delay(now()->addSeconds(30));
+
+                    $task->addActivity('parallel_jobs_dispatched', 'Section assembly jobs dispatched, waiting for completion');
+
+                    \Illuminate\Support\Facades\Log::info('Parallel section generation dispatched', [
+                        'exam_id' => $exam->id,
+                        'task_id' => $task->id,
+                        'sections_count' => count($sections),
+                    ]);
+
+                    // STOP HERE - wait for FinalizeSectionGenerationJob to complete
+                    return;
+                } else {
+                    // SEQUENTIAL MODE: Generate all sections in one AI call (original Phase B)
+                    $task->addActivity('sequential_mode_enabled', 'Using sequential section generation (v2_sequential)');
+
+                    $exam->research_status = 'running_phase_b';
+                    $exam->save();
+                    $task->updateHeartbeat(); // Heartbeat before Phase B
+                    $phaseBStructure = $svc->runPhaseB($exam, $task, $phaseASkeleton);
+                    $task->updateHeartbeat(); // Heartbeat after Phase B
+
+                    // Build compatible pipelineResult structure for downstream code
+                    $pipelineResult = [
+                        'ok' => true,
+                        'overview' => $phaseBStructure, // Complete structure with assembly
+                        'structure' => $phaseBStructure,
+                        'phase_a_skeleton' => $phaseASkeleton,
+                        'phase_b_complete' => $phaseBStructure,
+                        'generation_mode' => 'two_phase_v2_sequential',
+                    ];
+                }
             } else {
                 // V1 ARCHITECTURE: Single-phase generation (legacy)
                 $task->addActivity('legacy_mode_enabled', 'Using legacy single-phase generation (v1)');
@@ -709,12 +754,9 @@ class RunExamResearchJob implements ShouldQueue
 
             // If compliance is too low, add warning to result
             $complianceScore = $sanityResult['compliance_score'] ?? 0;
-            $nextStepMessage = $useTwoPhaseGeneration
-                ? 'завершить Stage 5 (генерация примеров будет в Stage 6)'
-                : 'продолжить к ЭТАПУ 4 (Examples)';
 
             if ($complianceScore < 0.85) {
-                $task->addActivity('decision_point_sanity_check', "Условие: compliance_score < 0.85 (текущий: {$complianceScore}). Решение: добавить warning и {$nextStepMessage}", [
+                $task->addActivity('decision_point_sanity_check', "Условие: compliance_score < 0.85 (текущий: {$complianceScore}). Решение: добавить warning и продолжить к генерации примеров", [
                     'condition' => 'compliance_score < 0.85',
                     'compliance_score' => $complianceScore,
                     'decision' => 'add_warning_continue',
@@ -737,7 +779,7 @@ class RunExamResearchJob implements ShouldQueue
                     'fails' => $sanityResult['fails'] ?? [],
                 ]);
             } else {
-                $task->addActivity('decision_point_sanity_check', "Условие: compliance_score >= 0.85 (текущий: {$complianceScore}). Решение: {$nextStepMessage}", [
+                $task->addActivity('decision_point_sanity_check', "Условие: compliance_score >= 0.85 (текущий: {$complianceScore}). Решение: продолжить к генерации примеров", [
                     'condition' => 'compliance_score >= 0.85',
                     'compliance_score' => $complianceScore,
                     'decision' => 'continue_to_examples',

@@ -16,7 +16,32 @@ class SynthesizeQuestionsAction extends Action
 {
     use InteractsWithQueue, Queueable;
 
-    public $name = 'Run Full Pipeline (Generate/Attach)';
+    public $name = 'Synthesize Questions';
+
+    /**
+     * Determine if the action should be available for the given request.
+     *
+     * @param  \Illuminate\Http\Request  $request
+     * @return bool
+     */
+    public function authorizedToSee(\Illuminate\Http\Request $request)
+    {
+        // Only show if viewing a single exam resource
+        if (! $request->route('resourceId')) {
+            return false;
+        }
+
+        // Check if exam has generation plans
+        $exam = \App\Models\Exam::find($request->route('resourceId'));
+        if (! $exam) {
+            return false;
+        }
+
+        // Must have at least one generation plan
+        $plansCount = \App\Models\GenerationPlan::where('exam_id', $exam->id)->count();
+
+        return $plansCount > 0;
+    }
 
     public function handle(ActionFields $fields, Collection $models)
     {

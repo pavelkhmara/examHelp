@@ -1190,4 +1190,108 @@ class OverviewStructureBuilder extends AbstractAiService
 
         return $structure_normalized;
     }
+
+    /**
+     * Generate assembly plan for a SINGLE section (for parallel processing)
+     *
+     * This method is used by GenerateSectionAssemblyJob to generate assembly configuration
+     * for one section in parallel with other sections.
+     *
+     * @param Exam $exam
+     * @param GenerationTask $task
+     * @param array $sectionSkeleton Section skeleton from Phase A
+     * @return array Complete section with assembly configuration
+     */
+    public function generateSectionAssembly(Exam $exam, GenerationTask $task, array $sectionSkeleton): array
+    {
+        $sectionId = $sectionSkeleton['id'] ?? 'unknown';
+
+        Log::debug('OverviewStructureBuilder: generating assembly for section', [
+            'exam_id' => $exam->id,
+            'task_id' => $task->id,
+            'section_id' => $sectionId,
+        ]);
+
+        $files = $this->buildFilesForExam($exam);
+
+        // Get full skeleton from exam.meta for context
+        $fullSkeleton = $exam->meta['structure_v2'] ?? [];
+
+        // Build payload for single section
+        $payload = [
+            'exam_slug' => $exam->slug,
+            'stage' => 'section_assembly',
+            'exam_title' => $exam->title,
+            'exam_level' => $exam->level,
+            'exam_description' => trim($exam->description),
+            'input' => trim($task->notes) ?? null,
+            'section_skeleton' => $sectionSkeleton,
+            'full_skeleton' => $fullSkeleton,
+        ];
+
+        // Use GPT-5 for section assembly
+        $modelAlias = 'thinking'; // Maps to AI_MODEL_THINKING (gpt-5)
+
+        // Build prompt args for section assembly
+        $promptArgs = [
+            $exam->title,                     // examTitle
+            trim($task->notes) ?? '',        // userInput
+            trim($exam->description),         // contextNotes
+            $sectionSkeleton,                 // sectionSkeleton
+            $fullSkeleton,                    // fullSkeleton (for context)
+            null,                             // retryHint
+        ];
+
+        $opts = [
+            'web' => false, // Section assembly doesn't need web search
+            'files' => $files,
+            'model' => $modelAlias,
+            'prompt_class' => Prompts\PromptSectionAssembly::class,
+            'prompt_args' => $promptArgs,
+        ];
+
+        // Call AI
+        $res = $this->callAi($payload, $opts);
+        $this->log($task, 'section_assembly_' . $sectionId, $payload, $res);
+
+        Log::debug('OverviewStructureBuilder section assembly result', [
+            'section_id' => $sectionId,
+            'result' => $res['content'] ?? null,
+        ]);
+
+        // Decode and validate response
+        $decoded = $this->decodeOverview($res);
+
+        // Validate section structure
+        try {
+            // For now, just check that we have the required fields
+            if (!isset($decoded['id']) || !isset($decoded['assembly'])) {
+                throw new \RuntimeException('Section assembly response missing required fields (id, assembly)');
+            }
+
+            if ($decoded['id'] !== $sectionId) {
+                throw new \RuntimeException("Section ID mismatch: expected {$sectionId}, got {$decoded['id']}");
+            }
+
+            Log::info('OverviewStructureBuilder: Section assembly completed', [
+                'exam_id' => $exam->id,
+                'section_id' => $sectionId,
+                'has_archetypes' => isset($decoded['question_archetypes']),
+                'has_assembly' => isset($decoded['assembly']),
+                'assembly_mode' => $decoded['assembly']['mode'] ?? null,
+            ]);
+
+            return $decoded;
+        } catch (\Throwable $ve) {
+            Log::error('OverviewStructureBuilder section assembly validation failed', [
+                'exam_id' => $exam->id,
+                'task_id' => $task->id,
+                'section_id' => $sectionId,
+                'error' => $ve->getMessage(),
+                'decoded' => $decoded,
+            ]);
+
+            throw new \RuntimeException('Section assembly validation failed: ' . $ve->getMessage(), 0, $ve);
+        }
+    }
 }

@@ -82,12 +82,6 @@ class Exam extends Resource
                 ->onlyOnDetail()
                 ->help('View complete exam with all sections and questions'),
 
-            Code::make('Structure V2', function () {
-                return json_encode($this->structure_v2 ?? [], JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
-            })
-                ->language('json')
-                ->onlyOnDetail()
-                ->help('Exam skeleton/assembly (v2)'),
 
             // Phase B Assembly Config (читабельное отображение)
             CollapsiblePanel::make('🔧 Phase B: Assembly Config', 'phase_b_assembly_html')
@@ -400,7 +394,14 @@ class Exam extends Resource
                     ->rows(15)
                     ->onlyOnDetail()
                     ->help('Human-readable summary of exam structure'),
-
+                    
+                Code::make('Structure V2', function () {
+                    return json_encode($this->structure_v2 ?? [], JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
+                })
+                    ->language('json')
+                    ->onlyOnDetail()
+                    ->help('Exam skeleton/assembly (v2)'),
+                    
                 Code::make('Sections (compact)')
                     ->resolveUsing(function () {
                         $sections = $this->structure_sections ?? [];
@@ -1754,17 +1755,29 @@ class Exam extends Resource
 
     public function actions(NovaRequest $request)
     {
-        return [
+        $actions = [
+            // Full pipeline
             new ResearchAction,
+
+            // Identity stage actions
             new ConfirmIdentityAction,
             new \App\Nova\Actions\ConfidenceBoostAction,
             new \App\Nova\Actions\RejectAllVariantsAction,
-            new \App\Nova\Actions\CancelStalledTaskAction,
+
+            // Structure generation (Phase A & B)
             (new \App\Nova\Actions\RunOverviewPhaseAAction())->onlyOnDetail(),
             (new \App\Nova\Actions\RunOverviewPhaseBAction())->onlyOnDetail(),
+
+            // Examples generation
+            (new \App\Nova\Actions\GenerateExamplesAction())->onlyOnDetail(),
+
+            // Question synthesis pipeline
             (new \App\Nova\Actions\ResolveGenerationPlanAction())->onlyOnDetail(),
             (new \App\Nova\Actions\SynthesizeQuestionsAction())->onlyOnDetail(),
             (new \App\Nova\Actions\ValidateAttachQuestionsAction())->onlyOnDetail(),
+
+            // Utility actions
+            new \App\Nova\Actions\CancelStalledTaskAction,
             // (new ConfirmExamIdentity)
             // ->canSee(function () {
             //     $st = data_get($this->resource->identity, 'status');
@@ -1773,6 +1786,8 @@ class Exam extends Resource
             // })
             // ->canRun(fn () => true),
         ];
+
+        return $actions;
     }
 
     public function filters(NovaRequest $request)

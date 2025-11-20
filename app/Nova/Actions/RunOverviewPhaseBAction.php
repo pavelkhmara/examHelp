@@ -17,6 +17,50 @@ class RunOverviewPhaseBAction extends Action
 
     public $name = 'Run Phase B (Assembly v2)';
 
+    /**
+     * Determine if the action should be available for the given request.
+     *
+     * @param  \Illuminate\Http\Request  $request
+     * @return bool
+     */
+    public function authorizedToSee(\Illuminate\Http\Request $request)
+    {
+        // Only show if viewing a single exam resource
+        if (! $request->route('resourceId')) {
+            return false;
+        }
+
+        // Check if exam has Phase A skeleton
+        $exam = \App\Models\Exam::find($request->route('resourceId'));
+        if (! $exam) {
+            return false;
+        }
+
+        // Must have structure_v2 (Phase A skeleton)
+        $structure = $exam->meta['structure_v2'] ?? null;
+        if (! $structure) {
+            return false;
+        }
+
+        // Must have sections
+        $sections = $structure['sections'] ?? [];
+        if (empty($sections)) {
+            return false;
+        }
+
+        // Check if any section is missing assembly (Phase B not done yet)
+        // If all sections have assembly, no need to show this action
+        $hasIncompleteSection = false;
+        foreach ($sections as $section) {
+            if (empty($section['assembly'])) {
+                $hasIncompleteSection = true;
+                break;
+            }
+        }
+
+        return $hasIncompleteSection;
+    }
+
     public function handle(ActionFields $fields, Collection $models)
     {
         /** @var \App\Models\Exam $exam */

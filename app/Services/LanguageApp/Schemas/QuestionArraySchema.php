@@ -37,10 +37,33 @@ final class QuestionArraySchema
     }
 
     /**
+     * Normalize archetype types to standard question types
+     *
+     * Archetypes may use descriptive names (read_mcq, listen_mcq)
+     * Standard types are more generic (single_select, multi_select)
+     */
+    private static function normalizeQuestionType(string $questionType): string
+    {
+        $archetypeToStandard = [
+            'read_mcq' => 'single_select',
+            'listen_mcq' => 'single_select',
+            'read_multi_select' => 'multi_select',
+            'read_true_false' => 'true_false',
+            'listen_true_false' => 'true_false',
+            'read_yes_no_ng' => 'yes_no_ng',
+        ];
+
+        return $archetypeToStandard[$questionType] ?? $questionType;
+    }
+
+    /**
      * Get recommended response_type for question type based on mapping
      */
     private static function getResponseType(string $questionType): string
     {
+        // Normalize archetype types first
+        $normalized = self::normalizeQuestionType($questionType);
+
         $mapping = [
             'single_select' => 'selection',
             'multi_select' => 'selection',
@@ -58,13 +81,12 @@ final class QuestionArraySchema
             'dictation' => 'text',
             'writing_prompt' => 'text',
             'speaking_prompt' => 'audio',
-            'listen_mcq' => 'selection',
             'translation' => 'text',
             'roleplay' => 'audio',
             'note_completion' => 'text',
         ];
 
-        return $mapping[$questionType] ?? 'text';
+        return $mapping[$normalized] ?? 'text';
     }
 
     /**
@@ -80,6 +102,9 @@ final class QuestionArraySchema
      */
     private static function getQuestionSchema(string $questionType): array
     {
+        // Normalize archetype type to standard type for schema
+        $normalizedType = self::normalizeQuestionType($questionType);
+
         return [
             'type' => 'object',
             'properties' => [
@@ -94,7 +119,7 @@ final class QuestionArraySchema
                 'type' => [
                     'type' => 'string',
                     'description' => 'Question type',
-                    'enum' => self::getValidTypes(),
+                    'enum' => [$normalizedType], // Enforce specific normalized type
                 ],
                 'skills_measured' => [
                     'type' => 'array',

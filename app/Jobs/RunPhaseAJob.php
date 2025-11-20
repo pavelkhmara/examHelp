@@ -65,7 +65,7 @@ class RunPhaseAJob implements ShouldQueue
 
             // Save result to exam
             $exam->structure_v2 = $result;
-            $exam->research_status = 'completed';
+            $exam->research_status = 'phase_a_completed'; // Only skeleton, not full research
             $exam->save();
 
             // Update task
@@ -73,7 +73,7 @@ class RunPhaseAJob implements ShouldQueue
             $task->status = 'completed';
             $task->save();
 
-            $task->addActivity('phase_a_completed', 'Phase A completed successfully');
+            $task->addActivity('phase_a_completed', 'Phase A completed successfully - skeleton saved. Run Phase B next to generate assembly plans.');
             $task->updateHeartbeat();
 
             Log::info('Phase A job completed', [
