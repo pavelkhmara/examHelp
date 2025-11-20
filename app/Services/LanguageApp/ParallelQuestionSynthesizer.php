@@ -28,7 +28,8 @@ class ParallelQuestionSynthesizer extends AbstractAiService
         protected readonly JsonSchemaQuestionV2 $validator,
         protected readonly QuestionValidator $questionValidator,
         protected readonly QuestionDeduplicator $deduplicator,
-        protected readonly QuestionAttacher $attacher
+        protected readonly QuestionAttacher $attacher,
+        protected readonly QuestionGroupGenerationService $questionGroupService
     ) {
         parent::__construct($ai);
     }
@@ -165,10 +166,45 @@ class ParallelQuestionSynthesizer extends AbstractAiService
                     // Extract questions from response (Structured Outputs wraps in {"questions": [...]})
                     $questions = $this->parseAndValidateQuestions($aiResult);
 
-                    // Validate, deduplicate, attach
+                    // Validate and deduplicate
                     $validatedQuestions = $this->questionValidator->validateAndFinalize($questions, $plan, $exam);
                     $dedupedQuestions = $this->deduplicator->detectDuplicates($validatedQuestions, $exam);
-                    $attachedQuestions = $this->attacher->attachToExam($dedupedQuestions, $plan, $exam);
+
+                    // Check if we should create QuestionGroup (blueprint mode with shared_stimulus)
+                    $attachedCount = 0;
+                    if ($plan->assembly_mode === 'blueprint' && !empty($dedupedQuestions)) {
+                        $slots = $plan->plan_data['slots'] ?? [];
+                        $firstSlot = $slots[0] ?? [];
+
+                        // Check if should create QuestionGroup
+                        if ($this->shouldCreateQuestionGroup($firstSlot, count($dedupedQuestions))) {
+                            // Create QuestionGroup instead of separate Questions
+                            Log::info('[ParallelQuestionSynthesizer] Creating QuestionGroup for blueprint', [
+                                'plan_id' => $plan->id,
+                                'section_id' => $plan->section_id,
+                                'questions_count' => count($dedupedQuestions),
+                            ]);
+
+                            $questionGroup = $this->createQuestionGroupFromBlueprint(
+                                $plan,
+                                $exam,
+                                $firstSlot,
+                                $dedupedQuestions,
+                                0
+                            );
+
+                            $attachedCount = $questionGroup->questions()->count();
+                            $attachedQuestions = [$questionGroup->group_id]; // For logging
+                        } else {
+                            // Create separate Questions (current behavior)
+                            $attachedQuestions = $this->attacher->attachToExam($dedupedQuestions, $plan, $exam);
+                            $attachedCount = count($attachedQuestions);
+                        }
+                    } else {
+                        // Not blueprint mode, or inline/pool mode - use normal attachment
+                        $attachedQuestions = $this->attacher->attachToExam($dedupedQuestions, $plan, $exam);
+                        $attachedCount = count($attachedQuestions);
+                    }
 
                     // Log validation result
                     if ($task) {
@@ -179,7 +215,7 @@ class ParallelQuestionSynthesizer extends AbstractAiService
                             response: [
                                 'validated' => count($validatedQuestions),
                                 'deduped' => count($dedupedQuestions),
-                                'attached' => count($attachedQuestions),
+                                'attached' => $attachedCount,
                             ]
                         );
                     }
@@ -193,12 +229,12 @@ class ParallelQuestionSynthesizer extends AbstractAiService
                         'success' => true,
                         'generated' => count($questions),
                         'validated' => count($validatedQuestions),
-                        'attached' => count($attachedQuestions),
+                        'attached' => $attachedCount,
                     ];
 
                     Log::info('[ParallelQuestionSynthesizer] Section completed', [
                         'plan_id' => $plan->id,
-                        'questions_attached' => count($attachedQuestions),
+                        'questions_attached' => $attachedCount,
                     ]);
                 } catch (\Throwable $e) {
                     // Log error
@@ -539,5 +575,99 @@ class ParallelQuestionSynthesizer extends AbstractAiService
         ]);
 
         return $validated;
+    }
+
+    /**
+     * Infer shared_stimulus for backward compatibility with old structures
+     *
+     * @param  array  $slot  Blueprint slot configuration
+     * @return bool Whether questions should share a stimulus
+     */
+    protected function inferSharedStimulus(array $slot): bool
+    {
+        // Get question type from filters
+        $type = $slot['filters']['type'][0] ?? null;
+
+        // Inference rules based on question type
+        return match($type) {
+            'listen_mcq', 'dictation' => true,  // Audio-based: usually shared stimulus
+            'writing_prompt', 'speaking_prompt' => false,  // Always separate
+            default => false  // Default: separate questions
+        };
+    }
+
+    /**
+     * Check if blueprint slot should create a QuestionGroup
+     *
+     * @param  array  $slot  Blueprint slot from plan_data
+     * @param  int  $questionsCount  Number of questions to generate
+     * @return bool
+     */
+    protected function shouldCreateQuestionGroup(array $slot, int $questionsCount): bool
+    {
+        // Get shared_stimulus from slot (with backward compatibility)
+        $sharedStimulus = $slot['shared_stimulus'] ?? $this->inferSharedStimulus($slot);
+
+        // QuestionGroup requires shared stimulus AND multiple questions (2+)
+        return $sharedStimulus && $questionsCount >= 2;
+    }
+
+    /**
+     * Create a QuestionGroup from blueprint slot and generated questions
+     *
+     * @param  GenerationPlan  $plan  Generation plan
+     * @param  Exam  $exam  Exam model
+     * @param  array  $slot  Blueprint slot configuration
+     * @param  array  $questions  AI-generated questions
+     * @param  int  $groupOrder  Order of this group within section
+     * @return QuestionGroup
+     */
+    protected function createQuestionGroupFromBlueprint(
+        GenerationPlan $plan,
+        Exam $exam,
+        array $slot,
+        array $questions,
+        int $groupOrder = 0
+    ): QuestionGroup {
+        // Build group spec from slot and questions
+        $slotId = $slot['slot'] ?? 'group_' . $groupOrder;
+        $stimulusType = $slot['stimulus_type'] ?? 'audio';
+
+        // Generate group title from slot (or use default)
+        $title = $slot['title'] ?? ucfirst($slotId);
+
+        // Extract stimulus from first question (if present)
+        $groupStimulus = [];
+        if (!empty($questions)) {
+            $firstQuestionStimulus = $questions[0]['stimulus'] ?? [];
+            if (!empty($firstQuestionStimulus)) {
+                $groupStimulus = $firstQuestionStimulus;
+            }
+        }
+
+        // Build playback settings for audio stimulus
+        $playbackSettings = null;
+        if ($stimulusType === 'audio' && isset($slot['playback_settings'])) {
+            $playbackSettings = $slot['playback_settings'];
+        }
+
+        // Build group spec
+        $groupSpec = [
+            'id' => $slotId,
+            'title' => $title,
+            'stimulus' => $groupStimulus,
+            'playback_settings' => $playbackSettings,
+            'questions' => $questions,
+            'order' => $groupOrder,
+        ];
+
+        Log::info('[ParallelQuestionSynthesizer] Creating QuestionGroup from blueprint', [
+            'slot_id' => $slotId,
+            'questions_count' => count($questions),
+            'stimulus_type' => $stimulusType,
+        ]);
+
+        // Create QuestionGroup using QuestionGroupGenerationService
+        return $this->questionGroupService->generateQuestionGroup($plan, $groupSpec, $groupOrder);
     }
 }

@@ -407,6 +407,16 @@ class OverviewStructureBuilder extends AbstractAiService
 
         $createdCategories = [];
         DB::transaction(function () use ($exam, $buckets, $categoryOrder, &$createdCategories) {
+            // Delete all old categories for this exam before creating new ones
+            // This ensures we only have the categories from the current research run
+            // Cascade deletes: GenerationPlan, QuestionGroup, ExamExampleQuestion, Question
+            $deletedCount = ExamCategory::where('exam_id', $exam->id)->delete();
+
+            Log::info('[OverviewStructureBuilder] Deleted old exam categories', [
+                'exam_id' => $exam->id,
+                'deleted_count' => $deletedCount,
+            ]);
+
             $pos = 1;
             foreach ($categoryOrder as $catKey) {
                 $items = $buckets[$catKey] ?? [];
@@ -435,7 +445,8 @@ class OverviewStructureBuilder extends AbstractAiService
                 ];
 
                 /** @var ExamCategory $catModel */
-                $catModel = ExamCategory::query()->updateOrCreate(['exam_id' => $exam->id, 'key' => $key], $category_model);
+                // Always create new (old categories already deleted above)
+                $catModel = ExamCategory::query()->create(array_merge(['exam_id' => $exam->id, 'key' => $key], $category_model));
 
                 Log::debug('OverviewStructureBuilder category model', ['category_model' => $category_model]);
 

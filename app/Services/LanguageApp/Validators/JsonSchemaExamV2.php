@@ -296,7 +296,27 @@ final class JsonSchemaExamV2
         // Mode-specific validation
         if ($mode === 'pool') {
             $result['pool_id'] = $this->mustString($data, 'pool_id');
-            $result['pick'] = $this->mustInteger($data, 'pick', 1);
+
+            // Support both questions_count (new) and pick (old) for backward compatibility
+            if (isset($data['questions_count'])) {
+                $result['questions_count'] = $this->mustInteger($data, 'questions_count', 1);
+                $result['pick'] = $result['questions_count']; // Backward compatibility
+            } elseif (isset($data['pick'])) {
+                $result['pick'] = $this->mustInteger($data, 'pick', 1);
+                $result['questions_count'] = $result['pick']; // Normalize to new field
+            } else {
+                throw ValidationException::withMessages([
+                    "$prefix.assembly.questions_count" => 'questions_count or pick is required for pool mode',
+                ]);
+            }
+
+            // Optional new fields for explicit stimulus structure (Phase 1-2)
+            if (isset($data['shared_stimulus'])) {
+                $result['shared_stimulus'] = (bool) $data['shared_stimulus'];
+            }
+            if (isset($data['stimulus_type'])) {
+                $result['stimulus_type'] = (string) $data['stimulus_type'];
+            }
 
             if (isset($data['filters'])) {
                 $result['filters'] = is_array($data['filters']) ? $data['filters'] : null;

@@ -59,6 +59,16 @@ class AssemblyResolver
         DB::beginTransaction();
 
         try {
+            // Delete all old generation plans for this exam before creating new ones
+            // This ensures we only have plans from the current assembly resolution
+            // Note: Plans are also cascade-deleted when ExamCategory is deleted in createCategories()
+            $deletedPlansCount = \App\Models\GenerationPlan::where('exam_id', $exam->id)->delete();
+
+            Log::info('[AssemblyResolver] Deleted old generation plans', [
+                'exam_id' => $exam->id,
+                'deleted_plans_count' => $deletedPlansCount,
+            ]);
+
             foreach ($sections as $section) {
                 $sectionId = $section['id'] ?? null;
                 $assembly = $section['assembly'] ?? null;
@@ -104,25 +114,21 @@ class AssemblyResolver
                     throw new \Exception("ExamCategory not found for skill '{$skill}' (section {$sectionId}). Ensure categories are created before resolving assembly.");
                 }
 
-                // Create or update generation plan (using numeric category ID)
-                $plan = GenerationPlan::updateOrCreate(
-                    [
-                        'exam_id' => $exam->id,
-                        'section_id' => $category->id, // Use numeric ID instead of string
-                    ],
-                    [
-                        'assembly_mode' => $mode,
-                        'plan_data' => $planData['plan_data'],
-                        'total_questions' => $planData['total_questions'],
-                        'status' => 'pending',
-                        'generated_questions' => 0,
-                        'error' => null,
-                    ]
-                );
+                // Create generation plan (old plans already deleted above)
+                $plan = GenerationPlan::create([
+                    'exam_id' => $exam->id,
+                    'section_id' => $category->id, // Use numeric ID instead of string
+                    'assembly_mode' => $mode,
+                    'plan_data' => $planData['plan_data'],
+                    'total_questions' => $planData['total_questions'],
+                    'status' => 'pending',
+                    'generated_questions' => 0,
+                    'error' => null,
+                ]);
 
                 $plans[] = $plan;
 
-                Log::info('[AssemblyResolver] Plan created/updated', [
+                Log::info('[AssemblyResolver] Plan created', [
                     'plan_id' => $plan->id,
                     'section_id' => $sectionId,
                     'assembly_mode' => $mode,
@@ -181,7 +187,11 @@ class AssemblyResolver
     {
         $poolId = $assembly['pool_id'] ?? null;
         $filters = $assembly['filters'] ?? [];
-        $pick = $assembly['pick'] ?? 0;
+
+        // Support both pick (old) and questions_count (new) for backward compatibility
+        $questionsCount = $assembly['questions_count'] ?? $assembly['pick'] ?? 0;
+        $pick = $questionsCount; // Keep $pick for backward compatibility in plan_data
+
         $seed = $assembly['seed'] ?? null;
         $assertions = $assembly['assertions'] ?? [];
 
@@ -189,20 +199,34 @@ class AssemblyResolver
             throw new \Exception("Pool mode requires pool_id for section {$section['id']}");
         }
 
-        if ($pick <= 0) {
-            throw new \Exception("Pool mode requires pick > 0 for section {$section['id']}");
+        if ($questionsCount <= 0) {
+            throw new \Exception("Pool mode requires questions_count (or pick) > 0 for section {$section['id']}");
         }
 
         // Extract total questions from assertions
-        $totalQuestions = $assertions['total_tasks_equals'] ?? $pick;
+        $totalQuestions = $assertions['total_tasks_equals'] ?? $questionsCount;
+
+        // Build plan_data with new fields (Phase 1-2: explicit stimulus structure)
+        $planData = [
+            'pool_id' => $poolId,
+            'filters' => $filters,
+            'pick' => $pick,
+            'seed' => $seed,
+        ];
+
+        // Add new fields if present (optional for backward compatibility)
+        if (isset($assembly['questions_count'])) {
+            $planData['questions_count'] = $assembly['questions_count'];
+        }
+        if (isset($assembly['shared_stimulus'])) {
+            $planData['shared_stimulus'] = $assembly['shared_stimulus'];
+        }
+        if (isset($assembly['stimulus_type'])) {
+            $planData['stimulus_type'] = $assembly['stimulus_type'];
+        }
 
         return [
-            'plan_data' => [
-                'pool_id' => $poolId,
-                'filters' => $filters,
-                'pick' => $pick,
-                'seed' => $seed,
-            ],
+            'plan_data' => $planData,
             'total_questions' => $totalQuestions,
         ];
     }
@@ -266,11 +290,12 @@ class AssemblyResolver
         // Calculate total questions from slots
         $totalFromSlots = 0;
         foreach ($blueprint as $slot) {
-            $pick = $slot['pick'] ?? 0;
-            $totalFromSlots += $pick;
+            // Support both pick (old) and questions_count (new) for backward compatibility
+            $questionsCount = $slot['questions_count'] ?? $slot['pick'] ?? 0;
+            $totalFromSlots += $questionsCount;
 
-            if ($pick <= 0) {
-                throw new \Exception("Blueprint slot requires pick > 0 for section {$section['id']}");
+            if ($questionsCount <= 0) {
+                throw new \Exception("Blueprint slot requires questions_count (or pick) > 0 for section {$section['id']}");
             }
         }
 
@@ -382,6 +407,27 @@ class AssemblyResolver
                     'spec' => $task,
                 ];
             }, $tasks, array_keys($tasks));
+        }
+
+        // FALLBACK: If still no placeholders, try to create from question_archetypes
+        if (empty($placeholders)) {
+            $questionArchetypes = $section['question_archetypes'] ?? [];
+
+            if (!empty($questionArchetypes)) {
+                Log::info('[AssemblyResolver] Creating placeholders from question_archetypes (fallback)', [
+                    'section_id' => $sectionId,
+                    'archetypes_count' => count($questionArchetypes),
+                ]);
+
+                // Convert archetypes to placeholders
+                $placeholders = array_map(function ($archetype, $index) {
+                    return [
+                        'id' => $archetype['id'] ?? 'archetype_' . ($index + 1),
+                        'type' => $archetype['type'] ?? 'unknown',
+                        'archetype' => $archetype,
+                    ];
+                }, $questionArchetypes, array_keys($questionArchetypes));
+            }
         }
 
         if (empty($placeholders)) {

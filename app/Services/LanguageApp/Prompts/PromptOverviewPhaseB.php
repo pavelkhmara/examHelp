@@ -366,16 +366,23 @@ class PromptOverviewPhaseB
    - `assembly.mode` = "pool" | "blueprint" | "inline"
 5. ✅ Для pool mode:
    - Есть `pool_id` (string)
-   - Есть `pick` (integer)
+   - Есть `shared_stimulus` (boolean, обычно false)
+   - Есть `questions_count` (integer, заменяет старое `pick`)
+   - Есть `stimulus_type` (string: audio/text/video/image/none)
    - Есть `filters` с полем `type` (array of question types)
    - Есть `assertions.total_tasks_equals` (integer)
 6. ✅ Для blueprint mode:
    - Есть `blueprint` (array of slots)
-   - Каждый slot имеет: `slot`, `from_pool`, `pick`, `filters`
-   - Сумма всех `pick` = `assertions.total_tasks_equals`
+   - Каждый slot имеет: `slot`, `from_pool`, `shared_stimulus`, `questions_count`, `stimulus_type`, `filters`
+   - Сумма всех `questions_count` = `assertions.total_tasks_equals`
+   - `shared_stimulus: true` → это QuestionGroup (2+ вопроса с общим stimulus)
+   - `shared_stimulus: false` → отдельные Questions
 7. ✅ Для inline mode:
    - Есть `assembly.mode = "inline"`
-   - Опционально: `tasks[]` array с placeholders (только `id` и `type`, БЕЗ контента)
+   - Если listening/reading с 2+ вопросами на один stimulus → используй `question_groups[]` (НЕ `tasks[]`!)
+   - Если writing/speaking (каждый вопрос = отдельный stimulus) → используй `tasks[]`
+   - В question_groups[]: каждая группа имеет id, title, stimulus, playback_settings, questions[]
+   - В tasks[]/questions[]: только `id` и `type` (БЕЗ контента!)
 8. ✅ Все типы в `filters.type` И в `question_archetypes[].type` из Question Types enum
 9. ✅ НЕТ текста вопросов (instructions, stimulus, options, answer_key) - только шаблоны!
 10. ✅ НЕТ удалённых полей (`pattern`, `type_specific`)
@@ -435,30 +442,52 @@ ENUM;
 
 Выборка N вопросов из одного пула по единым критериям.
 
+**НОВОЕ: Явная спецификация структуры**
+Также должен указывать:
+- `shared_stimulus`: boolean - обычно `false` для pool mode (каждый вопрос отдельно)
+- `questions_count`: integer - количество вопросов
+- `stimulus_type`: string - тип stimulus
+
 **Структура:**
 ```json
 {
   "assembly": {
     "mode": "pool",
-    "pool_id": "listening_general",           // ID пула вопросов
-    "pick": 30,                                // количество вопросов для выборки
-    "filters": {                               // критерии отбора
+    "pool_id": "listening_general",
+    "shared_stimulus": false,                  // ✅ обычно false для pool
+    "questions_count": 30,                      // ✅ количество вопросов
+    "stimulus_type": "audio",                   // ✅ тип stimulus
+    "filters": {
       "type": ["listen_mcq", "single_select"],
       "skills_measured": ["listening comprehension"],
       "difficulty": ["medium", "hard"]
     },
-    "seed": "optional_random_seed",            // опционально: seed для воспроизводимости
+    "seed": "optional_random_seed",
     "assertions": {
-      "total_tasks_equals": 30,                // проверка: должно быть ровно 30 вопросов
-      "unique_by": ["id"]                      // проверка уникальности по ID
+      "total_tasks_equals": 30,
+      "unique_by": ["id"]
     }
   }
 }
 ```
 
+**Note:** Pool mode обычно используется для отдельных вопросов (`shared_stimulus: false`), но поля добавляются для единообразия.
+
 ## 2. `assembly_blueprint` - Multi-Slot Plan
 
 Детальный план с несколькими слотами/частями, каждая со своими критериями.
+
+**НОВОЕ: Явная спецификация структуры задания**
+Каждый slot ДОЛЖЕН указывать:
+- `shared_stimulus`: boolean - общий stimulus для всех вопросов (`true`) или каждый вопрос имеет свой (`false`)
+- `questions_count`: integer - количество вопросов в этом задании/слоте
+- `stimulus_type`: string - "audio"|"text"|"video"|"image"|"none" - тип stimulus
+
+**Примеры:**
+- ✅ Listening: 6 вопросов на одно аудио → `shared_stimulus: true, questions_count: 6, stimulus_type: "audio"`
+- ✅ Reading: 8 вопросов на один текст → `shared_stimulus: true, questions_count: 8, stimulus_type: "text"`
+- ✅ Writing: 2 отдельных эссе → `shared_stimulus: false, questions_count: 2, stimulus_type: "none"`
+- ✅ Speaking: 3 speaking prompts → `shared_stimulus: false, questions_count: 3, stimulus_type: "none"`
 
 **Структура:**
 ```json
@@ -467,51 +496,66 @@ ENUM;
     "mode": "blueprint",
     "blueprint": [
       {
-        "slot": "part_1_easy",                 // ID слота (произвольная строка)
-        "from_pool": "reading_texts",          // из какого пула брать
-        "pick": 5,                             // количество вопросов
-        "filters": {                           // критерии для этого слота
-          "type": ["single_select"],
-          "difficulty": ["easy"],
-          "cefr": ["B1"]
+        "slot": "listening_task_1",
+        "from_pool": "listening_items_bank",
+        "shared_stimulus": true,           // ✅ КРИТИЧНО: общий stimulus
+        "questions_count": 6,               // ✅ КРИТИЧНО: 6 вопросов в задании
+        "stimulus_type": "audio",           // ✅ КРИТИЧНО: тип stimulus
+        "filters": {
+          "type": ["listen_mcq"],
+          "difficulty": ["medium"],
+          "cefr": ["B2", "C1"]
         },
-        "weight": 0.3                          // опционально: вес этой части
+        "weight": 0.2
       },
       {
-        "slot": "part_2_medium",
+        "slot": "reading_task_1",
         "from_pool": "reading_texts",
-        "pick": 8,
+        "shared_stimulus": true,            // один текст
+        "questions_count": 8,                // 8 вопросов
+        "stimulus_type": "text",
         "filters": {
-          "type": ["true_false", "matching"],
+          "type": ["single_select", "true_false"],
           "difficulty": ["medium"],
           "cefr": ["B2"]
         },
         "weight": 0.4
       },
       {
-        "slot": "part_3_hard",
-        "from_pool": "reading_texts",
-        "pick": 7,
+        "slot": "writing_tasks",
+        "from_pool": "writing_prompts",
+        "shared_stimulus": false,           // каждое эссе отдельно
+        "questions_count": 2,                // 2 эссе
+        "stimulus_type": "none",             // нет stimulus (только prompt)
         "filters": {
-          "type": ["gap_cloze", "short_answer"],
+          "type": ["writing_prompt"],
           "difficulty": ["hard"],
           "cefr": ["C1"]
         },
-        "weight": 0.3
+        "weight": 0.4
       }
     ],
     "seed": "optional_seed",
     "assertions": {
-      "total_tasks_equals": 20,                // 5 + 8 + 7 = 20
+      "total_tasks_equals": 16,              // 6 + 8 + 2 = 16 вопросов
       "unique_by": ["id"]
     }
   }
 }
 ```
 
+**ВАЖНО:**
+- `shared_stimulus: true` → генератор создаст **QuestionGroup** с общим stimulus
+- `shared_stimulus: false` → генератор создаст **отдельные Questions** (каждый со своим stimulus)
+- `pick` (старое поле) теперь ЗАМЕНЕНО на `questions_count` для ясности
+
 ## 3. `assembly_inline` - Fixed Structure
 
 Фиксированная структура без выборки из пула (для строго определённых секций).
+
+### 3A. Inline с отдельными вопросами (tasks[])
+
+Используй для секций, где каждый вопрос имеет свой stimulus (например, writing, speaking).
 
 **Структура:**
 ```json
@@ -534,7 +578,82 @@ ENUM;
 }
 ```
 
-**Note:** Для `inline` режима можно добавить `tasks[]` как placeholders (только `id` и `type`), НО не заполнять их контент.
+### 3B. Inline с question_groups (для listening/reading с общим стимулом)
+
+**КРИТИЧНО:** Используй question_groups для секций, где:
+- **2-10+ вопросов используют ОДИН ОБЩИЙ stimulus** (аудио/текст)
+- Listening tasks: например, одно аудио → 6 вопросов
+- Reading tasks: например, один текст → 8 вопросов
+
+**Структура:**
+```json
+{
+  "assembly": {
+    "mode": "inline",
+    "question_groups": [
+      {
+        "id": "listening-task-1",
+        "title": "Zadanie I",     // локализованное название задания
+        "stimulus": {
+          "audio": ["https://example.com/audio1.mp3"]  // ОБЩИЙ stimulus для всех вопросов группы
+        },
+        "playback_settings": {
+          "max_plays": 1,          // сколько раз можно прослушать (1, 2, null=unlimited)
+          "enforcement": "strict",  // strict|advisory|none
+          "show_counter": true,
+          "reset_on_navigation": true
+        },
+        "metadata": {
+          "total_points": 6,       // сумма баллов всех вопросов в группе
+          "suggested_time_sec": 300
+        },
+        "questions": [
+          {
+            "id": "q1",
+            "type": "listen_mcq"
+            // НЕ ЗАПОЛНЯЙ details - только id, type
+          },
+          {
+            "id": "q2",
+            "type": "listen_mcq"
+          },
+          // ... до 6-10 вопросов
+        ]
+      },
+      {
+        "id": "listening-task-2",
+        "title": "Zadanie II",
+        "stimulus": {
+          "audio": ["https://example.com/audio2.mp3"]
+        },
+        "playback_settings": {
+          "max_plays": 2,
+          "enforcement": "advisory"
+        },
+        "questions": [
+          {
+            "id": "q7",
+            "type": "true_false"
+          },
+          // ... ещё вопросы
+        ]
+      }
+    ]
+  }
+}
+```
+
+**Когда использовать question_groups:**
+- ✅ Listening: 6 коротких аудио → 6 отдельных вопросов = 1 question_group
+- ✅ Listening: 1 длинное аудио → 8 вопросов = 1 question_group
+- ✅ Reading: 1 текст → 10 вопросов = 1 question_group
+- ❌ Writing: 2 essay tasks = НЕ используй groups (каждый task отдельно)
+- ❌ Speaking: 3 speaking prompts = НЕ используй groups
+
+**Note:**
+- Для `inline` с tasks[] - добавь `tasks[]` как placeholders (только `id` и `type`)
+- Для `inline` с question_groups - добавь `question_groups[]` с questions[] placeholders
+- НЕ заполняй контент (instructions, stimulus text, options) - это сделает генератор позже!
 MODES;
     }
 
