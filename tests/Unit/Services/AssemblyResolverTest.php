@@ -295,9 +295,9 @@ class AssemblyResolverTest extends TestCase
     }
 
     /**
-     * Тест: resolve() обновляет существующий plan вместо создания дубликата
+     * Тест: resolve() удаляет старые планы и создаёт новые
      */
-    public function test_resolve_updates_existing_plan(): void
+    public function test_resolve_deletes_old_plans_and_creates_new(): void
     {
         // Arrange
         $exam = ExamTestHelper::createExamWithAllFields();
@@ -316,6 +316,8 @@ class AssemblyResolverTest extends TestCase
             'total_questions' => 10,
             'generated_questions' => 10,
         ]);
+
+        $oldPlanId = $existingPlan->id;
 
         // Новая structure с другими параметрами
         $exam->meta = [
@@ -345,11 +347,100 @@ class AssemblyResolverTest extends TestCase
         $this->assertDatabaseCount('generation_plans', 1);
 
         $plan = $plans[0];
-        $this->assertEquals($existingPlan->id, $plan->id, 'Should be the same plan');
-        $this->assertEquals('new-pool', $plan->plan_data['pool_id'], 'Plan data should be updated');
-        $this->assertEquals(20, $plan->total_questions, 'Total questions should be updated');
-        $this->assertEquals('pending', $plan->status, 'Status should be reset to pending');
-        $this->assertEquals(0, $plan->generated_questions, 'Generated count should be reset');
+        $this->assertNotEquals($oldPlanId, $plan->id, 'Should create a new plan, not update old one');
+        $this->assertEquals('new-pool', $plan->plan_data['pool_id'], 'Plan data should be from new structure');
+        $this->assertEquals(20, $plan->total_questions, 'Total questions should be from new structure');
+        $this->assertEquals('pending', $plan->status, 'New plan should have pending status');
+        $this->assertEquals(0, $plan->generated_questions, 'New plan should have 0 generated');
+    }
+
+    /**
+     * Тест: resolve() пропускает дублирующиеся секции с одинаковым skill
+     */
+    public function test_resolve_skips_duplicate_sections_with_same_skill(): void
+    {
+        // Arrange
+        $exam = ExamTestHelper::createExamWithAllFields();
+
+        // Создать категории для каждого skill
+        $listening = ExamCategory::factory()->create([
+            'exam_id' => $exam->id,
+            'skill' => 'listening',
+            'name' => 'Listening',
+        ]);
+
+        $reading = ExamCategory::factory()->create([
+            'exam_id' => $exam->id,
+            'skill' => 'reading',
+            'name' => 'Reading',
+        ]);
+
+        // Структура с дублирующимися секциями (разные id, но одинаковые skill)
+        $exam->meta = [
+            'structure_v2' => [
+                'sections' => [
+                    // Первая listening секция (sec-listening)
+                    [
+                        'id' => 'sec-listening',
+                        'skill' => 'listening',
+                        'assembly' => [
+                            'mode' => 'pool',
+                            'pool_id' => 'listening-pool-1',
+                            'pick' => 40,
+                            'filters' => [],
+                            'assertions' => ['total_tasks_equals' => 40],
+                        ],
+                    ],
+                    // Reading секция
+                    [
+                        'id' => 'sec-reading',
+                        'skill' => 'reading',
+                        'assembly' => [
+                            'mode' => 'pool',
+                            'pool_id' => 'reading-pool',
+                            'pick' => 25,
+                            'filters' => [],
+                            'assertions' => ['total_tasks_equals' => 25],
+                        ],
+                    ],
+                    // Вторая listening секция (sec_listening) - ДУБЛИКАТ!
+                    [
+                        'id' => 'sec_listening',
+                        'skill' => 'listening',
+                        'assembly' => [
+                            'mode' => 'blueprint',
+                            'blueprint' => [
+                                ['slot' => 'slot-1', 'pick' => 10, 'filters' => []],
+                            ],
+                            'assertions' => ['total_tasks_equals' => 10],
+                        ],
+                    ],
+                ],
+            ],
+        ];
+        $exam->save();
+
+        // Act
+        $plans = $this->resolver->resolve($exam);
+
+        // Assert: должно быть создано только 2 плана (listening + reading), а не 3
+        $this->assertCount(2, $plans, 'Should create only 2 plans, skipping duplicate listening section');
+        $this->assertDatabaseCount('generation_plans', 2);
+
+        // Проверить, что создан только один план для listening
+        $listeningPlans = GenerationPlan::where('section_id', $listening->id)->get();
+        $this->assertCount(1, $listeningPlans, 'Should create only one plan for listening skill');
+
+        // Проверить, что это первая секция (sec-listening), а не дубликат
+        $listeningPlan = $listeningPlans->first();
+        $this->assertEquals('pool', $listeningPlan->assembly_mode, 'Should use first section config (pool mode)');
+        $this->assertEquals(40, $listeningPlan->total_questions, 'Should use first section total (40)');
+        $this->assertEquals('listening-pool-1', $listeningPlan->plan_data['pool_id']);
+
+        // Проверить reading план
+        $readingPlans = GenerationPlan::where('section_id', $reading->id)->get();
+        $this->assertCount(1, $readingPlans);
+        $this->assertEquals(25, $readingPlans->first()->total_questions);
     }
 
     /**

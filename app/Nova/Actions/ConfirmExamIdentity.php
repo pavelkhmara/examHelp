@@ -19,6 +19,8 @@ class ConfirmExamIdentity extends Action
 
     public $name = 'Подтвердить идентичность и продолжить';
 
+    public $uriKey = 'confirm-exam-identity';
+
     public function fields(NovaRequest $request): array
     {
         /** @var Exam $exam */

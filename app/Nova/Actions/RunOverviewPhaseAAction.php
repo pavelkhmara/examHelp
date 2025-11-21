@@ -15,7 +15,20 @@ class RunOverviewPhaseAAction extends Action
 {
     use InteractsWithQueue, Queueable;
 
-    public $name = 'Run Phase A (Skeleton v2)';
+    public $name = '1️⃣ Phase A: Skeleton';
+
+    public $uriKey = 'run-phase-a';
+
+    /**
+     * Determine if the user is authorized to run the action.
+     *
+     * @param  \Illuminate\Http\Request  $request
+     * @return bool
+     */
+    public function authorizedToRun(\Illuminate\Http\Request $request, $model)
+    {
+        return true;
+    }
 
     public function handle(ActionFields $fields, Collection $models)
     {

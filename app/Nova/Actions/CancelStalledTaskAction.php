@@ -21,6 +21,8 @@ class CancelStalledTaskAction extends Action
 {
     use InteractsWithQueue, Queueable;
 
+    public $uriKey = 'cancel-stalled-task';
+
     /**
      * Perform the action on the given models.
      *
@@ -28,6 +30,11 @@ class CancelStalledTaskAction extends Action
      * @param  \Illuminate\Support\Collection  $models
      * @return mixed
      */
+    public function authorizedToRun(\Illuminate\Http\Request $request, $model)
+    {
+        return true;
+    }
+
     public function handle(ActionFields $fields, Collection $models)
     {
         $action = $fields->get('action');

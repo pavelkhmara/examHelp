@@ -297,7 +297,8 @@ class ExamFullViewRenderer
         $questionNumber = 1;
 
         foreach ($grouped as $questionGroupId => $groupQuestions) {
-            if (is_null($questionGroupId)) {
+            // groupBy returns "" (empty string) for null values, not null
+            if (empty($questionGroupId)) {
                 // Ungrouped questions (existing behavior)
                 foreach ($groupQuestions as $question) {
                     $html .= $this->renderQuestion($question, $questionNumber, $dataSource);

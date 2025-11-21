@@ -19,6 +19,7 @@ use Laravel\Nova\Fields\Text;
 use Laravel\Nova\Fields\Textarea;
 use Laravel\Nova\Http\Requests\NovaRequest;
 use Laravel\Nova\Panel;
+use Illuminate\Support\Facades\Log;
 
 class Exam extends Resource
 {
@@ -43,6 +44,19 @@ class Exam extends Resource
     public static function indexQuery(NovaRequest $request, $query)
     {
         return $query->orderBy('created_at', 'desc');
+    }
+
+    /**
+     * Determine if the user can update the resource.
+     */
+    public function authorizedToUpdate($request)
+    {
+        Log::info('[Exam Resource] authorizedToUpdate called', [
+            'user' => $request->user()->email ?? 'no-user',
+            'exam' => $this->resource->id ?? 'no-exam',
+            'result' => true,
+        ]);
+        return true;
     }
 
     public static function refreshInterval()
@@ -234,7 +248,9 @@ class Exam extends Resource
                     'running' => 'warning',
                     'running_overview' => 'warning',
                     'running_phase_a' => 'warning',
+                    'phase_a_completed' => 'info',
                     'running_phase_b' => 'warning',
+                    'phase_b_completed' => 'info',
                     'running_categories' => 'warning',
                     'running_examples' => 'warning',
                     'running_rubrics' => 'warning',
@@ -248,7 +264,9 @@ class Exam extends Resource
                     'running' => 'Running',
                     'running_overview' => 'In Progress',
                     'running_phase_a' => 'Running Phase A',
+                    'phase_a_completed' => 'Phase A Done',
                     'running_phase_b' => 'Running Phase B',
+                    'phase_b_completed' => 'Phase B Done',
                     'running_categories' => 'Running Categories',
                     'running_examples' => 'Running Examples',
                     'running_rubrics' => 'Running Rubrics',
@@ -261,6 +279,9 @@ class Exam extends Resource
                 ->help(function () {
                     if (in_array($this->research_status, ['queued', 'running', 'running_overview', 'running_phase_a', 'running_phase_b', 'running_categories', 'running_examples', 'running_rubrics'], true)) {
                         return '🔄 <strong>Task is processing. Refresh this page to see updates.</strong>';
+                    }
+                    if (in_array($this->research_status, ['phase_a_completed', 'phase_b_completed'], true)) {
+                        return '✅ <strong>Phase completed. Run the next action to continue.</strong>';
                     }
                     if ($this->research_status === 'need_info') {
                         return '⚠️ <strong>Additional information required. Please review Quick Check panel.</strong>';

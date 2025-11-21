@@ -69,6 +69,9 @@ class AssemblyResolver
                 'deleted_plans_count' => $deletedPlansCount,
             ]);
 
+            // Track already processed skills to avoid duplicates
+            $processedSkills = [];
+
             foreach ($sections as $section) {
                 $sectionId = $section['id'] ?? null;
                 $assembly = $section['assembly'] ?? null;
@@ -106,6 +109,16 @@ class AssemblyResolver
                     throw new \Exception("Section {$sectionId} has no 'skill' field. Cannot match to ExamCategory.");
                 }
 
+                // Skip duplicate sections with same skill
+                if (isset($processedSkills[$skill])) {
+                    Log::warning('[AssemblyResolver] Skipping duplicate section with same skill', [
+                        'section_id' => $sectionId,
+                        'skill' => $skill,
+                        'previous_section' => $processedSkills[$skill],
+                    ]);
+                    continue;
+                }
+
                 $category = ExamCategory::where('exam_id', $exam->id)
                     ->where('skill', $skill)
                     ->first();
@@ -128,9 +141,13 @@ class AssemblyResolver
 
                 $plans[] = $plan;
 
+                // Mark this skill as processed
+                $processedSkills[$skill] = $sectionId;
+
                 Log::info('[AssemblyResolver] Plan created', [
                     'plan_id' => $plan->id,
                     'section_id' => $sectionId,
+                    'skill' => $skill,
                     'assembly_mode' => $mode,
                     'total_questions' => $planData['total_questions'],
                 ]);

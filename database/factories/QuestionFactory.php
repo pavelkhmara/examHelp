@@ -18,14 +18,11 @@ class QuestionFactory extends Factory
     {
         $type = $this->faker->randomElement(['single_select', 'multi_select', 'short_answer', 'writing_prompt']);
 
-        // Create exam and category
-        $exam = Exam::factory()->create();
-        $category = ExamCategory::factory()->create(['exam_id' => $exam->id]);
-
         return [
             // id auto-increment, don't set manually
-            'exam_id' => $exam->id,
-            'section_id' => $category->id,
+            // Use lazy evaluation to avoid creating unnecessary records when overriding
+            'exam_id' => fn () => Exam::factory()->create()->id,
+            'section_id' => fn () => ExamCategory::factory()->create()->id,
             'question_id' => 'q-' . Str::random(10),  // unique question identifier
             'type' => $type,
             'skills_measured' => ['reading'],

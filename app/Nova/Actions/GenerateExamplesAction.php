@@ -21,7 +21,9 @@ class GenerateExamplesAction extends Action
 {
     use InteractsWithQueue, Queueable;
 
-    public $name = 'Generate Examples';
+    public $name = '3.5️⃣ Generate Examples';
+
+    public $uriKey = 'generate-examples';
 
     /**
      * Determine if the action should be available for the given request.
@@ -31,32 +33,27 @@ class GenerateExamplesAction extends Action
      */
     public function authorizedToSee(\Illuminate\Http\Request $request)
     {
-        // Only show if viewing a single exam resource
-        if (! $request->route('resourceId')) {
-            return false;
+        // Nova вызывает authorizedToSee БЕЗ resourceId для первичной проверки
+        // Возвращаем true, чтобы action был виден в UI
+        // Реальная валидация происходит в handle()
+        if (! $request->resourceId) {
+            return true; // CHANGED: было false - блокировало показ action в Nova UI
         }
 
-        // Check if exam has structure_v2 with archetypes
-        $exam = \App\Models\Exam::find($request->route('resourceId'));
-        if (! $exam) {
-            return false;
-        }
+        // Если есть resourceId - проверяем, что экзамен существует
+        $exam = \App\Models\Exam::find($request->resourceId);
+        return (bool) $exam;
+    }
 
-        // Must have structure_v2
-        $structure = $exam->meta['structure_v2'] ?? null;
-        if (! $structure) {
-            return false;
-        }
-
-        // At least one section must have question_archetypes
-        $sections = $structure['sections'] ?? [];
-        foreach ($sections as $section) {
-            if (! empty($section['question_archetypes'])) {
-                return true;
-            }
-        }
-
-        return false;
+    /**
+     * Determine if the user is authorized to run the action.
+     *
+     * @param  \Illuminate\Http\Request  $request
+     * @return bool
+     */
+    public function authorizedToRun(\Illuminate\Http\Request $request, $model)
+    {
+        return true;
     }
 
     public function handle(ActionFields $fields, Collection $models)
@@ -65,7 +62,7 @@ class GenerateExamplesAction extends Action
         foreach ($models as $exam) {
             $structure = $exam->meta['structure_v2'] ?? null;
             if (! $structure) {
-                return Action::danger('structure_v2 is required. Run Phase A first.');
+                return Action::danger('❌ structure_v2 is required. Run "1️⃣ Phase A: Skeleton" first.');
             }
 
             // Check if any section has archetypes
@@ -79,7 +76,7 @@ class GenerateExamplesAction extends Action
             }
 
             if (! $hasArchetypes) {
-                return Action::danger('No question archetypes found in structure_v2. Run Phase B first.');
+                return Action::danger('❌ No question archetypes found. Complete "2️⃣ Phase B" → "3️⃣ Resolve Plans" first.');
             }
 
             // Create generation task
@@ -97,7 +94,7 @@ class GenerateExamplesAction extends Action
             // Dispatch job
             \App\Jobs\GenerateExamplesJob::dispatch($task->id);
 
-            return Action::message('Example generation queued. Check Activity Timeline for progress.');
+            return Action::message('✅ Example generation queued. Check Activity Timeline for progress.');
         }
 
         return Action::message('Example generation queued.');

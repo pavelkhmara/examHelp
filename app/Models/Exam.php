@@ -155,6 +155,47 @@ class Exam extends Model
             }
         }
 
+        // REFERENCE EXAMS: Load from database tables (ExamCategory, QuestionGroup, Question)
+        $categories = $this->categories()->with(['questionGroups.questions'])->orderBy('order')->get();
+        if ($categories->isNotEmpty()) {
+            return $categories->map(function ($category) {
+                return [
+                    'key' => $category->key,
+                    'name' => $category->name,
+                    'skill' => $category->skill,
+                    'duration_min' => $category->duration_min,
+                    'max_score' => $category->max_score,
+                    'description' => $category->description,
+                    'assembly' => [
+                        'mode' => 'inline',
+                        'question_groups' => $category->questionGroups->map(function ($group) {
+                            return [
+                                'id' => $group->group_id,
+                                'title' => $group->title,
+                                'order' => $group->order,
+                                'instructions' => $group->instructions,
+                                'stimulus' => $group->stimulus,
+                                'playback_settings' => $group->playback_settings,
+                                'metadata' => $group->metadata,
+                                'questions' => $group->questions->map(function ($q) {
+                                    return [
+                                        'id' => $q->question_id,
+                                        'type' => $q->type,
+                                        'order' => $q->order,
+                                        'instructions' => $q->instructions,
+                                        'stimulus' => $q->stimulus,
+                                        'interaction' => $q->interaction,
+                                        'scoring' => $q->scoring,
+                                        'metadata' => $q->metadata,
+                                    ];
+                                })->toArray(),
+                            ];
+                        })->toArray(),
+                    ],
+                ];
+            })->toArray();
+        }
+
         return [];
     }
 }

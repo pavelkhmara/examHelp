@@ -15,7 +15,20 @@ class ValidateAttachQuestionsAction extends Action implements ShouldQueue
 {
     use InteractsWithQueue, Queueable;
 
-    public $name = 'Validate & Attach (v2)';
+    public $name = '5️⃣ Validate & Attach';
+
+    public $uriKey = 'validate-attach-questions';
+
+    /**
+     * Determine if the user is authorized to run the action.
+     *
+     * @param  \Illuminate\Http\Request  $request
+     * @return bool
+     */
+    public function authorizedToRun(\Illuminate\Http\Request $request, $model)
+    {
+        return true;
+    }
 
     public function handle(ActionFields $fields, Collection $models)
     {
@@ -24,7 +37,7 @@ class ValidateAttachQuestionsAction extends Action implements ShouldQueue
             try {
                 $plans = GenerationPlan::where('exam_id', $exam->id)->get();
                 if ($plans->isEmpty()) {
-                    return Action::danger('No generation plans. Resolve plans first.');
+                    return Action::danger('❌ No generation plans. Run "3️⃣ Resolve Plans" first.');
                 }
 
                 $orchestrator = app(GenerationOrchestrator::class);

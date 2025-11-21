@@ -19,9 +19,16 @@ class ConfirmIdentityAction extends Action
 
     public $name = 'Confirm/Reject Identity';
 
+    public $uriKey = 'confirm-reject-identity';
+
     /**
      * Perform the action on the given models.
      */
+    public function authorizedToRun(\Illuminate\Http\Request $request, $model)
+    {
+        return true;
+    }
+
     public function handle(ActionFields $fields, Collection $models)
     {
         foreach ($models as $exam) {

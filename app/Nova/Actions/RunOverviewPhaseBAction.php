@@ -15,7 +15,9 @@ class RunOverviewPhaseBAction extends Action
 {
     use InteractsWithQueue, Queueable;
 
-    public $name = 'Run Phase B (Assembly v2)';
+    public $name = '2️⃣ Phase B: Assembly';
+
+    public $uriKey = 'run-phase-b';
 
     /**
      * Determine if the action should be available for the given request.
@@ -25,40 +27,27 @@ class RunOverviewPhaseBAction extends Action
      */
     public function authorizedToSee(\Illuminate\Http\Request $request)
     {
-        // Only show if viewing a single exam resource
-        if (! $request->route('resourceId')) {
-            return false;
+        // Nova вызывает authorizedToSee БЕЗ resourceId для первичной проверки
+        // Возвращаем true, чтобы action был виден в UI
+        // Реальная валидация происходит в handle()
+        if (! $request->resourceId) {
+            return true; // CHANGED: было false - блокировало показ action в Nova UI
         }
 
-        // Check if exam has Phase A skeleton
-        $exam = \App\Models\Exam::find($request->route('resourceId'));
-        if (! $exam) {
-            return false;
-        }
+        // Если есть resourceId - проверяем, что экзамен существует
+        $exam = \App\Models\Exam::find($request->resourceId);
+        return (bool) $exam;
+    }
 
-        // Must have structure_v2 (Phase A skeleton)
-        $structure = $exam->meta['structure_v2'] ?? null;
-        if (! $structure) {
-            return false;
-        }
-
-        // Must have sections
-        $sections = $structure['sections'] ?? [];
-        if (empty($sections)) {
-            return false;
-        }
-
-        // Check if any section is missing assembly (Phase B not done yet)
-        // If all sections have assembly, no need to show this action
-        $hasIncompleteSection = false;
-        foreach ($sections as $section) {
-            if (empty($section['assembly'])) {
-                $hasIncompleteSection = true;
-                break;
-            }
-        }
-
-        return $hasIncompleteSection;
+    /**
+     * Determine if the user is authorized to run the action.
+     *
+     * @param  \Illuminate\Http\Request  $request
+     * @return bool
+     */
+    public function authorizedToRun(\Illuminate\Http\Request $request, $model)
+    {
+        return true;
     }
 
     public function handle(ActionFields $fields, Collection $models)
@@ -67,7 +56,26 @@ class RunOverviewPhaseBAction extends Action
         foreach ($models as $exam) {
             $skeleton = $exam->structure_v2 ?? null;
             if (! $skeleton) {
-                return Action::danger('Phase A structure_v2 is required before Phase B.');
+                return Action::danger('❌ Phase A not completed. Run "1️⃣ Phase A: Skeleton" first.');
+            }
+
+            // Check if sections exist
+            $sections = $skeleton['sections'] ?? [];
+            if (empty($sections)) {
+                return Action::danger('❌ No sections found in structure_v2. Re-run Phase A.');
+            }
+
+            // Check if any section is missing assembly
+            $allSectionsHaveAssembly = true;
+            foreach ($sections as $section) {
+                if (empty($section['assembly'])) {
+                    $allSectionsHaveAssembly = false;
+                    break;
+                }
+            }
+
+            if ($allSectionsHaveAssembly) {
+                return Action::danger('✅ Phase B already completed. Run "3️⃣ Resolve Plans" next.');
             }
 
             $task = GenerationTask::create([
@@ -82,7 +90,7 @@ class RunOverviewPhaseBAction extends Action
             // Dispatch job
             \App\Jobs\RunPhaseBJob::dispatch($task->id);
 
-            return Action::message('Phase B queued. Check Activity Timeline for progress.');
+            return Action::message('✅ Phase B queued. Check Activity Timeline for progress.');
         }
 
         return Action::message('Phase B queued.');
