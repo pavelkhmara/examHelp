@@ -70,6 +70,24 @@ final class OpenAiProvider implements AiProvider
             $baseMessages = [['role' => 'user', 'content' => $baseMessages]];
         }
 
+        // Support file attachments via opts['file_ids']
+        $fileIds = $opts['file_ids'] ?? [];
+        if (!empty($fileIds) && !empty($baseMessages)) {
+            // Transform last user message to include file attachments
+            $lastIdx = count($baseMessages) - 1;
+            $lastMsg = $baseMessages[$lastIdx];
+            if (($lastMsg['role'] ?? '') === 'user' && is_string($lastMsg['content'] ?? null)) {
+                $contentParts = [['type' => 'text', 'text' => $lastMsg['content']]];
+                foreach ($fileIds as $fileId) {
+                    $contentParts[] = [
+                        'type' => 'file',
+                        'file' => ['file_id' => $fileId],
+                    ];
+                }
+                $baseMessages[$lastIdx]['content'] = $contentParts;
+            }
+        }
+
         $messages = [];
 
         // 1. System message for JSON strict mode
@@ -249,5 +267,83 @@ final class OpenAiProvider implements AiProvider
         $s = trim($s);
 
         return mb_strlen($s) > $len ? (mb_substr($s, 0, $len).'…') : $s;
+    }
+
+    /**
+     * Upload a file to OpenAI Files API for use with chat completions.
+     *
+     * @param string $filePath Local file path
+     * @param string $filename Original filename
+     * @param string $purpose Purpose: 'assistants' for file attachments
+     * @return array{ok: bool, file_id?: string, error?: string}
+     */
+    public function uploadFile(string $filePath, string $filename, string $purpose = 'assistants'): array
+    {
+        Log::debug('OpenAiProvider: uploadFile start', ['path' => $filePath, 'filename' => $filename]);
+
+        try {
+            $res = $this->http->post('files', [
+                'headers' => [
+                    'Authorization' => 'Bearer '.$this->apiKey,
+                ],
+                'multipart' => [
+                    [
+                        'name' => 'purpose',
+                        'contents' => $purpose,
+                    ],
+                    [
+                        'name' => 'file',
+                        'contents' => fopen($filePath, 'r'),
+                        'filename' => $filename,
+                    ],
+                ],
+            ]);
+
+            $body = json_decode((string) $res->getBody(), true);
+
+            if (!isset($body['id'])) {
+                return ['ok' => false, 'error' => 'No file_id in response'];
+            }
+
+            Log::info('OpenAiProvider: file uploaded', ['file_id' => $body['id']]);
+
+            return ['ok' => true, 'file_id' => $body['id']];
+
+        } catch (GuzzleException $e) {
+            Log::error('OpenAiProvider: uploadFile failed', ['error' => $e->getMessage()]);
+            return ['ok' => false, 'error' => $e->getMessage()];
+        }
+    }
+
+    /**
+     * Delete a file from OpenAI Files API.
+     *
+     * @param string $fileId OpenAI file ID
+     * @return array{ok: bool, error?: string}
+     */
+    public function deleteFile(string $fileId): array
+    {
+        Log::debug('OpenAiProvider: deleteFile', ['file_id' => $fileId]);
+
+        try {
+            $res = $this->http->delete("files/{$fileId}", [
+                'headers' => [
+                    'Authorization' => 'Bearer '.$this->apiKey,
+                ],
+            ]);
+
+            $body = json_decode((string) $res->getBody(), true);
+
+            if (($body['deleted'] ?? false) === true) {
+                Log::info('OpenAiProvider: file deleted', ['file_id' => $fileId]);
+                return ['ok' => true];
+            }
+
+            return ['ok' => false, 'error' => 'File not deleted'];
+
+        } catch (GuzzleException $e) {
+            Log::error('OpenAiProvider: deleteFile failed', ['file_id' => $fileId, 'error' => $e->getMessage()]);
+            return ['ok' => false, 'error' => $e->getMessage()];
+        }
     }
 }

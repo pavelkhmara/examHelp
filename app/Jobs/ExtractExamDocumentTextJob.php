@@ -5,6 +5,7 @@ namespace App\Jobs;
 use App\Models\ExamDocument;
 use App\Models\GenerationLog;
 use App\Models\GenerationTask;
+use App\Services\LanguageApp\FileAttachmentService;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
@@ -95,6 +96,20 @@ class ExtractExamDocumentTextJob implements ShouldQueue
             'chars' => mb_strlen($text),
             'error' => $error,
         ]);
+
+        // Auto-upload to OpenAI Files API if enabled
+        if ($ok && config('ai.file_attachments.enabled') && config('ai.file_attachments.auto_upload')) {
+            try {
+                $fileService = app(FileAttachmentService::class);
+                $fileService->uploadDocument($doc);
+            } catch (\Throwable $e) {
+                // Non-blocking - log and continue
+                \Illuminate\Support\Facades\Log::warning('FileAttachment auto-upload failed', [
+                    'doc_id' => $doc->id,
+                    'error' => $e->getMessage(),
+                ]);
+            }
+        }
     }
 
     protected function extract(string $mime, string $fullPath): string

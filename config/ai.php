@@ -68,6 +68,20 @@ return [
         'prefer_documents' => env('AI_DOCS_PREFER', true),
     ],
 
+    // File Attachments (OpenAI Files API) - alternative to text extraction
+    'file_attachments' => [
+        // Enable file attachments instead of text extraction
+        'enabled' => (bool) env('AI_FILE_ATTACHMENTS_ENABLED', false),
+        // Automatically upload documents to OpenAI on extraction complete
+        'auto_upload' => (bool) env('AI_FILE_ATTACHMENTS_AUTO_UPLOAD', true),
+        // Delete files from OpenAI when document deleted
+        'auto_cleanup' => (bool) env('AI_FILE_ATTACHMENTS_CLEANUP', true),
+        // Supported MIME types for file attachments
+        'supported_mimes' => ['application/pdf', 'image/png', 'image/jpeg', 'image/jpg'],
+        // Max file size for attachments (20MB OpenAI limit)
+        'max_size_mb' => (int) env('AI_FILE_ATTACHMENTS_MAX_MB', 20),
+    ],
+
     'evaluation' => [
         // включить LLM-подсказки в фидбек (пока по умолчанию выкл — Stage 1)
         'enable_llm' => env('AI_EVALUATION_LLM', false),
