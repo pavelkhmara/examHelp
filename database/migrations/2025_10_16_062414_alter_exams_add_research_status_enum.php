@@ -10,8 +10,17 @@ return new class extends Migration
     private array $enum = [
         'queued',
         'running_overview',
+        'running_phase_a',
+        'phase_a_completed',
+        'running_phase_b',
+        'phase_b_completed',
+        'running_categories',
+        'running_examples',
+        'running_rubrics',
         'completed',
         'failed',
+        'need_info',
+        'pending_clarification',
     ];
 
     public function up(): void

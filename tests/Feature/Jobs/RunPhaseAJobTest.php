@@ -45,7 +45,10 @@ class RunPhaseAJobTest extends TestCase
         $svc = Mockery::mock(ExamResearchService::class);
         $svc->shouldReceive('runPhaseA')
             ->once()
-            ->with($exam, $task)
+            ->with(
+                Mockery::on(fn ($e) => $e->id === $exam->id),
+                Mockery::on(fn ($t) => $t->id === $task->id)
+            )
             ->andReturn($mockResult);
 
         $job = new RunPhaseAJob($task->id);
@@ -59,7 +62,7 @@ class RunPhaseAJobTest extends TestCase
 
         // Check exam updated
         $exam->refresh();
-        $this->assertEquals('completed', $exam->research_status);
+        $this->assertEquals('phase_a_completed', $exam->research_status);
         $this->assertIsArray($exam->structure_v2);
         $this->assertArrayHasKey('categories', $exam->structure_v2);
     }

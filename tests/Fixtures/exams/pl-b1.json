@@ -934,7 +934,124 @@
       "skill": "grammar",
       "duration_min": 45,
       "max_score": 30,
-      "description": "8 zadań testujących poprawność gramatyczną"
+      "description": "8 zadań testujących poprawność gramatyczną",
+      "question_groups": [
+        {
+          "group_id": "grammar-task-1",
+          "title": "Zadanie I",
+          "order": 1,
+          "instructions": {"brief": "Proszę wybrać poprawną formę."},
+          "metadata": {"total_points": 4},
+          "questions": [
+            {"question_id": "G1-1", "type": "single_select", "order": 1, "instructions": {"text_html": "Moja siostra mieszka w _____ od pięciu lat."}, "interaction": {"options": [{"id": "a", "label": "Kraków"}, {"id": "b", "label": "Krakowa"}, {"id": "c", "label": "Krakowie"}]}, "scoring": {"max_points": 0.5, "correct_answer": "c"}},
+            {"question_id": "G1-2", "type": "single_select", "order": 2, "instructions": {"text_html": "Wczoraj _____ bardzo późno do domu."}, "interaction": {"options": [{"id": "a", "label": "wracam"}, {"id": "b", "label": "wróciłem"}, {"id": "c", "label": "wracałbym"}]}, "scoring": {"max_points": 0.5, "correct_answer": "b"}},
+            {"question_id": "G1-3", "type": "single_select", "order": 3, "instructions": {"text_html": "Proszę, _____ mi kawę bez cukru."}, "interaction": {"options": [{"id": "a", "label": "podać"}, {"id": "b", "label": "podaj"}, {"id": "c", "label": "podawać"}]}, "scoring": {"max_points": 0.5, "correct_answer": "b"}},
+            {"question_id": "G1-4", "type": "single_select", "order": 4, "instructions": {"text_html": "To jest książka _____ brata."}, "interaction": {"options": [{"id": "a", "label": "mój"}, {"id": "b", "label": "mojego"}, {"id": "c", "label": "moim"}]}, "scoring": {"max_points": 0.5, "correct_answer": "b"}},
+            {"question_id": "G1-5", "type": "single_select", "order": 5, "instructions": {"text_html": "Chciałbym kupić _____ samochód."}, "interaction": {"options": [{"id": "a", "label": "nowa"}, {"id": "b", "label": "nowy"}, {"id": "c", "label": "nowego"}]}, "scoring": {"max_points": 0.5, "correct_answer": "b"}},
+            {"question_id": "G1-6", "type": "single_select", "order": 6, "instructions": {"text_html": "Jutro _____ do kina."}, "interaction": {"options": [{"id": "a", "label": "idziemy"}, {"id": "b", "label": "szliśmy"}, {"id": "c", "label": "poszlibyśmy"}]}, "scoring": {"max_points": 0.5, "correct_answer": "a"}},
+            {"question_id": "G1-7", "type": "single_select", "order": 7, "instructions": {"text_html": "Czy mogę _____ okno?"}, "interaction": {"options": [{"id": "a", "label": "otwierać"}, {"id": "b", "label": "otworzyć"}, {"id": "c", "label": "otworzę"}]}, "scoring": {"max_points": 0.5, "correct_answer": "b"}},
+            {"question_id": "G1-8", "type": "single_select", "order": 8, "instructions": {"text_html": "On jest _____ niż ja."}, "interaction": {"options": [{"id": "a", "label": "starszy"}, {"id": "b", "label": "stary"}, {"id": "c", "label": "najstarszy"}]}, "scoring": {"max_points": 0.5, "correct_answer": "a"}}
+          ]
+        },
+        {
+          "group_id": "grammar-task-2",
+          "title": "Zadanie II",
+          "order": 2,
+          "instructions": {"brief": "Proszę wpisać odpowiednią formę wyrazu podanego w nawiasie."},
+          "metadata": {"total_points": 5},
+          "questions": [
+            {"question_id": "G2-1", "type": "text_input", "order": 1, "instructions": {"text_html": "Anna lubi _____ (czytać) książki."}, "scoring": {"max_points": 0.5, "correct_answer": "czytać"}},
+            {"question_id": "G2-2", "type": "text_input", "order": 2, "instructions": {"text_html": "W zeszłym roku _____ (być) w Paryżu."}, "scoring": {"max_points": 0.5, "correct_answer": "byłem/byłam"}},
+            {"question_id": "G2-3", "type": "text_input", "order": 3, "instructions": {"text_html": "To jest dom _____ (moja) babci."}, "scoring": {"max_points": 0.5, "correct_answer": "mojej"}},
+            {"question_id": "G2-4", "type": "text_input", "order": 4, "instructions": {"text_html": "Proszę _____ (mówić) głośniej."}, "scoring": {"max_points": 0.5, "correct_answer": "mówić"}},
+            {"question_id": "G2-5", "type": "text_input", "order": 5, "instructions": {"text_html": "Czy możesz mi _____ (pomóc)?"}, "scoring": {"max_points": 0.5, "correct_answer": "pomóc"}}
+          ]
+        },
+        {
+          "group_id": "grammar-task-3",
+          "title": "Zadanie III",
+          "order": 3,
+          "instructions": {"brief": "Proszę przekształcić zdanie, zachowując jego sens."},
+          "metadata": {"total_points": 4},
+          "questions": [
+            {"question_id": "G3-1", "type": "text_input", "order": 1, "instructions": {"text_html": "Ten film jest bardzo ciekawy. → Ten film jest _____ ciekawy. (bardziej)"}, "scoring": {"max_points": 0.5, "correct_answer": "bardziej"}},
+            {"question_id": "G3-2", "type": "text_input", "order": 2, "instructions": {"text_html": "Muszę iść do lekarza. → _____ iść do lekarza. (powinienem)"}, "scoring": {"max_points": 0.5, "correct_answer": "Powinienem"}},
+            {"question_id": "G3-3", "type": "text_input", "order": 3, "instructions": {"text_html": "Mama gotuje obiad. → Obiad jest _____ przez mamę. (gotowany)"}, "scoring": {"max_points": 0.5, "correct_answer": "gotowany"}},
+            {"question_id": "G3-4", "type": "text_input", "order": 4, "instructions": {"text_html": "On nie lubi kawy. → Kawa mu nie _____. (smakuje)"}, "scoring": {"max_points": 0.5, "correct_answer": "smakuje"}}
+          ]
+        },
+        {
+          "group_id": "grammar-task-4",
+          "title": "Zadanie IV",
+          "order": 4,
+          "instructions": {"brief": "Proszę utworzyć wyraz pochodny od wyrazu podanego w nawiasie."},
+          "metadata": {"total_points": 4},
+          "questions": [
+            {"question_id": "G4-1", "type": "text_input", "order": 1, "instructions": {"text_html": "To jest bardzo _____ książka. (ciekawość)"}, "scoring": {"max_points": 0.5, "correct_answer": "ciekawa"}},
+            {"question_id": "G4-2", "type": "text_input", "order": 2, "instructions": {"text_html": "On jest _____ z tego miasta. (mieszkać)"}, "scoring": {"max_points": 0.5, "correct_answer": "mieszkańcem"}},
+            {"question_id": "G4-3", "type": "text_input", "order": 3, "instructions": {"text_html": "Ta _____ jest bardzo trudna. (decydować)"}, "scoring": {"max_points": 0.5, "correct_answer": "decyzja"}},
+            {"question_id": "G4-4", "type": "text_input", "order": 4, "instructions": {"text_html": "Jego zachowanie było _____. (dziecko)"}, "scoring": {"max_points": 0.5, "correct_answer": "dziecinne"}}
+          ]
+        },
+        {
+          "group_id": "grammar-task-5",
+          "title": "Zadanie V",
+          "order": 5,
+          "instructions": {"brief": "Proszę uzupełnić tekst, wybierając właściwe słowo."},
+          "stimulus": {"text_html": "<p>Wczoraj spotkałem mojego starego przyjaciela. Nie widzieliśmy [___]<sup>1</sup> od pięciu lat. Opowiedział mi o [___]<sup>2</sup> życiu w Kanadzie. Powiedział, że [___]<sup>3</sup> tam bardzo szczęśliwy. Umówiliśmy się na [___]<sup>4</sup> spotkanie w przyszłym tygodniu.</p>"},
+          "metadata": {"total_points": 4},
+          "questions": [
+            {"question_id": "G5-1", "type": "single_select", "order": 1, "instructions": {"text_html": "Luka 1"}, "interaction": {"options": [{"id": "a", "label": "się"}, {"id": "b", "label": "siebie"}, {"id": "c", "label": "sobą"}]}, "scoring": {"max_points": 1, "correct_answer": "a"}},
+            {"question_id": "G5-2", "type": "single_select", "order": 2, "instructions": {"text_html": "Luka 2"}, "interaction": {"options": [{"id": "a", "label": "swoim"}, {"id": "b", "label": "swój"}, {"id": "c", "label": "swojego"}]}, "scoring": {"max_points": 1, "correct_answer": "a"}},
+            {"question_id": "G5-3", "type": "single_select", "order": 3, "instructions": {"text_html": "Luka 3"}, "interaction": {"options": [{"id": "a", "label": "jest"}, {"id": "b", "label": "był"}, {"id": "c", "label": "będzie"}]}, "scoring": {"max_points": 1, "correct_answer": "a"}},
+            {"question_id": "G5-4", "type": "single_select", "order": 4, "instructions": {"text_html": "Luka 4"}, "interaction": {"options": [{"id": "a", "label": "następny"}, {"id": "b", "label": "następne"}, {"id": "c", "label": "następnego"}]}, "scoring": {"max_points": 1, "correct_answer": "b"}}
+          ]
+        },
+        {
+          "group_id": "grammar-task-6",
+          "title": "Zadanie VI",
+          "order": 6,
+          "instructions": {"brief": "Proszę dopasować początek zdania do jego zakończenia."},
+          "stimulus": {
+            "text_html": "<p><strong>Początki zdań:</strong></p><ol><li>Gdybym miał więcej czasu,</li><li>Zanim wyjdziesz,</li><li>Chociaż pada deszcz,</li><li>Kiedy byłem młodszy,</li></ol>",
+            "options_html": "<table><tr><td>A</td><td>zamknij okno.</td></tr><tr><td>B</td><td>chodziłem na basen.</td></tr><tr><td>C</td><td>pójdziemy na spacer.</td></tr><tr><td>D</td><td>przeczytałbym więcej książek.</td></tr><tr><td>E</td><td>lubię herbatę.</td></tr></table>"
+          },
+          "metadata": {"total_points": 4},
+          "questions": [
+            {"question_id": "G6-1", "type": "text_input", "order": 1, "instructions": {"text_html": "Zdanie 1 → [___]"}, "scoring": {"max_points": 1, "correct_answer": "D"}},
+            {"question_id": "G6-2", "type": "text_input", "order": 2, "instructions": {"text_html": "Zdanie 2 → [___]"}, "scoring": {"max_points": 1, "correct_answer": "A"}},
+            {"question_id": "G6-3", "type": "text_input", "order": 3, "instructions": {"text_html": "Zdanie 3 → [___]"}, "scoring": {"max_points": 1, "correct_answer": "C"}},
+            {"question_id": "G6-4", "type": "text_input", "order": 4, "instructions": {"text_html": "Zdanie 4 → [___]"}, "scoring": {"max_points": 1, "correct_answer": "B"}}
+          ]
+        },
+        {
+          "group_id": "grammar-task-7",
+          "title": "Zadanie VII",
+          "order": 7,
+          "instructions": {"brief": "Proszę wybrać poprawną odpowiedź A, B lub C."},
+          "metadata": {"total_points": 4},
+          "questions": [
+            {"question_id": "G7-1", "type": "single_select", "order": 1, "instructions": {"text_html": "_____ pada deszcz, zostaniemy w domu."}, "interaction": {"options": [{"id": "a", "label": "Jeśli"}, {"id": "b", "label": "Chociaż"}, {"id": "c", "label": "Żeby"}]}, "scoring": {"max_points": 1, "correct_answer": "a"}},
+            {"question_id": "G7-2", "type": "single_select", "order": 2, "instructions": {"text_html": "Poszedłem do sklepu, _____ kupić chleb."}, "interaction": {"options": [{"id": "a", "label": "że"}, {"id": "b", "label": "żeby"}, {"id": "c", "label": "bo"}]}, "scoring": {"max_points": 1, "correct_answer": "b"}},
+            {"question_id": "G7-3", "type": "single_select", "order": 3, "instructions": {"text_html": "Nie wiem, _____ on przyjdzie."}, "interaction": {"options": [{"id": "a", "label": "że"}, {"id": "b", "label": "czy"}, {"id": "c", "label": "jak"}]}, "scoring": {"max_points": 1, "correct_answer": "b"}},
+            {"question_id": "G7-4", "type": "single_select", "order": 4, "instructions": {"text_html": "To jest miasto, _____ się urodziłem."}, "interaction": {"options": [{"id": "a", "label": "gdzie"}, {"id": "b", "label": "który"}, {"id": "c", "label": "kiedy"}]}, "scoring": {"max_points": 1, "correct_answer": "a"}}
+          ]
+        },
+        {
+          "group_id": "grammar-task-8",
+          "title": "Zadanie VIII",
+          "order": 8,
+          "instructions": {"brief": "Proszę uzupełnić tekst wyrazami z ramki. Jeden wyraz jest zbędny."},
+          "stimulus": {"text_html": "<p><strong>Wyrazy:</strong> jednak, dlatego, ponieważ, więc, natomiast, chociaż</p><p>Lubię podróżować, [___]<sup>1</sup> nie mam dużo czasu. Moja siostra [___]<sup>2</sup> woli zostać w domu. W zeszłym roku pojechaliśmy razem do Włoch, [___]<sup>3</sup> oboje kochamy włoską kuchnię. Było gorąco, [___]<sup>4</sup> piliśmy dużo wody.</p>"},
+          "metadata": {"total_points": 4},
+          "questions": [
+            {"question_id": "G8-1", "type": "text_input", "order": 1, "instructions": {"text_html": "Luka 1"}, "scoring": {"max_points": 1, "correct_answer": "chociaż"}},
+            {"question_id": "G8-2", "type": "text_input", "order": 2, "instructions": {"text_html": "Luka 2"}, "scoring": {"max_points": 1, "correct_answer": "natomiast"}},
+            {"question_id": "G8-3", "type": "text_input", "order": 3, "instructions": {"text_html": "Luka 3"}, "scoring": {"max_points": 1, "correct_answer": "ponieważ"}},
+            {"question_id": "G8-4", "type": "text_input", "order": 4, "instructions": {"text_html": "Luka 4"}, "scoring": {"max_points": 1, "correct_answer": "więc"}}
+          ]
+        }
+      ]
     },
     {
       "key": "writing",
@@ -942,7 +1059,78 @@
       "skill": "writing",
       "duration_min": 75,
       "max_score": 30,
-      "description": "Część pisemna - wybór 1 z 3 zestawów, każdy zawiera 2 zadania (krótkie i dłuższe)"
+      "description": "Część pisemna - wybór 1 z 3 zestawów, każdy zawiera 2 zadania (a i b). Łącznie min. 200 słów.",
+      "question_groups": [
+        {
+          "group_id": "writing-zestaw-1",
+          "title": "Zestaw I",
+          "order": 1,
+          "instructions": {"brief": "Proszę wybrać JEDEN zestaw i napisać oba teksty (a i b). Łącznie min. 200 słów."},
+          "metadata": {"total_points": 30, "word_limit": "200+", "is_choice_set": true},
+          "questions": [
+            {
+              "question_id": "W1-a",
+              "type": "writing_prompt",
+              "order": 1,
+              "instructions": {"text_html": "<strong>a)</strong> Właśnie przeprowadziłeś/aś się do nowego mieszkania. <strong>Napisz e-mail do kolegi/koleżanki</strong> (50-80 słów). Opisz nowe mieszkanie, napisz, co Ci się podoba, a co nie, zaproś kolegę/koleżankę do siebie."},
+              "scoring": {"max_points": 10, "rubric": ["treść", "forma", "poprawność językowa", "bogactwo językowe"]}
+            },
+            {
+              "question_id": "W1-b",
+              "type": "writing_prompt",
+              "order": 2,
+              "instructions": {"text_html": "<strong>b)</strong> <strong>Napisz artykuł do szkolnej gazetki</strong> (120-150 słów) na temat: \"Moje wymarzone mieszkanie\". Opisz, jak wyobrażasz sobie idealne mieszkanie, gdzie powinno się znajdować, jakie powinno mieć wyposażenie."},
+              "scoring": {"max_points": 20, "rubric": ["treść", "forma", "poprawność językowa", "bogactwo językowe"]}
+            }
+          ]
+        },
+        {
+          "group_id": "writing-zestaw-2",
+          "title": "Zestaw II",
+          "order": 2,
+          "instructions": {"brief": "Proszę wybrać JEDEN zestaw i napisać oba teksty (a i b). Łącznie min. 200 słów."},
+          "metadata": {"total_points": 30, "word_limit": "200+", "is_choice_set": true},
+          "questions": [
+            {
+              "question_id": "W2-a",
+              "type": "writing_prompt",
+              "order": 1,
+              "instructions": {"text_html": "<strong>a)</strong> Twój znajomy chce przyjechać do Twojego miasta na wakacje. <strong>Napisz do niego e-mail</strong> (50-80 słów). Podaj termin, kiedy możesz go przyjąć, zaproponuj, co moglibyście robić, poproś o informację, kiedy dokładnie przyjedzie."},
+              "scoring": {"max_points": 10, "rubric": ["treść", "forma", "poprawność językowa", "bogactwo językowe"]}
+            },
+            {
+              "question_id": "W2-b",
+              "type": "writing_prompt",
+              "order": 2,
+              "instructions": {"text_html": "<strong>b)</strong> <strong>Napisz wpis na blog</strong> (120-150 słów) na temat: \"Jak spędzam wolny czas\". Opisz swoje hobby, wyjaśnij, dlaczego lubisz tak spędzać czas, zachęć innych do podobnej aktywności."},
+              "scoring": {"max_points": 20, "rubric": ["treść", "forma", "poprawność językowa", "bogactwo językowe"]}
+            }
+          ]
+        },
+        {
+          "group_id": "writing-zestaw-3",
+          "title": "Zestaw III",
+          "order": 3,
+          "instructions": {"brief": "Proszę wybrać JEDEN zestaw i napisać oba teksty (a i b). Łącznie min. 200 słów."},
+          "metadata": {"total_points": 30, "word_limit": "200+", "is_choice_set": true},
+          "questions": [
+            {
+              "question_id": "W3-a",
+              "type": "writing_prompt",
+              "order": 1,
+              "instructions": {"text_html": "<strong>a)</strong> Widziałeś/aś ogłoszenie o kursie języka polskiego. <strong>Napisz e-mail do organizatorów kursu</strong> (50-80 słów). Poinformuj, że chcesz się zapisać, zapytaj o cenę i czas trwania kursu, poproś o informację o terminach zajęć."},
+              "scoring": {"max_points": 10, "rubric": ["treść", "forma", "poprawność językowa", "bogactwo językowe"]}
+            },
+            {
+              "question_id": "W3-b",
+              "type": "writing_prompt",
+              "order": 2,
+              "instructions": {"text_html": "<strong>b)</strong> <strong>Napisz artykuł</strong> (120-150 słów) na temat: \"Czy warto uczyć się języków obcych?\". Przedstaw swoje zdanie i uzasadnij je, podaj przykłady sytuacji, w których znajomość języków jest przydatna."},
+              "scoring": {"max_points": 20, "rubric": ["treść", "forma", "poprawność językowa", "bogactwo językowe"]}
+            }
+          ]
+        }
+      ]
     },
     {
       "key": "speaking",
@@ -950,7 +1138,58 @@
       "skill": "speaking",
       "duration_min": 15,
       "max_score": 40,
-      "description": "Część ustna - 3 zadania: opis fotografii, monolog, sytuacja komunikacyjna"
+      "description": "Część ustna - 3 zadania: opis fotografii, monolog, sytuacja komunikacyjna",
+      "question_groups": [
+        {
+          "group_id": "speaking-task-1",
+          "title": "Zadanie 1 (opis fotografii)",
+          "order": 1,
+          "instructions": {"brief": "Proszę opisać fotografię (3 minuty)."},
+          "stimulus": {"images": ["placeholder_speaking_photo.jpg"]},
+          "metadata": {"total_points": 12, "time_limit_sec": 180},
+          "questions": [
+            {
+              "question_id": "S1-1",
+              "type": "speaking_prompt",
+              "order": 1,
+              "instructions": {"text_html": "Proszę opisać fotografię. Co widzisz na zdjęciu? Kim mogą być te osoby? Co robią? Gdzie się znajdują? Jak myślisz, jaki jest nastrój tej sceny?"},
+              "scoring": {"max_points": 12, "rubric": ["treść", "płynność", "poprawność", "wymowa"]}
+            }
+          ]
+        },
+        {
+          "group_id": "speaking-task-2",
+          "title": "Zadanie 2 (monolog)",
+          "order": 2,
+          "instructions": {"brief": "Proszę wypowiedzieć się na podany temat (3 minuty)."},
+          "metadata": {"total_points": 14, "time_limit_sec": 180},
+          "questions": [
+            {
+              "question_id": "S2-1",
+              "type": "speaking_prompt",
+              "order": 1,
+              "instructions": {"text_html": "Temat: \"Moje plany na przyszłość\". Proszę powiedzieć: jakie masz plany zawodowe, gdzie chciałbyś/chciałabyś mieszkać, co jest dla Ciebie ważne w życiu."},
+              "scoring": {"max_points": 14, "rubric": ["treść", "płynność", "poprawność", "bogactwo językowe"]}
+            }
+          ]
+        },
+        {
+          "group_id": "speaking-task-3",
+          "title": "Zadanie 3 (sytuacja komunikacyjna)",
+          "order": 3,
+          "instructions": {"brief": "Proszę odegrać rolę w podanej sytuacji (3 minuty)."},
+          "metadata": {"total_points": 14, "time_limit_sec": 180},
+          "questions": [
+            {
+              "question_id": "S3-1",
+              "type": "roleplay",
+              "order": 1,
+              "instructions": {"text_html": "Sytuacja: Chcesz wynająć mieszkanie. Rozmawiasz z właścicielem. Zapytaj o: cenę, wielkość mieszkania, wyposażenie, warunki umowy."},
+              "scoring": {"max_points": 14, "rubric": ["treść", "adekwatność", "płynność", "poprawność"]}
+            }
+          ]
+        }
+      ]
     }
   ],
   "_meta": {

@@ -25,6 +25,9 @@ class ExamFullViewTest extends TestCase
             'email' => 'admin@example.com',
         ]);
 
+        // Bypass Nova gate for testing
+        \Illuminate\Support\Facades\Gate::define('viewNova', fn () => true);
+
         $this->actingAs($this->user);
     }
 

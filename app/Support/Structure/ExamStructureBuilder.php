@@ -20,7 +20,7 @@ final class ExamStructureBuilder
             foreach ($cat->examples as $ex) {
                 $examples[] = [
                     'id' => (int) $ex->id,
-                    'type' => (string) $ex->type, // строго enum whitelist в модели
+                    'type' => $ex->type instanceof \BackedEnum ? $ex->type->value : (string) $ex->type,
                     'question' => (string) ($ex->question ?? ''),
                     'payload' => is_array($ex->payload) ? $ex->payload : [],
                     'model_answers' => [

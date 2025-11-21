@@ -36,7 +36,9 @@ class StructureController extends Controller
         $payload['sections'] = collect($payload['sections'])
             ->map(function ($sec) {
                 $sec['examples'] = collect($sec['examples'] ?? [])->filter(function ($ex) {
-                    $isKnown = QuestionTypeContract::isKnownType($ex['type'] ?? null);
+                    $type = $ex['type'] ?? null;
+                    $type = $type instanceof \BackedEnum ? $type->value : $type;
+                    $isKnown = QuestionTypeContract::isKnownType($type);
                     $hasPayload = ! is_null($ex['payload'] ?? null);
 
                     return $isKnown && $hasPayload;

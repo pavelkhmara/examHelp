@@ -103,8 +103,8 @@ class ExamFullViewRenderer
      */
     private function renderSection(Exam $exam, array $sectionData): string
     {
-        $sectionId = $sectionData['id'] ?? null;
-        $sectionTitle = $sectionData['title'] ?? 'Unnamed Section';
+        $sectionId = $sectionData['id'] ?? $sectionData['key'] ?? null;
+        $sectionTitle = $sectionData['name'] ?? $sectionData['title'] ?? 'Unnamed Section';
         $skill = $sectionData['skill'] ?? null;
 
         // Use HTML5 <details> element for collapsible sections
@@ -294,22 +294,35 @@ class ExamFullViewRenderer
 
         // Group questions by question_group_id
         $grouped = $questions->groupBy('question_group_id');
+
+        // Sort groups by questionGroup.order (ungrouped questions come first with order 0)
+        $sortedGroups = $grouped->sortBy(function ($groupQuestions, $groupId) {
+            if (empty($groupId)) {
+                return 0; // Ungrouped questions first
+            }
+            $questionGroup = $groupQuestions->first()->questionGroup;
+            return $questionGroup ? $questionGroup->order : 999;
+        })->all(); // Convert to array to maintain sort order
+
         $questionNumber = 1;
 
-        foreach ($grouped as $questionGroupId => $groupQuestions) {
+        foreach ($sortedGroups as $questionGroupId => $groupQuestions) {
+            // Sort questions within group by order
+            $sortedQuestions = $groupQuestions->sortBy('order');
+
             // groupBy returns "" (empty string) for null values, not null
             if (empty($questionGroupId)) {
                 // Ungrouped questions (existing behavior)
-                foreach ($groupQuestions as $question) {
+                foreach ($sortedQuestions as $question) {
                     $html .= $this->renderQuestion($question, $questionNumber, $dataSource);
                     $questionNumber++;
                 }
             } else {
                 // Grouped questions (new behavior)
-                $questionGroup = $groupQuestions->first()->questionGroup;
+                $questionGroup = $sortedQuestions->first()->questionGroup;
                 if ($questionGroup) {
-                    $html .= $this->renderQuestionGroup($questionGroup, $groupQuestions, $questionNumber, $dataSource);
-                    $questionNumber += $groupQuestions->count();
+                    $html .= $this->renderQuestionGroup($questionGroup, $sortedQuestions, $questionNumber, $dataSource);
+                    $questionNumber += $sortedQuestions->count();
                 }
             }
         }
@@ -324,21 +337,35 @@ class ExamFullViewRenderer
      */
     private function renderQuestionGroup(QuestionGroup $questionGroup, $questions, int $startNumber, ?string $dataSource): string
     {
-        $html = '<div class="question-group" data-group-id="' . htmlspecialchars($questionGroup->group_id) . '" style="background: #ffffff; border-radius: 12px; padding: 24px; margin-bottom: 24px; box-shadow: 0 10px 25px rgba(0, 0, 0, 0.06); border: 2px solid #e5e7eb;">';
+        $metadata = $questionGroup->metadata ?? [];
+        $isChoiceSet = $metadata['is_choice_set'] ?? false;
+
+        // Different styling for choice sets (Zestaw)
+        $borderColor = $isChoiceSet ? '#8b5cf6' : '#e5e7eb';
+        $bgColor = $isChoiceSet ? '#faf5ff' : '#ffffff';
+
+        $html = '<div class="question-group" data-group-id="' . htmlspecialchars($questionGroup->group_id) . '" style="background: ' . $bgColor . '; border-radius: 12px; padding: 24px; margin-bottom: 24px; box-shadow: 0 10px 25px rgba(0, 0, 0, 0.06); border: 2px solid ' . $borderColor . ';">';
+
+        // Choice set indicator
+        if ($isChoiceSet) {
+            $html .= '<div style="background: #8b5cf6; color: white; padding: 6px 12px; border-radius: 4px; font-size: 12px; font-weight: 600; display: inline-block; margin-bottom: 12px;">📝 WYBIERZ TEN ZESTAW LUB INNY</div>';
+        }
 
         // Group header
-        $html .= '<div class="question-group-header" style="border-bottom: 2px solid #e5e7eb; padding-bottom: 16px; margin-bottom: 20px;">';
+        $html .= '<div class="question-group-header" style="border-bottom: 2px solid ' . $borderColor . '; padding-bottom: 16px; margin-bottom: 20px;">';
         $html .= '<h3 style="margin: 0 0 8px; font-size: 20px; font-weight: 600; color: #111827;">';
         $html .= htmlspecialchars($questionGroup->title);
         $html .= '</h3>';
 
         // Group metadata
         $html .= '<div style="display: flex; flex-wrap: wrap; gap: 8px;">';
-        $html .= $this->renderBadge($questions->count() . ' ' . $this->pluralize($questions->count(), 'вопрос', 'вопроса', 'вопросов'), 'score');
+        $html .= $this->renderBadge($questions->count() . ' ' . $this->pluralize($questions->count(), 'задание', 'задания', 'заданий'), 'score');
 
-        $metadata = $questionGroup->metadata ?? [];
         if (isset($metadata['total_points'])) {
             $html .= $this->renderBadge($metadata['total_points'] . ' pts', 'score');
+        }
+        if (isset($metadata['word_limit'])) {
+            $html .= $this->renderBadge($metadata['word_limit'] . ' słów', 'time');
         }
         if (isset($metadata['suggested_time_sec'])) {
             $minutes = ceil($metadata['suggested_time_sec'] / 60);
@@ -360,10 +387,12 @@ class ExamFullViewRenderer
         // Group stimulus (ОДИН РАЗ для всей группы)
         $html .= $this->renderGroupStimulus($questionGroup);
 
-        // Questions
+        // Questions (внутренняя нумерация в каждой группе, начиная с 1)
         $html .= '<div class="question-group-questions" style="margin-top: 20px;">';
-        foreach ($questions as $index => $question) {
-            $html .= $this->renderGroupedQuestion($question, $startNumber + $index, $dataSource);
+        $internalNumber = 1;
+        foreach ($questions as $question) {
+            $html .= $this->renderGroupedQuestion($question, $internalNumber, $dataSource);
+            $internalNumber++;
         }
         $html .= '</div>';
 
@@ -386,23 +415,51 @@ class ExamFullViewRenderer
             $html .= $this->renderGroupAudio($questionGroup, $stimulus['audio']);
         }
 
-        // Text
+        // Text (with gap replacement for fill-in-blank tasks)
         if (!empty($stimulus['text_html'])) {
-            $html .= '<div style="margin-bottom: 12px; padding: 12px; background: #f9fafb; border-radius: 4px; border: 1px solid #e5e7eb;">';
-            $html .= '<div style="font-size: 15px; line-height: 1.6; color: #374151;">';
-            $html .= $stimulus['text_html'];
-            $html .= '</div>';
+            $textHtml = $stimulus['text_html'];
+
+            // Replace ______ (underscores) or [__X__] with input fields
+            $inputHtml = '<input type="text" style="border: 1px solid #d1d5db; border-radius: 4px; padding: 2px 6px; min-width: 80px; background: #fff; font-size: 14px;" placeholder="..." disabled>';
+            $textHtml = preg_replace('/_{3,}|(?:\[__[A-Z]?__\])/', $inputHtml, $textHtml);
+
+            // Check if this is a two-column matching task (Kolumna I / Kolumna II)
+            $isColumnTask = preg_match('/Kolumna\s+I/i', $textHtml) && preg_match('/Kolumna\s+II/i', $textHtml);
+
+            if ($isColumnTask) {
+                // Split into two columns and render as table
+                $html .= $this->renderTwoColumnStimulus($textHtml);
+            } else {
+                $html .= '<div style="margin-bottom: 12px; padding: 12px; background: #f9fafb; border-radius: 4px; border: 1px solid #e5e7eb;">';
+                $html .= '<div style="font-size: 15px; line-height: 1.8; color: #374151;">';
+                $html .= $textHtml;
+                $html .= '</div>';
+                $html .= '</div>';
+            }
+        }
+
+        // Options table (for matching tasks like Zadanie III)
+        if (!empty($stimulus['options_html'])) {
+            $html .= '<div style="margin-bottom: 12px; padding: 12px; background: #fef3c7; border-radius: 4px; border: 1px solid #f59e0b;">';
+            $html .= '<div style="font-size: 14px; font-weight: 600; color: #92400e; margin-bottom: 8px;">Варианты ответов:</div>';
+            $html .= '<div style="font-size: 14px; color: #78350f;">' . $stimulus['options_html'] . '</div>';
             $html .= '</div>';
         }
 
-        // Images
+        // Images (with labels A, B, C... for matching tasks)
         if (!empty($stimulus['images']) && is_array($stimulus['images'])) {
-            $html .= '<div style="margin-bottom: 12px;">';
+            $html .= '<div style="margin-bottom: 12px; display: flex; flex-wrap: wrap; gap: 12px;">';
+            $labelIndex = 0;
             foreach ($stimulus['images'] as $image) {
                 $imageUrl = is_string($image) ? $image : ($image['url'] ?? '');
+                $label = chr(65 + $labelIndex); // A, B, C, D...
                 if ($imageUrl) {
-                    $html .= '<img src="' . htmlspecialchars($imageUrl) . '" alt="Group stimulus image" style="max-width: 100%; border-radius: 8px; margin-bottom: 8px;">';
+                    $html .= '<div style="text-align: center; flex: 0 0 auto; max-width: 300px;">';
+                    $html .= '<div style="font-weight: 700; font-size: 18px; color: #1e40af; margin-bottom: 4px; background: #dbeafe; padding: 4px 12px; border-radius: 4px; display: inline-block;">' . $label . '</div>';
+                    $html .= '<img src="' . htmlspecialchars($imageUrl) . '" alt="' . $label . '" style="max-width: 100%; border-radius: 8px; border: 2px solid #e5e7eb;">';
+                    $html .= '</div>';
                 }
+                $labelIndex++;
             }
             $html .= '</div>';
         }
@@ -533,6 +590,37 @@ JS;
     }
 
     /**
+     * Render two-column stimulus as a table (for matching tasks with Kolumna I / Kolumna II)
+     */
+    private function renderTwoColumnStimulus(string $textHtml): string
+    {
+        $html = '<div style="margin-bottom: 12px; padding: 16px; background: #f9fafb; border-radius: 8px; border: 1px solid #e5e7eb;">';
+        $html .= '<table style="width: 100%; border-collapse: collapse; font-size: 14px;">';
+        $html .= '<thead><tr>';
+        $html .= '<th style="text-align: left; padding: 8px 12px; background: #e5e7eb; border: 1px solid #d1d5db; width: 50%;">Kolumna I (do dopasowania)</th>';
+        $html .= '<th style="text-align: left; padding: 8px 12px; background: #e5e7eb; border: 1px solid #d1d5db; width: 50%;">Kolumna II (fragmenty)</th>';
+        $html .= '</tr></thead>';
+        $html .= '<tbody><tr>';
+
+        // Split by Kolumna II
+        $parts = preg_split('/(<p><strong>Kolumna\s+II[^<]*<\/strong><\/p>)/i', $textHtml, 2, PREG_SPLIT_DELIM_CAPTURE);
+
+        // Column I content
+        $col1 = $parts[0] ?? '';
+        $col1 = preg_replace('/<p><strong>Kolumna\s+I[^<]*<\/strong><\/p>/i', '', $col1);
+        $html .= '<td style="vertical-align: top; padding: 12px; border: 1px solid #d1d5db; line-height: 1.6;">' . trim($col1) . '</td>';
+
+        // Column II content
+        $col2 = isset($parts[2]) ? $parts[2] : '';
+        $html .= '<td style="vertical-align: top; padding: 12px; border: 1px solid #d1d5db; line-height: 1.6;">' . trim($col2) . '</td>';
+
+        $html .= '</tr></tbody></table>';
+        $html .= '</div>';
+
+        return $html;
+    }
+
+    /**
      * Render a single question within a group (without stimulus)
      */
     private function renderGroupedQuestion(Question $question, int $number, ?string $dataSource): string
@@ -547,8 +635,36 @@ JS;
         $html .= $this->renderBadge($question->type, 'type');
         $html .= '</div>';
 
-        // Question instructions (if any additional to group)
+        // Question stimulus (individual text for this question)
+        $stimulus = $question->stimulus ?? [];
+        if (!empty($stimulus['text_html'])) {
+            $html .= '<div style="background: #f0f9ff; border-left: 3px solid #3b82f6; padding: 10px 12px; margin-bottom: 10px; border-radius: 4px; font-size: 14px; color: #1e40af; line-height: 1.5;">';
+            $html .= $stimulus['text_html'];
+            $html .= '</div>';
+        }
+
+        // Question stem (text_html from instructions)
         $instructions = $question->instructions ?? [];
+        if (isset($instructions['text_html'])) {
+            $textHtml = $instructions['text_html'];
+
+            // Replace [marker], [answer], [A], [B], "Luka X" etc. placeholders with input field for text_input type
+            if ($question->type === 'text_input') {
+                $inputHtml = '<input type="text" style="border: 1px solid #d1d5db; border-radius: 4px; padding: 4px 8px; min-width: 120px; background: #f9fafb;" placeholder="..." disabled>';
+                // Replace bracket placeholders
+                $textHtml = preg_replace('/\[[^\]]+\]/', $inputHtml, $textHtml);
+                // Replace "Luka X" pattern (gap markers)
+                if (preg_match('/^Luka\s+\d+$/i', trim(strip_tags($textHtml)))) {
+                    $textHtml = $inputHtml;
+                }
+            }
+
+            $html .= '<div style="font-size: 15px; color: #374151; margin-bottom: 8px;">';
+            $html .= $textHtml;
+            $html .= '</div>';
+        }
+
+        // Brief instructions (if any)
         if (isset($instructions['brief'])) {
             $html .= '<div style="background: #fef3c7; border-left: 4px solid #f59e0b; padding: 12px; border-radius: 4px; margin-bottom: 12px;">';
             $html .= '<p style="margin: 0; font-size: 14px; color: #92400e; font-weight: 500;">';
@@ -754,37 +870,38 @@ JS;
     {
         $interaction = $question->interaction ?? [];
         $responseType = $interaction['response_type'] ?? null;
+        $options = $interaction['options'] ?? [];
 
         $html = '';
 
-        // Handle different response types
-        if (in_array($responseType, ['selection'], true)) {
-            $options = $interaction['options'] ?? [];
-            if (!empty($options)) {
-                $html .= '<div style="margin-top: 12px;">';
-                $html .= '<ol style="list-style: none; padding: 0; margin: 0;">';
+        // Handle selection-based questions (by response_type OR by question type with options)
+        $isSelectionType = in_array($responseType, ['selection'], true)
+            || (in_array($question->type, ['single_select', 'multi_select', 'true_false'], true) && !empty($options));
 
-                foreach ($options as $option) {
-                    $label = is_array($option) ? ($option['text'] ?? $option['label'] ?? '') : $option;
-                    $optionId = is_array($option) ? ($option['id'] ?? '') : '';
+        if ($isSelectionType && !empty($options)) {
+            $html .= '<div style="margin-top: 12px;">';
+            $html .= '<ol style="list-style: none; padding: 0; margin: 0;">';
 
-                    // Check if correct answer
-                    $isCorrect = $this->isCorrectAnswer($question, $optionId);
+            foreach ($options as $option) {
+                $label = is_array($option) ? ($option['text'] ?? $option['label'] ?? '') : $option;
+                $optionId = is_array($option) ? ($option['id'] ?? '') : '';
 
-                    $bgColor = $isCorrect ? '#ecfdf5' : '#ffffff';
-                    $borderColor = $isCorrect ? '#10b981' : '#e5e7eb';
+                // Check if correct answer
+                $isCorrect = $this->isCorrectAnswer($question, $optionId);
 
-                    $html .= '<li style="margin-bottom: 8px; padding: 10px 12px; background: ' . $bgColor . '; border: 1px solid ' . $borderColor . '; border-radius: 6px;">';
-                    if ($isCorrect) {
-                        $html .= '<span style="color: #10b981; font-weight: bold; margin-right: 8px;">✓</span>';
-                    }
-                    $html .= '<span style="color: #374151;">' . htmlspecialchars($label) . '</span>';
-                    $html .= '</li>';
+                $bgColor = $isCorrect ? '#ecfdf5' : '#ffffff';
+                $borderColor = $isCorrect ? '#10b981' : '#e5e7eb';
+
+                $html .= '<li style="margin-bottom: 8px; padding: 10px 12px; background: ' . $bgColor . '; border: 1px solid ' . $borderColor . '; border-radius: 6px;">';
+                if ($isCorrect) {
+                    $html .= '<span style="color: #10b981; font-weight: bold; margin-right: 8px;">✓</span>';
                 }
-
-                $html .= '</ol>';
-                $html .= '</div>';
+                $html .= '<span style="color: #374151;">' . htmlspecialchars($label) . '</span>';
+                $html .= '</li>';
             }
+
+            $html .= '</ol>';
+            $html .= '</div>';
         }
 
         return $html;

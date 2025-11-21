@@ -4,6 +4,7 @@ namespace Tests\Feature;
 
 use App\Jobs\RunExamResearchJob;
 use App\Models\Exam;
+use App\Models\GenerationTask;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Config;
 use Tests\TestCase;
@@ -23,8 +24,16 @@ class ResearchStatusTest extends TestCase
             'is_active' => true,
         ]);
 
+        // Создаём GenerationTask (джоба ожидает taskId)
+        $task = GenerationTask::create([
+            'exam_id' => $exam->id,
+            'type' => 'research',
+            'status' => 'queued',
+            'request' => ['notes' => 'test notes'],
+        ]);
+
         // Запускаем джобу синхронно
-        (new RunExamResearchJob($exam->id, 'notes'))->handle(app('App\Services\LanguageApp\ExamResearchService'));
+        (new RunExamResearchJob($task->id))->handle(app('App\Services\LanguageApp\ExamResearchService'));
 
         $exam->refresh();
         $this->assertEquals('completed', $exam->research_status);

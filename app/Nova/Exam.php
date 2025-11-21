@@ -5,7 +5,6 @@ namespace App\Nova;
 use App\Nova\Actions\ConfirmIdentityAction;
 use App\Nova\Actions\ProvideAnswersAction;
 use App\Nova\Actions\ResearchAction;
-use App\Nova\Actions\ConfirmExamIdentity;
 use App\Nova\Fields\CollapsiblePanel;
 use Laravel\Nova\Fields\Badge;
 use Laravel\Nova\Fields\Boolean;
@@ -1799,13 +1798,6 @@ class Exam extends Resource
 
             // Utility actions
             new \App\Nova\Actions\CancelStalledTaskAction,
-            // (new ConfirmExamIdentity)
-            // ->canSee(function () {
-            //     $st = data_get($this->resource->identity, 'status');
-            //     $has = filled(data_get($this->resource->identity, 'candidates'));
-            //     return $has && $st !== 'confirmed';
-            // })
-            // ->canRun(fn () => true),
         ];
 
         return $actions;

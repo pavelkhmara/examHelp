@@ -46,6 +46,8 @@ class QuestionSynthesisTest extends TestCase
         $plan = GenerationPlan::create([
             'exam_id' => $exam->id,
             'section_id' => $section->id,
+            'assembly_mode' => 'inline',
+            'plan_data' => [],
             'status' => 'pending',
             'unit_slots' => [
                 [
@@ -127,6 +129,7 @@ class QuestionSynthesisTest extends TestCase
 
         $section = ExamCategory::create([
             'exam_id' => $exam->id,
+            'key' => 'reading',
             'name' => 'reading',
             'meta' => [],
         ]);
@@ -176,6 +179,7 @@ class QuestionSynthesisTest extends TestCase
 
         $section = ExamCategory::create([
             'exam_id' => $exam->id,
+            'key' => 'reading',
             'name' => 'reading',
             'meta' => [],
         ]);
@@ -183,6 +187,8 @@ class QuestionSynthesisTest extends TestCase
         $plan = GenerationPlan::create([
             'exam_id' => $exam->id,
             'section_id' => $section->id,
+            'assembly_mode' => 'inline',
+            'plan_data' => [],
             'status' => 'completed',
             'unit_slots' => [],
         ]);
@@ -227,6 +233,7 @@ class QuestionSynthesisTest extends TestCase
 
         $section = ExamCategory::create([
             'exam_id' => $exam->id,
+            'key' => 'reading',
             'name' => 'reading',
             'meta' => [],
         ]);
@@ -234,6 +241,8 @@ class QuestionSynthesisTest extends TestCase
         $plan = GenerationPlan::create([
             'exam_id' => $exam->id,
             'section_id' => $section->id,
+            'assembly_mode' => 'inline',
+            'plan_data' => [],
             'status' => 'pending',
             'unit_slots' => [
                 ['unit' => 'u1', 'task_name' => 'Test', 'count' => 2],

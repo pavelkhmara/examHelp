@@ -156,7 +156,10 @@ class Exam extends Model
         }
 
         // REFERENCE EXAMS: Load from database tables (ExamCategory, QuestionGroup, Question)
-        $categories = $this->categories()->with(['questionGroups.questions'])->orderBy('order')->get();
+        $categories = $this->categories()
+            ->with(['questionGroups' => fn($q) => $q->orderBy('order'), 'questionGroups.questions' => fn($q) => $q->orderBy('order')])
+            ->orderBy('order')
+            ->get();
         if ($categories->isNotEmpty()) {
             return $categories->map(function ($category) {
                 return [
@@ -168,7 +171,7 @@ class Exam extends Model
                     'description' => $category->description,
                     'assembly' => [
                         'mode' => 'inline',
-                        'question_groups' => $category->questionGroups->map(function ($group) {
+                        'question_groups' => $category->questionGroups->sortBy('order')->values()->map(function ($group) {
                             return [
                                 'id' => $group->group_id,
                                 'title' => $group->title,
@@ -177,7 +180,7 @@ class Exam extends Model
                                 'stimulus' => $group->stimulus,
                                 'playback_settings' => $group->playback_settings,
                                 'metadata' => $group->metadata,
-                                'questions' => $group->questions->map(function ($q) {
+                                'questions' => $group->questions->sortBy('order')->values()->map(function ($q) {
                                     return [
                                         'id' => $q->question_id,
                                         'type' => $q->type,

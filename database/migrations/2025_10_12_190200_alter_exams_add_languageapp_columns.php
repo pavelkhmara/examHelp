@@ -20,7 +20,10 @@ return new class extends Migration
             }
             if (! Schema::hasColumn('exams', 'research_status')) {
                 $table->enum('research_status', [
-                    'queued', 'running_overview', 'running_categories', 'running_examples', 'running_rubrics', 'completed', 'failed',
+                    'queued', 'running_overview', 'running_phase_a', 'phase_a_completed',
+                    'running_phase_b', 'phase_b_completed', 'running_categories',
+                    'running_examples', 'running_rubrics', 'completed', 'failed',
+                    'need_info', 'pending_clarification',
                 ])->default('queued')->index()->after('meta');
             }
             if (! Schema::hasColumn('exams', 'categories_count')) {

@@ -60,7 +60,7 @@ class GenerateExamplesAction extends Action
     {
         /** @var \App\Models\Exam $exam */
         foreach ($models as $exam) {
-            $structure = $exam->meta['structure_v2'] ?? null;
+            $structure = $exam->structure_v2;
             if (! $structure) {
                 return Action::danger('❌ structure_v2 is required. Run "1️⃣ Phase A: Skeleton" first.');
             }

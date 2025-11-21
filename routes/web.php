@@ -25,3 +25,7 @@ Route::get('/diagnostics-dashboard', [\App\Http\Controllers\DiagnosticsDashboard
     ->name('diagnostics.dashboard');
 Route::get('/diagnostics-dashboard/exam/{examId}', [\App\Http\Controllers\DiagnosticsDashboardController::class, 'diagnoseExam'])
     ->name('diagnostics.exam');
+Route::get('/diagnostics-dashboard/compare/{genId}/{refId}', [\App\Http\Controllers\DiagnosticsDashboardController::class, 'compareExams'])
+    ->name('diagnostics.compare');
+Route::get('/diagnostics-dashboard/reference-exams', [\App\Http\Controllers\DiagnosticsDashboardController::class, 'referenceExams'])
+    ->name('diagnostics.reference-exams');
