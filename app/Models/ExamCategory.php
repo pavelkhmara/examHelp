@@ -39,6 +39,11 @@ class ExamCategory extends Model
         return $this->hasMany(Question::class, 'section_id');
     }
 
+    public function questionGroups()
+    {
+        return $this->hasMany(QuestionGroup::class, 'section_id')->orderBy('order');
+    }
+
     // ========== V2 ACCESSORS ==========
 
     /**

@@ -845,49 +845,19 @@ class RunExamResearchJob implements ShouldQueue
 
         $task->addActivity('finalization_started', 'Starting research finalization');
 
-        // Create ExamCategory records from structure_v2 sections (v2 only)
+        // Materialize structure_v2 into database tables (v2 only)
         if ($useTwoPhaseGeneration && !empty($exam->meta['structure_v2']['sections'])) {
-            $task->addActivity('creating_categories', 'Creating ExamCategory records from structure_v2 sections');
+            $task->addActivity('materializing_structure', 'Materializing structure_v2 into database tables');
 
-            $structure = $exam->meta['structure_v2'];
-            $existingCategories = \App\Models\ExamCategory::where('exam_id', $exam->id)->pluck('name')->toArray();
+            $materializer = new \App\Services\LanguageApp\StructureMaterializer();
+            $stats = $materializer->materialize($exam, $exam->meta['structure_v2']['sections']);
 
-            foreach ($structure['sections'] as $section) {
-                $sectionName = $section['id'];
-
-                // Skip if category already exists
-                if (in_array($sectionName, $existingCategories)) {
-                    \Illuminate\Support\Facades\Log::info('Skipping existing category', [
-                        'exam_id' => $exam->id,
-                        'section_name' => $sectionName,
-                    ]);
-                    continue;
-                }
-
-                // Create ExamCategory
-                \App\Models\ExamCategory::create([
-                    'exam_id' => $exam->id,
-                    'key' => $sectionName, // Required field
-                    'name' => $sectionName,
-                    'skill' => $section['skill'] ?? null,
-                    'duration_min' => $section['duration_min'] ?? null,
-                    'max_score' => $section['max_score'] ?? null,
-                    'min_pass_percent' => $section['min_pass_percent'] ?? null,
-                    'question_archetypes' => $section['question_archetypes'] ?? [],
-                    'meta' => [
-                        'tasks' => $section['tasks'] ?? [],
-                        'assembly' => $section['assembly'] ?? null,
-                    ],
-                ]);
-
-                \Illuminate\Support\Facades\Log::info('Created ExamCategory from v2 section', [
-                    'exam_id' => $exam->id,
-                    'section_name' => $sectionName,
-                ]);
-            }
-
-            $categoriesCount = count($structure['sections']);
-            $task->addActivity('categories_created', "Created {$categoriesCount} ExamCategory records from structure_v2");
+            $task->addActivity('structure_materialized', sprintf(
+                'Materialized: %d categories, %d question groups, %d questions',
+                $stats['categories'],
+                $stats['question_groups'],
+                $stats['questions']
+            ));
         }
 
         // Update exam research_status
