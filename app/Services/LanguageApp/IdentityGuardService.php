@@ -35,6 +35,9 @@ class IdentityGuardService extends AbstractAiService
         // Extract document text if available
         $extracted = $this->extractDocumentText($docId);
 
+        // Get file IDs for attachments (if enabled)
+        $fileIds = $this->getDocumentFileIds($docId);
+
         // Load marker pack (placeholder for now - could be expanded later)
         $markerPack = [];
 
@@ -46,9 +49,10 @@ class IdentityGuardService extends AbstractAiService
         $aiPayload = PromptIdentityGuard::buildPayload($user, $extracted, $markerPack, $existingIdentity, $userMeta);
 
         try {
-            // Call AI provider
+            // Call AI provider with file attachments if available
             $aiResponse = $this->ai->generate($aiPayload, [
                 'json_schema' => PromptIdentityGuard::schema(),
+                'file_ids' => $fileIds,
             ]);
 
             // Extract and validate content
@@ -317,6 +321,23 @@ class IdentityGuardService extends AbstractAiService
         }
 
         return $doc->extracted_text;
+    }
+
+    /**
+     * Get OpenAI file IDs for document if file attachments enabled.
+     */
+    protected function getDocumentFileIds(string|int|null $docId): array
+    {
+        if (! $docId || ! config('ai.file_attachments.enabled')) {
+            return [];
+        }
+
+        $doc = ExamDocument::query()->find($docId);
+        if (! $doc || ! $doc->openai_file_id || $doc->file_attachment_status !== 'uploaded') {
+            return [];
+        }
+
+        return [$doc->openai_file_id];
     }
 
     /**

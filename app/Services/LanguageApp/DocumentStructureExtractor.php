@@ -40,7 +40,12 @@ class DocumentStructureExtractor extends AbstractAiService
 
         try {
             $payload = $this->buildExtractionPayload($document->extracted_text);
+
+            // Get file ID for attachment if available
+            $fileIds = $this->getDocumentFileIds($document);
+
             $response = $this->ai->generate($payload, [
+                'file_ids' => $fileIds,
                 'json_schema' => [
                     'type' => 'object',
                     'properties' => [
@@ -218,6 +223,22 @@ PROMPT;
             'response_format' => ['type' => 'json_object'],
             'temperature' => 0.3, // Low temperature for factual extraction
         ];
+    }
+
+    /**
+     * Get OpenAI file IDs for document if file attachments enabled.
+     */
+    protected function getDocumentFileIds(ExamDocument $doc): array
+    {
+        if (! config('ai.file_attachments.enabled')) {
+            return [];
+        }
+
+        if (! $doc->openai_file_id || $doc->file_attachment_status !== 'uploaded') {
+            return [];
+        }
+
+        return [$doc->openai_file_id];
     }
 
     /**
