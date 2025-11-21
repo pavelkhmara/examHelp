@@ -1,0 +1,962 @@
+{
+  "exam": {
+    "title": "Egzamin Certyfikatowy z Języka Polskiego jako Obcego - B1",
+    "language_of_test": "Polish",
+    "level": "B1",
+    "provider": "Państwowa Komisja ds. Poświadczania Znajomości Języka Polskiego jako Obcego",
+    "family": "Polish State Certificate",
+    "description": "Official Polish language certificate exam at B1 (Threshold) level. Tests listening, reading, grammar, writing and speaking skills."
+  },
+  "sections": [
+    {
+      "key": "listening",
+      "name": "Rozumienie ze słuchu",
+      "skill": "listening",
+      "duration_min": 25,
+      "max_score": 30,
+      "description": "5 zadań testujących rozumienie ze słuchu",
+      "question_groups": [
+        {
+          "group_id": "listening-task-1",
+          "title": "Zadanie I",
+          "order": 1,
+          "instructions": {
+            "text_html": "<p>Proszę uważnie słuchać nagrania i wykonywać zadanie zgodnie z podanym przykładem.</p><p><strong>Uwaga!</strong> Nagranie zostanie odtworzone <u>tylko jeden raz</u>.</p>"
+          },
+          "stimulus": {
+            "audio": ["placeholder_listening_task_1.mp3"],
+            "text_html": "<p>Proszę zaznaczyć właściwe odpowiedzi.</p>"
+          },
+          "playback_settings": {
+            "max_plays": 1,
+            "enforcement": "strict"
+          },
+          "metadata": {
+            "total_points": 7,
+            "points_per_item": 0.5
+          },
+          "questions": [
+            {
+              "question_id": "L1-1",
+              "type": "single_select",
+              "order": 1,
+              "instructions": {"text_html": "Ta wypowiedź jest typowa"},
+              "interaction": {
+                "options": [
+                  {"id": "a", "label": "w kinie"},
+                  {"id": "b", "label": "w bibliotece"},
+                  {"id": "c", "label": "w księgarni"}
+                ]
+              },
+              "scoring": {"max_points": 0.5, "correct_answer": null}
+            },
+            {
+              "question_id": "L1-2",
+              "type": "single_select",
+              "order": 2,
+              "instructions": {"text_html": "Ta wypowiedź to fragment"},
+              "interaction": {
+                "options": [
+                  {"id": "a", "label": "wizyty u lekarza"},
+                  {"id": "b", "label": "egzaminu na prawo jazdy"},
+                  {"id": "c", "label": "rozmowy o pracę"}
+                ]
+              },
+              "scoring": {"max_points": 0.5, "correct_answer": null}
+            },
+            {
+              "question_id": "L1-3",
+              "type": "single_select",
+              "order": 3,
+              "instructions": {"text_html": "Ta wypowiedź oznacza"},
+              "interaction": {
+                "options": [
+                  {"id": "a", "label": "odmowę"},
+                  {"id": "b", "label": "niepewność"},
+                  {"id": "c", "label": "komplement"}
+                ]
+              },
+              "scoring": {"max_points": 0.5, "correct_answer": null}
+            },
+            {
+              "question_id": "L1-4",
+              "type": "single_select",
+              "order": 4,
+              "instructions": {"text_html": "Ta wypowiedź jest typowa"},
+              "interaction": {
+                "options": [
+                  {"id": "a", "label": "u fryzjera"},
+                  {"id": "b", "label": "w drogerii"},
+                  {"id": "c", "label": "u lekarza"}
+                ]
+              },
+              "scoring": {"max_points": 0.5, "correct_answer": null}
+            },
+            {
+              "question_id": "L1-5",
+              "type": "single_select",
+              "order": 5,
+              "instructions": {"text_html": "Ta wypowiedź oznacza"},
+              "interaction": {
+                "options": [
+                  {"id": "a", "label": "radę"},
+                  {"id": "b", "label": "prośbę"},
+                  {"id": "c", "label": "ofertę"}
+                ]
+              },
+              "scoring": {"max_points": 0.5, "correct_answer": null}
+            },
+            {
+              "question_id": "L1-6",
+              "type": "single_select",
+              "order": 6,
+              "instructions": {"text_html": "Ta wypowiedź jest typowa"},
+              "interaction": {
+                "options": [
+                  {"id": "a", "label": "w księgarni"},
+                  {"id": "b", "label": "u optyka"},
+                  {"id": "c", "label": "w kwiaciarni"}
+                ]
+              },
+              "scoring": {"max_points": 0.5, "correct_answer": null}
+            },
+            {
+              "question_id": "L1-7",
+              "type": "single_select",
+              "order": 7,
+              "instructions": {"text_html": "Ta wypowiedź jest typowa"},
+              "interaction": {
+                "options": [
+                  {"id": "a", "label": "w banku"},
+                  {"id": "b", "label": "w kinie"},
+                  {"id": "c", "label": "w kantorze"}
+                ]
+              },
+              "scoring": {"max_points": 0.5, "correct_answer": null}
+            },
+            {
+              "question_id": "L1-8",
+              "type": "single_select",
+              "order": 8,
+              "instructions": {"text_html": "Ta wypowiedź to fragment"},
+              "interaction": {
+                "options": [
+                  {"id": "a", "label": "diagnozy lekarza"},
+                  {"id": "b", "label": "prognozy pogody"},
+                  {"id": "c", "label": "rozmowy o pracę"}
+                ]
+              },
+              "scoring": {"max_points": 0.5, "correct_answer": null}
+            },
+            {
+              "question_id": "L1-9",
+              "type": "single_select",
+              "order": 9,
+              "instructions": {"text_html": "Ta wypowiedź to"},
+              "interaction": {
+                "options": [
+                  {"id": "a", "label": "życzenia ślubne"},
+                  {"id": "b", "label": "kondolencje"},
+                  {"id": "c", "label": "życzenia urodzinowe"}
+                ]
+              },
+              "scoring": {"max_points": 0.5, "correct_answer": null}
+            },
+            {
+              "question_id": "L1-10",
+              "type": "single_select",
+              "order": 10,
+              "instructions": {"text_html": "Ta wypowiedź to fragment audycji"},
+              "interaction": {
+                "options": [
+                  {"id": "a", "label": "o podróżach"},
+                  {"id": "b", "label": "o sporcie"},
+                  {"id": "c", "label": "o religii"}
+                ]
+              },
+              "scoring": {"max_points": 0.5, "correct_answer": null}
+            },
+            {
+              "question_id": "L1-11",
+              "type": "single_select",
+              "order": 11,
+              "instructions": {"text_html": "Ta wypowiedź oznacza"},
+              "interaction": {
+                "options": [
+                  {"id": "a", "label": "prośbę"},
+                  {"id": "b", "label": "propozycję"},
+                  {"id": "c", "label": "zakaz"}
+                ]
+              },
+              "scoring": {"max_points": 0.5, "correct_answer": null}
+            },
+            {
+              "question_id": "L1-12",
+              "type": "single_select",
+              "order": 12,
+              "instructions": {"text_html": "Ta wypowiedź jest typowa"},
+              "interaction": {
+                "options": [
+                  {"id": "a", "label": "w tramwaju"},
+                  {"id": "b", "label": "w kasie biletowej"},
+                  {"id": "c", "label": "w taksówce"}
+                ]
+              },
+              "scoring": {"max_points": 0.5, "correct_answer": null}
+            },
+            {
+              "question_id": "L1-13",
+              "type": "single_select",
+              "order": 13,
+              "instructions": {"text_html": "Ta wypowiedź dotyczy"},
+              "interaction": {
+                "options": [
+                  {"id": "a", "label": "ubioru"},
+                  {"id": "b", "label": "fryzury"},
+                  {"id": "c", "label": "makijażu"}
+                ]
+              },
+              "scoring": {"max_points": 0.5, "correct_answer": null}
+            },
+            {
+              "question_id": "L1-14",
+              "type": "single_select",
+              "order": 14,
+              "instructions": {"text_html": "Ta wypowiedź to fragment"},
+              "interaction": {
+                "options": [
+                  {"id": "a", "label": "relacji sportowej"},
+                  {"id": "b", "label": "charakterystyki"},
+                  {"id": "c", "label": "komunikatu policji"}
+                ]
+              },
+              "scoring": {"max_points": 0.5, "correct_answer": null}
+            }
+          ]
+        },
+        {
+          "group_id": "listening-task-2",
+          "title": "Zadanie II",
+          "order": 2,
+          "instructions": {
+            "text_html": "<p>Proszę uważnie słuchać nagrania i wykonywać zadanie zgodnie z podanym przykładem.</p><p><strong>Uwaga!</strong> Nagranie zostanie odtworzone <u>dwa razy</u>.</p><p>Dziennikarz rozmawia na temat akcji \"Torby bumerangi\". Proszę zaznaczyć: <strong>TAK</strong> – gdy zdanie jest zgodne z tekstem; <strong>NIE</strong> – gdy nie jest zgodne z tekstem.</p>"
+          },
+          "stimulus": {
+            "audio": ["placeholder_listening_task_2.mp3"]
+          },
+          "playback_settings": {
+            "max_plays": 2,
+            "enforcement": "strict"
+          },
+          "metadata": {
+            "total_points": 8,
+            "points_per_item": 1
+          },
+          "questions": [
+            {
+              "question_id": "L2-1",
+              "type": "true_false",
+              "order": 1,
+              "instructions": {"text_html": "Do tej pory niezbyt dużo sklepów bierze udział w akcji."},
+              "interaction": {
+                "options": [
+                  {"id": "tak", "label": "TAK"},
+                  {"id": "nie", "label": "NIE"}
+                ]
+              },
+              "scoring": {"max_points": 1, "correct_answer": null}
+            },
+            {
+              "question_id": "L2-2",
+              "type": "true_false",
+              "order": 2,
+              "instructions": {"text_html": "Akcja \"Torby bumerangi\" ma pomóc dbać o środowisko."},
+              "interaction": {
+                "options": [
+                  {"id": "tak", "label": "TAK"},
+                  {"id": "nie", "label": "NIE"}
+                ]
+              },
+              "scoring": {"max_points": 1, "correct_answer": null}
+            },
+            {
+              "question_id": "L2-3",
+              "type": "true_false",
+              "order": 3,
+              "instructions": {"text_html": "Włączenie się do projektu jest dosyć skomplikowane."},
+              "interaction": {
+                "options": [
+                  {"id": "tak", "label": "TAK"},
+                  {"id": "nie", "label": "NIE"}
+                ]
+              },
+              "scoring": {"max_points": 1, "correct_answer": null}
+            },
+            {
+              "question_id": "L2-4",
+              "type": "true_false",
+              "order": 4,
+              "instructions": {"text_html": "W projekcie wykorzystywane są tylko nowe torby."},
+              "interaction": {
+                "options": [
+                  {"id": "tak", "label": "TAK"},
+                  {"id": "nie", "label": "NIE"}
+                ]
+              },
+              "scoring": {"max_points": 1, "correct_answer": null}
+            },
+            {
+              "question_id": "L2-5",
+              "type": "true_false",
+              "order": 5,
+              "instructions": {"text_html": "Pomysł na zorganizowanie takiej akcji powstał poza Polską."},
+              "interaction": {
+                "options": [
+                  {"id": "tak", "label": "TAK"},
+                  {"id": "nie", "label": "NIE"}
+                ]
+              },
+              "scoring": {"max_points": 1, "correct_answer": null}
+            },
+            {
+              "question_id": "L2-6",
+              "type": "true_false",
+              "order": 6,
+              "instructions": {"text_html": "Czasami właściciele sklepów sami kontaktują się z organizatorami."},
+              "interaction": {
+                "options": [
+                  {"id": "tak", "label": "TAK"},
+                  {"id": "nie", "label": "NIE"}
+                ]
+              },
+              "scoring": {"max_points": 1, "correct_answer": null}
+            },
+            {
+              "question_id": "L2-7",
+              "type": "true_false",
+              "order": 7,
+              "instructions": {"text_html": "Przede wszystkim sklepy spożywcze zainteresowały się tą akcją."},
+              "interaction": {
+                "options": [
+                  {"id": "tak", "label": "TAK"},
+                  {"id": "nie", "label": "NIE"}
+                ]
+              },
+              "scoring": {"max_points": 1, "correct_answer": null}
+            },
+            {
+              "question_id": "L2-8",
+              "type": "true_false",
+              "order": 8,
+              "instructions": {"text_html": "Organizatorzy bali się, że torby nie będą wracały do koszy."},
+              "interaction": {
+                "options": [
+                  {"id": "tak", "label": "TAK"},
+                  {"id": "nie", "label": "NIE"}
+                ]
+              },
+              "scoring": {"max_points": 1, "correct_answer": null}
+            }
+          ]
+        },
+        {
+          "group_id": "listening-task-3",
+          "title": "Zadanie III",
+          "order": 3,
+          "instructions": {
+            "text_html": "<p>Proszę uważnie słuchać nagrania i wykonywać zadanie zgodnie z podanym przykładem.</p><p><strong>Uwaga!</strong> Nagranie zostanie odtworzone <u>dwa razy</u>.</p><p>Proszę wysłuchać informacji na temat nowego systemu informowania o zagrożeniach i zaznaczyć właściwe odpowiedzi.</p>"
+          },
+          "stimulus": {
+            "audio": ["placeholder_listening_task_3.mp3"]
+          },
+          "playback_settings": {
+            "max_plays": 2,
+            "enforcement": "strict"
+          },
+          "metadata": {
+            "total_points": 5,
+            "points_per_item": 1
+          },
+          "questions": [
+            {
+              "question_id": "L3-1",
+              "type": "single_select",
+              "order": 1,
+              "instructions": {"text_html": "Wiadomości alarmowe"},
+              "interaction": {
+                "options": [
+                  {"id": "a", "label": "przesyła policja i straż pożarna"},
+                  {"id": "b", "label": "powstają w Centrum Bezpieczeństwa"},
+                  {"id": "c", "label": "przygotowują operatorzy komórkowi"}
+                ]
+              },
+              "scoring": {"max_points": 1, "correct_answer": null}
+            },
+            {
+              "question_id": "L3-2",
+              "type": "single_select",
+              "order": 2,
+              "instructions": {"text_html": "Aby otrzymać wiadomość,"},
+              "interaction": {
+                "options": [
+                  {"id": "a", "label": "należy wpisać się na specjalną listę"},
+                  {"id": "b", "label": "trzeba zarejestrować się na stronie internetowej"},
+                  {"id": "c", "label": "nie trzeba robić niczego szczególnego"}
+                ]
+              },
+              "scoring": {"max_points": 1, "correct_answer": null}
+            },
+            {
+              "question_id": "L3-3",
+              "type": "single_select",
+              "order": 3,
+              "instructions": {"text_html": "System nie ostrzega przed"},
+              "interaction": {
+                "options": [
+                  {"id": "a", "label": "silnymi wiatrami"},
+                  {"id": "b", "label": "zmianami temperatury"},
+                  {"id": "c", "label": "niebezpiecznymi drogami"}
+                ]
+              },
+              "scoring": {"max_points": 1, "correct_answer": null}
+            },
+            {
+              "question_id": "L3-4",
+              "type": "single_select",
+              "order": 4,
+              "instructions": {"text_html": "Po przeczytaniu wiadomości należy"},
+              "interaction": {
+                "options": [
+                  {"id": "a", "label": "zrobić to, co jest w niej napisane"},
+                  {"id": "b", "label": "zadzwonić na numer nadawcy"},
+                  {"id": "c", "label": "uciekać tak szybko, jak to tylko możliwe"}
+                ]
+              },
+              "scoring": {"max_points": 1, "correct_answer": null}
+            },
+            {
+              "question_id": "L3-5",
+              "type": "single_select",
+              "order": 5,
+              "instructions": {"text_html": "System alarmowy"},
+              "interaction": {
+                "options": [
+                  {"id": "a", "label": "działa w Polsce od wielu lat"},
+                  {"id": "b", "label": "od niedawna źle funkcjonuje"},
+                  {"id": "c", "label": "może być oceniany przez Polaków"}
+                ]
+              },
+              "scoring": {"max_points": 1, "correct_answer": null}
+            }
+          ]
+        },
+        {
+          "group_id": "listening-task-4",
+          "title": "Zadanie IV",
+          "order": 4,
+          "instructions": {
+            "text_html": "<p>Proszę uważnie słuchać nagrania i wykonywać zadanie zgodnie z podanym przykładem.</p><p><strong>Uwaga!</strong> Nagranie zostanie odtworzone <u>dwa razy</u>.</p><p>Proszę wysłuchać tekstu na temat rozmów biznesowych i dopasować osoby (1-4) do ich rad (A-E).</p><p><strong>Uwaga!</strong> Jedna osoba może wypowiadać więcej niż jedną opinię.</p>"
+          },
+          "stimulus": {
+            "audio": ["placeholder_listening_task_4.mp3"]
+          },
+          "playback_settings": {
+            "max_plays": 2,
+            "enforcement": "strict"
+          },
+          "metadata": {
+            "total_points": 5,
+            "points_per_item": 1
+          },
+          "questions": [
+            {
+              "question_id": "L4-A",
+              "type": "single_select",
+              "order": 1,
+              "instructions": {"text_html": "mówi, że bardzo ważne jest słuchanie partnera"},
+              "interaction": {
+                "options": [
+                  {"id": "1", "label": "osoba 1"},
+                  {"id": "2", "label": "osoba 2"},
+                  {"id": "3", "label": "osoba 3"},
+                  {"id": "4", "label": "osoba 4"}
+                ]
+              },
+              "scoring": {"max_points": 1, "correct_answer": null}
+            },
+            {
+              "question_id": "L4-B",
+              "type": "single_select",
+              "order": 2,
+              "instructions": {"text_html": "uważa, że do sukcesu potrzebne jest poznanie rozmówcy"},
+              "interaction": {
+                "options": [
+                  {"id": "1", "label": "osoba 1"},
+                  {"id": "2", "label": "osoba 2"},
+                  {"id": "3", "label": "osoba 3"},
+                  {"id": "4", "label": "osoba 4"}
+                ]
+              },
+              "scoring": {"max_points": 1, "correct_answer": null}
+            },
+            {
+              "question_id": "L4-C",
+              "type": "single_select",
+              "order": 3,
+              "instructions": {"text_html": "zwraca uwagę na grzeczność i kulturę osobistą"},
+              "interaction": {
+                "options": [
+                  {"id": "1", "label": "osoba 1"},
+                  {"id": "2", "label": "osoba 2"},
+                  {"id": "3", "label": "osoba 3"},
+                  {"id": "4", "label": "osoba 4"}
+                ]
+              },
+              "scoring": {"max_points": 1, "correct_answer": null}
+            },
+            {
+              "question_id": "L4-D",
+              "type": "single_select",
+              "order": 4,
+              "instructions": {"text_html": "twierdzi, że czasem warto zmienić zdanie"},
+              "interaction": {
+                "options": [
+                  {"id": "1", "label": "osoba 1"},
+                  {"id": "2", "label": "osoba 2"},
+                  {"id": "3", "label": "osoba 3"},
+                  {"id": "4", "label": "osoba 4"}
+                ]
+              },
+              "scoring": {"max_points": 1, "correct_answer": null}
+            },
+            {
+              "question_id": "L4-E",
+              "type": "single_select",
+              "order": 5,
+              "instructions": {"text_html": "podkreśla, że nie należy bać się ciszy"},
+              "interaction": {
+                "options": [
+                  {"id": "1", "label": "osoba 1"},
+                  {"id": "2", "label": "osoba 2"},
+                  {"id": "3", "label": "osoba 3"},
+                  {"id": "4", "label": "osoba 4"}
+                ]
+              },
+              "scoring": {"max_points": 1, "correct_answer": null}
+            }
+          ]
+        },
+        {
+          "group_id": "listening-task-5",
+          "title": "Zadanie V",
+          "order": 5,
+          "instructions": {
+            "text_html": "<p>Proszę uważnie słuchać nagrania i wykonywać zadanie zgodnie z podanym przykładem.</p><p><strong>Uwaga!</strong> Nagranie zostanie odtworzone <u>dwa razy</u>.</p><p>Proszę wysłuchać tekstów o sposobach organizacji przeprowadzki i dopasować numer tekstu do ilustracji.</p>"
+          },
+          "stimulus": {
+            "audio": ["placeholder_listening_task_5.mp3"],
+            "images": [
+              "task5_img_A_tools.jpg",
+              "task5_img_B_marker.jpg",
+              "task5_img_C_toiletries.jpg",
+              "task5_img_D_truck_boxes.jpg",
+              "task5_img_E_boxes.jpg",
+              "task5_img_F_clothes.jpg",
+              "task5_img_G_dinner.jpg",
+              "task5_img_H_towels.jpg",
+              "task5_img_I_cleaning.jpg",
+              "task5_img_J_moving.jpg",
+              "task5_img_K_hands.jpg"
+            ]
+          },
+          "playback_settings": {
+            "max_plays": 2,
+            "enforcement": "strict"
+          },
+          "metadata": {
+            "total_points": 5,
+            "points_per_item": 0.5
+          },
+          "questions": [
+            {
+              "question_id": "L5-B",
+              "type": "text_input",
+              "order": 1,
+              "instructions": {"text_html": "B – [marker]"},
+              "scoring": {"max_points": 0.5, "correct_answer": null}
+            },
+            {
+              "question_id": "L5-C",
+              "type": "text_input",
+              "order": 2,
+              "instructions": {"text_html": "C – [toiletries]"},
+              "scoring": {"max_points": 0.5, "correct_answer": null}
+            },
+            {
+              "question_id": "L5-D",
+              "type": "text_input",
+              "order": 3,
+              "instructions": {"text_html": "D – [truck/boxes]"},
+              "scoring": {"max_points": 0.5, "correct_answer": null}
+            },
+            {
+              "question_id": "L5-E",
+              "type": "text_input",
+              "order": 4,
+              "instructions": {"text_html": "E – [boxes on pallet]"},
+              "scoring": {"max_points": 0.5, "correct_answer": null}
+            },
+            {
+              "question_id": "L5-F",
+              "type": "text_input",
+              "order": 5,
+              "instructions": {"text_html": "F – [clothes on hangers]"},
+              "scoring": {"max_points": 0.5, "correct_answer": null}
+            },
+            {
+              "question_id": "L5-G",
+              "type": "text_input",
+              "order": 6,
+              "instructions": {"text_html": "G – [dinner/food]"},
+              "scoring": {"max_points": 0.5, "correct_answer": null}
+            },
+            {
+              "question_id": "L5-H",
+              "type": "text_input",
+              "order": 7,
+              "instructions": {"text_html": "H – [towels]"},
+              "scoring": {"max_points": 0.5, "correct_answer": null}
+            },
+            {
+              "question_id": "L5-I",
+              "type": "text_input",
+              "order": 8,
+              "instructions": {"text_html": "I – [cleaning supplies]"},
+              "scoring": {"max_points": 0.5, "correct_answer": null}
+            },
+            {
+              "question_id": "L5-J",
+              "type": "text_input",
+              "order": 9,
+              "instructions": {"text_html": "J – [person carrying boxes]"},
+              "scoring": {"max_points": 0.5, "correct_answer": null}
+            },
+            {
+              "question_id": "L5-K",
+              "type": "text_input",
+              "order": 10,
+              "instructions": {"text_html": "K – [hands together]"},
+              "scoring": {"max_points": 0.5, "correct_answer": null}
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "key": "reading",
+      "name": "Rozumienie tekstów pisanych",
+      "skill": "reading",
+      "duration_min": 45,
+      "max_score": 30,
+      "description": "5 zadań testujących rozumienie tekstów pisanych",
+      "question_groups": [
+        {
+          "group_id": "reading-task-1",
+          "title": "Zadanie I",
+          "order": 1,
+          "instructions": {
+            "text_html": "<p>Proszę przeczytać fragmenty tekstów i – zgodnie z podanym przykładem – zaznaczyć właściwą odpowiedź.</p>"
+          },
+          "metadata": {
+            "total_points": 4,
+            "points_per_item": 1
+          },
+          "questions": [
+            {
+              "question_id": "R1-1",
+              "type": "single_select",
+              "order": 1,
+              "stimulus": {
+                "text_html": "<p>Jeśli masz ponad 30 lat i zarejestrowałeś się jako bezrobotny, możesz otrzymać pomoc finansową na otwarcie firmy. Projekt adresowany jest też do osób, które na rynku pracy znajdują się w trudnej sytuacji – są po 50. roku życia i mają niskie kwalifikacje.</p>"
+              },
+              "instructions": {"text_html": "Z tego tekstu wynika, że z projektu może skorzystać"},
+              "interaction": {
+                "options": [
+                  {"id": "a", "label": "każdy, kto chce otworzyć własną firmę"},
+                  {"id": "b", "label": "bezrobotny powyżej 30. roku życia"},
+                  {"id": "c", "label": "każda osoba bez wykształcenia"}
+                ]
+              },
+              "scoring": {"max_points": 1, "correct_answer": "b"}
+            },
+            {
+              "question_id": "R1-2",
+              "type": "single_select",
+              "order": 2,
+              "stimulus": {
+                "text_html": "<p>Od października działa nowy klub fitness. Przez pierwsze dwa tygodnie zajęcia grupowe prowadzone przez profesjonalnych instruktorów są bezpłatne. Do dyspozycji klientów jest też siłownia, szatnie z prysznicami i bufet.</p>"
+              },
+              "instructions": {"text_html": "Z tego tekstu wynika, że w klubie fitness"},
+              "interaction": {
+                "options": [
+                  {"id": "a", "label": "po zajęciach można się wykąpać"},
+                  {"id": "b", "label": "przez cały rok zajęcia są za darmo"},
+                  {"id": "c", "label": "popularni instruktorzy prowadzą bufet"}
+                ]
+              },
+              "scoring": {"max_points": 1, "correct_answer": "a"}
+            },
+            {
+              "question_id": "R1-3",
+              "type": "single_select",
+              "order": 3,
+              "stimulus": {
+                "text_html": "<p>Obraz Tamary Łempickiej \"La Musicienne\" został sprzedany w Nowym Jorku za blisko 9,1 mln dolarów (ponad 34 mln zł). Nikt nie myślał, że kwota będzie tak wysoka. Praca jest najdroższym w historii obrazem polskiego artysty.</p>"
+              },
+              "instructions": {"text_html": "Z tego tekstu wynika, że"},
+              "interaction": {
+                "options": [
+                  {"id": "a", "label": "\"La Musicienne\" to najdroższy obraz na świecie"},
+                  {"id": "b", "label": "cena obrazu była dla wszystkich zaskoczeniem"},
+                  {"id": "c", "label": "obraz kupił amerykański biznesmen"}
+                ]
+              },
+              "scoring": {"max_points": 1, "correct_answer": "b"}
+            },
+            {
+              "question_id": "R1-4",
+              "type": "single_select",
+              "order": 4,
+              "stimulus": {
+                "text_html": "<p>Już trzeci raz w rankingu gazety \"Rzeczpospolita\" najlepszą polską uczelnią ekonomiczną została Szkoła Główna Handlowa w Warszawie. W tegorocznym konkursie brało udział sześć uniwersytetów i 28 wydziałów.</p>"
+              },
+              "instructions": {"text_html": "Z tego tekstu wynika, że"},
+              "interaction": {
+                "options": [
+                  {"id": "a", "label": "w rankingu znalazło się 28 uczelni z całej Polski"},
+                  {"id": "b", "label": "konkurs zorganizowały szkoły wyższe i media"},
+                  {"id": "c", "label": "Szkoła Główna Handlowa niejednokrotnie wygrała ten konkurs"}
+                ]
+              },
+              "scoring": {"max_points": 1, "correct_answer": "c"}
+            }
+          ]
+        },
+        {
+          "group_id": "reading-task-2",
+          "title": "Zadanie II",
+          "order": 2,
+          "instructions": {
+            "text_html": "<p>Proszę przeczytać tekst, a następnie – jak w przykładzie – zaznaczyć: <strong>TAK</strong> – gdy zdanie jest zgodne z tekstem; <strong>NIE</strong> – gdy nie jest zgodne z tekstem.</p>"
+          },
+          "stimulus": {
+            "text_html": "<h4>Spóźniony samolot</h4><p>W jaki sposób starać się o zwrot pieniędzy za bilet, kiedy nasz samolot się spóźnił lub w ogóle nie poleciał? Jedna z linii lotniczych podała informację, że w pierwszej połowie 2016 roku aż 256 jej lotów było opóźnionych o więcej niż 3 godziny. W takiej sytuacji, zgodnie z prawem Unii Europejskiej, pasażerowie mogą dostać zwrot pieniędzy za lot.</p><p>– Trudno znaleźć dokładne statystyki spóźnionych samolotów, bo takich informacji nie podają linie lotnicze. To nie jest dla nich wygodne, aby pasażerowie mogli korzystać ze swoich praw – mówi adwokat Marcin Maciejewski.</p><p>Według przepisów pasażer ma prawo do zwrotu pieniędzy, jeżeli rejs został odwołany na krócej niż 14 dni przed wylotem lub jest opóźniony o ponad 3 godziny. To, ile linie lotnicze nam zwrócą, zależy od długości lotu i może to być nawet 600 euro.</p><p>– Pasażerowie często rezygnują i nie starają się o zwrot pieniędzy w przypadku spóźnionego lub anulowanego samolotu. Mówią, że to skomplikowane, nie znają prawa i muszą wypełnić dużo dokumentów – zauważa Maciejewski.</p><p>Dlatego też szybko rozwijają się firmy, które pomagają pasażerom w otrzymaniu zwrotu pieniędzy. – Klient przekazuje nam skany dokumentów, podpisuje umowę i czeka na przelew, a sprawą zajmuje się wyspecjalizowana firma – mówi jeden z pracowników.</p>"
+          },
+          "metadata": {
+            "total_points": 7,
+            "points_per_item": 1
+          },
+          "questions": [
+            {
+              "question_id": "R2-1",
+              "type": "true_false",
+              "order": 1,
+              "instructions": {"text_html": "W ciągu pół roku 256 lotów jednej z linii lotniczych było opóźnionych o ponad 3 godziny."},
+              "interaction": {
+                "options": [
+                  {"id": "tak", "label": "TAK"},
+                  {"id": "nie", "label": "NIE"}
+                ]
+              },
+              "scoring": {"max_points": 1, "correct_answer": "tak"}
+            },
+            {
+              "question_id": "R2-2",
+              "type": "true_false",
+              "order": 2,
+              "instructions": {"text_html": "Według przepisów pasażerowie mogą otrzymać pieniądze za opóźniony lub odwołany lot."},
+              "interaction": {
+                "options": [
+                  {"id": "tak", "label": "TAK"},
+                  {"id": "nie", "label": "NIE"}
+                ]
+              },
+              "scoring": {"max_points": 1, "correct_answer": "tak"}
+            },
+            {
+              "question_id": "R2-3",
+              "type": "true_false",
+              "order": 3,
+              "instructions": {"text_html": "Linie lotnicze regularnie publikują dane dotyczące faktycznych godzin lądowania ich samolotów."},
+              "interaction": {
+                "options": [
+                  {"id": "tak", "label": "TAK"},
+                  {"id": "nie", "label": "NIE"}
+                ]
+              },
+              "scoring": {"max_points": 1, "correct_answer": "nie"}
+            },
+            {
+              "question_id": "R2-4",
+              "type": "true_false",
+              "order": 4,
+              "instructions": {"text_html": "Pieniądze za bilet mogą być zwrócone, jeśli lot odwołano na przykład tydzień przed wylotem."},
+              "interaction": {
+                "options": [
+                  {"id": "tak", "label": "TAK"},
+                  {"id": "nie", "label": "NIE"}
+                ]
+              },
+              "scoring": {"max_points": 1, "correct_answer": "tak"}
+            },
+            {
+              "question_id": "R2-5",
+              "type": "true_false",
+              "order": 5,
+              "instructions": {"text_html": "Za anulowanie każdego biletu z winy linii lotniczych pasażerowie dostają 600 euro."},
+              "interaction": {
+                "options": [
+                  {"id": "tak", "label": "TAK"},
+                  {"id": "nie", "label": "NIE"}
+                ]
+              },
+              "scoring": {"max_points": 1, "correct_answer": "nie"}
+            },
+            {
+              "question_id": "R2-6",
+              "type": "true_false",
+              "order": 6,
+              "instructions": {"text_html": "Formularze o zwrot kosztów pasażerowie wypełniają zazwyczaj starannie i szybko."},
+              "interaction": {
+                "options": [
+                  {"id": "tak", "label": "TAK"},
+                  {"id": "nie", "label": "NIE"}
+                ]
+              },
+              "scoring": {"max_points": 1, "correct_answer": "nie"}
+            },
+            {
+              "question_id": "R2-7",
+              "type": "true_false",
+              "order": 7,
+              "instructions": {"text_html": "Pasażerowie mogą liczyć na pomoc specjalnych firm, jeśli chcą dostać pieniądze od linii lotniczych."},
+              "interaction": {
+                "options": [
+                  {"id": "tak", "label": "TAK"},
+                  {"id": "nie", "label": "NIE"}
+                ]
+              },
+              "scoring": {"max_points": 1, "correct_answer": "tak"}
+            }
+          ]
+        },
+        {
+          "group_id": "reading-task-3",
+          "title": "Zadanie III",
+          "order": 3,
+          "instructions": {
+            "text_html": "<p>Proszę przeczytać tekst i – zgodnie z przykładem – dopasować usunięte z niego fragmenty (A – I).</p>"
+          },
+          "stimulus": {
+            "text_html": "<p><em>*Jarmark - impreza, podczas której można kupić i sprzedać różne rzeczy</em></p><p>Słynny na cały świat Jarmark* Dominikański w Gdańsku ma bardzo długą tradycję, [__B__]<sup>PRZYKŁAD</sup>. Z historii możemy się dowiedzieć, że w XVI wieku jarmark odbywał się w sierpniu [______]<sup>1</sup>. Z tej okazji na cały ten czas do Gdańska przyjeżdżali sprzedawcy z całej Europy, a razem z nimi grupy artystów ulicznych, [______]<sup>2</sup>. Do miasta przypływały również wielkie statki z winem francuskim i hiszpańskim, jedwabiem, oliwą, cytrynami, konfiturami i egzotycznymi przyprawami. Przez wiele wieków było to każdego roku wielkie święto miasta [______]<sup>3</sup>. Powrócono do niej w 1972 roku, ale wówczas jarmark stał się imprezą wyłącznie handlową, umożliwiającą kupowanie produktów, [______]<sup>4</sup>.</p><p>Dzisiaj jarmark jest główną atrakcją turystyczną Gdańska. Jest to największa impreza handlowo-kulturalna w Polsce, [______]<sup>5</sup>, kolorowa i pełna życia. Turyści z całego świata przyjeżdżają chętnie w sezonie letnim, [______]<sup>6</sup>. Jedni – pyszne regionalne jedzenie: sery, wędliny, ciasta oraz kawę i różne rodzaje herbaty. Inni – spektakle i koncerty. Ludzie kupują, [______]<sup>7</sup>, a dla dzieci organizowane są atrakcyjne warsztaty, gry i zabawy. W czasie jarmarku nigdy nie jest nudno, [______]<sup>8</sup>. Dookoła słychać radosny śmiech najmłodszych, rozmowy w wielu językach, muzykę dobiegającą ze sceny. Obecnie Jarmark Dominikański rozpoczyna się zawsze w ostatnią sobotę lipca i trwa 23 dni.</p>",
+            "options_html": "<table><tr><td>A</td><td>którzy bawili gości</td></tr><tr><td>B</td><td><strong>PRZYKŁAD</strong><br/>bo pierwszy raz odbył się w 1260 roku</td></tr><tr><td>C</td><td>a jednocześnie jedna z największych w Europie</td></tr><tr><td>D</td><td>bo tutaj każdy znajduje coś dla siebie</td></tr><tr><td>E</td><td>i dopiero druga wojna światowa przerwała tę tradycję</td></tr><tr><td>F</td><td>których brakowało w tamtym czasie w sklepach</td></tr><tr><td>G</td><td>bo wszędzie coś się dzieje</td></tr><tr><td>H</td><td>i trwał czternaście dni</td></tr><tr><td>I</td><td>słuchają muzyki, robią pamiątkowe fotografie</td></tr></table>"
+          },
+          "metadata": {
+            "total_points": 8,
+            "points_per_item": 1
+          },
+          "questions": [
+            {"question_id": "R3-1", "type": "text_input", "order": 1, "instructions": {"text_html": "Luka 1"}, "scoring": {"max_points": 1, "correct_answer": "H"}},
+            {"question_id": "R3-2", "type": "text_input", "order": 2, "instructions": {"text_html": "Luka 2"}, "scoring": {"max_points": 1, "correct_answer": "A"}},
+            {"question_id": "R3-3", "type": "text_input", "order": 3, "instructions": {"text_html": "Luka 3"}, "scoring": {"max_points": 1, "correct_answer": "E"}},
+            {"question_id": "R3-4", "type": "text_input", "order": 4, "instructions": {"text_html": "Luka 4"}, "scoring": {"max_points": 1, "correct_answer": "F"}},
+            {"question_id": "R3-5", "type": "text_input", "order": 5, "instructions": {"text_html": "Luka 5"}, "scoring": {"max_points": 1, "correct_answer": "C"}},
+            {"question_id": "R3-6", "type": "text_input", "order": 6, "instructions": {"text_html": "Luka 6"}, "scoring": {"max_points": 1, "correct_answer": "D"}},
+            {"question_id": "R3-7", "type": "text_input", "order": 7, "instructions": {"text_html": "Luka 7"}, "scoring": {"max_points": 1, "correct_answer": "I"}},
+            {"question_id": "R3-8", "type": "text_input", "order": 8, "instructions": {"text_html": "Luka 8"}, "scoring": {"max_points": 1, "correct_answer": "G"}}
+          ]
+        },
+        {
+          "group_id": "reading-task-4",
+          "title": "Zadanie IV",
+          "order": 4,
+          "instructions": {
+            "text_html": "<p>Proszę – zgodnie z przykładem – połączyć tytuły z kolumny I z fragmentami tekstów z kolumny II.</p><h4>Jak polubić sprzątanie?</h4>"
+          },
+          "stimulus": {
+            "text_html": "<p><strong>Kolumna I (tytuły):</strong></p><ol><li>Ważny jest cel</li><li>Odpowiedni czas</li><li>Najpierw to, co dla ciebie ważne</li><li>Małe kroki</li><li>Dobry sprzęt i środki czystości</li><li>Wykorzystaj czas</li></ol><p><strong>Kolumna II (fragmenty):</strong></p><p>A - Sprzątaj wtedy, kiedy masz na to ochotę...</p><p>B - To klucz do tego, by polubić porządki...</p><p>C - Jedną z najsmutniejszych rzeczy przy sprzątaniu jest brak szybkich efektów...</p><p>D - Uporządkowanie jednej półki czy szuflady brzmi mniej strasznie...</p><p>E - Szkoda ci czasu na porządki? Podczas sprzątania możesz słuchać muzyki...</p><p>F - Lubisz książki – wyczyść je i poukładaj np. kolorami...</p><p>G - To, dlaczego sprzątamy, jest najważniejsze...</p>"
+          },
+          "metadata": {
+            "total_points": 6,
+            "points_per_item": 1
+          },
+          "questions": [
+            {"question_id": "R4-1", "type": "single_select", "order": 1, "instructions": {"text_html": "1. Ważny jest cel"}, "interaction": {"options": [{"id": "A", "label": "A"}, {"id": "B", "label": "B"}, {"id": "C", "label": "C"}, {"id": "D", "label": "D"}, {"id": "E", "label": "E"}, {"id": "F", "label": "F"}, {"id": "G", "label": "G"}]}, "scoring": {"max_points": 1, "correct_answer": "G"}},
+            {"question_id": "R4-2", "type": "single_select", "order": 2, "instructions": {"text_html": "2. Odpowiedni czas"}, "interaction": {"options": [{"id": "A", "label": "A"}, {"id": "B", "label": "B"}, {"id": "C", "label": "C"}, {"id": "D", "label": "D"}, {"id": "E", "label": "E"}, {"id": "F", "label": "F"}, {"id": "G", "label": "G"}]}, "scoring": {"max_points": 1, "correct_answer": "A"}},
+            {"question_id": "R4-3", "type": "single_select", "order": 3, "instructions": {"text_html": "3. Najpierw to, co dla ciebie ważne"}, "interaction": {"options": [{"id": "A", "label": "A"}, {"id": "B", "label": "B"}, {"id": "C", "label": "C"}, {"id": "D", "label": "D"}, {"id": "E", "label": "E"}, {"id": "F", "label": "F"}, {"id": "G", "label": "G"}]}, "scoring": {"max_points": 1, "correct_answer": "F"}},
+            {"question_id": "R4-4", "type": "single_select", "order": 4, "instructions": {"text_html": "4. Małe kroki"}, "interaction": {"options": [{"id": "A", "label": "A"}, {"id": "B", "label": "B"}, {"id": "C", "label": "C"}, {"id": "D", "label": "D"}, {"id": "E", "label": "E"}, {"id": "F", "label": "F"}, {"id": "G", "label": "G"}]}, "scoring": {"max_points": 1, "correct_answer": "D"}},
+            {"question_id": "R4-5", "type": "single_select", "order": 5, "instructions": {"text_html": "5. Dobry sprzęt i środki czystości"}, "interaction": {"options": [{"id": "A", "label": "A"}, {"id": "B", "label": "B"}, {"id": "C", "label": "C"}, {"id": "D", "label": "D"}, {"id": "E", "label": "E"}, {"id": "F", "label": "F"}, {"id": "G", "label": "G"}]}, "scoring": {"max_points": 1, "correct_answer": "C"}},
+            {"question_id": "R4-6", "type": "single_select", "order": 6, "instructions": {"text_html": "6. Wykorzystaj czas"}, "interaction": {"options": [{"id": "A", "label": "A"}, {"id": "B", "label": "B"}, {"id": "C", "label": "C"}, {"id": "D", "label": "D"}, {"id": "E", "label": "E"}, {"id": "F", "label": "F"}, {"id": "G", "label": "G"}]}, "scoring": {"max_points": 1, "correct_answer": "E"}}
+          ]
+        },
+        {
+          "group_id": "reading-task-5",
+          "title": "Zadanie V",
+          "order": 5,
+          "instructions": {
+            "text_html": "<p>Proszę – zgodnie z przykładem – uzupełnić tekst wyrazami z ramki.</p>"
+          },
+          "stimulus": {
+            "text_html": "<p><strong>Wyrazy:</strong> pojawiło się, częścią, wysokie, nowych, zorganizować, mieszkańców, książkę, młodzieży, wolność, przyłączyło się, popularne</p><p>Akcja \"Majewskich posadzili\" jest <strong>częścią</strong><sup>PRZYKŁAD</sup> kampanii, którą prowadzi fundacja \"Zmiana\". W polskich więzieniach nie ma ______<sup>1</sup>, wydanych w ostatnim czasie książek. Powód jest prosty – ich ceny są za ______<sup>2</sup>. Dlatego grupa fanów literatury postanowiła ______<sup>3</sup> zbiórkę...</p>"
+          },
+          "metadata": {
+            "total_points": 5,
+            "points_per_item": 0.5
+          },
+          "questions": [
+            {"question_id": "R5-1", "type": "text_input", "order": 1, "instructions": {"text_html": "Luka 1"}, "scoring": {"max_points": 0.5, "correct_answer": "nowych"}},
+            {"question_id": "R5-2", "type": "text_input", "order": 2, "instructions": {"text_html": "Luka 2"}, "scoring": {"max_points": 0.5, "correct_answer": "wysokie"}},
+            {"question_id": "R5-3", "type": "text_input", "order": 3, "instructions": {"text_html": "Luka 3"}, "scoring": {"max_points": 0.5, "correct_answer": "zorganizować"}},
+            {"question_id": "R5-4", "type": "text_input", "order": 4, "instructions": {"text_html": "Luka 4"}, "scoring": {"max_points": 0.5, "correct_answer": "mieszkańców"}},
+            {"question_id": "R5-5", "type": "text_input", "order": 5, "instructions": {"text_html": "Luka 5"}, "scoring": {"max_points": 0.5, "correct_answer": "popularne"}},
+            {"question_id": "R5-6", "type": "text_input", "order": 6, "instructions": {"text_html": "Luka 6"}, "scoring": {"max_points": 0.5, "correct_answer": "wolność"}},
+            {"question_id": "R5-7", "type": "text_input", "order": 7, "instructions": {"text_html": "Luka 7"}, "scoring": {"max_points": 0.5, "correct_answer": "młodzieży"}},
+            {"question_id": "R5-8", "type": "text_input", "order": 8, "instructions": {"text_html": "Luka 8"}, "scoring": {"max_points": 0.5, "correct_answer": "książkę"}},
+            {"question_id": "R5-9", "type": "text_input", "order": 9, "instructions": {"text_html": "Luka 9"}, "scoring": {"max_points": 0.5, "correct_answer": "przyłączyło się"}},
+            {"question_id": "R5-10", "type": "text_input", "order": 10, "instructions": {"text_html": "Luka 10"}, "scoring": {"max_points": 0.5, "correct_answer": "pojawiło się"}}
+          ]
+        }
+      ]
+    },
+    {
+      "key": "grammar",
+      "name": "Poprawność gramatyczna",
+      "skill": "grammar",
+      "duration_min": 45,
+      "max_score": 30,
+      "description": "8 zadań testujących poprawność gramatyczną"
+    },
+    {
+      "key": "writing",
+      "name": "Pisanie",
+      "skill": "writing",
+      "duration_min": 75,
+      "max_score": 30,
+      "description": "Część pisemna - wybór 1 z 3 zestawów, każdy zawiera 2 zadania (krótkie i dłuższe)"
+    },
+    {
+      "key": "speaking",
+      "name": "Mówienie",
+      "skill": "speaking",
+      "duration_min": 15,
+      "max_score": 40,
+      "description": "Część ustna - 3 zadania: opis fotografii, monolog, sytuacja komunikacyjna"
+    }
+  ],
+  "_meta": {
+    "source": "docs/samples/documents/real_exams_examples/pl_B1.pdf",
+    "created_at": "2025-11-21",
+    "total_points": 160,
+    "note": "Reference exam fixture - correct_answer fields for listening tasks are null as they depend on audio content"
+  }
+}

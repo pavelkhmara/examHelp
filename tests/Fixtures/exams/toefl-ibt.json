@@ -1,0 +1,1232 @@
+{
+  "exam": {
+    "title": "TOEFL iBT",
+    "language_of_test": "en",
+    "level": "B2",
+    "provider": "ETS",
+    "family": "TOEFL",
+    "description": "Test of English as a Foreign Language - Internet-based Test for academic English proficiency"
+  },
+  "sections": [
+    {
+      "key": "reading",
+      "name": "Reading",
+      "skill": "reading",
+      "duration_min": 36,
+      "max_score": 30,
+      "description": "2 passages, 10 questions each. Academic texts from university-level materials.",
+      "question_groups": [
+        {
+          "group_id": "reading-passage-1",
+          "title": "Passage 1 - Natural Sciences",
+          "order": 1,
+          "instructions": {
+            "text": "Read the passage and answer the questions.",
+            "language": "en"
+          },
+          "stimulus": {
+            "text_html": "<h3>The Formation of Coral Reefs</h3><p>Coral reefs are among the most biologically diverse ecosystems on Earth, supporting approximately 25% of all marine species despite covering less than 1% of the ocean floor. These remarkable structures are built by colonies of tiny animals called coral polyps...</p><p>[Full passage approximately 700 words about coral reef formation, types, and ecological importance]</p>"
+          },
+          "metadata": {
+            "total_points": 10,
+            "suggested_time_sec": 1080
+          },
+          "questions": [
+            {
+              "question_id": "TOEFL-R1-1",
+              "type": "single_select",
+              "order": 1,
+              "instructions": {"text": "Choose the best answer."},
+              "stimulus": {"text_html": "<p>According to paragraph 1, coral reefs are significant because they</p>"},
+              "interaction": {
+                "options": [
+                  {"id": "A", "text": "are the largest structures built by living organisms"},
+                  {"id": "B", "text": "support a disproportionately large number of marine species"},
+                  {"id": "C", "text": "are found in all of the world's oceans"},
+                  {"id": "D", "text": "have existed for millions of years unchanged"}
+                ]
+              },
+              "scoring": {"max_points": 1, "correct_answer": "B"}
+            },
+            {
+              "question_id": "TOEFL-R1-2",
+              "type": "single_select",
+              "order": 2,
+              "instructions": {"text": "Choose the best answer."},
+              "stimulus": {"text_html": "<p>The word \"remarkable\" in paragraph 1 is closest in meaning to</p>"},
+              "interaction": {
+                "options": [
+                  {"id": "A", "text": "unusual"},
+                  {"id": "B", "text": "impressive"},
+                  {"id": "C", "text": "ancient"},
+                  {"id": "D", "text": "fragile"}
+                ]
+              },
+              "scoring": {"max_points": 1, "correct_answer": "B"}
+            },
+            {
+              "question_id": "TOEFL-R1-3",
+              "type": "single_select",
+              "order": 3,
+              "instructions": {"text": "Choose the best answer."},
+              "stimulus": {"text_html": "<p>Which of the following best expresses the essential information in the highlighted sentence?</p>"},
+              "interaction": {
+                "options": [
+                  {"id": "A", "text": "Coral polyps require specific conditions to survive"},
+                  {"id": "B", "text": "Symbiotic algae are essential for coral reef formation"},
+                  {"id": "C", "text": "Coral reefs can only form in tropical waters"},
+                  {"id": "D", "text": "The relationship between corals and algae is complex"}
+                ]
+              },
+              "scoring": {"max_points": 1, "correct_answer": "B"}
+            },
+            {
+              "question_id": "TOEFL-R1-4",
+              "type": "single_select",
+              "order": 4,
+              "instructions": {"text": "Choose the best answer."},
+              "stimulus": {"text_html": "<p>According to the passage, fringing reefs differ from barrier reefs in that fringing reefs</p>"},
+              "interaction": {
+                "options": [
+                  {"id": "A", "text": "are larger and more diverse"},
+                  {"id": "B", "text": "form directly along coastlines"},
+                  {"id": "C", "text": "are found only in the Pacific Ocean"},
+                  {"id": "D", "text": "take longer to develop"}
+                ]
+              },
+              "scoring": {"max_points": 1, "correct_answer": "B"}
+            },
+            {
+              "question_id": "TOEFL-R1-5",
+              "type": "single_select",
+              "order": 5,
+              "instructions": {"text": "Choose the best answer."},
+              "stimulus": {"text_html": "<p>The author mentions atolls in paragraph 3 in order to</p>"},
+              "interaction": {
+                "options": [
+                  {"id": "A", "text": "explain Darwin's theory of reef formation"},
+                  {"id": "B", "text": "contrast them with other reef types"},
+                  {"id": "C", "text": "describe the most common type of reef"},
+                  {"id": "D", "text": "illustrate the long-term development of reef structures"}
+                ]
+              },
+              "scoring": {"max_points": 1, "correct_answer": "D"}
+            },
+            {
+              "question_id": "TOEFL-R1-6",
+              "type": "single_select",
+              "order": 6,
+              "instructions": {"text": "Choose the best answer."},
+              "stimulus": {"text_html": "<p>The word \"they\" in paragraph 4 refers to</p>"},
+              "interaction": {
+                "options": [
+                  {"id": "A", "text": "coral polyps"},
+                  {"id": "B", "text": "reef structures"},
+                  {"id": "C", "text": "marine species"},
+                  {"id": "D", "text": "ocean temperatures"}
+                ]
+              },
+              "scoring": {"max_points": 1, "correct_answer": "A"}
+            },
+            {
+              "question_id": "TOEFL-R1-7",
+              "type": "single_select",
+              "order": 7,
+              "instructions": {"text": "Choose the best answer."},
+              "stimulus": {"text_html": "<p>What can be inferred about coral bleaching from paragraph 5?</p>"},
+              "interaction": {
+                "options": [
+                  {"id": "A", "text": "It is a natural and harmless process"},
+                  {"id": "B", "text": "It indicates stress in coral populations"},
+                  {"id": "C", "text": "It only occurs in shallow water reefs"},
+                  {"id": "D", "text": "It makes coral more resistant to disease"}
+                ]
+              },
+              "scoring": {"max_points": 1, "correct_answer": "B"}
+            },
+            {
+              "question_id": "TOEFL-R1-8",
+              "type": "insert_text",
+              "order": 8,
+              "instructions": {"text": "Look at the four squares [■] that indicate where the following sentence could be added to the passage."},
+              "stimulus": {"text_html": "<p><strong>Sentence to insert:</strong> This symbiotic relationship is crucial for the reef's survival.</p><p>Where would the sentence best fit?</p>"},
+              "interaction": {
+                "options": [
+                  {"id": "A", "text": "Square A"},
+                  {"id": "B", "text": "Square B"},
+                  {"id": "C", "text": "Square C"},
+                  {"id": "D", "text": "Square D"}
+                ]
+              },
+              "scoring": {"max_points": 1, "correct_answer": "B"}
+            },
+            {
+              "question_id": "TOEFL-R1-9",
+              "type": "single_select",
+              "order": 9,
+              "instructions": {"text": "Choose the best answer."},
+              "stimulus": {"text_html": "<p>Which of the following statements about coral reefs is NOT supported by the passage?</p>"},
+              "interaction": {
+                "options": [
+                  {"id": "A", "text": "They grow slowly over thousands of years"},
+                  {"id": "B", "text": "They require warm, clear water to thrive"},
+                  {"id": "C", "text": "They are immune to human-caused damage"},
+                  {"id": "D", "text": "They provide habitat for many fish species"}
+                ]
+              },
+              "scoring": {"max_points": 1, "correct_answer": "C"}
+            },
+            {
+              "question_id": "TOEFL-R1-10",
+              "type": "prose_summary",
+              "order": 10,
+              "instructions": {"text": "Select 3 answer choices that express the most important ideas in the passage. Some choices are incorrect because they express minor ideas or are not in the passage."},
+              "stimulus": {"text_html": "<p><strong>Introductory sentence:</strong> Coral reefs are complex marine ecosystems with unique formation processes.</p>"},
+              "interaction": {
+                "options": [
+                  {"id": "A", "text": "Coral reefs support an enormous variety of marine life relative to their size"},
+                  {"id": "B", "text": "Charles Darwin was the first scientist to study coral reefs"},
+                  {"id": "C", "text": "The symbiotic relationship between corals and algae is essential for reef growth"},
+                  {"id": "D", "text": "Coral reefs are found only in the Southern Hemisphere"},
+                  {"id": "E", "text": "Different types of reefs form through distinct geological processes"},
+                  {"id": "F", "text": "Coral polyps are the largest animals in the ocean"}
+                ],
+                "select_count": 3
+              },
+              "scoring": {"max_points": 2, "correct_answers": ["A", "C", "E"]}
+            }
+          ]
+        },
+        {
+          "group_id": "reading-passage-2",
+          "title": "Passage 2 - Social Sciences",
+          "order": 2,
+          "instructions": {
+            "text": "Read the passage and answer the questions.",
+            "language": "en"
+          },
+          "stimulus": {
+            "text_html": "<h3>The Development of Writing Systems</h3><p>The invention of writing is considered one of the most significant achievements in human history, marking the transition from prehistory to history. The earliest writing systems emerged independently in several regions of the world...</p><p>[Full passage approximately 700 words about cuneiform, hieroglyphics, and alphabet development]</p>"
+          },
+          "metadata": {
+            "total_points": 10,
+            "suggested_time_sec": 1080
+          },
+          "questions": [
+            {
+              "question_id": "TOEFL-R2-1",
+              "type": "single_select",
+              "order": 1,
+              "instructions": {"text": "Choose the best answer."},
+              "stimulus": {"text_html": "<p>What is the main purpose of this passage?</p>"},
+              "interaction": {
+                "options": [
+                  {"id": "A", "text": "To compare ancient and modern writing systems"},
+                  {"id": "B", "text": "To trace the historical development of writing"},
+                  {"id": "C", "text": "To argue that one writing system is superior to others"},
+                  {"id": "D", "text": "To explain why alphabetic writing became dominant"}
+                ]
+              },
+              "scoring": {"max_points": 1, "correct_answer": "B"}
+            },
+            {
+              "question_id": "TOEFL-R2-2",
+              "type": "single_select",
+              "order": 2,
+              "instructions": {"text": "Choose the best answer."},
+              "stimulus": {"text_html": "<p>According to paragraph 1, the earliest writing systems were developed primarily for</p>"},
+              "interaction": {
+                "options": [
+                  {"id": "A", "text": "religious ceremonies"},
+                  {"id": "B", "text": "recording economic transactions"},
+                  {"id": "C", "text": "preserving literary works"},
+                  {"id": "D", "text": "communicating with distant communities"}
+                ]
+              },
+              "scoring": {"max_points": 1, "correct_answer": "B"}
+            },
+            {
+              "question_id": "TOEFL-R2-3",
+              "type": "single_select",
+              "order": 3,
+              "instructions": {"text": "Choose the best answer."},
+              "stimulus": {"text_html": "<p>The word \"emerged\" in paragraph 1 is closest in meaning to</p>"},
+              "interaction": {
+                "options": [
+                  {"id": "A", "text": "appeared"},
+                  {"id": "B", "text": "survived"},
+                  {"id": "C", "text": "spread"},
+                  {"id": "D", "text": "improved"}
+                ]
+              },
+              "scoring": {"max_points": 1, "correct_answer": "A"}
+            },
+            {
+              "question_id": "TOEFL-R2-4",
+              "type": "single_select",
+              "order": 4,
+              "instructions": {"text": "Choose the best answer."},
+              "stimulus": {"text_html": "<p>The author discusses Sumerian cuneiform in paragraph 2 in order to</p>"},
+              "interaction": {
+                "options": [
+                  {"id": "A", "text": "show how complex early writing could be"},
+                  {"id": "B", "text": "explain why it was eventually abandoned"},
+                  {"id": "C", "text": "demonstrate its influence on later systems"},
+                  {"id": "D", "text": "provide an example of the earliest known writing"}
+                ]
+              },
+              "scoring": {"max_points": 1, "correct_answer": "D"}
+            },
+            {
+              "question_id": "TOEFL-R2-5",
+              "type": "single_select",
+              "order": 5,
+              "instructions": {"text": "Choose the best answer."},
+              "stimulus": {"text_html": "<p>What does the passage suggest about the relationship between Egyptian hieroglyphics and Sumerian cuneiform?</p>"},
+              "interaction": {
+                "options": [
+                  {"id": "A", "text": "Hieroglyphics were directly copied from cuneiform"},
+                  {"id": "B", "text": "They developed completely independently"},
+                  {"id": "C", "text": "Cuneiform may have inspired the concept of writing in Egypt"},
+                  {"id": "D", "text": "Both systems used identical symbols"}
+                ]
+              },
+              "scoring": {"max_points": 1, "correct_answer": "C"}
+            },
+            {
+              "question_id": "TOEFL-R2-6",
+              "type": "single_select",
+              "order": 6,
+              "instructions": {"text": "Choose the best answer."},
+              "stimulus": {"text_html": "<p>According to paragraph 4, the Phoenician alphabet was significant because it</p>"},
+              "interaction": {
+                "options": [
+                  {"id": "A", "text": "was the first writing system to include vowels"},
+                  {"id": "B", "text": "used fewer symbols than previous systems"},
+                  {"id": "C", "text": "was adopted by the Roman Empire"},
+                  {"id": "D", "text": "combined features of cuneiform and hieroglyphics"}
+                ]
+              },
+              "scoring": {"max_points": 1, "correct_answer": "B"}
+            },
+            {
+              "question_id": "TOEFL-R2-7",
+              "type": "single_select",
+              "order": 7,
+              "instructions": {"text": "Choose the best answer."},
+              "stimulus": {"text_html": "<p>The word \"arbitrary\" in paragraph 5 is closest in meaning to</p>"},
+              "interaction": {
+                "options": [
+                  {"id": "A", "text": "random"},
+                  {"id": "B", "text": "complex"},
+                  {"id": "C", "text": "meaningful"},
+                  {"id": "D", "text": "pictorial"}
+                ]
+              },
+              "scoring": {"max_points": 1, "correct_answer": "A"}
+            },
+            {
+              "question_id": "TOEFL-R2-8",
+              "type": "insert_text",
+              "order": 8,
+              "instructions": {"text": "Look at the four squares [■] that indicate where the following sentence could be added to the passage."},
+              "stimulus": {"text_html": "<p><strong>Sentence to insert:</strong> This innovation made literacy accessible to a much larger portion of the population.</p><p>Where would the sentence best fit?</p>"},
+              "interaction": {
+                "options": [
+                  {"id": "A", "text": "Square A"},
+                  {"id": "B", "text": "Square B"},
+                  {"id": "C", "text": "Square C"},
+                  {"id": "D", "text": "Square D"}
+                ]
+              },
+              "scoring": {"max_points": 1, "correct_answer": "C"}
+            },
+            {
+              "question_id": "TOEFL-R2-9",
+              "type": "single_select",
+              "order": 9,
+              "instructions": {"text": "Choose the best answer."},
+              "stimulus": {"text_html": "<p>Which of the following can be inferred from the passage about Chinese writing?</p>"},
+              "interaction": {
+                "options": [
+                  {"id": "A", "text": "It developed after alphabetic writing"},
+                  {"id": "B", "text": "It has remained essentially logographic"},
+                  {"id": "C", "text": "It was influenced by Phoenician script"},
+                  {"id": "D", "text": "It is no longer used in modern times"}
+                ]
+              },
+              "scoring": {"max_points": 1, "correct_answer": "B"}
+            },
+            {
+              "question_id": "TOEFL-R2-10",
+              "type": "prose_summary",
+              "order": 10,
+              "instructions": {"text": "Select 3 answer choices that express the most important ideas in the passage."},
+              "stimulus": {"text_html": "<p><strong>Introductory sentence:</strong> Writing systems have evolved significantly over human history.</p>"},
+              "interaction": {
+                "options": [
+                  {"id": "A", "text": "The earliest writing systems used pictographic or logographic symbols"},
+                  {"id": "B", "text": "Writing was invented simultaneously in all ancient civilizations"},
+                  {"id": "C", "text": "The development of alphabets simplified writing and increased literacy"},
+                  {"id": "D", "text": "Egyptian hieroglyphics were the most beautiful writing system"},
+                  {"id": "E", "text": "Writing systems evolved from tracking commerce to recording all aspects of culture"},
+                  {"id": "F", "text": "Modern computers have made all writing systems obsolete"}
+                ],
+                "select_count": 3
+              },
+              "scoring": {"max_points": 2, "correct_answers": ["A", "C", "E"]}
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "key": "listening",
+      "name": "Listening",
+      "skill": "listening",
+      "duration_min": 36,
+      "max_score": 30,
+      "description": "3 lectures and 2 conversations with 28 questions total.",
+      "question_groups": [
+        {
+          "group_id": "listening-conversation-1",
+          "title": "Conversation 1 - Office Hours",
+          "order": 1,
+          "instructions": {
+            "text": "Listen to a conversation between a student and a professor during office hours.",
+            "language": "en"
+          },
+          "stimulus": {
+            "audio": ["placeholder_conversation1.mp3"],
+            "text_html": "<p>Topic: Discussing research paper requirements</p>"
+          },
+          "playback_settings": {
+            "max_plays": 1,
+            "enforcement": "strict"
+          },
+          "metadata": {
+            "total_points": 5,
+            "suggested_time_sec": 300
+          },
+          "questions": [
+            {
+              "question_id": "TOEFL-L1-1",
+              "type": "single_select",
+              "order": 1,
+              "instructions": {"text": "Choose the best answer."},
+              "stimulus": {"text_html": "<p>Why does the student go to see the professor?</p>"},
+              "interaction": {
+                "options": [
+                  {"id": "A", "text": "To ask for an extension on an assignment"},
+                  {"id": "B", "text": "To clarify the requirements for a research paper"},
+                  {"id": "C", "text": "To discuss a grade received on an exam"},
+                  {"id": "D", "text": "To request a letter of recommendation"}
+                ]
+              },
+              "scoring": {"max_points": 1, "correct_answer": "B"}
+            },
+            {
+              "question_id": "TOEFL-L1-2",
+              "type": "single_select",
+              "order": 2,
+              "instructions": {"text": "Choose the best answer."},
+              "stimulus": {"text_html": "<p>What does the professor suggest the student do first?</p>"},
+              "interaction": {
+                "options": [
+                  {"id": "A", "text": "Choose a narrower topic"},
+                  {"id": "B", "text": "Read more background material"},
+                  {"id": "C", "text": "Create an outline"},
+                  {"id": "D", "text": "Schedule another meeting"}
+                ]
+              },
+              "scoring": {"max_points": 1, "correct_answer": "C"}
+            },
+            {
+              "question_id": "TOEFL-L1-3",
+              "type": "single_select",
+              "order": 3,
+              "instructions": {"text": "Choose the best answer."},
+              "stimulus": {"text_html": "<p>What does the professor mean when she says this: (replay audio)</p>"},
+              "interaction": {
+                "options": [
+                  {"id": "A", "text": "The student's idea is acceptable"},
+                  {"id": "B", "text": "The student needs to think more carefully"},
+                  {"id": "C", "text": "The topic is too difficult"},
+                  {"id": "D", "text": "She is not familiar with the subject"}
+                ]
+              },
+              "scoring": {"max_points": 1, "correct_answer": "A"}
+            },
+            {
+              "question_id": "TOEFL-L1-4",
+              "type": "single_select",
+              "order": 4,
+              "instructions": {"text": "Choose the best answer."},
+              "stimulus": {"text_html": "<p>What requirement for the paper does the professor emphasize?</p>"},
+              "interaction": {
+                "options": [
+                  {"id": "A", "text": "It must include primary sources"},
+                  {"id": "B", "text": "It should be at least 15 pages"},
+                  {"id": "C", "text": "It needs a strong thesis statement"},
+                  {"id": "D", "text": "It must be submitted electronically"}
+                ]
+              },
+              "scoring": {"max_points": 1, "correct_answer": "C"}
+            },
+            {
+              "question_id": "TOEFL-L1-5",
+              "type": "single_select",
+              "order": 5,
+              "instructions": {"text": "Choose the best answer."},
+              "stimulus": {"text_html": "<p>What will the student probably do next?</p>"},
+              "interaction": {
+                "options": [
+                  {"id": "A", "text": "Go to the library"},
+                  {"id": "B", "text": "Start writing the paper"},
+                  {"id": "C", "text": "Email the professor an outline"},
+                  {"id": "D", "text": "Drop the course"}
+                ]
+              },
+              "scoring": {"max_points": 1, "correct_answer": "C"}
+            }
+          ]
+        },
+        {
+          "group_id": "listening-lecture-1",
+          "title": "Lecture 1 - Biology",
+          "order": 2,
+          "instructions": {
+            "text": "Listen to part of a lecture in a biology class.",
+            "language": "en"
+          },
+          "stimulus": {
+            "audio": ["placeholder_lecture1.mp3"],
+            "text_html": "<p>Topic: Animal migration patterns</p>"
+          },
+          "playback_settings": {
+            "max_plays": 1,
+            "enforcement": "strict"
+          },
+          "metadata": {
+            "total_points": 6,
+            "suggested_time_sec": 420
+          },
+          "questions": [
+            {
+              "question_id": "TOEFL-L2-1",
+              "type": "single_select",
+              "order": 1,
+              "instructions": {"text": "Choose the best answer."},
+              "stimulus": {"text_html": "<p>What is the lecture mainly about?</p>"},
+              "interaction": {
+                "options": [
+                  {"id": "A", "text": "How birds navigate during migration"},
+                  {"id": "B", "text": "The evolution of migratory behavior"},
+                  {"id": "C", "text": "Threats to migrating animals"},
+                  {"id": "D", "text": "Comparing different migration routes"}
+                ]
+              },
+              "scoring": {"max_points": 1, "correct_answer": "A"}
+            },
+            {
+              "question_id": "TOEFL-L2-2",
+              "type": "single_select",
+              "order": 2,
+              "instructions": {"text": "Choose the best answer."},
+              "stimulus": {"text_html": "<p>According to the professor, what navigation method do birds use during the day?</p>"},
+              "interaction": {
+                "options": [
+                  {"id": "A", "text": "Star patterns"},
+                  {"id": "B", "text": "The sun's position"},
+                  {"id": "C", "text": "Magnetic fields"},
+                  {"id": "D", "text": "Landmarks"}
+                ]
+              },
+              "scoring": {"max_points": 1, "correct_answer": "B"}
+            },
+            {
+              "question_id": "TOEFL-L2-3",
+              "type": "single_select",
+              "order": 3,
+              "instructions": {"text": "Choose the best answer."},
+              "stimulus": {"text_html": "<p>What does the professor imply about the magnetic sense in birds?</p>"},
+              "interaction": {
+                "options": [
+                  {"id": "A", "text": "It is the most important navigation tool"},
+                  {"id": "B", "text": "Scientists do not fully understand it yet"},
+                  {"id": "C", "text": "It only works in certain species"},
+                  {"id": "D", "text": "It has been studied extensively"}
+                ]
+              },
+              "scoring": {"max_points": 1, "correct_answer": "B"}
+            },
+            {
+              "question_id": "TOEFL-L2-4",
+              "type": "multi_select",
+              "order": 4,
+              "instructions": {"text": "What two points does the professor make about young birds learning migration routes? Choose 2 answers."},
+              "stimulus": {"text_html": "<p>Select all that apply.</p>"},
+              "interaction": {
+                "options": [
+                  {"id": "A", "text": "They follow experienced adults"},
+                  {"id": "B", "text": "They have an innate sense of direction"},
+                  {"id": "C", "text": "They learn routes through trial and error"},
+                  {"id": "D", "text": "They rely entirely on instinct"}
+                ],
+                "select_count": 2
+              },
+              "scoring": {"max_points": 2, "correct_answers": ["A", "B"]}
+            },
+            {
+              "question_id": "TOEFL-L2-5",
+              "type": "single_select",
+              "order": 5,
+              "instructions": {"text": "Choose the best answer."},
+              "stimulus": {"text_html": "<p>Why does the professor mention Arctic terns?</p>"},
+              "interaction": {
+                "options": [
+                  {"id": "A", "text": "To give an example of the longest migration"},
+                  {"id": "B", "text": "To explain a unique navigation method"},
+                  {"id": "C", "text": "To contrast them with other migratory birds"},
+                  {"id": "D", "text": "To describe their breeding behavior"}
+                ]
+              },
+              "scoring": {"max_points": 1, "correct_answer": "A"}
+            },
+            {
+              "question_id": "TOEFL-L2-6",
+              "type": "single_select",
+              "order": 6,
+              "instructions": {"text": "Choose the best answer."},
+              "stimulus": {"text_html": "<p>What can be inferred about migration research?</p>"},
+              "interaction": {
+                "options": [
+                  {"id": "A", "text": "It has answered most questions about bird navigation"},
+                  {"id": "B", "text": "New technologies are providing new insights"},
+                  {"id": "C", "text": "It is no longer a priority for scientists"},
+                  {"id": "D", "text": "It focuses mainly on endangered species"}
+                ]
+              },
+              "scoring": {"max_points": 1, "correct_answer": "B"}
+            }
+          ]
+        },
+        {
+          "group_id": "listening-lecture-2",
+          "title": "Lecture 2 - Art History",
+          "order": 3,
+          "instructions": {
+            "text": "Listen to part of a lecture in an art history class.",
+            "language": "en"
+          },
+          "stimulus": {
+            "audio": ["placeholder_lecture2.mp3"],
+            "text_html": "<p>Topic: The Impressionist movement</p>"
+          },
+          "playback_settings": {
+            "max_plays": 1,
+            "enforcement": "strict"
+          },
+          "metadata": {
+            "total_points": 6,
+            "suggested_time_sec": 420
+          },
+          "questions": [
+            {
+              "question_id": "TOEFL-L3-1",
+              "type": "single_select",
+              "order": 1,
+              "instructions": {"text": "Choose the best answer."},
+              "stimulus": {"text_html": "<p>What aspect of Impressionism does the professor mainly discuss?</p>"},
+              "interaction": {
+                "options": [
+                  {"id": "A", "text": "Its influence on modern art"},
+                  {"id": "B", "text": "The techniques used by Impressionist painters"},
+                  {"id": "C", "text": "The historical context of its emergence"},
+                  {"id": "D", "text": "Biographies of famous Impressionists"}
+                ]
+              },
+              "scoring": {"max_points": 1, "correct_answer": "B"}
+            },
+            {
+              "question_id": "TOEFL-L3-2",
+              "type": "single_select",
+              "order": 2,
+              "instructions": {"text": "Choose the best answer."},
+              "stimulus": {"text_html": "<p>According to the professor, what was revolutionary about Impressionist brushwork?</p>"},
+              "interaction": {
+                "options": [
+                  {"id": "A", "text": "It used very small, precise strokes"},
+                  {"id": "B", "text": "It left visible brushstrokes on the canvas"},
+                  {"id": "C", "text": "It required special types of brushes"},
+                  {"id": "D", "text": "It eliminated the need for preliminary sketches"}
+                ]
+              },
+              "scoring": {"max_points": 1, "correct_answer": "B"}
+            },
+            {
+              "question_id": "TOEFL-L3-3",
+              "type": "single_select",
+              "order": 3,
+              "instructions": {"text": "Choose the best answer."},
+              "stimulus": {"text_html": "<p>Why does the professor mention the invention of tube paints?</p>"},
+              "interaction": {
+                "options": [
+                  {"id": "A", "text": "To explain why Impressionists could paint outdoors"},
+                  {"id": "B", "text": "To show that new materials were expensive"},
+                  {"id": "C", "text": "To contrast professional and amateur painters"},
+                  {"id": "D", "text": "To describe changes in art education"}
+                ]
+              },
+              "scoring": {"max_points": 1, "correct_answer": "A"}
+            },
+            {
+              "question_id": "TOEFL-L3-4",
+              "type": "single_select",
+              "order": 4,
+              "instructions": {"text": "Choose the best answer."},
+              "stimulus": {"text_html": "<p>What does the professor suggest about the public's initial reaction to Impressionism?</p>"},
+              "interaction": {
+                "options": [
+                  {"id": "A", "text": "It was immediately popular"},
+                  {"id": "B", "text": "It was largely negative"},
+                  {"id": "C", "text": "It varied by country"},
+                  {"id": "D", "text": "It was influenced by art critics"}
+                ]
+              },
+              "scoring": {"max_points": 1, "correct_answer": "B"}
+            },
+            {
+              "question_id": "TOEFL-L3-5",
+              "type": "single_select",
+              "order": 5,
+              "instructions": {"text": "Choose the best answer."},
+              "stimulus": {"text_html": "<p>Listen again to part of the lecture. What does the professor mean when she says this?</p>"},
+              "interaction": {
+                "options": [
+                  {"id": "A", "text": "The technique was difficult to master"},
+                  {"id": "B", "text": "Critics misunderstood the painters' intentions"},
+                  {"id": "C", "text": "The paintings were considered unfinished"},
+                  {"id": "D", "text": "The colors were too bright for traditional taste"}
+                ]
+              },
+              "scoring": {"max_points": 1, "correct_answer": "C"}
+            },
+            {
+              "question_id": "TOEFL-L3-6",
+              "type": "matching",
+              "order": 6,
+              "instructions": {"text": "Match each characteristic with the correct art movement."},
+              "stimulus": {"text_html": "<p>Indicate whether each describes Academic painting or Impressionism.</p>"},
+              "interaction": {
+                "items": [
+                  {"text": "Emphasis on capturing light"},
+                  {"text": "Dark, muted colors"},
+                  {"text": "Outdoor scenes"},
+                  {"text": "Historical and mythological subjects"}
+                ],
+                "categories": ["Academic", "Impressionist"]
+              },
+              "scoring": {"max_points": 1, "correct_answers": ["Impressionist", "Academic", "Impressionist", "Academic"]}
+            }
+          ]
+        },
+        {
+          "group_id": "listening-conversation-2",
+          "title": "Conversation 2 - Campus Services",
+          "order": 4,
+          "instructions": {
+            "text": "Listen to a conversation between a student and a university staff member.",
+            "language": "en"
+          },
+          "stimulus": {
+            "audio": ["placeholder_conversation2.mp3"],
+            "text_html": "<p>Topic: Registering for housing</p>"
+          },
+          "playback_settings": {
+            "max_plays": 1,
+            "enforcement": "strict"
+          },
+          "metadata": {
+            "total_points": 5,
+            "suggested_time_sec": 300
+          },
+          "questions": [
+            {
+              "question_id": "TOEFL-L4-1",
+              "type": "single_select",
+              "order": 1,
+              "instructions": {"text": "Choose the best answer."},
+              "stimulus": {"text_html": "<p>What is the student's problem?</p>"},
+              "interaction": {
+                "options": [
+                  {"id": "A", "text": "She missed the housing registration deadline"},
+                  {"id": "B", "text": "She cannot afford the housing fees"},
+                  {"id": "C", "text": "Her roommate request was denied"},
+                  {"id": "D", "text": "She was assigned to the wrong dormitory"}
+                ]
+              },
+              "scoring": {"max_points": 1, "correct_answer": "A"}
+            },
+            {
+              "question_id": "TOEFL-L4-2",
+              "type": "single_select",
+              "order": 2,
+              "instructions": {"text": "Choose the best answer."},
+              "stimulus": {"text_html": "<p>What solution does the staff member suggest?</p>"},
+              "interaction": {
+                "options": [
+                  {"id": "A", "text": "Applying for an exception"},
+                  {"id": "B", "text": "Joining a waiting list"},
+                  {"id": "C", "text": "Looking for off-campus housing"},
+                  {"id": "D", "text": "Contacting the housing director"}
+                ]
+              },
+              "scoring": {"max_points": 1, "correct_answer": "B"}
+            },
+            {
+              "question_id": "TOEFL-L4-3",
+              "type": "single_select",
+              "order": 3,
+              "instructions": {"text": "Choose the best answer."},
+              "stimulus": {"text_html": "<p>What does the staff member imply about the waiting list?</p>"},
+              "interaction": {
+                "options": [
+                  {"id": "A", "text": "Very few students get housing from it"},
+                  {"id": "B", "text": "There is a good chance the student will get a room"},
+                  {"id": "C", "text": "It is only for upperclassmen"},
+                  {"id": "D", "text": "Students must pay a deposit to join"}
+                ]
+              },
+              "scoring": {"max_points": 1, "correct_answer": "B"}
+            },
+            {
+              "question_id": "TOEFL-L4-4",
+              "type": "single_select",
+              "order": 4,
+              "instructions": {"text": "Choose the best answer."},
+              "stimulus": {"text_html": "<p>Why does the student mention her scholarship?</p>"},
+              "interaction": {
+                "options": [
+                  {"id": "A", "text": "To explain why she missed the deadline"},
+                  {"id": "B", "text": "To request a discount on housing"},
+                  {"id": "C", "text": "To ask if it covers housing costs"},
+                  {"id": "D", "text": "To prove she is a serious student"}
+                ]
+              },
+              "scoring": {"max_points": 1, "correct_answer": "C"}
+            },
+            {
+              "question_id": "TOEFL-L4-5",
+              "type": "single_select",
+              "order": 5,
+              "instructions": {"text": "Choose the best answer."},
+              "stimulus": {"text_html": "<p>What will the student probably do next?</p>"},
+              "interaction": {
+                "options": [
+                  {"id": "A", "text": "Fill out the waiting list application"},
+                  {"id": "B", "text": "Contact her parents"},
+                  {"id": "C", "text": "Look for an apartment"},
+                  {"id": "D", "text": "Schedule another appointment"}
+                ]
+              },
+              "scoring": {"max_points": 1, "correct_answer": "A"}
+            }
+          ]
+        },
+        {
+          "group_id": "listening-lecture-3",
+          "title": "Lecture 3 - Environmental Science",
+          "order": 5,
+          "instructions": {
+            "text": "Listen to part of a lecture in an environmental science class.",
+            "language": "en"
+          },
+          "stimulus": {
+            "audio": ["placeholder_lecture3.mp3"],
+            "text_html": "<p>Topic: Urban heat islands</p>"
+          },
+          "playback_settings": {
+            "max_plays": 1,
+            "enforcement": "strict"
+          },
+          "metadata": {
+            "total_points": 6,
+            "suggested_time_sec": 420
+          },
+          "questions": [
+            {
+              "question_id": "TOEFL-L5-1",
+              "type": "single_select",
+              "order": 1,
+              "instructions": {"text": "Choose the best answer."},
+              "stimulus": {"text_html": "<p>What is the main topic of the lecture?</p>"},
+              "interaction": {
+                "options": [
+                  {"id": "A", "text": "Global warming effects on cities"},
+                  {"id": "B", "text": "The causes and effects of urban heat islands"},
+                  {"id": "C", "text": "How to reduce air pollution in urban areas"},
+                  {"id": "D", "text": "The history of urban development"}
+                ]
+              },
+              "scoring": {"max_points": 1, "correct_answer": "B"}
+            },
+            {
+              "question_id": "TOEFL-L5-2",
+              "type": "single_select",
+              "order": 2,
+              "instructions": {"text": "Choose the best answer."},
+              "stimulus": {"text_html": "<p>According to the professor, what is a major cause of urban heat islands?</p>"},
+              "interaction": {
+                "options": [
+                  {"id": "A", "text": "Increased vehicle traffic"},
+                  {"id": "B", "text": "Dark surfaces that absorb heat"},
+                  {"id": "C", "text": "Industrial pollution"},
+                  {"id": "D", "text": "Population growth"}
+                ]
+              },
+              "scoring": {"max_points": 1, "correct_answer": "B"}
+            },
+            {
+              "question_id": "TOEFL-L5-3",
+              "type": "single_select",
+              "order": 3,
+              "instructions": {"text": "Choose the best answer."},
+              "stimulus": {"text_html": "<p>What does the professor say about green roofs?</p>"},
+              "interaction": {
+                "options": [
+                  {"id": "A", "text": "They are too expensive for most buildings"},
+                  {"id": "B", "text": "They can significantly reduce building temperatures"},
+                  {"id": "C", "text": "They are mainly decorative"},
+                  {"id": "D", "text": "They require constant maintenance"}
+                ]
+              },
+              "scoring": {"max_points": 1, "correct_answer": "B"}
+            },
+            {
+              "question_id": "TOEFL-L5-4",
+              "type": "single_select",
+              "order": 4,
+              "instructions": {"text": "Choose the best answer."},
+              "stimulus": {"text_html": "<p>Why does the professor mention asthma?</p>"},
+              "interaction": {
+                "options": [
+                  {"id": "A", "text": "To illustrate a health effect of heat islands"},
+                  {"id": "B", "text": "To explain why trees are important"},
+                  {"id": "C", "text": "To discuss a common urban disease"},
+                  {"id": "D", "text": "To compare urban and rural health"}
+                ]
+              },
+              "scoring": {"max_points": 1, "correct_answer": "A"}
+            },
+            {
+              "question_id": "TOEFL-L5-5",
+              "type": "multi_select",
+              "order": 5,
+              "instructions": {"text": "What two strategies for reducing urban heat islands does the professor discuss? Choose 2 answers."},
+              "stimulus": {"text_html": "<p>Select all that apply.</p>"},
+              "interaction": {
+                "options": [
+                  {"id": "A", "text": "Using reflective building materials"},
+                  {"id": "B", "text": "Banning cars from city centers"},
+                  {"id": "C", "text": "Planting more urban trees"},
+                  {"id": "D", "text": "Reducing the city population"}
+                ],
+                "select_count": 2
+              },
+              "scoring": {"max_points": 2, "correct_answers": ["A", "C"]}
+            },
+            {
+              "question_id": "TOEFL-L5-6",
+              "type": "single_select",
+              "order": 6,
+              "instructions": {"text": "Choose the best answer."},
+              "stimulus": {"text_html": "<p>What does the professor imply about urban planning?</p>"},
+              "interaction": {
+                "options": [
+                  {"id": "A", "text": "It rarely considers environmental factors"},
+                  {"id": "B", "text": "It is increasingly incorporating heat reduction strategies"},
+                  {"id": "C", "text": "It is primarily concerned with traffic flow"},
+                  {"id": "D", "text": "It has solved most urban heat problems"}
+                ]
+              },
+              "scoring": {"max_points": 1, "correct_answer": "B"}
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "key": "speaking",
+      "name": "Speaking",
+      "skill": "speaking",
+      "duration_min": 17,
+      "max_score": 30,
+      "description": "4 tasks: 1 independent (personal opinion), 3 integrated (reading/listening + speaking)",
+      "question_groups": [
+        {
+          "group_id": "speaking-task-1",
+          "title": "Task 1 - Independent Speaking",
+          "order": 1,
+          "instructions": {
+            "text": "You will be asked to give your opinion on a familiar topic. You have 15 seconds to prepare and 45 seconds to speak.",
+            "language": "en"
+          },
+          "metadata": {
+            "total_points": 4,
+            "preparation_time_sec": 15,
+            "response_time_sec": 45
+          },
+          "questions": [
+            {
+              "question_id": "TOEFL-S1-1",
+              "type": "speaking_prompt",
+              "order": 1,
+              "instructions": {"text": "Speak about the following topic. State your opinion and explain your reasons."},
+              "stimulus": {
+                "text_html": "<p>Some people prefer to work in an office environment, while others prefer to work from home. Which do you prefer and why?</p>"
+              },
+              "interaction": {
+                "response_format": "spoken",
+                "preparation_time_sec": 15,
+                "response_time_sec": 45
+              },
+              "scoring": {
+                "max_points": 4,
+                "criteria": [
+                  {"name": "Delivery", "max": 4},
+                  {"name": "Language Use", "max": 4},
+                  {"name": "Topic Development", "max": 4}
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "group_id": "speaking-task-2",
+          "title": "Task 2 - Campus Situation",
+          "order": 2,
+          "instructions": {
+            "text": "Read a passage about a campus situation, listen to two students discussing it, then speak about what you read and heard.",
+            "language": "en"
+          },
+          "stimulus": {
+            "text_html": "<h4>Reading Passage (45 seconds):</h4><p><strong>University to Extend Library Hours</strong></p><p>Starting next semester, the university library will extend its operating hours from midnight to 2:00 AM during weekdays. This change is in response to student requests for more study time during exam periods...</p>",
+            "audio": ["placeholder_speaking2.mp3"]
+          },
+          "metadata": {
+            "total_points": 4,
+            "reading_time_sec": 45,
+            "preparation_time_sec": 30,
+            "response_time_sec": 60
+          },
+          "questions": [
+            {
+              "question_id": "TOEFL-S2-1",
+              "type": "speaking_prompt",
+              "order": 1,
+              "instructions": {"text": "The woman expresses her opinion about the library's plan. State her opinion and explain the reasons she gives for holding that opinion."},
+              "stimulus": {
+                "text_html": "<p>Preparation time: 30 seconds. Response time: 60 seconds.</p>"
+              },
+              "interaction": {
+                "response_format": "spoken",
+                "preparation_time_sec": 30,
+                "response_time_sec": 60
+              },
+              "scoring": {
+                "max_points": 4,
+                "criteria": [
+                  {"name": "Delivery", "max": 4},
+                  {"name": "Language Use", "max": 4},
+                  {"name": "Topic Development", "max": 4}
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "group_id": "speaking-task-3",
+          "title": "Task 3 - Academic Course Topic",
+          "order": 3,
+          "instructions": {
+            "text": "Read a passage about an academic topic, listen to a lecture excerpt, then speak about what you read and heard.",
+            "language": "en"
+          },
+          "stimulus": {
+            "text_html": "<h4>Reading Passage (45 seconds):</h4><p><strong>Cognitive Dissonance</strong></p><p>Cognitive dissonance is a psychological phenomenon that occurs when a person holds two or more contradictory beliefs, ideas, or values simultaneously. This creates a feeling of mental discomfort...</p>",
+            "audio": ["placeholder_speaking3.mp3"]
+          },
+          "metadata": {
+            "total_points": 4,
+            "reading_time_sec": 45,
+            "preparation_time_sec": 30,
+            "response_time_sec": 60
+          },
+          "questions": [
+            {
+              "question_id": "TOEFL-S3-1",
+              "type": "speaking_prompt",
+              "order": 1,
+              "instructions": {"text": "Using the example from the lecture, explain the concept of cognitive dissonance."},
+              "stimulus": {
+                "text_html": "<p>Preparation time: 30 seconds. Response time: 60 seconds.</p>"
+              },
+              "interaction": {
+                "response_format": "spoken",
+                "preparation_time_sec": 30,
+                "response_time_sec": 60
+              },
+              "scoring": {
+                "max_points": 4,
+                "criteria": [
+                  {"name": "Delivery", "max": 4},
+                  {"name": "Language Use", "max": 4},
+                  {"name": "Topic Development", "max": 4}
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "group_id": "speaking-task-4",
+          "title": "Task 4 - Academic Lecture",
+          "order": 4,
+          "instructions": {
+            "text": "Listen to part of a lecture, then speak about what you heard.",
+            "language": "en"
+          },
+          "stimulus": {
+            "audio": ["placeholder_speaking4.mp3"],
+            "text_html": "<p>Lecture topic: Two types of animal camouflage</p>"
+          },
+          "metadata": {
+            "total_points": 4,
+            "preparation_time_sec": 20,
+            "response_time_sec": 60
+          },
+          "questions": [
+            {
+              "question_id": "TOEFL-S4-1",
+              "type": "speaking_prompt",
+              "order": 1,
+              "instructions": {"text": "Using points and examples from the lecture, explain the two types of camouflage and how they help animals survive."},
+              "stimulus": {
+                "text_html": "<p>Preparation time: 20 seconds. Response time: 60 seconds.</p>"
+              },
+              "interaction": {
+                "response_format": "spoken",
+                "preparation_time_sec": 20,
+                "response_time_sec": 60
+              },
+              "scoring": {
+                "max_points": 4,
+                "criteria": [
+                  {"name": "Delivery", "max": 4},
+                  {"name": "Language Use", "max": 4},
+                  {"name": "Topic Development", "max": 4}
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "key": "writing",
+      "name": "Writing",
+      "skill": "writing",
+      "duration_min": 50,
+      "max_score": 30,
+      "description": "2 tasks: Integrated (read+listen+write, 20 min) and Academic Discussion (10 min)",
+      "question_groups": [
+        {
+          "group_id": "writing-task-1",
+          "title": "Task 1 - Integrated Writing",
+          "order": 1,
+          "instructions": {
+            "text": "Read a passage, listen to a lecture, then write a response summarizing the points in the lecture and explaining how they relate to the reading.",
+            "language": "en"
+          },
+          "stimulus": {
+            "text_html": "<h4>Reading Passage (3 minutes):</h4><p><strong>The Benefits of Electric Vehicles</strong></p><p>Electric vehicles (EVs) offer numerous advantages over traditional gasoline-powered cars. First, they produce zero direct emissions, significantly reducing air pollution in urban areas. Second, the cost of electricity for charging is substantially lower than gasoline costs. Third, EVs require less maintenance because they have fewer moving parts and don't need oil changes...</p>",
+            "audio": ["placeholder_writing1.mp3"]
+          },
+          "metadata": {
+            "total_points": 5,
+            "reading_time_sec": 180,
+            "suggested_time_sec": 1200,
+            "min_words": 150,
+            "max_words": 225
+          },
+          "questions": [
+            {
+              "question_id": "TOEFL-W1-1",
+              "type": "writing_prompt",
+              "order": 1,
+              "instructions": {"text": "Summarize the points made in the lecture, being sure to explain how they cast doubt on specific points made in the reading passage."},
+              "stimulus": {
+                "text_html": "<p>You have 20 minutes to plan and write your response. Your response will be judged on the quality of your writing and on how well your response presents the points in the lecture and their relationship to the reading passage. Typically, an effective response will be 150 to 225 words.</p>"
+              },
+              "interaction": {
+                "response_format": "extended_text",
+                "min_words": 150,
+                "max_words": 225,
+                "time_limit_sec": 1200
+              },
+              "scoring": {
+                "max_points": 5,
+                "criteria": [
+                  {"name": "Content", "description": "Accurate summary of lecture points and relationship to reading"},
+                  {"name": "Organization", "description": "Clear structure and logical flow"},
+                  {"name": "Language", "description": "Grammar, vocabulary, and mechanics"}
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "group_id": "writing-task-2",
+          "title": "Task 2 - Academic Discussion",
+          "order": 2,
+          "instructions": {
+            "text": "Read a professor's question and two students' responses. Then write your own response contributing to the academic discussion.",
+            "language": "en"
+          },
+          "stimulus": {
+            "text_html": "<p><strong>Professor's question:</strong></p><p>This week we've been discussing the role of technology in education. Some argue that technology enhances learning, while others believe it creates distractions. In your view, does technology in the classroom primarily help or hinder student learning? Why?</p><p><strong>Student A (Alex):</strong> I think technology is essential in modern education. Students need to learn digital skills for the workplace, and tools like educational apps make learning more engaging...</p><p><strong>Student B (Maria):</strong> While technology has benefits, I'm concerned about screen time and distraction. Students often use devices for social media instead of studying...</p>"
+          },
+          "metadata": {
+            "total_points": 5,
+            "suggested_time_sec": 600,
+            "min_words": 100
+          },
+          "questions": [
+            {
+              "question_id": "TOEFL-W2-1",
+              "type": "writing_prompt",
+              "order": 1,
+              "instructions": {"text": "Write a response that contributes to the discussion. Support your ideas with reasons and examples."},
+              "stimulus": {
+                "text_html": "<p>You have 10 minutes to write your response. A good response will contain at least 100 words.</p>"
+              },
+              "interaction": {
+                "response_format": "extended_text",
+                "min_words": 100,
+                "time_limit_sec": 600
+              },
+              "scoring": {
+                "max_points": 5,
+                "criteria": [
+                  {"name": "Relevance", "description": "Response addresses the question and builds on the discussion"},
+                  {"name": "Development", "description": "Ideas are supported with reasons and examples"},
+                  {"name": "Language", "description": "Grammar, vocabulary, and coherence"}
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

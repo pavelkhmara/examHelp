@@ -1,0 +1,187 @@
+{
+  "exam": {
+    "title": "Egzamin Certyfikatowy z Języka Polskiego jako Obcego - C1",
+    "language_of_test": "Polish",
+    "level": "C1",
+    "provider": "Państwowa Komisja ds. Poświadczania Znajomości Języka Polskiego jako Obcego",
+    "family": "Polish State Certificate",
+    "description": "Official Polish language certificate exam at C1 (Effective Operational Proficiency) level."
+  },
+  "sections": [
+    {
+      "key": "listening",
+      "name": "Rozumienie ze słuchu",
+      "skill": "listening",
+      "duration_min": 40,
+      "max_score": 40,
+      "description": "5 zadań testujących rozumienie ze słuchu",
+      "question_groups": [
+        {
+          "group_id": "listening-task-1",
+          "title": "Zadanie I",
+          "order": 1,
+          "instructions": {
+            "text_html": "<p>Proszę wysłuchać kilku krótkich tekstów i zaznaczyć właściwe odpowiedzi.</p><p><strong>Uwaga!</strong> Nagranie zostanie odtworzone <u>tylko jeden raz</u>.</p>"
+          },
+          "stimulus": {"audio": ["placeholder_c1_listening_1.mp3"]},
+          "playback_settings": {"max_plays": 1, "enforcement": "strict"},
+          "metadata": {"total_points": 6, "points_per_item": 1},
+          "questions": [
+            {"question_id": "C1-L1-1", "type": "single_select", "order": 1, "instructions": {"text_html": "Z tego nagrania wynika, że"}, "interaction": {"options": [{"id": "a", "label": "w wyborach mogą brać udział tylko osoby pełnoletnie"}, {"id": "b", "label": "głos można oddawać na dwa sposoby"}, {"id": "c", "label": "głosowaniu podlegają projekty ogólnokrajowe"}]}, "scoring": {"max_points": 1, "correct_answer": null}},
+            {"question_id": "C1-L1-2", "type": "single_select", "order": 2, "instructions": {"text_html": "Z tego nagrania wynika, że"}, "interaction": {"options": [{"id": "a", "label": "mecz z Izraelem ma decydujące znaczenie w eliminacjach"}, {"id": "b", "label": "drużyna polska zakwalifikowała się do mistrzostw Europy"}, {"id": "c", "label": "polscy piłkarze nie traktują tego meczu poważnie"}]}, "scoring": {"max_points": 1, "correct_answer": null}},
+            {"question_id": "C1-L1-3", "type": "single_select", "order": 3, "instructions": {"text_html": "Z tego nagrania wynika, że"}, "interaction": {"options": [{"id": "a", "label": "jubileusz Hawany stał się powodem nocnych zamieszek"}, {"id": "b", "label": "Kubańczycy świętują datę uniezależnienia się od Hiszpanii"}, {"id": "c", "label": "w swojej mowie rektor nawiązał do trudnej historii Hawany"}]}, "scoring": {"max_points": 1, "correct_answer": null}},
+            {"question_id": "C1-L1-4", "type": "single_select", "order": 4, "instructions": {"text_html": "Z tego nagrania wynika, że"}, "interaction": {"options": [{"id": "a", "label": "LOT wycofał z użycia wszystkie samoloty boeing 737 MAX"}, {"id": "b", "label": "rejs do Astany był ostatnim rejsem samolotem tego typu"}, {"id": "c", "label": "linie lotnicze na całym świecie zawiesiły użycie boeingów 737 MAX"}]}, "scoring": {"max_points": 1, "correct_answer": null}},
+            {"question_id": "C1-L1-5", "type": "single_select", "order": 5, "instructions": {"text_html": "Z tego nagrania wynika, że"}, "interaction": {"options": [{"id": "a", "label": "przywódca grupy przestępczej nie był wcześniej karany"}, {"id": "b", "label": "bandyci napadali głównie na policjantów"}, {"id": "c", "label": "przestępców aresztowano podczas jednego z napadów"}]}, "scoring": {"max_points": 1, "correct_answer": null}},
+            {"question_id": "C1-L1-6", "type": "single_select", "order": 6, "instructions": {"text_html": "Z tego nagrania wynika, że"}, "interaction": {"options": [{"id": "a", "label": "przeszczepy krzyżowe podlegają specjalnej procedurze prawnej"}, {"id": "b", "label": "jedna z kobiet otrzymała nerkę męża drugiej kobiety"}, {"id": "c", "label": "przeszczep nerek odbył się między osobami spokrewnionymi"}]}, "scoring": {"max_points": 1, "correct_answer": null}}
+          ]
+        },
+        {
+          "group_id": "listening-task-2",
+          "title": "Zadanie II",
+          "order": 2,
+          "instructions": {
+            "text_html": "<p>Proszę wysłuchać rozmowy na temat zabezpieczeń banknotów i zaznaczyć: <strong>TAK</strong> – gdy zdanie jest zgodne z tekstem; <strong>NIE</strong> – gdy nie jest zgodne z tekstem.</p><p><strong>Uwaga!</strong> Nagranie zostanie odtworzone <u>dwukrotnie</u>.</p>"
+          },
+          "stimulus": {"audio": ["placeholder_c1_listening_2.mp3"]},
+          "playback_settings": {"max_plays": 2, "enforcement": "strict"},
+          "metadata": {"total_points": 8, "points_per_item": 1},
+          "questions": [
+            {"question_id": "C1-L2-1", "type": "true_false", "order": 1, "instructions": {"text_html": "Specjaliści nie stosują określenia lifting w odniesieniu do pieniędzy."}, "interaction": {"options": [{"id": "tak", "label": "TAK"}, {"id": "nie", "label": "NIE"}]}, "scoring": {"max_points": 1, "correct_answer": null}},
+            {"question_id": "C1-L2-2", "type": "true_false", "order": 2, "instructions": {"text_html": "Celem przeprowadzonych zmian miało być unowocześnienie szaty graficznej."}, "interaction": {"options": [{"id": "tak", "label": "TAK"}, {"id": "nie", "label": "NIE"}]}, "scoring": {"max_points": 1, "correct_answer": null}},
+            {"question_id": "C1-L2-3", "type": "true_false", "order": 3, "instructions": {"text_html": "Na powierzchni wszystkich banknotów umieszczono jednakowe wzory."}, "interaction": {"options": [{"id": "tak", "label": "TAK"}, {"id": "nie", "label": "NIE"}]}, "scoring": {"max_points": 1, "correct_answer": null}},
+            {"question_id": "C1-L2-4", "type": "true_false", "order": 4, "instructions": {"text_html": "Umieszczanie eurionów to drugi, obok okręgów, sposób zabezpieczania banknotów."}, "interaction": {"options": [{"id": "tak", "label": "TAK"}, {"id": "nie", "label": "NIE"}]}, "scoring": {"max_points": 1, "correct_answer": null}},
+            {"question_id": "C1-L2-5", "type": "true_false", "order": 5, "instructions": {"text_html": "Większość zabezpieczeń znana jest głównie ekspertom, autorom i projektantom banknotów."}, "interaction": {"options": [{"id": "tak", "label": "TAK"}, {"id": "nie", "label": "NIE"}]}, "scoring": {"max_points": 1, "correct_answer": null}},
+            {"question_id": "C1-L2-6", "type": "true_false", "order": 6, "instructions": {"text_html": "Tylko pomysłodawcy lub emitenci mogą w stu procentach ocenić autentyczność pieniędzy."}, "interaction": {"options": [{"id": "tak", "label": "TAK"}, {"id": "nie", "label": "NIE"}]}, "scoring": {"max_points": 1, "correct_answer": null}},
+            {"question_id": "C1-L2-7", "type": "true_false", "order": 7, "instructions": {"text_html": "Biegły jest obecny na wszystkich etapach weryfikacji autentyczności banknotów."}, "interaction": {"options": [{"id": "tak", "label": "TAK"}, {"id": "nie", "label": "NIE"}]}, "scoring": {"max_points": 1, "correct_answer": null}},
+            {"question_id": "C1-L2-8", "type": "true_false", "order": 8, "instructions": {"text_html": "Identyfikacja banknotów dokonywana jest w ściśle określonych miejscach."}, "interaction": {"options": [{"id": "tak", "label": "TAK"}, {"id": "nie", "label": "NIE"}]}, "scoring": {"max_points": 1, "correct_answer": null}}
+          ]
+        },
+        {
+          "group_id": "listening-task-3",
+          "title": "Zadanie III",
+          "order": 3,
+          "instructions": {
+            "text_html": "<p>Proszę wysłuchać informacji na temat najczęstszych zjawisk paranormalnych i dopasować nazwy zjawisk (1-5) do ich charakterystycznych cech (A-J).</p><p><strong>Zjawiska:</strong> 1 – DÉJÀ VU, 2 – LUNATYKOWANIE, 3 – PRZECZUCIA, 4 – ODCZUWANIE CZYJEJŚ OBECNOŚCI, 5 – KSENOGLOSJA</p><p><strong>Uwaga!</strong> Nagranie zostanie odtworzone <u>dwukrotnie</u>.</p>"
+          },
+          "stimulus": {"audio": ["placeholder_c1_listening_3.mp3"]},
+          "playback_settings": {"max_plays": 2, "enforcement": "strict"},
+          "metadata": {"total_points": 10, "points_per_item": 1},
+          "questions": [
+            {"question_id": "C1-L3-A", "type": "single_select", "order": 1, "instructions": {"text_html": "A. może mieć podłoże genetyczne?"}, "interaction": {"options": [{"id": "1", "label": "1"}, {"id": "2", "label": "2"}, {"id": "3", "label": "3"}, {"id": "4", "label": "4"}, {"id": "5", "label": "5"}]}, "scoring": {"max_points": 1, "correct_answer": null}},
+            {"question_id": "C1-L3-B", "type": "single_select", "order": 2, "instructions": {"text_html": "B. najczęściej jest wynikiem autosugestii?"}, "interaction": {"options": [{"id": "1", "label": "1"}, {"id": "2", "label": "2"}, {"id": "3", "label": "3"}, {"id": "4", "label": "4"}, {"id": "5", "label": "5"}]}, "scoring": {"max_points": 1, "correct_answer": null}},
+            {"question_id": "C1-L3-C", "type": "single_select", "order": 3, "instructions": {"text_html": "C. umożliwia wpływanie na bieg wydarzeń?"}, "interaction": {"options": [{"id": "1", "label": "1"}, {"id": "2", "label": "2"}, {"id": "3", "label": "3"}, {"id": "4", "label": "4"}, {"id": "5", "label": "5"}]}, "scoring": {"max_points": 1, "correct_answer": null}},
+            {"question_id": "C1-L3-D", "type": "single_select", "order": 4, "instructions": {"text_html": "D. może prowadzić do bardzo poważnych konsekwencji?"}, "interaction": {"options": [{"id": "1", "label": "1"}, {"id": "2", "label": "2"}, {"id": "3", "label": "3"}, {"id": "4", "label": "4"}, {"id": "5", "label": "5"}]}, "scoring": {"max_points": 1, "correct_answer": null}},
+            {"question_id": "C1-L3-E", "type": "single_select", "order": 5, "instructions": {"text_html": "E. można wyjaśnić na podstawie praw fizyki?"}, "interaction": {"options": [{"id": "1", "label": "1"}, {"id": "2", "label": "2"}, {"id": "3", "label": "3"}, {"id": "4", "label": "4"}, {"id": "5", "label": "5"}]}, "scoring": {"max_points": 1, "correct_answer": null}},
+            {"question_id": "C1-L3-F", "type": "single_select", "order": 6, "instructions": {"text_html": "F. może być skutkiem nieprawidłowej podaży tlenu do mózgu?"}, "interaction": {"options": [{"id": "1", "label": "1"}, {"id": "2", "label": "2"}, {"id": "3", "label": "3"}, {"id": "4", "label": "4"}, {"id": "5", "label": "5"}]}, "scoring": {"max_points": 1, "correct_answer": null}},
+            {"question_id": "C1-L3-G", "type": "single_select", "order": 7, "instructions": {"text_html": "G. zwykle dotyka ludzi dbających o swoją kondycję umysłową?"}, "interaction": {"options": [{"id": "1", "label": "1"}, {"id": "2", "label": "2"}, {"id": "3", "label": "3"}, {"id": "4", "label": "4"}, {"id": "5", "label": "5"}]}, "scoring": {"max_points": 1, "correct_answer": null}},
+            {"question_id": "C1-L3-H", "type": "single_select", "order": 8, "instructions": {"text_html": "H. może być wynikiem opóźnionego przepływu informacji w strukturach mózgu?"}, "interaction": {"options": [{"id": "1", "label": "1"}, {"id": "2", "label": "2"}, {"id": "3", "label": "3"}, {"id": "4", "label": "4"}, {"id": "5", "label": "5"}]}, "scoring": {"max_points": 1, "correct_answer": null}},
+            {"question_id": "C1-L3-I", "type": "single_select", "order": 9, "instructions": {"text_html": "I. bywa wynikiem poniesionej straty?"}, "interaction": {"options": [{"id": "1", "label": "1"}, {"id": "2", "label": "2"}, {"id": "3", "label": "3"}, {"id": "4", "label": "4"}, {"id": "5", "label": "5"}]}, "scoring": {"max_points": 1, "correct_answer": null}},
+            {"question_id": "C1-L3-J", "type": "single_select", "order": 10, "instructions": {"text_html": "J. dotyczy większości społeczeństwa?"}, "interaction": {"options": [{"id": "1", "label": "1"}, {"id": "2", "label": "2"}, {"id": "3", "label": "3"}, {"id": "4", "label": "4"}, {"id": "5", "label": "5"}]}, "scoring": {"max_points": 1, "correct_answer": null}}
+          ]
+        },
+        {
+          "group_id": "listening-task-4",
+          "title": "Zadanie IV",
+          "order": 4,
+          "instructions": {
+            "text_html": "<p>Proszę wysłuchać reportażu na temat sytuacji życiowej jednego z mieszkańców Nowej Huty i zaznaczyć właściwe odpowiedzi.</p><p><strong>Uwaga!</strong> Nagranie zostanie odtworzone <u>dwukrotnie</u>.</p>"
+          },
+          "stimulus": {"audio": ["placeholder_c1_listening_4.mp3"]},
+          "playback_settings": {"max_plays": 2, "enforcement": "strict"},
+          "metadata": {"total_points": 8, "points_per_item": 1},
+          "questions": [
+            {"question_id": "C1-L4-1", "type": "single_select", "order": 1, "instructions": {"text_html": "\"Połaź z nami\" to projekt"}, "interaction": {"options": [{"id": "a", "label": "zainicjowany przez pana Tadeusza kilka lat temu"}, {"id": "b", "label": "zwiedzania w Nowej Hucie lokali z lat 70"}, {"id": "c", "label": "oferujący oprowadzanie po Nowej Hucie"}]}, "scoring": {"max_points": 1, "correct_answer": null}},
+            {"question_id": "C1-L4-2", "type": "single_select", "order": 2, "instructions": {"text_html": "Bohater audycji"}, "interaction": {"options": [{"id": "a", "label": "pracował jako przewodnik, kiedy był młodszy"}, {"id": "b", "label": "ma swoje ulubione tematy związane z Nową Hutą"}, {"id": "c", "label": "planuje zapisać się na kurs przewodników po Krakowie"}]}, "scoring": {"max_points": 1, "correct_answer": null}},
+            {"question_id": "C1-L4-3", "type": "single_select", "order": 3, "instructions": {"text_html": "Zdaniem pana Tadeusza"}, "interaction": {"options": [{"id": "a", "label": "w jego sytuacji trudno o optymizm"}, {"id": "b", "label": "nie wszyscy potrafią cieszyć się życiem"}, {"id": "c", "label": "są sytuacje, w których trzeba się poddać"}]}, "scoring": {"max_points": 1, "correct_answer": null}},
+            {"question_id": "C1-L4-4", "type": "single_select", "order": 4, "instructions": {"text_html": "Spacery z panem Tadeuszem"}, "interaction": {"options": [{"id": "a", "label": "przyciągnęły już 20 tysięcy chętnych"}, {"id": "b", "label": "odbywają się nawet kilka razy dziennie"}, {"id": "c", "label": "pozwoliły zebrać pieniądze na wynajem mieszkania"}]}, "scoring": {"max_points": 1, "correct_answer": null}},
+            {"question_id": "C1-L4-5", "type": "single_select", "order": 5, "instructions": {"text_html": "Trudno wynająć mieszkanie dla pana Tadeusza, ponieważ"}, "interaction": {"options": [{"id": "a", "label": "problemem jest wiek pana Tadeusza"}, {"id": "b", "label": "mężczyzna odrzuca wszystkie propozycje"}, {"id": "c", "label": "właściciele lokali nie chcą ich wynajmować tylko na rok"}]}, "scoring": {"max_points": 1, "correct_answer": null}},
+            {"question_id": "C1-L4-6", "type": "single_select", "order": 6, "instructions": {"text_html": "Inicjatorzy akcji szukają mieszkania w Nowej Hucie, ponieważ"}, "interaction": {"options": [{"id": "a", "label": "to ulubiona dzielnica bohatera reportażu"}, {"id": "b", "label": "jest tam największy wybór mieszkań"}, {"id": "c", "label": "pan Tadeusz nie będzie musiał dojeżdżać do pracy"}]}, "scoring": {"max_points": 1, "correct_answer": null}},
+            {"question_id": "C1-L4-7", "type": "single_select", "order": 7, "instructions": {"text_html": "Jolanta Kaczmarczyk mówi o"}, "interaction": {"options": [{"id": "a", "label": "kłopotach związanych z bezdomnymi dotąd lokatorami"}, {"id": "b", "label": "potrzebie angażowania się w sprawy społeczne"}, {"id": "c", "label": "przyczynach bezdomności w dużych miastach"}]}, "scoring": {"max_points": 1, "correct_answer": null}},
+            {"question_id": "C1-L4-8", "type": "single_select", "order": 8, "instructions": {"text_html": "Warto wynajmować mieszkania osobom bezdomnym,"}, "interaction": {"options": [{"id": "a", "label": "tylko jeśli mają wsparcie finansowe organizacji charytatywnych"}, {"id": "b", "label": "bo to przynosi radość przede wszystkim właścicielom mieszkania"}, {"id": "c", "label": "gdyż dzięki temu wpływa się pozytywnie na rzeczywistość"}]}, "scoring": {"max_points": 1, "correct_answer": null}}
+          ]
+        },
+        {
+          "group_id": "listening-task-5",
+          "title": "Zadanie V",
+          "order": 5,
+          "instructions": {
+            "text_html": "<p>Proszę wysłuchać reportażu na temat psychobiotyków i odpowiedzieć na pytania.</p><p><strong>Uwaga!</strong> Forma gramatyczna odpowiedzi powinna być dopasowana do pytania. Nagranie zostanie odtworzone <u>dwukrotnie</u>.</p>"
+          },
+          "stimulus": {"audio": ["placeholder_c1_listening_5.mp3"]},
+          "playback_settings": {"max_plays": 2, "enforcement": "strict"},
+          "metadata": {"total_points": 8},
+          "questions": [
+            {"question_id": "C1-L5-1", "type": "text_input", "order": 1, "instructions": {"text_html": "1. Czym są mikrobiomy?"}, "scoring": {"max_points": 1, "correct_answer": null}},
+            {"question_id": "C1-L5-2", "type": "text_input", "order": 2, "instructions": {"text_html": "2. Jaką rolę, zdaniem Igora Łoniewskiego, mogą spełniać psychobiotyki?"}, "scoring": {"max_points": 1, "correct_answer": null}},
+            {"question_id": "C1-L5-3a", "type": "text_input", "order": 3, "instructions": {"text_html": "3a. Którzy specjaliści powinni zalecać stosowanie psychobiotyków?"}, "scoring": {"max_points": 0.5, "correct_answer": null}},
+            {"question_id": "C1-L5-3b", "type": "text_input", "order": 4, "instructions": {"text_html": "3b. (drugi specjalista)"}, "scoring": {"max_points": 0.5, "correct_answer": null}},
+            {"question_id": "C1-L5-3c", "type": "text_input", "order": 5, "instructions": {"text_html": "3c. (trzeci specjalista)"}, "scoring": {"max_points": 0.5, "correct_answer": null}},
+            {"question_id": "C1-L5-4", "type": "text_input", "order": 6, "instructions": {"text_html": "4. Dlaczego jogurty naturalne nie są bogate w psychobiotyki?"}, "scoring": {"max_points": 1, "correct_answer": null}},
+            {"question_id": "C1-L5-5", "type": "text_input", "order": 7, "instructions": {"text_html": "5. Po jakim czasie od zastosowania stwierdzono skuteczność psychobiotyków w leczeniu depresji?"}, "scoring": {"max_points": 0.5, "correct_answer": null}},
+            {"question_id": "C1-L5-6", "type": "text_input", "order": 8, "instructions": {"text_html": "6. Jak długo można było obserwować pozytywne skutki działania psychobiotyków u pacjentów z depresją?"}, "scoring": {"max_points": 0.5, "correct_answer": null}},
+            {"question_id": "C1-L5-7a", "type": "text_input", "order": 9, "instructions": {"text_html": "7a. Jakie metody wspierania leczenia farmakologicznego wymienia doktor Łoniewski?"}, "scoring": {"max_points": 0.5, "correct_answer": null}},
+            {"question_id": "C1-L5-7b", "type": "text_input", "order": 10, "instructions": {"text_html": "7b. (druga metoda)"}, "scoring": {"max_points": 0.5, "correct_answer": null}},
+            {"question_id": "C1-L5-7c", "type": "text_input", "order": 11, "instructions": {"text_html": "7c. (trzecia metoda)"}, "scoring": {"max_points": 0.5, "correct_answer": null}},
+            {"question_id": "C1-L5-8", "type": "text_input", "order": 12, "instructions": {"text_html": "8. Co udowadniają przywołane w programie badania?"}, "scoring": {"max_points": 1, "correct_answer": null}}
+          ]
+        }
+      ]
+    },
+    {
+      "key": "reading",
+      "name": "Rozumienie tekstów pisanych",
+      "skill": "reading",
+      "duration_min": 60,
+      "max_score": 40,
+      "description": "5 zadań testujących rozumienie tekstów pisanych",
+      "question_groups": [
+        {
+          "group_id": "reading-task-1",
+          "title": "Zadanie I",
+          "order": 1,
+          "instructions": {"text_html": "<p>Proszę przeczytać tekst, a następnie zaznaczyć właściwą odpowiedź.</p>"},
+          "stimulus": {"text_html": "<h4>20-latki odrzucają konsumpcyjny styl życia rodziców</h4><p>Polacy, którzy wchodzą dziś w dorosłe życie, to tzw. pokolenie Z...</p>"},
+          "metadata": {"total_points": 7, "points_per_item": 1},
+          "questions": [
+            {"question_id": "C1-R1-1", "type": "single_select", "order": 1, "instructions": {"text_html": "1. Pokolenie X"}, "interaction": {"options": [{"id": "a", "label": "osiągnęło sukces w pracy bez większego wysiłku"}, {"id": "b", "label": "stawiało karierę zawodową na pierwszym miejscu"}, {"id": "c", "label": "często odwlekało zakładanie rodziny"}]}, "scoring": {"max_points": 1, "correct_answer": "b"}},
+            {"question_id": "C1-R1-2", "type": "single_select", "order": 2, "instructions": {"text_html": "2. Z tekstu wynika, że generacja Z"}, "interaction": {"options": [{"id": "a", "label": "całkowicie odrzuca model życia rodziców"}, {"id": "b", "label": "zachowuje się nieracjonalnie"}, {"id": "c", "label": "pragnie zachować równowagę w życiu"}]}, "scoring": {"max_points": 1, "correct_answer": "c"}},
+            {"question_id": "C1-R1-3", "type": "single_select", "order": 3, "instructions": {"text_html": "3. Media społecznościowe"}, "interaction": {"options": [{"id": "a", "label": "pogarszają sytuację materialną młodych ludzi"}, {"id": "b", "label": "ograniczają aktywność społeczną nastolatków"}, {"id": "c", "label": "pomagają w propagowaniu postaw ekologicznych"}]}, "scoring": {"max_points": 1, "correct_answer": "c"}},
+            {"question_id": "C1-R1-4", "type": "single_select", "order": 4, "instructions": {"text_html": "4. Z tekstu wynika, że młodzi ludzie"}, "interaction": {"options": [{"id": "a", "label": "dostrzegają sens w dzieleniu się różnymi dobrami"}, {"id": "b", "label": "chętnie biorą pożyczki mieszkaniowe"}, {"id": "c", "label": "dążą do tego, by mieć coś tylko dla siebie"}]}, "scoring": {"max_points": 1, "correct_answer": "a"}},
+            {"question_id": "C1-R1-5", "type": "single_select", "order": 5, "instructions": {"text_html": "5. Brak przywiązania do rzeczy u wielu młodych osób wynika"}, "interaction": {"options": [{"id": "a", "label": "ze specyficznej sytuacji rodzinnej w dzieciństwie"}, {"id": "b", "label": "ze strachu przed niepowodzeniami"}, {"id": "c", "label": "z obawy o wysokie koszty utrzymania"}]}, "scoring": {"max_points": 1, "correct_answer": "a"}},
+            {"question_id": "C1-R1-6", "type": "single_select", "order": 6, "instructions": {"text_html": "6. Z tekstu wynika, że"}, "interaction": {"options": [{"id": "a", "label": "większość młodych ludzi prezentuje postawy proekologiczne"}, {"id": "b", "label": "niechęć do konsumpcjonizmu dominuje w metropoliach"}, {"id": "c", "label": "konsumpcjonizm jest charakterystyczny dla dużych miast"}]}, "scoring": {"max_points": 1, "correct_answer": "b"}},
+            {"question_id": "C1-R1-7", "type": "single_select", "order": 7, "instructions": {"text_html": "7. Młodzież zarówno z małych, jak i dużych miast łączy"}, "interaction": {"options": [{"id": "a", "label": "zamiłowanie do zakupów w galeriach handlowych"}, {"id": "b", "label": "wybór spaceru jako bezpłatnej formy rekreacji"}, {"id": "c", "label": "taka sama forma aktywności społecznej"}]}, "scoring": {"max_points": 1, "correct_answer": "c"}}
+          ]
+        }
+      ]
+    },
+    {
+      "key": "grammar",
+      "name": "Poprawność gramatyczna",
+      "skill": "grammar",
+      "duration_min": 60,
+      "max_score": 40,
+      "description": "8 zadań testujących poprawność gramatyczną na poziomie zaawansowanym"
+    },
+    {
+      "key": "writing",
+      "name": "Pisanie",
+      "skill": "writing",
+      "duration_min": 90,
+      "max_score": 40,
+      "description": "Część pisemna - wybór 1 z 3 zestawów (list motywacyjny + opowiadanie / relacja + tekst argumentacyjny / esej)"
+    },
+    {
+      "key": "speaking",
+      "name": "Mówienie",
+      "skill": "speaking",
+      "duration_min": 20,
+      "max_score": 40,
+      "description": "Część ustna"
+    }
+  ],
+  "_meta": {
+    "source": "docs/samples/documents/real_exams_examples/pl_C1.pdf",
+    "created_at": "2025-11-21",
+    "total_points": 200
+  }
+}

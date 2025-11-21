@@ -1,0 +1,268 @@
+{
+  "exam": {
+    "title": "Goethe-Zertifikat B1",
+    "language_of_test": "de",
+    "level": "B1",
+    "provider": "Goethe-Institut",
+    "family": "Goethe-Zertifikat",
+    "description": "Deutschprufung fur Jugendliche und Erwachsene. Modular aufgebaut: Lesen (65 Min), Horen (40 Min), Schreiben (60 Min), Sprechen (15 Min). Max 100 Punkte pro Modul, Bestehensgrenze 60%."
+  },
+  "sections": [
+    {
+      "key": "reading",
+      "name": "Lesen",
+      "skill": "reading",
+      "duration_min": 65,
+      "max_score": 100,
+      "description": "5 Teile: Korrespondenz lesen, Information verstehen, Zur Orientierung lesen, Argumentation verstehen, Anweisung verstehen.",
+      "question_groups": [
+        {
+          "group_id": "GOE-B1-L1",
+          "title": "Teil 1 - Korrespondenz lesen",
+          "order": 1,
+          "instructions": {"text_html": "Lesen Sie den Text und die Aufgaben 1 bis 6 dazu. Wahlen Sie: Sind die Aussagen Richtig oder Falsch?"},
+          "stimulus": {"text_html": "<p>Blog-Text uber verlorene Brieftasche...</p>"},
+          "metadata": {"total_points": 6},
+          "questions": [
+            {"question_id": "GOE-B1-L1-1", "type": "true_false", "order": 1, "instructions": {"text_html": "Erst durch den Anruf bemerkte Susanne das Fehlen ihrer Brieftasche."}, "scoring": {"max_points": 1}},
+            {"question_id": "GOE-B1-L1-2", "type": "true_false", "order": 2, "instructions": {"text_html": "Susanne glaubte, die Brieftasche beim Bezahlen vergessen zu haben."}, "scoring": {"max_points": 1}},
+            {"question_id": "GOE-B1-L1-3", "type": "true_false", "order": 3, "instructions": {"text_html": "Der Finder hatte die Brieftasche ins Fundburo gebracht."}, "scoring": {"max_points": 1}},
+            {"question_id": "GOE-B1-L1-4", "type": "true_false", "order": 4, "instructions": {"text_html": "Die Telefonnummer der Bank war in der Brieftasche."}, "scoring": {"max_points": 1}},
+            {"question_id": "GOE-B1-L1-5", "type": "true_false", "order": 5, "instructions": {"text_html": "In Susannes Brieftasche fehlte nichts."}, "scoring": {"max_points": 1}},
+            {"question_id": "GOE-B1-L1-6", "type": "true_false", "order": 6, "instructions": {"text_html": "Susanne konnte dem Finder personlich fur seine Ehrlichkeit danken."}, "scoring": {"max_points": 1}}
+          ]
+        },
+        {
+          "group_id": "GOE-B1-L2",
+          "title": "Teil 2 - Information und Argumentation verstehen",
+          "order": 2,
+          "instructions": {"text_html": "Lesen Sie den Text aus der Presse und die Aufgaben 7 bis 12 dazu. Wahlen Sie bei jeder Aufgabe die richtige Losung a, b oder c."},
+          "metadata": {"total_points": 6},
+          "questions": [
+            {"question_id": "GOE-B1-L2-1", "type": "single_select", "order": 1, "instructions": {"text_html": "In diesem Text geht es um..."}, "interaction": {"options": [{"id": "a", "label": "die neue Technologie von Eckhard Meier"}, {"id": "b", "label": "die umweltfreundliche Stromproduktion in Feldheim"}, {"id": "c", "label": "einen Studiengang an der Universitat Gottingen"}]}, "scoring": {"max_points": 1}},
+            {"question_id": "GOE-B1-L2-2", "type": "single_select", "order": 2, "instructions": {"text_html": "Die Wissenschaftler wollten zeigen, dass..."}, "interaction": {"options": [{"id": "a", "label": "ein ganzes Dorf von modernen Energien leben kann"}, {"id": "b", "label": "eine Bio-Gasanlage mehr Strom produziert, als ein Dorf braucht"}, {"id": "c", "label": "man grossere Mengen Strom sparen kann"}]}, "scoring": {"max_points": 1}},
+            {"question_id": "GOE-B1-L2-3", "type": "single_select", "order": 3, "instructions": {"text_html": "Damit die Idee auch in anderen Dorfern funktioniert..."}, "interaction": {"options": [{"id": "a", "label": "benotigt man viel Geld"}, {"id": "b", "label": "braucht man genug Platz fur die Technik"}, {"id": "c", "label": "muss die Bevolkerung dafur sein"}]}, "scoring": {"max_points": 1}},
+            {"question_id": "GOE-B1-L2-4", "type": "single_select", "order": 4, "instructions": {"text_html": "In diesem Text geht es darum, dass..."}, "interaction": {"options": [{"id": "a", "label": "die Geschichte von Murten neu erzahlt wird"}, {"id": "b", "label": "es ein neues Tourismus-Angebot gibt"}, {"id": "c", "label": "man in Murten neue Velo-Wege bauen will"}]}, "scoring": {"max_points": 1}},
+            {"question_id": "GOE-B1-L2-5", "type": "single_select", "order": 5, "instructions": {"text_html": "Fur die Rundfahrt..."}, "interaction": {"options": [{"id": "a", "label": "braucht man ein eigenes Velo"}, {"id": "b", "label": "muss man nicht sportlich sein"}, {"id": "c", "label": "sollte man mit der Bahn anreisen"}]}, "scoring": {"max_points": 1}},
+            {"question_id": "GOE-B1-L2-6", "type": "single_select", "order": 6, "instructions": {"text_html": "Der Geschaftsfuhrer von Murten Tourismus will, dass..."}, "interaction": {"options": [{"id": "a", "label": "es in Murten mehr Stadtfuhrungen fur Gruppen gibt"}, {"id": "b", "label": "die Leute normale Velos statt Elektro-Velos benutzen"}, {"id": "c", "label": "mehr Velo-Touristen in die Region kommen"}]}, "scoring": {"max_points": 1}}
+          ]
+        },
+        {
+          "group_id": "GOE-B1-L3",
+          "title": "Teil 3 - Zur Orientierung lesen",
+          "order": 3,
+          "instructions": {"text_html": "Lesen Sie die Situationen 13 bis 19 und die Anzeigen A bis J. Welche Anzeige passt zu welcher Situation? Sie konnen jede Anzeige nur einmal verwenden."},
+          "metadata": {"total_points": 7},
+          "questions": [
+            {"question_id": "GOE-B1-L3-1", "type": "matching", "order": 1, "instructions": {"text_html": "Leon mochte im Sommer im Tourismus-Bereich arbeiten, um sein Deutsch zu verbessern."}, "scoring": {"max_points": 1}},
+            {"question_id": "GOE-B1-L3-2", "type": "matching", "order": 2, "instructions": {"text_html": "Giovanna sucht deutsche Horbucher, damit sie unterwegs Deutsch lernen kann."}, "scoring": {"max_points": 1}},
+            {"question_id": "GOE-B1-L3-3", "type": "matching", "order": 3, "instructions": {"text_html": "Mirjeta hat keine Zeit fur einen Kurs, mochte sich aber regelmasig uber Neuigkeiten aus Deutschland informieren."}, "scoring": {"max_points": 1}},
+            {"question_id": "GOE-B1-L3-4", "type": "matching", "order": 4, "instructions": {"text_html": "Maria mochte am Computer Deutsch lernen."}, "scoring": {"max_points": 1}},
+            {"question_id": "GOE-B1-L3-5", "type": "matching", "order": 5, "instructions": {"text_html": "Susan liest am liebsten Literatur, wenn die Texte nicht zu schwierig sind."}, "scoring": {"max_points": 1}},
+            {"question_id": "GOE-B1-L3-6", "type": "matching", "order": 6, "instructions": {"text_html": "Miroslav will den schriftlichen Ausdruck verbessern, weil er im Studium viel schreiben muss."}, "scoring": {"max_points": 1}},
+            {"question_id": "GOE-B1-L3-7", "type": "matching", "order": 7, "instructions": {"text_html": "Juan kann nur am Abend einen Kurs besuchen."}, "scoring": {"max_points": 1}}
+          ]
+        },
+        {
+          "group_id": "GOE-B1-L4",
+          "title": "Teil 4 - Information und Argumentation verstehen",
+          "order": 4,
+          "instructions": {"text_html": "Lesen Sie die Texte 20 bis 26. Wahlen Sie: Ist die Person fur ein Verbot? (Ja/Nein)"},
+          "stimulus": {"text_html": "Leserbriefe zum Thema Verbot von Videospielen mit Gewalt (Killerspiele)"},
+          "metadata": {"total_points": 7},
+          "questions": [
+            {"question_id": "GOE-B1-L4-1", "type": "yes_no", "order": 1, "instructions": {"text_html": "Stefan - Ist die Person fur ein Verbot?"}, "scoring": {"max_points": 1}},
+            {"question_id": "GOE-B1-L4-2", "type": "yes_no", "order": 2, "instructions": {"text_html": "Dagmar - Ist die Person fur ein Verbot?"}, "scoring": {"max_points": 1}},
+            {"question_id": "GOE-B1-L4-3", "type": "yes_no", "order": 3, "instructions": {"text_html": "Kathleen - Ist die Person fur ein Verbot?"}, "scoring": {"max_points": 1}},
+            {"question_id": "GOE-B1-L4-4", "type": "yes_no", "order": 4, "instructions": {"text_html": "Marius - Ist die Person fur ein Verbot?"}, "scoring": {"max_points": 1}},
+            {"question_id": "GOE-B1-L4-5", "type": "yes_no", "order": 5, "instructions": {"text_html": "Jonny - Ist die Person fur ein Verbot?"}, "scoring": {"max_points": 1}},
+            {"question_id": "GOE-B1-L4-6", "type": "yes_no", "order": 6, "instructions": {"text_html": "Robert - Ist die Person fur ein Verbot?"}, "scoring": {"max_points": 1}},
+            {"question_id": "GOE-B1-L4-7", "type": "yes_no", "order": 7, "instructions": {"text_html": "Marinette - Ist die Person fur ein Verbot?"}, "scoring": {"max_points": 1}}
+          ]
+        },
+        {
+          "group_id": "GOE-B1-L5",
+          "title": "Teil 5 - Schriftliche Anweisung verstehen",
+          "order": 5,
+          "instructions": {"text_html": "Lesen Sie die Aufgaben 27 bis 30 und den Text dazu. Wahlen Sie bei jeder Aufgabe die richtige Losung a, b oder c."},
+          "stimulus": {"text_html": "Hausordnung des Dresdner Berufsbildungszentrums BZW"},
+          "metadata": {"total_points": 4},
+          "questions": [
+            {"question_id": "GOE-B1-L5-1", "type": "single_select", "order": 1, "instructions": {"text_html": "Schuler..."}, "interaction": {"options": [{"id": "a", "label": "durfen keine Fahrrader mit zur Schule bringen"}, {"id": "b", "label": "durfen ihre Fahrrader auf den Schulhof stellen"}, {"id": "c", "label": "mussen ihre Fahrrader in einen speziellen Raum stellen"}]}, "scoring": {"max_points": 1}},
+            {"question_id": "GOE-B1-L5-2", "type": "single_select", "order": 2, "instructions": {"text_html": "Fur die Klassenraume des BZW gilt:"}, "interaction": {"options": [{"id": "a", "label": "Schuler durfen keine Poster aufhangen"}, {"id": "b", "label": "Schuler mussen dort selber aufraumen"}, {"id": "c", "label": "Schuler konnen dort nach dem Unterricht lernen"}]}, "scoring": {"max_points": 1}},
+            {"question_id": "GOE-B1-L5-3", "type": "single_select", "order": 3, "instructions": {"text_html": "Um die verschliessbaren Facher benutzen zu konnen, muss man..."}, "interaction": {"options": [{"id": "a", "label": "einen Schlussel im Sekretariat verlangen"}, {"id": "b", "label": "einmalig 50,- Euro zahlen"}, {"id": "c", "label": "Schuler sein oder im BZW arbeiten"}]}, "scoring": {"max_points": 1}},
+            {"question_id": "GOE-B1-L5-4", "type": "single_select", "order": 4, "instructions": {"text_html": "Das Trinken von Alkohol..."}, "interaction": {"options": [{"id": "a", "label": "kann von der Schulleitung genehmigt werden"}, {"id": "b", "label": "muss der Lehrperson gemeldet werden"}, {"id": "c", "label": "ist ohne Ausnahme verboten"}]}, "scoring": {"max_points": 1}}
+          ]
+        }
+      ]
+    },
+    {
+      "key": "listening",
+      "name": "Horen",
+      "skill": "listening",
+      "duration_min": 40,
+      "max_score": 100,
+      "description": "4 Teile: Ankundigungen/Durchsagen verstehen, Als Zuschauer verstehen, Gesprache verstehen, Radiosendungen verstehen.",
+      "question_groups": [
+        {
+          "group_id": "GOE-B1-H1",
+          "title": "Teil 1 - Ankundigungen und Durchsagen",
+          "order": 1,
+          "instructions": {"text_html": "Sie horen nun funf kurze Texte. Sie horen jeden Text zweimal. Zu jedem Text losen Sie zwei Aufgaben. Wahlen Sie bei jeder Aufgabe die richtige Losung."},
+          "playback_settings": {"max_plays": 2, "enforcement": "strict"},
+          "metadata": {"total_points": 10},
+          "questions": [
+            {"question_id": "GOE-B1-H1-1", "type": "true_false", "order": 1, "instructions": {"text_html": "Der Termin von Frau Stein wird verschoben."}, "scoring": {"max_points": 1}},
+            {"question_id": "GOE-B1-H1-2", "type": "single_select", "order": 2, "instructions": {"text_html": "Frau Stein soll..."}, "interaction": {"options": [{"id": "a", "label": "die Chipkarte mitbringen"}, {"id": "b", "label": "zehn Euro bezahlen"}, {"id": "c", "label": "zuruckrufen"}]}, "scoring": {"max_points": 1}},
+            {"question_id": "GOE-B1-H1-3", "type": "true_false", "order": 3, "instructions": {"text_html": "Herr Thomas informiert Frau Brahms uber neue Versicherungstarife."}, "scoring": {"max_points": 1}},
+            {"question_id": "GOE-B1-H1-4", "type": "single_select", "order": 4, "instructions": {"text_html": "Herr Thomas..."}, "interaction": {"options": [{"id": "a", "label": "mochte, dass Frau Brahms einen neuen Vertrag abschliesst"}, {"id": "b", "label": "braucht Zeugnisse von Frau Brahms"}, {"id": "c", "label": "ruft spater noch einmal an"}]}, "scoring": {"max_points": 1}},
+            {"question_id": "GOE-B1-H1-5", "type": "true_false", "order": 5, "instructions": {"text_html": "Sie horen Veranstaltungstipps fur Munchen."}, "scoring": {"max_points": 1}},
+            {"question_id": "GOE-B1-H1-6", "type": "single_select", "order": 6, "instructions": {"text_html": "Auf der Autobahn gibt es Stau wegen..."}, "interaction": {"options": [{"id": "a", "label": "einer Baustelle"}, {"id": "b", "label": "des Berufsverkehrs"}, {"id": "c", "label": "eines Unfalls"}]}, "scoring": {"max_points": 1}},
+            {"question_id": "GOE-B1-H1-7", "type": "true_false", "order": 7, "instructions": {"text_html": "Sie horen eine Information fur eine Reisegruppe."}, "scoring": {"max_points": 1}},
+            {"question_id": "GOE-B1-H1-8", "type": "single_select", "order": 8, "instructions": {"text_html": "Welcher Zug fallt aus? Der Zug nach..."}, "interaction": {"options": [{"id": "a", "label": "Bern"}, {"id": "b", "label": "Genf"}, {"id": "c", "label": "Lausanne"}]}, "scoring": {"max_points": 1}},
+            {"question_id": "GOE-B1-H1-9", "type": "true_false", "order": 9, "instructions": {"text_html": "Das Wetter wird im Osten Deutschlands besser."}, "scoring": {"max_points": 1}},
+            {"question_id": "GOE-B1-H1-10", "type": "single_select", "order": 10, "instructions": {"text_html": "Vorausgesagt werden..."}, "interaction": {"options": [{"id": "a", "label": "Gewitter an der Elbe"}, {"id": "b", "label": "Temperaturen unter 10 Grad"}, {"id": "c", "label": "starke Regenfalle im Westen"}]}, "scoring": {"max_points": 1}}
+          ]
+        },
+        {
+          "group_id": "GOE-B1-H2",
+          "title": "Teil 2 - Als Zuschauer/Zuhorer im Publikum verstehen",
+          "order": 2,
+          "instructions": {"text_html": "Sie horen nun einen Text. Sie horen den Text einmal. Dazu losen Sie funf Aufgaben. Wahlen Sie bei jeder Aufgabe die richtige Losung a, b oder c."},
+          "stimulus": {"audio": ["museum_fuehrung.mp3"]},
+          "playback_settings": {"max_plays": 1, "enforcement": "strict"},
+          "metadata": {"total_points": 5},
+          "questions": [
+            {"question_id": "GOE-B1-H2-1", "type": "single_select", "order": 1, "instructions": {"text_html": "Das Museum ist..."}, "interaction": {"options": [{"id": "a", "label": "sehr voll"}, {"id": "b", "label": "teilweise geschlossen"}, {"id": "c", "label": "ziemlich leer"}]}, "scoring": {"max_points": 1}},
+            {"question_id": "GOE-B1-H2-2", "type": "single_select", "order": 2, "instructions": {"text_html": "Was zeigt der Museumsfuhrer den Touristen?"}, "interaction": {"options": [{"id": "a", "label": "alle Ausstellungen"}, {"id": "b", "label": "die Hauptausstellung"}, {"id": "c", "label": "die Sonderausstellungen"}]}, "scoring": {"max_points": 1}},
+            {"question_id": "GOE-B1-H2-3", "type": "single_select", "order": 3, "instructions": {"text_html": "Wo ist der Treffpunkt am Nachmittag?"}, "interaction": {"options": [{"id": "a", "label": "am Eingang"}, {"id": "b", "label": "an der Garderobe"}, {"id": "c", "label": "im Cafe"}]}, "scoring": {"max_points": 1}},
+            {"question_id": "GOE-B1-H2-4", "type": "single_select", "order": 4, "instructions": {"text_html": "Die Ausstellung beschaftigt sich mit..."}, "interaction": {"options": [{"id": "a", "label": "dem Oktoberfest"}, {"id": "b", "label": "der bayerischen Kuche"}, {"id": "c", "label": "der Geschichte Munchens"}]}, "scoring": {"max_points": 1}},
+            {"question_id": "GOE-B1-H2-5", "type": "single_select", "order": 5, "instructions": {"text_html": "Der Museumsfuhrer empfiehlt den Teilnehmern einen..."}, "interaction": {"options": [{"id": "a", "label": "Restaurantbesuch"}, {"id": "b", "label": "Cafebesuch"}, {"id": "c", "label": "Biergartenbesuch"}]}, "scoring": {"max_points": 1}}
+          ]
+        },
+        {
+          "group_id": "GOE-B1-H3",
+          "title": "Teil 3 - Gesprache zwischen Muttersprachlern verstehen",
+          "order": 3,
+          "instructions": {"text_html": "Sie horen nun ein Gesprach. Sie horen das Gesprach einmal. Dazu losen Sie sieben Aufgaben. Wahlen Sie: Sind die Aussagen Richtig oder Falsch?"},
+          "stimulus": {"audio": ["gespraech_fest.mp3"]},
+          "playback_settings": {"max_plays": 1, "enforcement": "strict"},
+          "metadata": {"total_points": 7},
+          "questions": [
+            {"question_id": "GOE-B1-H3-1", "type": "true_false", "order": 1, "instructions": {"text_html": "Bei dem Fest wurde der Geburtstag von Annas Mann gefeiert."}, "scoring": {"max_points": 1}},
+            {"question_id": "GOE-B1-H3-2", "type": "true_false", "order": 2, "instructions": {"text_html": "Nadia ist vom Haus der Gastgeber begeistert."}, "scoring": {"max_points": 1}},
+            {"question_id": "GOE-B1-H3-3", "type": "true_false", "order": 3, "instructions": {"text_html": "Nadia arbeitet beim Fernsehen."}, "scoring": {"max_points": 1}},
+            {"question_id": "GOE-B1-H3-4", "type": "true_false", "order": 4, "instructions": {"text_html": "Das Essen war ausgezeichnet."}, "scoring": {"max_points": 1}},
+            {"question_id": "GOE-B1-H3-5", "type": "true_false", "order": 5, "instructions": {"text_html": "Nadia hat zusammen mit dem Musiker gespielt."}, "scoring": {"max_points": 1}},
+            {"question_id": "GOE-B1-H3-6", "type": "true_false", "order": 6, "instructions": {"text_html": "Nadia hat auch Jazz gespielt."}, "scoring": {"max_points": 1}},
+            {"question_id": "GOE-B1-H3-7", "type": "true_false", "order": 7, "instructions": {"text_html": "Das Fest dauerte bis nach 12 Uhr nachts."}, "scoring": {"max_points": 1}}
+          ]
+        },
+        {
+          "group_id": "GOE-B1-H4",
+          "title": "Teil 4 - Radiosendungen und Tonaufnahmen verstehen",
+          "order": 4,
+          "instructions": {"text_html": "Sie horen nun eine Diskussion. Sie horen die Diskussion zweimal. Dazu losen Sie acht Aufgaben. Ordnen Sie die Aussagen zu: Wer sagt was?"},
+          "stimulus": {"audio": ["diskussion_kinderkrippe.mp3"]},
+          "playback_settings": {"max_plays": 2, "enforcement": "strict"},
+          "metadata": {"total_points": 8},
+          "questions": [
+            {"question_id": "GOE-B1-H4-1", "type": "speaker_attribution", "order": 1, "instructions": {"text_html": "Kinder lernen soziales Verhalten erst ab einem bestimmten Alter."}, "interaction": {"options": [{"id": "a", "label": "Moderator"}, {"id": "b", "label": "Dana Schneider"}, {"id": "c", "label": "Florian Bader"}]}, "scoring": {"max_points": 1}},
+            {"question_id": "GOE-B1-H4-2", "type": "speaker_attribution", "order": 2, "instructions": {"text_html": "Fur den Erfolg im Beruf ist es wichtig, immer zu arbeiten."}, "interaction": {"options": [{"id": "a", "label": "Moderator"}, {"id": "b", "label": "Dana Schneider"}, {"id": "c", "label": "Florian Bader"}]}, "scoring": {"max_points": 1}},
+            {"question_id": "GOE-B1-H4-3", "type": "speaker_attribution", "order": 3, "instructions": {"text_html": "Es ist moglich, Kinder zu haben und auch zu arbeiten."}, "interaction": {"options": [{"id": "a", "label": "Moderator"}, {"id": "b", "label": "Dana Schneider"}, {"id": "c", "label": "Florian Bader"}]}, "scoring": {"max_points": 1}},
+            {"question_id": "GOE-B1-H4-4", "type": "speaker_attribution", "order": 4, "instructions": {"text_html": "In der Krippe lernen Kinder andere Dinge als zu Hause."}, "interaction": {"options": [{"id": "a", "label": "Moderator"}, {"id": "b", "label": "Dana Schneider"}, {"id": "c", "label": "Florian Bader"}]}, "scoring": {"max_points": 1}},
+            {"question_id": "GOE-B1-H4-5", "type": "speaker_attribution", "order": 5, "instructions": {"text_html": "In Krippen mussen Erzieherinnen viele Kinder gleichzeitig betreuen."}, "interaction": {"options": [{"id": "a", "label": "Moderator"}, {"id": "b", "label": "Dana Schneider"}, {"id": "c", "label": "Florian Bader"}]}, "scoring": {"max_points": 1}},
+            {"question_id": "GOE-B1-H4-6", "type": "speaker_attribution", "order": 6, "instructions": {"text_html": "Kinder sollen lernen, sich auch mal alleine zu beschaftigen."}, "interaction": {"options": [{"id": "a", "label": "Moderator"}, {"id": "b", "label": "Dana Schneider"}, {"id": "c", "label": "Florian Bader"}]}, "scoring": {"max_points": 1}},
+            {"question_id": "GOE-B1-H4-7", "type": "speaker_attribution", "order": 7, "instructions": {"text_html": "Manche Kindertagesstatten haben zu wenig Geld."}, "interaction": {"options": [{"id": "a", "label": "Moderator"}, {"id": "b", "label": "Dana Schneider"}, {"id": "c", "label": "Florian Bader"}]}, "scoring": {"max_points": 1}},
+            {"question_id": "GOE-B1-H4-8", "type": "speaker_attribution", "order": 8, "instructions": {"text_html": "Auch Familien mit wenig Geld sollen Kinder haben konnen."}, "interaction": {"options": [{"id": "a", "label": "Moderator"}, {"id": "b", "label": "Dana Schneider"}, {"id": "c", "label": "Florian Bader"}]}, "scoring": {"max_points": 1}}
+          ]
+        }
+      ]
+    },
+    {
+      "key": "writing",
+      "name": "Schreiben",
+      "skill": "writing",
+      "duration_min": 60,
+      "max_score": 100,
+      "description": "3 Aufgaben: E-Mail zur Kontaktpflege, Meinungsausserung zu einem Thema, E-Mail zur Handlungsregulierung.",
+      "question_groups": [
+        {
+          "group_id": "GOE-B1-W1",
+          "title": "Aufgabe 1 - E-Mail zur Kontaktpflege",
+          "order": 1,
+          "instructions": {"text_html": "Schreiben Sie eine E-Mail (circa 80 Worter). Schreiben Sie etwas zu allen drei Punkten. Achten Sie auf den Textaufbau (Anrede, Einleitung, Reihenfolge der Inhaltspunkte, Schluss)."},
+          "stimulus": {"text_html": "Sie haben vor einer Woche Ihren Geburtstag gefeiert. Ein Freund/Eine Freundin von Ihnen konnte nicht zu Ihrer Feier kommen, weil er/sie krank war."},
+          "metadata": {"total_points": 40, "word_count": 80},
+          "questions": [
+            {"question_id": "GOE-B1-W1-1", "type": "writing_prompt", "order": 1, "instructions": {"text_html": "1) Beschreiben Sie: Wie war die Feier? 2) Begrunden Sie: Welches Geschenk finden Sie besonders toll und warum? 3) Machen Sie einen Vorschlag fur ein Treffen."}, "scoring": {"max_points": 40, "criteria": ["erfuellung", "kohaerenz", "wortschatz", "strukturen"]}}
+          ]
+        },
+        {
+          "group_id": "GOE-B1-W2",
+          "title": "Aufgabe 2 - Meinungsausserung",
+          "order": 2,
+          "instructions": {"text_html": "Schreiben Sie nun Ihre Meinung zum Thema (circa 80 Worter)."},
+          "stimulus": {"text_html": "<p>Sie haben im Fernsehen eine Diskussionssendung zum Thema 'Personliche Kontakte und Internet' gesehen. Im Online-Gastebuch der Sendung finden Sie folgende Meinung:</p><blockquote>Ich finde es schlimm, dass personliche Treffen immer seltener werden. Freunde wohnen oft sehr weit auseinander. Und da ist man dann schon froh uber das Internet. Aber Kontakte im Internet konnen doch personliche Treffen nicht ersetzen! - Tanja</blockquote>"},
+          "metadata": {"total_points": 40, "word_count": 80},
+          "questions": [
+            {"question_id": "GOE-B1-W2-1", "type": "writing_prompt", "order": 1, "instructions": {"text_html": "Schreiben Sie Ihre Meinung zum Thema 'Personliche Kontakte und Internet'."}, "scoring": {"max_points": 40, "criteria": ["erfuellung", "kohaerenz", "wortschatz", "strukturen"]}}
+          ]
+        },
+        {
+          "group_id": "GOE-B1-W3",
+          "title": "Aufgabe 3 - E-Mail zur Handlungsregulierung",
+          "order": 3,
+          "instructions": {"text_html": "Schreiben Sie eine E-Mail (circa 40 Worter). Vergessen Sie nicht die Anrede und den Gruss am Schluss."},
+          "stimulus": {"text_html": "Ihre Kursleiterin, Frau Muller, hat Sie zu einem Gesprach uber Ihre personlichen Lernziele eingeladen. Zu dem Termin konnen Sie aber nicht kommen."},
+          "metadata": {"total_points": 20, "word_count": 40},
+          "questions": [
+            {"question_id": "GOE-B1-W3-1", "type": "writing_prompt", "order": 1, "instructions": {"text_html": "Schreiben Sie an Frau Muller. Entschuldigen Sie sich hoflich und berichten Sie, warum Sie nicht kommen konnen."}, "scoring": {"max_points": 20, "criteria": ["erfuellung", "kohaerenz", "wortschatz", "strukturen"]}}
+          ]
+        }
+      ]
+    },
+    {
+      "key": "speaking",
+      "name": "Sprechen",
+      "skill": "speaking",
+      "duration_min": 15,
+      "max_score": 100,
+      "description": "3 Teile fur zwei Teilnehmende: Gemeinsam etwas planen, Ein Thema prasentieren, Uber ein Thema sprechen. Vorbereitungszeit: 15 Minuten.",
+      "question_groups": [
+        {
+          "group_id": "GOE-B1-S1",
+          "title": "Teil 1 - Gemeinsam etwas planen",
+          "order": 1,
+          "instructions": {"text_html": "Sprechen Sie uber die Punkte unten, machen Sie Vorschlage und reagieren Sie auf die Vorschlage Ihres Gesprachspartners. Planen und entscheiden Sie gemeinsam, was Sie tun mochten."},
+          "stimulus": {"text_html": "Ein Teilnehmer aus dem Deutschkurs hatte einen Unfall und liegt im Krankenhaus. Diese Woche mochten Sie ihn besuchen und ein Geschenk von der ganzen Gruppe mitbringen. Uberlegen Sie, wie Sie ihn unterstutzen konnen."},
+          "metadata": {"total_points": 28, "suggested_time_sec": 180},
+          "questions": [
+            {"question_id": "GOE-B1-S1-1", "type": "collaborative_planning", "order": 1, "instructions": {"text_html": "Planen Sie: Wann besuchen? Wie hinkommen? Was mitnehmen? Wie kann man helfen?"}, "scoring": {"max_points": 28, "criteria": ["erfuellung", "interaktion", "wortschatz", "strukturen"]}}
+          ]
+        },
+        {
+          "group_id": "GOE-B1-S2",
+          "title": "Teil 2 - Ein Thema prasentieren",
+          "order": 2,
+          "instructions": {"text_html": "Sie sollen Ihren Zuhorern ein aktuelles Thema prasentieren. Dazu finden Sie hier funf Folien. Folgen Sie den Anweisungen links und schreiben Sie Ihre Notizen."},
+          "stimulus": {"text_html": "Thema 1: 'Brauchen Kinder Mobiltelefone?' oder Thema 2: 'Sehen Kinder zu viel fern?' - Prasentieren Sie zu 5 Folien: Einleitung, Meine personlichen Erfahrungen, Die Situation in meinem Heimatland, Vor- und Nachteile & Meine Meinung, Abschluss & Dank."},
+          "metadata": {"total_points": 40, "suggested_time_sec": 180},
+          "questions": [
+            {"question_id": "GOE-B1-S2-1", "type": "presentation", "order": 1, "instructions": {"text_html": "Tragen Sie eine Prasentation zu 5 vorgegebenen Folien vor."}, "scoring": {"max_points": 40, "criteria": ["erfuellung", "kohaerenz", "wortschatz", "strukturen"]}}
+          ]
+        },
+        {
+          "group_id": "GOE-B1-S3",
+          "title": "Teil 3 - Uber ein Thema sprechen",
+          "order": 3,
+          "instructions": {"text_html": "Nach Ihrer Prasentation: Reagieren Sie auf die Ruckmeldung und auf Fragen der Prufer und des Gesprachspartners. Nach der Prasentation Ihres Partners: Geben Sie eine Ruckmeldung zur Prasentation und stellen Sie auch eine Frage."},
+          "metadata": {"total_points": 32, "suggested_time_sec": 120},
+          "questions": [
+            {"question_id": "GOE-B1-S3-1", "type": "discussion", "order": 1, "instructions": {"text_html": "Geben Sie Feedback zur Prasentation Ihres Partners und beantworten Sie Fragen zu Ihrer Prasentation."}, "scoring": {"max_points": 32, "criteria": ["erfuellung", "aussprache"]}}
+          ]
+        }
+      ]
+    }
+  ]
+}
