@@ -390,14 +390,43 @@ EOT;
     private static function formatFilters(array $filters): string
     {
         $parts = [];
-        if (isset($filters['difficulty'])) {
-            $parts[] = "Difficulty: {$filters['difficulty']}";
+
+        // CRITICAL: Type specification
+        if (isset($filters['type'])) {
+            $parts[] = "**Type: {$filters['type']}**";
         }
+
+        // Quantity (if specified)
+        if (isset($filters['pick'])) {
+            $parts[] = "Quantity: {$filters['pick']} questions";
+        }
+
+        // Difficulty
+        if (isset($filters['difficulty'])) {
+            $difficultyStr = is_array($filters['difficulty'])
+                ? implode(', ', $filters['difficulty'])
+                : $filters['difficulty'];
+            $parts[] = "Difficulty: {$difficultyStr}";
+        }
+
+        // CEFR Level
+        if (isset($filters['cefr_level']) && is_array($filters['cefr_level'])) {
+            $parts[] = 'CEFR: '.implode(', ', $filters['cefr_level']);
+        }
+
+        // Topic
         if (isset($filters['topic'])) {
             $parts[] = "Topic: {$filters['topic']}";
         }
+
+        // Tags
         if (isset($filters['tags']) && is_array($filters['tags'])) {
             $parts[] = 'Tags: '.implode(', ', $filters['tags']);
+        }
+
+        // Skills measured
+        if (isset($filters['skills_measured']) && is_array($filters['skills_measured'])) {
+            $parts[] = 'Skills: '.implode(', ', $filters['skills_measured']);
         }
 
         return $parts ? implode(', ', $parts) : 'No specific filters';

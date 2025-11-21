@@ -284,22 +284,35 @@ class PromptOverviewPhaseB
 
 # Выбор режима assembly для секции
 
+## ВАЖНО: Приоритет для Listening/Reading секций
+
+**Для Listening секций языковых экзаменов:**
+→ ВСЕГДА используй `inline` с `question_groups` если экзамен имеет задания (tasks) где несколько вопросов слушают одно аудио
+→ Типичная структура: Task I (аудио 1 → 5-6 вопросов), Task II (аудио 2 → 5-6 вопросов), и т.д.
+→ Это создаёт QuestionGroup записи с shared stimulus
+
+**Для Reading секций:**
+→ Используй `inline` с `question_groups` если текст(ы) с несколькими вопросами на каждый
+→ Или используй `blueprint` если нужна выборка из пула
+
 ## Когда использовать `pool`:
-- Все вопросы секции однородны и требуют ОДИНАКОВЫХ критериев отбора
-- Пример: Listening section с 30 multiple-choice questions
-- Пример: Reading section с вопросами разных типов, но из одного пула
+- Grammar/Use of English секции где вопросы независимы друг от друга
+- Когда нет shared stimulus между вопросами
+- **НЕ для listening с общим аудио!**
 
 ## Когда использовать `blueprint`:
 - Секция состоит из РАЗНЫХ частей с разными критериями
 - Пример: Writing section = Part 1 (email, 150 words) + Part 2 (essay, 250 words)
-- Пример: Reading section = Part 1 (easy texts) + Part 2 (medium) + Part 3 (hard)
-- Каждый slot в blueprint - это отдельная часть с собственными filters
+- С `shared_stimulus: true` в slot → создаст QuestionGroup
 
-## Когда использовать `inline`:
-- Секция имеет строго ФИКСИРОВАННУЮ структуру без вариативности
-- Вопросы не выбираются из пула, а создаются по жёсткому шаблону
-- Пример: Speaking section с фиксированными 3 частями (introduction, cue card, discussion)
-- **НЕ заполняй контент вопросов** - только ID placeholders для структуры
+## Когда использовать `inline` с `question_groups`:
+- **ВСЕГДА для Listening секций** с заданиями где 2+ вопроса на одно аудио
+- Reading секции где группа вопросов относится к одному тексту
+- Пример: Listening Task I = 1 аудио → 6 вопросов = 1 question_group
+
+## Когда использовать `inline` с `tasks[]`:
+- Speaking, Writing где каждый вопрос имеет свой stimulus
+- **НЕ заполняй контент вопросов** - только ID placeholders
 
 # Рекомендации по типам вопросов для секций
 
