@@ -170,9 +170,29 @@ class ParallelQuestionSynthesizer extends AbstractAiService
                     $validatedQuestions = $this->questionValidator->validateAndFinalize($questions, $plan, $exam);
                     $dedupedQuestions = $this->deduplicator->detectDuplicates($validatedQuestions, $exam);
 
-                    // Check if we should create QuestionGroup (blueprint mode with shared_stimulus)
+                    // Check if we should create QuestionGroup (blueprint or inline mode with question_groups)
                     $attachedCount = 0;
-                    if ($plan->assembly_mode === 'blueprint' && !empty($dedupedQuestions)) {
+                    $questionGroups = $plan->plan_data['question_groups'] ?? [];
+
+                    // Inline mode with explicit question_groups
+                    if (!empty($questionGroups) && !empty($dedupedQuestions)) {
+                        Log::info('[ParallelQuestionSynthesizer] Creating QuestionGroups from plan_data', [
+                            'plan_id' => $plan->id,
+                            'section_id' => $plan->section_id,
+                            'groups_count' => count($questionGroups),
+                            'questions_count' => count($dedupedQuestions),
+                        ]);
+
+                        $attachedCount = $this->createQuestionGroupsFromPlanData(
+                            $plan,
+                            $exam,
+                            $questionGroups,
+                            $dedupedQuestions
+                        );
+                        $attachedQuestions = ['groups_created'];
+                    }
+                    // Blueprint mode with shared_stimulus
+                    elseif ($plan->assembly_mode === 'blueprint' && !empty($dedupedQuestions)) {
                         $slots = $plan->plan_data['slots'] ?? [];
                         $firstSlot = $slots[0] ?? [];
 
@@ -201,7 +221,7 @@ class ParallelQuestionSynthesizer extends AbstractAiService
                             $attachedCount = count($attachedQuestions);
                         }
                     } else {
-                        // Not blueprint mode, or inline/pool mode - use normal attachment
+                        // Not blueprint mode, or inline/pool mode without question_groups - use normal attachment
                         $attachedQuestions = $this->attacher->attachToExam($dedupedQuestions, $plan, $exam);
                         $attachedCount = count($attachedQuestions);
                     }
@@ -669,5 +689,74 @@ class ParallelQuestionSynthesizer extends AbstractAiService
 
         // Create QuestionGroup using QuestionGroupGenerationService
         return $this->questionGroupService->generateQuestionGroup($plan, $groupSpec, $groupOrder);
+    }
+
+    /**
+     * Create multiple QuestionGroups from plan_data.question_groups
+     *
+     * @param  GenerationPlan  $plan  Generation plan
+     * @param  Exam  $exam  Exam model
+     * @param  array  $groupConfigs  Question group configurations from plan_data
+     * @param  array  $questions  AI-generated questions to distribute
+     * @return int  Total questions attached
+     */
+    protected function createQuestionGroupsFromPlanData(
+        GenerationPlan $plan,
+        Exam $exam,
+        array $groupConfigs,
+        array $questions
+    ): int {
+        $totalAttached = 0;
+        $questionIndex = 0;
+
+        foreach ($groupConfigs as $order => $groupConfig) {
+            $groupId = $groupConfig['id'] ?? 'group_' . $order;
+            $questionsForGroup = $groupConfig['questions'] ?? [];
+            $questionsCount = count($questionsForGroup);
+
+            // Take questions for this group from generated questions
+            $groupQuestions = array_slice($questions, $questionIndex, $questionsCount);
+            $questionIndex += $questionsCount;
+
+            if (empty($groupQuestions)) {
+                Log::warning('[ParallelQuestionSynthesizer] No questions for group', [
+                    'group_id' => $groupId,
+                    'expected' => $questionsCount,
+                ]);
+                continue;
+            }
+
+            // Build group spec
+            $groupSpec = [
+                'id' => $groupId,
+                'title' => $groupConfig['title'] ?? ucfirst($groupId),
+                'stimulus' => $groupConfig['stimulus'] ?? [],
+                'playback_settings' => $groupConfig['playback_settings'] ?? null,
+                'questions' => $groupQuestions,
+                'order' => $order,
+            ];
+
+            Log::info('[ParallelQuestionSynthesizer] Creating QuestionGroup from plan_data', [
+                'group_id' => $groupId,
+                'questions_count' => count($groupQuestions),
+            ]);
+
+            // Create QuestionGroup using service
+            $questionGroup = $this->questionGroupService->generateQuestionGroup($plan, $groupSpec, $order);
+            $totalAttached += $questionGroup->questions()->count();
+        }
+
+        // Attach remaining ungrouped questions
+        if ($questionIndex < count($questions)) {
+            $remainingQuestions = array_slice($questions, $questionIndex);
+            $attachedQuestions = $this->attacher->attachToExam($remainingQuestions, $plan, $exam);
+            $totalAttached += count($attachedQuestions);
+
+            Log::info('[ParallelQuestionSynthesizer] Attached remaining ungrouped questions', [
+                'count' => count($attachedQuestions),
+            ]);
+        }
+
+        return $totalAttached;
     }
 }

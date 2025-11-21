@@ -789,6 +789,17 @@ class RunExamResearchJob implements ShouldQueue
         }
 
         // Generate example questions for each archetype (both V1 and V2)
+        // Skip if skip_examples flag is set (default: false for backward compatibility)
+        $skipExamples = (bool) ($task->request['skip_examples'] ?? false);
+
+        if ($skipExamples) {
+            $task->addActivity('example_generation_skipped', 'Example generation skipped (skip_examples=true)');
+            \Illuminate\Support\Facades\Log::info('Skipping example generation', [
+                'exam_id' => $exam->id,
+                'task_id' => $task->id,
+                'reason' => 'skip_examples flag set',
+            ]);
+        } else {
         try {
             \Illuminate\Support\Facades\Log::info('Starting example generation', [
                 'exam_id' => $exam->id,
@@ -838,6 +849,7 @@ class RunExamResearchJob implements ShouldQueue
             $task->result = $result;
             $task->save();
         }
+        } // end else (skip_examples)
 
         // ========================================
         // FINALIZATION: Complete research task

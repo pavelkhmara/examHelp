@@ -224,6 +224,7 @@ class ResearchAction extends Action
                 'without_confirmation' => false, // Always require confirmation
                 'overview_model' => $fields->overview_model ?? 'gpt-5-mini',
                 'use_two_phase_generation' => $fields->use_two_phase_generation ?? true,
+                'skip_examples' => true, // Research (Legacy) skips examples by default
             ];
 
             // Generate unique idempotency key for this request

@@ -34,6 +34,34 @@ class RunOverviewPhaseAAction extends Action
     {
         /** @var \App\Models\Exam $exam */
         foreach ($models as $exam) {
+            // Check if ConfirmedIdentity exists and is valid
+            $confirmedIdentity = \App\Models\ConfirmedIdentity::where('exam_id', $exam->id)
+                ->where('is_valid', true)
+                ->first();
+
+            if (!$confirmedIdentity) {
+                // No valid identity - run identification first
+                // Create research task that will run identity then Phase A
+                $task = GenerationTask::create([
+                    'exam_id' => $exam->id,
+                    'type' => 'research',
+                    'status' => 'queued',
+                    'request' => [
+                        'source' => 'phase_a_auto_identity',
+                        'use_two_phase_generation' => true,
+                        'skip_examples' => true,
+                        'stop_after_phase_a' => true, // Will stop after Phase A
+                    ],
+                ]);
+
+                $task->addActivity('identity_required', 'Phase A requested but no ConfirmedIdentity - running identity first');
+
+                \App\Jobs\RunExamResearchJob::dispatch($task->id);
+
+                return Action::message('⚡ Identity not confirmed. Running Identity → Phase A automatically. Check Activity Timeline.');
+            }
+
+            // Identity exists - run Phase A only
             $task = GenerationTask::create([
                 'exam_id' => $exam->id,
                 'type' => 'research_phase_a',

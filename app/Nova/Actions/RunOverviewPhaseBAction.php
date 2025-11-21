@@ -54,6 +54,13 @@ class RunOverviewPhaseBAction extends Action
     {
         /** @var \App\Models\Exam $exam */
         foreach ($models as $exam) {
+            // Check research_status for Phase A completion
+            $status = $exam->research_status;
+            $validStatuses = ['phase_a_completed', 'phase_b_completed', 'running_phase_b', 'completed'];
+            if (!in_array($status, $validStatuses)) {
+                return Action::danger("❌ Phase A not completed (status: {$status}). Run \"1️⃣ Phase A: Skeleton\" first.");
+            }
+
             $skeleton = $exam->structure_v2 ?? null;
             if (! $skeleton) {
                 return Action::danger('❌ Phase A not completed. Run "1️⃣ Phase A: Skeleton" first.');
