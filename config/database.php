@@ -59,7 +59,17 @@ return [
             'engine' => null,
             'options' => extension_loaded('pdo_mysql') ? array_filter([
                 PDO::MYSQL_ATTR_SSL_CA => env('MYSQL_ATTR_SSL_CA'),
+                // Connection timeout: 5 seconds for initial connection
+                PDO::ATTR_TIMEOUT => 5,
+                // Enable persistent connections to reduce overhead (careful with connection limits)
+                // PDO::ATTR_PERSISTENT => false, // Disabled by default to avoid connection pool exhaustion
+                // Set error mode to exceptions for better error handling
+                PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
+                // Enable emulated prepared statements for better compatibility
+                PDO::ATTR_EMULATE_PREPARES => true,
             ]) : [],
+            // Reconnect on disconnect (Laravel specific)
+            'sticky' => false,
         ],
 
         'mariadb' => [

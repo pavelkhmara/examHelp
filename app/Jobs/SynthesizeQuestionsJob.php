@@ -16,6 +16,7 @@ use Illuminate\Support\Facades\Log;
 class SynthesizeQuestionsJob implements ShouldQueue
 {
     use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
+    use \App\Jobs\Concerns\EnsuresConnectionStability;
 
     public int $tries = 3;
     public int $timeout = 1800; // 30 minutes for AI-heavy task
@@ -24,6 +25,9 @@ class SynthesizeQuestionsJob implements ShouldQueue
 
     public function handle(): void
     {
+        // Ensure database connection is stable before starting
+        $this->ensureConnection();
+
         $task = GenerationTask::query()->findOrFail($this->taskId);
         /** @var Exam $exam */
         $exam = Exam::query()->findOrFail($task->exam_id);
@@ -129,6 +133,10 @@ class SynthesizeQuestionsJob implements ShouldQueue
 
             // Process all plans (synthesize questions in parallel for sections)
             $task->updateHeartbeat();
+
+            // Keep connection alive before long operation
+            $this->keepConnectionAlive();
+
             $results = $this->synthesizeInParallel($task, $exam, $plans);
 
             $totalGenerated = collect($results)->sum('generated');
