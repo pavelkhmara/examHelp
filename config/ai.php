@@ -8,6 +8,11 @@ return [
     'async_enabled' => (bool) env('AI_ASYNC_ENABLED', false),
     'parallel_max' => (int) env('AI_PARALLEL_MAX', 5), // Max parallel AI requests
 
+    // Task-level parallelization (NEW)
+    // When enabled, each filter/slot gets its own job for parallel execution across workers
+    // Expected speedup: 3-4x (20-30min → 4-6min for 40 questions)
+    'use_task_level_parallelization' => (bool) env('AI_USE_TASK_LEVEL_PARALLELIZATION', false),
+
     // Rate limiting configuration
     'rate_limit_enabled' => (bool) env('AI_RATE_LIMIT_ENABLED', true),
     'rate_limit_rpm' => (int) env('AI_RATE_LIMIT_RPM', 60), // Requests per minute

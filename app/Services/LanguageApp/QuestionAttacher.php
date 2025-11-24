@@ -178,10 +178,9 @@ class QuestionAttacher
         // После создания вопросов - генерируем аудио где необходимо
         $this->generateAudioForQuestions($exam, $plan);
 
-        if ($exam->meta['generated_questions_v2']) {
-            return $exam->meta['generated_questions_v2'];
-        }
-        return [];
+        // FIXED: Return only the questions that were attached in THIS call,
+        // not all accumulated questions in exam.meta (over-generation bug)
+        return $questions;
     }
 
     /**

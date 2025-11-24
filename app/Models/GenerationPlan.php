@@ -48,10 +48,12 @@ class GenerationPlan extends Model
         'started_at',
         'completed_at',
         'attached_at',
+        'meta',
     ];
 
     protected $casts = [
         'plan_data' => 'array',
+        'meta' => 'array',
         'total_questions' => 'integer',
         'generated_questions' => 'integer',
         'started_at' => 'datetime',

@@ -175,6 +175,58 @@ class AssemblyResolver
     }
 
     /**
+     * Normalize invalid question types to valid enum values
+     *
+     * Phase B AI sometimes generates invalid types like "read_mcq", "read_true_false"
+     * that don't exist in QuestionType enum. This method normalizes them to valid types.
+     *
+     * @param string $type Raw type from AI
+     * @return string Normalized type
+     */
+    protected function normalizeQuestionType(string $type): string
+    {
+        // Type mapping: invalid → valid
+        $mapping = [
+            // Reading types (invalid prefixes)
+            'read_mcq' => 'single_select',
+            'read_true_false' => 'true_false',
+            'read_yes_no_ng' => 'yes_no_ng',
+            'rdg_mcq' => 'single_select',
+
+            // Listening types (normalize variations)
+            'listen_true_false' => 'listen_mcq',
+            'listen_yes_no_ng' => 'listen_mcq',
+
+            // Grammar/Lexis types
+            'sentence_completion' => 'single_select',
+            'text_input' => 'short_answer',
+
+            // Common variations
+            'multiple_choice' => 'single_select',
+            'multiple_select' => 'multi_select',
+            'fill_in_the_blank' => 'gap_cloze',
+        ];
+
+        if (isset($mapping[$type])) {
+            Log::info('[AssemblyResolver] Normalized question type', [
+                'original' => $type,
+                'normalized' => $mapping[$type],
+            ]);
+            return $mapping[$type];
+        }
+
+        // Validate against enum
+        if (!in_array($type, \App\Domain\Taxonomy\QuestionType::all(), true)) {
+            Log::warning('[AssemblyResolver] Unknown question type, defaulting to single_select', [
+                'type' => $type,
+            ]);
+            return 'single_select';
+        }
+
+        return $type;
+    }
+
+    /**
      * Resolve pool assembly mode
      *
      * Pool mode generates questions from a single pool with filters.
@@ -199,12 +251,21 @@ class AssemblyResolver
      *   },
      *   "total_questions": 40
      * }
+     *
+     * FIXED (24.11.2025): Normalizes invalid question types in filters
      */
     public function resolvePool(array $section, array $assembly): array
     {
         // Auto-generate pool_id if not provided (AI may omit it)
         $poolId = $assembly['pool_id'] ?? "pool_{$section['id']}_" . md5(json_encode($assembly['filters'] ?? []));
         $filters = $assembly['filters'] ?? [];
+
+        // ✅ FIX: Normalize question types in filters
+        foreach ($filters as $index => $filter) {
+            if (isset($filter['type'])) {
+                $filters[$index]['type'] = $this->normalizeQuestionType($filter['type']);
+            }
+        }
 
         // Support both pick (old) and questions_count (new) for backward compatibility
         // If not specified at assembly level, sum from filters

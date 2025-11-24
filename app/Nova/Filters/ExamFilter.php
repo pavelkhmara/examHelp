@@ -26,7 +26,10 @@ class ExamFilter extends Filter
      */
     public function options(Request $request)
     {
-        return Exam::orderBy('title')
+        // Оптимизация: выбираем только необходимые поля для уменьшения нагрузки на MySQL
+        return Exam::select(['id', 'title'])
+            ->orderBy('title')
+            ->limit(1000) // Ограничиваем до 1000 экзаменов для фильтра
             ->get()
             ->pluck('id', 'title')
             ->toArray();

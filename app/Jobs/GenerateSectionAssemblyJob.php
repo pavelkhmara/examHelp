@@ -55,8 +55,12 @@ class GenerateSectionAssemblyJob implements ShouldQueue
                 'has_assembly' => isset($sectionWithAssembly['assembly']),
             ]);
 
+            // Get expected sections list before transaction
+            $task->refresh();
+            $expectedSections = $task->request['expected_sections'] ?? [];
+
             // Atomic update: add/update section in exam.meta.structure_v2.sections
-            DB::transaction(function () use ($exam, $sectionWithAssembly) {
+            DB::transaction(function () use ($exam, $sectionWithAssembly, $expectedSections) {
                 $exam = Exam::query()->lockForUpdate()->findOrFail($exam->id);
 
                 $structure = $exam->meta['structure_v2'] ?? [];
@@ -73,7 +77,16 @@ class GenerateSectionAssemblyJob implements ShouldQueue
                 }
 
                 if (!$updated) {
-                    $sections[] = $sectionWithAssembly;
+                    // Only add section if it's in the expected sections list
+                    // This prevents orphaned sections from failed job retries
+                    if (in_array($this->sectionId, $expectedSections, true)) {
+                        $sections[] = $sectionWithAssembly;
+                    } else {
+                        Log::warning('Skipping orphaned section - not in expected_sections list', [
+                            'section_id' => $this->sectionId,
+                            'expected_sections' => $expectedSections,
+                        ]);
+                    }
                 }
 
                 $structure['sections'] = $sections;

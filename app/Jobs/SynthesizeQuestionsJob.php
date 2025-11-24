@@ -192,7 +192,19 @@ class SynthesizeQuestionsJob implements ShouldQueue
         Exam $exam,
         $plans
     ): array {
-        // Use ParallelQuestionSynthesizer for parallel AI requests
+        // Check if task-level parallelization is enabled
+        $useTaskLevelParallelization = config('ai.use_task_level_parallelization', false);
+
+        if ($useTaskLevelParallelization) {
+            Log::info('Using task-level parallelization', [
+                'task_id' => $task->id,
+                'plans_count' => $plans->count(),
+            ]);
+
+            return $this->synthesizeWithTaskLevelParallelization($task, $exam, $plans);
+        }
+
+        // LEGACY: Use ParallelQuestionSynthesizer for section-level parallelization
         $parallelSynthesizer = app(\App\Services\LanguageApp\ParallelQuestionSynthesizer::class);
 
         $task->addActivity('parallel_synthesis_start', 'Starting parallel synthesis for all sections', [
@@ -233,6 +245,182 @@ class SynthesizeQuestionsJob implements ShouldQueue
             $task->addActivity('parallel_synthesis_failed', 'Parallel synthesis failed: '.$e->getMessage());
 
             throw $e;
+        }
+    }
+
+    /**
+     * NEW: Synthesize questions using task-level parallelization.
+     * Dispatches SynthesizeTaskQuestionsJob for each filter/slot.
+     *
+     * @param GenerationTask $task
+     * @param Exam $exam
+     * @param \Illuminate\Support\Collection $plans
+     * @return array
+     */
+    private function synthesizeWithTaskLevelParallelization(
+        GenerationTask $task,
+        Exam $exam,
+        $plans
+    ): array {
+        $task->addActivity('task_level_synthesis_start', 'Starting task-level parallelization', [
+            'plans_count' => $plans->count(),
+        ]);
+
+        $results = [];
+
+        foreach ($plans as $plan) {
+            try {
+                // Dispatch task-level jobs for this plan
+                $this->dispatchTaskLevelJobs($exam, $plan, $task);
+
+                // Wait for all filters to complete
+                $this->waitForTaskCompletion($plan, $task);
+
+                // Plan completed successfully
+                $results[] = [
+                    'plan_id' => $plan->id,
+                    'section_id' => $plan->section_id,
+                    'success' => true,
+                    'generated' => $plan->meta['questions_generated'] ?? 0,
+                    'attached' => $plan->meta['questions_generated'] ?? 0,
+                ];
+
+            } catch (\Throwable $e) {
+                Log::error("Plan {$plan->id} task-level synthesis failed", [
+                    'error' => $e->getMessage(),
+                ]);
+
+                $results[] = [
+                    'plan_id' => $plan->id,
+                    'section_id' => $plan->section_id,
+                    'success' => false,
+                    'error' => $e->getMessage(),
+                ];
+            }
+        }
+
+        return $results;
+    }
+
+    /**
+     * Dispatch task-level jobs for all filters/slots in a plan.
+     *
+     * @param Exam $exam
+     * @param GenerationPlan $plan
+     * @param GenerationTask $task
+     * @return void
+     * @throws \RuntimeException
+     */
+    protected function dispatchTaskLevelJobs(Exam $exam, GenerationPlan $plan, GenerationTask $task): void
+    {
+        Log::info("Dispatching task-level jobs for plan {$plan->id}");
+
+        // Get plan data
+        $planData = $plan->plan_data ?? [];
+        $mode = $plan->assembly_mode;
+
+        // Extract filters/slots based on assembly mode
+        $filters = [];
+        if ($mode === 'pool') {
+            $filters = $planData['filters'] ?? [];
+        } elseif ($mode === 'blueprint') {
+            $filters = $planData['slots'] ?? [];
+        } elseif ($mode === 'inline') {
+            $filters = $planData['placeholders'] ?? [];
+        } else {
+            throw new \RuntimeException("Unknown assembly mode: {$mode}");
+        }
+
+        $totalFilters = count($filters);
+
+        if ($totalFilters === 0) {
+            Log::warning("No filters found in plan {$plan->id}, marking as completed");
+            $plan->markAsCompleted();
+            return;
+        }
+
+        // Initialize plan metadata
+        $plan->meta = array_merge($plan->meta ?? [], [
+            'total_filters' => $totalFilters,
+            'filters_completed' => 0,
+            'questions_generated' => 0,
+            'completed_filters' => [],
+            'failed_filters' => [],
+        ]);
+        $plan->save();
+
+        // Dispatch one job per filter
+        foreach ($filters as $index => $filter) {
+            $filterKey = "section_{$plan->section_id}_filter_{$index}";
+
+            Log::info("Dispatching SynthesizeTaskQuestionsJob for filter {$filterKey}", [
+                'plan_id' => $plan->id,
+                'filter_index' => $index,
+                'filter' => $filter,
+            ]);
+
+            SynthesizeTaskQuestionsJob::dispatch(
+                taskId: $task->id,
+                examId: $exam->id,
+                planId: $plan->id,
+                filterKey: $filterKey,
+                filterData: $filter
+            )->onQueue('default');
+        }
+
+        Log::info("Dispatched {$totalFilters} task-level jobs for plan {$plan->id}");
+    }
+
+    /**
+     * Poll plan.meta until all filters completed.
+     *
+     * @param GenerationPlan $plan
+     * @param GenerationTask $task
+     * @return void
+     * @throws \RuntimeException
+     */
+    protected function waitForTaskCompletion(GenerationPlan $plan, GenerationTask $task): void
+    {
+        $maxWaitTime = 30 * 60; // 30 minutes
+        $pollInterval = 10; // 10 seconds
+        $startTime = time();
+
+        $totalFilters = $plan->meta['total_filters'] ?? 0;
+
+        Log::info("Waiting for {$totalFilters} filters to complete (plan {$plan->id})");
+
+        while (true) {
+            sleep($pollInterval);
+
+            // Keep connection alive
+            $this->keepConnectionAlive();
+
+            // Refresh plan
+            $plan->refresh();
+
+            $completedFilters = $plan->meta['filters_completed'] ?? 0;
+            $questionsGenerated = $plan->meta['questions_generated'] ?? 0;
+
+            Log::info("Polling plan {$plan->id}: {$completedFilters}/{$totalFilters} filters completed, {$questionsGenerated} questions generated");
+
+            // Update task heartbeat
+            $task->updateHeartbeat();
+
+            // Check completion
+            if ($completedFilters >= $totalFilters) {
+                Log::info("All filters completed for plan {$plan->id}");
+                return;
+            }
+
+            // Check for failures
+            if ($plan->status === 'failed') {
+                throw new \RuntimeException("Plan {$plan->id} marked as failed: {$plan->error}");
+            }
+
+            // Timeout check
+            if (time() - $startTime > $maxWaitTime) {
+                throw new \RuntimeException("Timeout waiting for filters to complete (plan {$plan->id})");
+            }
         }
     }
 }
