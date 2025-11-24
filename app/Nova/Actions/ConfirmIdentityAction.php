@@ -74,7 +74,7 @@ class ConfirmIdentityAction extends Action
 
                 // CRITICAL: User confirmation overrides low confidence
                 // Set confidence to 1.0 (100%) since user manually verified
-                if ($originalConfidence < 0.97) {
+                if ($originalConfidence < 0.8) {
                     $identity['confidence'] = 1.0;
                     $identity['confidence_boosted_by'] = 'user_confirmation';
                     $identity['original_confidence'] = $originalConfidence;

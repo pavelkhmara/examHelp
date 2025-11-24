@@ -204,9 +204,10 @@ class ExamResearchController extends Controller
             $originalConfidence = $identity['confidence'] ?? 0;
             $identity['user_confirmed'] = true;
             $identity['confirmed_at'] = now()->toISOString();
+            $identity['hold'] = false; // CRITICAL: Reset hold so job doesn't pause again
 
             // Boost confidence to 1.0 if user manually confirmed
-            if ($originalConfidence < 0.97) {
+            if ($originalConfidence < 0.8) {
                 $identity['confidence'] = 1.0;
                 $identity['confidence_boosted_by'] = 'user_confirmation';
                 $identity['original_confidence'] = $originalConfidence;

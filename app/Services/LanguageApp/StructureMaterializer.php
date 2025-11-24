@@ -58,7 +58,7 @@ class StructureMaterializer
                     'description' => $section['description'] ?? null,
                     'order' => $sectionOrder,
                     'meta' => [
-                        'tasks' => $section['tasks'] ?? [],
+                        'questions' => $section['questions'] ?? [],
                         'assembly' => $section['assembly'] ?? null,
                     ],
                 ]);

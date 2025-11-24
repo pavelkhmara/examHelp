@@ -248,18 +248,18 @@ class RunExamResearchJob implements ShouldQueue
 
             // NOTE: ConfidenceBoost is now a separate manual action (ConfidenceBoostAction)
             // It is no longer part of the automatic pipeline
-            // Operator can trigger it manually from Nova when confidence is 0.80-0.97
+            // Operator can trigger it manually from Nova when confidence is 0.80-0.80
 
             // CRITICAL: After identity guard, check if confidence is acceptable
-            // If confidence < 0.97, we MUST stop and request user confirmation
+            // If confidence < 0.8, we MUST stop and request user confirmation
             // UNLESS user already confirmed (from ConfirmIdentityAction) OR without_confirmation=true
             $finalConfidence = $identityResult['confidence'] ?? 0.0;
             $userConfirmed = $identityResult['user_confirmed'] ?? false;
             $withoutConfirmation = (bool) ($task->request['without_confirmation'] ?? false);
 
-            if ($finalConfidence < 0.97 && ! $userConfirmed && ! $withoutConfirmation) {
-                $task->addActivity('decision_point_confidence_check', "Условие: confidence < 0.97 И НЕ user_confirmed И НЕ without_confirmation (текущий: {$finalConfidence}, подтверждено: нет, без подтверждения: нет). Решение: PAUSE - ожидание подтверждения пользователя", [
-                    'condition' => 'confidence < 0.97 AND NOT user_confirmed AND NOT without_confirmation',
+            if ($finalConfidence < 0.8 && ! $userConfirmed && ! $withoutConfirmation) {
+                $task->addActivity('decision_point_confidence_check', "Условие: confidence < 0.8 И НЕ user_confirmed И НЕ without_confirmation (текущий: {$finalConfidence}, подтверждено: нет, без подтверждения: нет). Решение: PAUSE - ожидание подтверждения пользователя", [
+                    'condition' => 'confidence < 0.8 AND NOT user_confirmed AND NOT without_confirmation',
                     'confidence' => $finalConfidence,
                     'user_confirmed' => false,
                     'without_confirmation' => false,
@@ -281,13 +281,13 @@ class RunExamResearchJob implements ShouldQueue
                     'exam_id' => $exam->id,
                     'task_id' => $task->id,
                     'confidence' => $finalConfidence,
-                    'required' => 0.97,
+                    'required' => 0.8,
                     'identity' => $identityResult,
                 ]);
 
-                $task->addActivity('confidence_too_low', "Pipeline paused: confidence too low ({$finalConfidence} < 0.97)", [
+                $task->addActivity('confidence_too_low', "Pipeline paused: confidence too low ({$finalConfidence} < 0.8)", [
                     'confidence' => $finalConfidence,
-                    'required' => 0.97,
+                    'required' => 0.8,
                 ]);
 
                 // STOP - do not continue pipeline with low confidence
@@ -296,8 +296,8 @@ class RunExamResearchJob implements ShouldQueue
 
             // If user confirmed or without_confirmation, log it
             if ($userConfirmed || $withoutConfirmation) {
-                $task->addActivity('decision_point_confidence_check', "Условие: confidence >= 0.97 ИЛИ user_confirmed ИЛИ without_confirmation (текущий: {$finalConfidence}, подтверждено: ".($userConfirmed ? 'да' : 'нет').', без подтверждения: '.($withoutConfirmation ? 'да' : 'нет').'). Решение: продолжить к проверке hold', [
-                    'condition' => 'confidence >= 0.97 OR user_confirmed OR without_confirmation',
+                $task->addActivity('decision_point_confidence_check', "Условие: confidence >= 0.8 ИЛИ user_confirmed ИЛИ without_confirmation (текущий: {$finalConfidence}, подтверждено: ".($userConfirmed ? 'да' : 'нет').', без подтверждения: '.($withoutConfirmation ? 'да' : 'нет').'). Решение: продолжить к проверке hold', [
+                    'condition' => 'confidence >= 0.8 OR user_confirmed OR without_confirmation',
                     'confidence' => $finalConfidence,
                     'user_confirmed' => $userConfirmed,
                     'without_confirmation' => $withoutConfirmation,
@@ -311,8 +311,8 @@ class RunExamResearchJob implements ShouldQueue
                     'boosted_confidence' => $finalConfidence,
                 ]);
             } else {
-                $task->addActivity('decision_point_confidence_check', "Условие: confidence >= 0.97 (текущий: {$finalConfidence}). Решение: продолжить к проверке hold", [
-                    'condition' => 'confidence >= 0.97',
+                $task->addActivity('decision_point_confidence_check', "Условие: confidence >= 0.8 (текущий: {$finalConfidence}). Решение: продолжить к проверке hold", [
+                    'condition' => 'confidence >= 0.8',
                     'confidence' => $finalConfidence,
                     'user_confirmed' => false,
                     'decision' => 'continue_to_hold_check',
@@ -322,7 +322,7 @@ class RunExamResearchJob implements ShouldQueue
             // Phase 9: Create ConfirmedIdentity when confidence is high enough or user confirmed
             // Only create if we don't already have one for this identity AND identity is not reused
             $isReused = $identityResult['reused_from_confirmed'] ?? false;
-            if (! $isReused && ($finalConfidence >= 0.97 || $userConfirmed)) {
+            if (! $isReused && ($finalConfidence >= 0.8 || $userConfirmed)) {
                 try {
                     $existingConfirmed = $confirmedIdentityService->shouldRerunIdentity($exam);
                     // Only create if there's no existing valid ConfirmedIdentity

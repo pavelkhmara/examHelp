@@ -80,7 +80,7 @@ class V2ArchetypesIntegrationTest extends TestCase
                                 'filters' => ['type' => ['single_select'], 'difficulty' => ['medium']],
                             ],
                         ],
-                        'assertions' => ['total_tasks_equals' => 10],
+                        'assertions' => ['total_questions_equals' => 10],
                     ],
                 ],
             ],
@@ -129,14 +129,14 @@ class V2ArchetypesIntegrationTest extends TestCase
                     'min_pass_percent' => 60,
                     'question_archetypes' => [
                         [
-                            'id' => 'writing_task_1',
+                            'id' => 'writing_question_1',
                             'type' => 'writing_prompt',
                             'name' => 'Short Writing (150 words)',
                             'difficulty' => 'medium',
                             'config' => ['min_word_count' => 150, 'scoring' => ['max_points' => 33]],
                         ],
                         [
-                            'id' => 'writing_task_2',
+                            'id' => 'writing_question_2',
                             'type' => 'writing_prompt',
                             'name' => 'Essay (250 words)',
                             'difficulty' => 'hard',
@@ -208,7 +208,7 @@ class V2ArchetypesIntegrationTest extends TestCase
                                 'filters' => ['type' => ['single_select']],
                             ],
                         ],
-                        'assertions' => ['total_tasks_equals' => 5],
+                        'assertions' => ['total_questions_equals' => 5],
                     ],
                 ],
             ],
@@ -301,7 +301,7 @@ class V2ArchetypesIntegrationTest extends TestCase
                                 'filters' => ['difficulty' => 'medium'],
                             ],
                         ],
-                        'assertions' => ['total_tasks_equals' => 10],
+                        'assertions' => ['total_questions_equals' => 10],
                     ],
                     'tasks' => [],
                     // NOTE: question_archetypes is MISSING - this is the bug!

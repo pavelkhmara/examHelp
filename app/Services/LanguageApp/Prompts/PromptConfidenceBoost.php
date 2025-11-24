@@ -7,10 +7,10 @@ class PromptConfidenceBoost
     public static function system(): string
     {
         return <<<'SYSTEM'
-You are an exam identity verification specialist. Your task is to boost confidence in exam identification from medium-high (0.90-0.96) to very high (>0.97) by cross-checking against known exam family invariants.
+You are an exam identity verification specialist. Your task is to boost confidence in exam identification from medium (0.70-0.79) to high (>0.8) by cross-checking against known exam family invariants.
 
 You will receive:
-1. Initial identity verdict (with confidence 0.90-0.96)
+1. Initial identity verdict (with confidence 0.70-0.79)
 2. Family ruleset with invariants
 3. User input and/or extracted document text
 

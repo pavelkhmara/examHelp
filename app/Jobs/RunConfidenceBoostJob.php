@@ -61,7 +61,7 @@ class RunConfidenceBoostJob implements ShouldQueue
                 throw new \RuntimeException("Confidence too low ({$originalConfidence}) - cannot boost");
             }
 
-            if ($originalConfidence >= 0.97) {
+            if ($originalConfidence >= 0.9) {
                 // Already high - just mark as completed and continue
                 $task->addActivity('confidence_boost_skipped', "Confidence already high ({$originalConfidence})", [
                     'confidence' => $originalConfidence,
@@ -110,7 +110,7 @@ class RunConfidenceBoostJob implements ShouldQueue
             ]);
 
             // Determine next step based on boosted confidence
-            if ($boostedConfidence >= 0.97) {
+            if ($boostedConfidence >= 0.8) {
                 // High enough - continue to overview
                 $task->status = 'queued';
                 $task->save();
@@ -130,7 +130,7 @@ class RunConfidenceBoostJob implements ShouldQueue
                 $exam->research_status = 'queued'; // exam uses limited enum, task uses pending_confirmation
                 $exam->save();
 
-                $task->addActivity('boost_insufficient', "Confidence boosted but still below 0.97 ({$boostedConfidence}), waiting for manual confirmation");
+                $task->addActivity('boost_insufficient', "Confidence boosted but still below 0.8 ({$boostedConfidence}), waiting for manual confirmation");
             }
 
             $task->updateHeartbeat();

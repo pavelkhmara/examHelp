@@ -447,7 +447,7 @@ final class MockAiProvider implements AiProvider
                     'skill' => $skill,
                     'duration_min' => $section['duration_min'] ?? 30,
                     'max_score' => $section['max_score'] ?? 40,
-                    'tasks' => $section['tasks'] ?? [],
+                    'tasks' => $section['questions'] ?? [],
                     'question_archetypes' => [
                         [
                             'id' => "{$sectionId}_mcq_01",
@@ -474,7 +474,7 @@ final class MockAiProvider implements AiProvider
                             ],
                         ],
                         'assertions' => [
-                            'total_tasks_equals' => 10,
+                            'total_questions_equals' => 10,
                             'max_points_sum_equals' => 10,
                         ],
                     ],
@@ -539,7 +539,7 @@ final class MockAiProvider implements AiProvider
                     ],
                 ],
                 'assertions' => [
-                    'total_tasks_equals' => 10,
+                    'total_questions_equals' => 10,
                     'max_points_sum_equals' => 10,
                 ],
             ];
@@ -559,7 +559,7 @@ final class MockAiProvider implements AiProvider
                     ],
                 ],
                 'assertions' => [
-                    'total_tasks_equals' => 1,
+                    'total_questions_equals' => 1,
                     'max_points_sum_equals' => 10,
                 ],
             ];

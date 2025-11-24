@@ -428,8 +428,8 @@ class Exam extends Resource
                         $compact = array_map(function ($s) {
                             // V2 uses 'title', V1 uses 'name'
                             $sectionName = $s['title'] ?? $s['name'] ?? $s['key'] ?? '';
-                            // V2 uses 'question_archetypes' or 'tasks', V1 uses 'steps'
-                            $steps = $s['question_archetypes'] ?? $s['tasks'] ?? $s['steps'] ?? [];
+                            // V2 uses 'question_archetypes' or 'questions', V1 uses 'tasks' or 'steps'
+                            $steps = $s['question_archetypes'] ?? $s['questions'] ?? $s['tasks'] ?? $s['steps'] ?? [];
 
                             return [
                                 'name' => $sectionName,
@@ -946,8 +946,8 @@ class Exam extends Resource
             $sectionNum = $idx + 1;
             // V2 uses 'title', V1 uses 'name'
             $sectionName = $section['title'] ?? $section['name'] ?? $section['key'] ?? 'Unnamed Section';
-            // V2 uses 'question_archetypes' or 'tasks', V1 uses 'steps'
-            $steps = $section['question_archetypes'] ?? $section['tasks'] ?? $section['steps'] ?? [];
+            // V2 uses 'question_archetypes' or 'questions', V1 uses 'tasks' or 'steps'
+            $steps = $section['question_archetypes'] ?? $section['questions'] ?? $section['tasks'] ?? $section['steps'] ?? [];
             $stepCount = count($steps);
 
             $lines[] = '';
@@ -1018,9 +1018,9 @@ class Exam extends Resource
 
         // Confidence level
         $conf = $identity['confidence'] ?? 0;
-        if ($conf >= 0.97) {
+        if ($conf >= 0.90) {
             $reasons[] = "✓ VERY HIGH confidence score: {$conf}";
-        } elseif ($conf >= 0.90) {
+        } elseif ($conf >= 0.80) {
             $reasons[] = "~ HIGH confidence score: {$conf} (needs user confirmation)";
         } elseif ($conf >= 0.70) {
             $reasons[] = "~ MEDIUM confidence score: {$conf}";

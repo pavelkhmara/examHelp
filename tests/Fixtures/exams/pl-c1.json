@@ -17,7 +17,7 @@
             "description": "5 zadań testujących rozumienie ze słuchu",
             "question_groups": [
                 {
-                    "group_id": "listening-task-1",
+                    "group_id": "listening-question-1",
                     "title": "Zadanie I",
                     "order": 1,
                     "instructions": {
@@ -208,7 +208,7 @@
                     ]
                 },
                 {
-                    "group_id": "listening-task-2",
+                    "group_id": "listening-question-2",
                     "title": "Zadanie II",
                     "order": 2,
                     "instructions": {
@@ -423,7 +423,7 @@
                     ]
                 },
                 {
-                    "group_id": "listening-task-3",
+                    "group_id": "listening-question-3",
                     "title": "Zadanie III",
                     "order": 3,
                     "instructions": {
@@ -806,7 +806,7 @@
                     ]
                 },
                 {
-                    "group_id": "listening-task-4",
+                    "group_id": "listening-question-4",
                     "title": "Zadanie IV",
                     "order": 4,
                     "instructions": {
@@ -1053,7 +1053,7 @@
                     ]
                 },
                 {
-                    "group_id": "listening-task-5",
+                    "group_id": "listening-question-5",
                     "title": "Zadanie V",
                     "order": 5,
                     "instructions": {

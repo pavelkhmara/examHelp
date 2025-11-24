@@ -50,7 +50,7 @@ class QuestionGroupValidatorTest extends TestCase
     {
         // Arrange
         $data = [
-            'id' => 'listening-task-1',
+            'id' => 'listening-question-1',
             'title' => 'Task I - Multiple Choice',
             'instructions' => [
                 'brief' => 'Listen to the audio',

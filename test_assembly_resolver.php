@@ -90,7 +90,7 @@ if (!$exam) {
                                 ],
                             ],
                             'assertions' => [
-                                'total_tasks_equals' => 40,
+                                'total_questions_equals' => 40,
                             ],
                         ],
                     ],
@@ -111,7 +111,7 @@ if (!$exam) {
                             'pick' => 40,
                             'seed' => 'ielts-reading-seed-123',
                             'assertions' => [
-                                'total_tasks_equals' => 40,
+                                'total_questions_equals' => 40,
                             ],
                         ],
                     ],
@@ -127,16 +127,16 @@ if (!$exam) {
                             'mode' => 'inline',
                             'placeholders' => [
                                 [
-                                    'id' => 'writing-task-1',
+                                    'id' => 'writing-question-1',
                                     'type' => 'graph_description',
                                 ],
                                 [
-                                    'id' => 'writing-task-2',
+                                    'id' => 'writing-question-2',
                                     'type' => 'essay',
                                 ],
                             ],
                             'assertions' => [
-                                'total_tasks_equals' => 2,
+                                'total_questions_equals' => 2,
                             ],
                         ],
                     ],

@@ -223,7 +223,7 @@ class DiagnosticsController extends Controller
                     'order' => $category->order,
                     'slug' => $category->slug,
                     'duration_min' => $category->duration_min,
-                    'task_types' => $category->task_types,
+                    'question_types' => $category->question_types,
                     'created_at' => $category->created_at?->toISOString(),
                 ];
             });

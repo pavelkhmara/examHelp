@@ -74,15 +74,73 @@ class QuestionAttacher
             }
 
             // Bulk insert questions (much faster than individual creates)
-            // Use insertOrIgnore to handle retry scenarios (idempotent insert)
+            // PRE-CHECK for duplicates to avoid insertOrIgnore returning 0 on first duplicate
             if (!empty($questionRecords)) {
-                $inserted = Question::insertOrIgnore($questionRecords);
-                Log::info('[QuestionAttacher] Created question records in database', [
-                    'exam_id' => $exam->id,
-                    'section_id' => $plan->section_id,
-                    'count' => count($questionRecords),
-                    'inserted' => $inserted,
-                ]);
+                try {
+                    // CRITICAL: Check for existing question_ids BEFORE insert
+                    // This prevents insertOrIgnore() from returning 0 when first record is duplicate
+                    $allQuestionIds = array_map(fn($r) => $r['question_id'], $questionRecords);
+
+                    $existingIds = Question::whereIn('question_id', $allQuestionIds)
+                        ->pluck('question_id')
+                        ->toArray();
+
+                    // Filter out duplicates
+                    $newRecords = array_filter(
+                        $questionRecords,
+                        fn($r) => !in_array($r['question_id'], $existingIds)
+                    );
+
+                    $duplicatesCount = count($questionRecords) - count($newRecords);
+
+                    if ($duplicatesCount > 0) {
+                        Log::warning('[QuestionAttacher] Skipping duplicate question_ids', [
+                            'exam_id' => $exam->id,
+                            'section_id' => $plan->section_id,
+                            'total_records' => count($questionRecords),
+                            'duplicates' => $duplicatesCount,
+                            'new_records' => count($newRecords),
+                            'duplicate_ids' => array_slice($existingIds, 0, 5), // First 5 for logging
+                        ]);
+                    }
+
+                    // Insert only new records
+                    if (!empty($newRecords)) {
+                        $inserted = Question::insertOrIgnore($newRecords);
+
+                        Log::info('[QuestionAttacher] Created question records in database', [
+                            'exam_id' => $exam->id,
+                            'section_id' => $plan->section_id,
+                            'prepared' => count($newRecords),
+                            'inserted' => $inserted,
+                            'skipped_duplicates' => $duplicatesCount,
+                        ]);
+
+                        // Sanity check: inserted should equal newRecords count
+                        if ($inserted !== count($newRecords)) {
+                            Log::warning('[QuestionAttacher] Inserted count mismatch', [
+                                'exam_id' => $exam->id,
+                                'section_id' => $plan->section_id,
+                                'expected' => count($newRecords),
+                                'actual' => $inserted,
+                            ]);
+                        }
+                    } else {
+                        Log::info('[QuestionAttacher] All questions already exist (skipped)', [
+                            'exam_id' => $exam->id,
+                            'section_id' => $plan->section_id,
+                            'total' => count($questionRecords),
+                        ]);
+                    }
+                } catch (\Throwable $e) {
+                    Log::error('[QuestionAttacher] Bulk insert failed', [
+                        'exam_id' => $exam->id,
+                        'section_id' => $plan->section_id,
+                        'error' => $e->getMessage(),
+                        'trace' => $e->getTraceAsString(),
+                    ]);
+                    throw $e; // Re-throw to rollback transaction
+                }
             }
 
             // Update exam meta with generated questions

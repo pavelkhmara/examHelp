@@ -61,7 +61,7 @@ class PromptSectionAssembly
    - Валидный JSON без синтаксических ошибок
    - РОВНО ОДИН assembly mode (pool|blueprint|inline) для секции
    - В filters.type использовать ТОЛЬКО типы из Question Types enum
-   - Для blueprint: сумма `pick` = `assertions.total_tasks_equals`
+   - Для blueprint: сумма `pick` = `assertions.total_questions_equals`
    - Не создавать текст вопросов (instructions, stimulus, options, answer_key)
 
 2. **ВАЖНО (SHOULD)**:
@@ -124,7 +124,7 @@ class PromptSectionAssembly
     }
   ],
   "assertions": {
-    "total_tasks_equals": 10,
+    "total_questions_equals": 10,
     "max_points_sum_equals": 10
   }
 }
@@ -151,7 +151,7 @@ class PromptSectionAssembly
     }
   ],
   "assertions": {
-    "total_tasks_equals": 2
+    "total_questions_equals": 2
   }
 }
 ```
@@ -162,7 +162,7 @@ class PromptSectionAssembly
   "mode": "inline",
   "question_groups": [
     {
-      "id": "listening-task-1",
+      "id": "listening-question-1",
       "title": "Task I",
       "stimulus": {
         "audio": ["placeholder_url"]
@@ -195,7 +195,7 @@ class PromptSectionAssembly
     "mode": "pool|blueprint|inline",
     // конфигурация mode
   },
-  "tasks": [
+  "questions": [
     // копируй из section skeleton если есть
   ]
 }
@@ -229,11 +229,11 @@ EOT;
 - `short_answer` - Short answer questions
 
 **Writing:**
-- `writing_prompt` - Essay/letter writing task
+- `writing_prompt` - Essay/letter writing
 - `translation` - Translate text
 
 **Speaking:**
-- `speaking_prompt` - Speaking task with prompt
+- `speaking_prompt` - Speaking with prompt
 - `roleplay` - Role-play dialogue
 
 **Universal:**
@@ -253,7 +253,7 @@ EOT;
 
 2. **blueprint** — Define slots with specific requirements, pull from pool
    - Use case: Structured sections with fixed composition
-   - Example: "Slot 1: 1 easy writing task, Slot 2: 1 hard writing task"
+   - Example: "Slot 1: 1 easy writing question, Slot 2: 1 hard writing question"
 
 3. **inline** — Manually define questions or question groups in assembly config
    - Use case: Unique questions that don't fit pool (e.g. specific listening passages)

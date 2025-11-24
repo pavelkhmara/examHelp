@@ -365,10 +365,10 @@ class IdentityGuardService extends AbstractAiService
      */
     protected function setConfidenceFlags(array $res): array
     {
-        // Hold if: certain status + confidence >= 0.97 + no red_flags
+        // Hold if: certain status + confidence >= 0.8 + no red_flags
         $shouldHold = (
             ($res['status'] ?? '') === 'certain'
-            && ($res['confidence'] ?? 0) >= 0.97
+            && ($res['confidence'] ?? 0) >= 0.8
             && empty($res['red_flags'] ?? [])
         );
 
@@ -376,11 +376,11 @@ class IdentityGuardService extends AbstractAiService
             $res['hold'] = true;
         }
 
-        // If confidence is between 0.90 and 0.97, we need additional verification
+        // If confidence is between 0.70 and 0.8, we need additional verification
         $needsBoost = (
             ($res['status'] ?? '') === 'certain'
-            && ($res['confidence'] ?? 0) >= 0.90
-            && ($res['confidence'] ?? 0) < 0.97
+            && ($res['confidence'] ?? 0) >= 0.70
+            && ($res['confidence'] ?? 0) < 0.8
             && empty($res['red_flags'] ?? [])
         );
 

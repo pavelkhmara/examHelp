@@ -178,7 +178,7 @@ class ExamTestHelper
                             ],
                         ],
                         'assertions' => [
-                            'total_tasks_equals' => 10,
+                            'total_questions_equals' => 10,
                         ],
                     ],
                 ],
@@ -193,7 +193,7 @@ class ExamTestHelper
                             'type' => ['single_select', 'true_false'],
                         ],
                         'assertions' => [
-                            'total_tasks_equals' => 40,
+                            'total_questions_equals' => 40,
                         ],
                     ],
                 ],

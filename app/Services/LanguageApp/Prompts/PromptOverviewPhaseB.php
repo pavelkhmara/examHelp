@@ -55,7 +55,7 @@ class PromptOverviewPhaseB
    - Валидный JSON без синтаксических ошибок
    - КАЖДАЯ секция из Phase A skeleton имеет ровно ОДИН assembly mode (pool|blueprint|inline)
    - В filters.type использовать ТОЛЬКО типы из Question Types enum (см. ниже)
-   - Для blueprint: сумма всех `pick` в слотах = `assertions.total_tasks_equals`
+   - Для blueprint: сумма всех `pick` в слотах = `assertions.total_questions_equals`
    - Не создавать текст вопросов (instructions, stimulus, options, answer_key и т.д.)
    - Не использовать удалённые поля (`pattern`, `type_specific`)
 
@@ -154,7 +154,7 @@ class PromptOverviewPhaseB
 ```json
 "question_archetypes": [
   {
-    "id": "writing_task_1",
+    "id": "writing_question_1",
     "type": "writing_prompt",
     "name": "Short Writing Task (150 words)",
     "difficulty": "medium",
@@ -165,7 +165,7 @@ class PromptOverviewPhaseB
     }
   },
   {
-    "id": "writing_task_2",
+    "id": "writing_question_2",
     "type": "writing_prompt",
     "name": "Essay Task (250 words)",
     "difficulty": "hard",
@@ -274,12 +274,12 @@ class PromptOverviewPhaseB
 
 ```json
 {
-  "total_tasks_equals": 40,  // ожидаемое ТОЧНОЕ количество вопросов
+  "total_questions_equals": 40,  // ожидаемое ТОЧНОЕ количество вопросов
   "unique_by": ["id"]        // поля для проверки уникальности (обычно ["id"])
 }
 ```
 
-- `total_tasks_equals` (integer) - ТОЧНОЕ количество вопросов для секции (используй `expected_task_count.target` из skeleton)
+- `total_questions_equals` (integer) - ТОЧНОЕ количество вопросов для секции (используй `expected_question_count.target` из skeleton)
 - `unique_by` (array) - поля для проверки уникальности (обычно `["id"]`)
 
 # Выбор режима assembly для секции
@@ -287,7 +287,7 @@ class PromptOverviewPhaseB
 ## ВАЖНО: Приоритет для Listening/Reading секций
 
 **Для Listening секций языковых экзаменов:**
-→ ВСЕГДА используй `inline` с `question_groups` если экзамен имеет задания (tasks) где несколько вопросов слушают одно аудио
+→ ВСЕГДА используй `inline` с `question_groups` если экзамен имеет задания (questions) где несколько вопросов слушают одно аудио
 → Типичная структура: Task I (аудио 1 → 5-6 вопросов), Task II (аудио 2 → 5-6 вопросов), и т.д.
 → Это создаёт QuestionGroup записи с shared stimulus
 
@@ -308,9 +308,9 @@ class PromptOverviewPhaseB
 ## Когда использовать `inline` с `question_groups`:
 - **ВСЕГДА для Listening секций** с заданиями где 2+ вопроса на одно аудио
 - Reading секции где группа вопросов относится к одному тексту
-- Пример: Listening Task I = 1 аудио → 6 вопросов = 1 question_group
+- Пример: Listening (Part I) = 1 аудио → 6 вопросов = 1 question_group
 
-## Когда использовать `inline` с `tasks[]`:
+## Когда использовать `inline` с `questions[]`:
 - Speaking, Writing где каждый вопрос имеет свой stimulus
 - **НЕ заполняй контент вопросов** - только ID placeholders
 
@@ -352,8 +352,8 @@ class PromptOverviewPhaseB
 **ОБЯЗАТЕЛЬНО:**
 - Для каждой секции задать ровно ОДИН assembly mode
 - В filters.type использовать ТОЛЬКО типы из Question Types enum
-- Поддерживать `expected_task_count` через `assertions.total_tasks_equals`
-- Для blueprint: сумма всех `pick` должна равняться `assertions.total_tasks_equals`
+- Поддерживать `expected_question_count` через `assertions.total_questions_equals`
+- Для blueprint: сумма всех `pick` должна равняться `assertions.total_questions_equals`
 
 {$retryHint}
 
@@ -383,19 +383,19 @@ class PromptOverviewPhaseB
    - Есть `questions_count` (integer, заменяет старое `pick`)
    - Есть `stimulus_type` (string: audio/text/video/image/none)
    - Есть `filters` с полем `type` (array of question types)
-   - Есть `assertions.total_tasks_equals` (integer)
+   - Есть `assertions.total_questions_equals` (integer)
 6. ✅ Для blueprint mode:
    - Есть `blueprint` (array of slots)
    - Каждый slot имеет: `slot`, `from_pool`, `shared_stimulus`, `questions_count`, `stimulus_type`, `filters`
-   - Сумма всех `questions_count` = `assertions.total_tasks_equals`
+   - Сумма всех `questions_count` = `assertions.total_questions_equals`
    - `shared_stimulus: true` → это QuestionGroup (2+ вопроса с общим stimulus)
    - `shared_stimulus: false` → отдельные Questions
 7. ✅ Для inline mode:
    - Есть `assembly.mode = "inline"`
-   - Если listening/reading с 2+ вопросами на один stimulus → используй `question_groups[]` (НЕ `tasks[]`!)
-   - Если writing/speaking (каждый вопрос = отдельный stimulus) → используй `tasks[]`
+   - Если listening/reading с 2+ вопросами на один stimulus → используй `question_groups[]` (НЕ `questions[]`!)
+   - Если writing/speaking (каждый вопрос = отдельный stimulus) → используй `questions[]`
    - В question_groups[]: каждая группа имеет id, title, stimulus, playback_settings, questions[]
-   - В tasks[]/questions[]: только `id` и `type` (БЕЗ контента!)
+   - В questions[]/questions[]: только `id` и `type` (БЕЗ контента!)
 8. ✅ Все типы в `filters.type` И в `question_archetypes[].type` из Question Types enum
 9. ✅ НЕТ текста вопросов (instructions, stimulus, options, answer_key) - только шаблоны!
 10. ✅ НЕТ удалённых полей (`pattern`, `type_specific`)
@@ -433,8 +433,8 @@ short_answer       - short text answer
 numeric            - numeric answer
 dictation          - write what you hear
 
-writing_prompt     - essay/letter/report writing task
-speaking_prompt    - speaking task with rubric
+writing_prompt     - essay/letter/report writing question
+speaking_prompt    - speaking question with rubric
 
 listen_mcq         - listening comprehension multiple choice
 
@@ -477,7 +477,7 @@ ENUM;
     },
     "seed": "optional_random_seed",
     "assertions": {
-      "total_tasks_equals": 30,
+      "total_questions_equals": 30,
       "unique_by": ["id"]
     }
   }
@@ -509,7 +509,7 @@ ENUM;
     "mode": "blueprint",
     "blueprint": [
       {
-        "slot": "listening_task_1",
+        "slot": "listening_question_1",
         "from_pool": "listening_items_bank",
         "shared_stimulus": true,           // ✅ КРИТИЧНО: общий stimulus
         "questions_count": 6,               // ✅ КРИТИЧНО: 6 вопросов в задании
@@ -522,7 +522,7 @@ ENUM;
         "weight": 0.2
       },
       {
-        "slot": "reading_task_1",
+        "slot": "reading_question_1",
         "from_pool": "reading_texts",
         "shared_stimulus": true,            // один текст
         "questions_count": 8,                // 8 вопросов
@@ -535,7 +535,7 @@ ENUM;
         "weight": 0.4
       },
       {
-        "slot": "writing_tasks",
+        "slot": "writing_questions",
         "from_pool": "writing_prompts",
         "shared_stimulus": false,           // каждое эссе отдельно
         "questions_count": 2,                // 2 эссе
@@ -550,7 +550,7 @@ ENUM;
     ],
     "seed": "optional_seed",
     "assertions": {
-      "total_tasks_equals": 16,              // 6 + 8 + 2 = 16 вопросов
+      "total_questions_equals": 16,              // 6 + 8 + 2 = 16 вопросов
       "unique_by": ["id"]
     }
   }
@@ -566,7 +566,7 @@ ENUM;
 
 Фиксированная структура без выборки из пула (для строго определённых секций).
 
-### 3A. Inline с отдельными вопросами (tasks[])
+### 3A. Inline с отдельными вопросами (questions[])
 
 Используй для секций, где каждый вопрос имеет свой stimulus (например, writing, speaking).
 
@@ -576,14 +576,14 @@ ENUM;
   "assembly": {
     "mode": "inline"
   },
-  "tasks": [
+  "questions": [
     {
-      "id": "writing_task_1",
+      "id": "writing_question_1",
       "type": "writing_prompt"
       // НЕ ЗАПОЛНЯЙ instructions, stimulus, scoring - это placeholder!
     },
     {
-      "id": "writing_task_2",
+      "id": "writing_question_2",
       "type": "writing_prompt"
       // НЕ ЗАПОЛНЯЙ детали - только ID и type для структуры
     }
@@ -595,8 +595,8 @@ ENUM;
 
 **КРИТИЧНО:** Используй question_groups для секций, где:
 - **2-10+ вопросов используют ОДИН ОБЩИЙ stimulus** (аудио/текст)
-- Listening tasks: например, одно аудио → 6 вопросов
-- Reading tasks: например, один текст → 8 вопросов
+- Listening: например, одно аудио → 6 вопросов
+- Reading: например, один текст → 8 вопросов
 
 **Структура:**
 ```json
@@ -605,7 +605,7 @@ ENUM;
     "mode": "inline",
     "question_groups": [
       {
-        "id": "listening-task-1",
+        "id": "listening-question-1",
         "title": "Zadanie I",     // локализованное название задания
         "stimulus": {
           "audio": ["https://example.com/audio1.mp3"]  // ОБЩИЙ stimulus для всех вопросов группы
@@ -634,7 +634,7 @@ ENUM;
         ]
       },
       {
-        "id": "listening-task-2",
+        "id": "listening-question-2",
         "title": "Zadanie II",
         "stimulus": {
           "audio": ["https://example.com/audio2.mp3"]
@@ -660,11 +660,11 @@ ENUM;
 - ✅ Listening: 6 коротких аудио → 6 отдельных вопросов = 1 question_group
 - ✅ Listening: 1 длинное аудио → 8 вопросов = 1 question_group
 - ✅ Reading: 1 текст → 10 вопросов = 1 question_group
-- ❌ Writing: 2 essay tasks = НЕ используй groups (каждый task отдельно)
+- ❌ Writing: 2 essay questions = НЕ используй groups (каждый question отдельно)
 - ❌ Speaking: 3 speaking prompts = НЕ используй groups
 
 **Note:**
-- Для `inline` с tasks[] - добавь `tasks[]` как placeholders (только `id` и `type`)
+- Для `inline` с questions[] - добавь `questions[]` как placeholders (только `id` и `type`)
 - Для `inline` с question_groups - добавь `question_groups[]` с questions[] placeholders
 - НЕ заполняй контент (instructions, stimulus text, options) - это сделает генератор позже!
 MODES;
@@ -731,7 +731,7 @@ SCHEMA;
                         'cefr' => ['optional array'],
                     ],
                     'assertions' => [
-                        'total_tasks_equals' => 'integer',
+                        'total_questions_equals' => 'integer',
                         'unique_by' => ['array'],
                     ],
                 ],

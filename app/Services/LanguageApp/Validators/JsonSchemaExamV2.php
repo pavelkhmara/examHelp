@@ -38,7 +38,7 @@ final class JsonSchemaExamV2
 
     private const VALID_TIME_POLICIES = [
         'per_section',
-        'per_task',
+        'per_question',
         'hybrid',
     ];
 
@@ -231,8 +231,8 @@ final class JsonSchemaExamV2
             $result['navigation'] = is_array($section['navigation']) ? $section['navigation'] : null;
         }
 
-        if (isset($section['expected_task_count'])) {
-            $result['expected_task_count'] = $this->validateExpectedTaskCount($section['expected_task_count'], $prefix);
+        if (isset($section['expected_question_count'])) {
+            $result['expected_question_count'] = $this->validateExpectedTaskCount($section['expected_question_count'], $prefix);
         }
 
         if (isset($section['assembly'])) {
@@ -243,8 +243,8 @@ final class JsonSchemaExamV2
             $result['overrides'] = $section['overrides'];
         }
 
-        if (isset($section['tasks'])) {
-            $result['tasks'] = is_array($section['tasks']) ? $section['tasks'] : null;
+        if (isset($section['questions'])) {
+            $result['questions'] = is_array($section['questions']) ? $section['questions'] : null;
         }
 
         if (isset($section['question_archetypes'])) {
@@ -257,7 +257,7 @@ final class JsonSchemaExamV2
     private function validateExpectedTaskCount(mixed $data, string $prefix): array
     {
         if (! is_array($data)) {
-            throw ValidationException::withMessages(["$prefix.expected_task_count" => 'expected_task_count must be an object']);
+            throw ValidationException::withMessages(["$prefix.expected_question_count" => 'expected_question_count must be an object']);
         }
 
         $result = [];
@@ -353,8 +353,8 @@ final class JsonSchemaExamV2
 
         $result = [];
 
-        if (isset($data['total_tasks_equals'])) {
-            $result['total_tasks_equals'] = $this->mustInteger($data, 'total_tasks_equals', 1);
+        if (isset($data['total_questions_equals'])) {
+            $result['total_questions_equals'] = $this->mustInteger($data, 'total_questions_equals', 1);
         }
 
         if (isset($data['unique_by'])) {

@@ -1136,7 +1136,7 @@
       "description": "2 tasks: Task 1 (report/letter 150+ words, 20 min) and Task 2 (essay 250+ words, 40 min)",
       "question_groups": [
         {
-          "group_id": "writing-task-1",
+          "group_id": "writing-question-1",
           "title": "Task 1 - Report",
           "order": 1,
           "instructions": {
@@ -1176,7 +1176,7 @@
           ]
         },
         {
-          "group_id": "writing-task-2",
+          "group_id": "writing-question-2",
           "title": "Task 2 - Essay",
           "order": 2,
           "instructions": {

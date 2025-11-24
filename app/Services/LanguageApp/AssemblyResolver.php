@@ -186,7 +186,7 @@ class AssemblyResolver
      *   "filters": { "type": ["single_select"], "difficulty": "medium" },
      *   "pick": 40,
      *   "seed": "exam-123-listening",
-     *   "assertions": { "total_tasks_equals": 40 }
+     *   "assertions": { "total_questions_equals": 40 }
      * }
      *
      * Output:
@@ -228,7 +228,7 @@ class AssemblyResolver
         }
 
         // Extract total questions from assertions
-        $totalQuestions = $assertions['total_tasks_equals'] ?? $questionsCount;
+        $totalQuestions = $assertions['total_questions_equals'] ?? $questionsCount;
 
         // Build plan_data with new fields (Phase 1-2: explicit stimulus structure)
         $planData = [
@@ -278,7 +278,7 @@ class AssemblyResolver
      *       "filters": { "type": ["multi_select"] }
      *     }
      *   ],
-     *   "assertions": { "total_tasks_equals": 20 }
+     *   "assertions": { "total_questions_equals": 20 }
      * }
      *
      * Output:
@@ -325,7 +325,7 @@ class AssemblyResolver
         }
 
         // Validate assertions
-        $expectedTotal = $assertions['total_tasks_equals'] ?? null;
+        $expectedTotal = $assertions['total_questions_equals'] ?? null;
         if ($expectedTotal !== null && $totalFromSlots !== $expectedTotal) {
             throw new \Exception(
                 "Blueprint total mismatch for section {$section['id']}: " .
@@ -419,17 +419,17 @@ class AssemblyResolver
      *       ]
      *     }
      *   ],
-     *   "assertions": { "total_tasks_equals": 2 }
+     *   "assertions": { "total_questions_equals": 2 }
      * }
      *
      * Input with placeholders (legacy):
      * {
      *   "mode": "inline",
      *   "placeholders": [
-     *     { "id": "writing-task-1", "type": "graph_description" },
-     *     { "id": "writing-task-2", "type": "essay" }
+     *     { "id": "writing-question-1", "type": "graph_description" },
+     *     { "id": "writing-question-2", "type": "essay" }
      *   ],
-     *   "assertions": { "total_tasks_equals": 2 }
+     *   "assertions": { "total_questions_equals": 2 }
      * }
      *
      * Output:
@@ -459,7 +459,7 @@ class AssemblyResolver
             );
 
             // Validate assertions if present
-            $expectedTotal = $assertions['total_tasks_equals'] ?? null;
+            $expectedTotal = $assertions['total_questions_equals'] ?? null;
             if ($expectedTotal !== null && $result['total_questions'] !== $expectedTotal) {
                 throw new \Exception(
                     "Question groups total mismatch for section {$sectionId}: " .
@@ -470,24 +470,24 @@ class AssemblyResolver
             return $result;
         }
 
-        // LEGACY: Fall back to placeholders/tasks (existing behavior)
+        // LEGACY: Fall back to placeholders/questions (existing behavior)
         Log::info('[AssemblyResolver] Using placeholders for inline mode (legacy)', [
             'section_id' => $sectionId,
         ]);
 
         $placeholders = $assembly['placeholders'] ?? [];
-        $tasks = $section['tasks'] ?? [];
+        $questions = $section['questions'] ?? [];
 
-        // If placeholders not in assembly, use tasks from section
-        if (empty($placeholders) && !empty($tasks)) {
-            // Convert tasks to placeholders format
-            $placeholders = array_map(function ($task, $index) {
+        // If placeholders not in assembly, use questions from section
+        if (empty($placeholders) && !empty($questions)) {
+            // Convert questions to placeholders format
+            $placeholders = array_map(function ($question, $index) {
                 return [
-                    'id' => $task['id'] ?? 'task_' . ($index + 1),
-                    'type' => $task['type'] ?? 'inline_task',
-                    'spec' => $task,
+                    'id' => $question['id'] ?? 'question_' . ($index + 1),
+                    'type' => $question['type'] ?? 'inline_question',
+                    'spec' => $question,
                 ];
-            }, $tasks, array_keys($tasks));
+            }, $questions, array_keys($questions));
         }
 
         // FALLBACK: If still no placeholders, try to create from question_archetypes
@@ -519,7 +519,7 @@ class AssemblyResolver
         $totalQuestions = count($placeholders);
 
         // Validate assertions
-        $expectedTotal = $assertions['total_tasks_equals'] ?? null;
+        $expectedTotal = $assertions['total_questions_equals'] ?? null;
         if ($expectedTotal !== null && $totalQuestions !== $expectedTotal) {
             throw new \Exception(
                 "Inline total mismatch for section {$sectionId}: " .

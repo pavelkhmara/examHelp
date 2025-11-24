@@ -33,7 +33,7 @@
           }
         ],
         "assertions": {
-          "total_tasks_equals": 10
+          "total_questions_equals": 10
         }
       }
     },
@@ -52,7 +52,7 @@
           "type": ["single_select", "true_false"]
         },
         "assertions": {
-          "total_tasks_equals": 40
+          "total_questions_equals": 40
         }
       }
     },
@@ -66,18 +66,18 @@
         "mode": "inline",
         "tasks": [
           {
-            "id": "writing-task-1",
+            "id": "writing-question-1",
             "type": "writing_prompt",
             "weight": 1
           },
           {
-            "id": "writing-task-2",
+            "id": "writing-question-2",
             "type": "writing_prompt",
             "weight": 1
           }
         ],
         "assertions": {
-          "total_tasks_equals": 2
+          "total_questions_equals": 2
         }
       }
     },
@@ -97,7 +97,7 @@
           }
         ],
         "assertions": {
-          "total_tasks_equals": 1
+          "total_questions_equals": 1
         }
       }
     }

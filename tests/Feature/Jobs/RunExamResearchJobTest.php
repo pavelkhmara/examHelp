@@ -106,12 +106,12 @@ class RunExamResearchJobTest extends TestCase
         /** @var ExamResearchService|MockInterface $svc */
         $svc = Mockery::mock(ExamResearchService::class)->makePartial();
 
-        // Mock runIterativeIdentityVerification to return identity with confidence 0.96 and candidates
+        // Mock runIterativeIdentityVerification to return identity with confidence 0.75 and candidates
         $svc->shouldReceive('runIterativeIdentityVerification')
             ->once()
             ->andReturn([
                 'status' => 'certain',
-                'confidence' => 0.96, // Below 0.97 threshold
+                'confidence' => 0.75, // Below 0.8 threshold
                 'canonical' => [
                     'name' => 'Państwowy Certyfikat Języka Polskiego C1',
                     'family' => 'Państwowy Certyfikat Języka Polskiego',

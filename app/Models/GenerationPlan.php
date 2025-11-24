@@ -169,13 +169,19 @@ class GenerationPlan extends Model
 
     /**
      * Mark plan as in progress
+     * IDEMPOTENT: Only sets started_at if not already set (prevents race conditions)
      */
     public function markAsInProgress(): void
     {
-        $this->update([
-            'status' => 'in_progress',
-            'started_at' => now(),
-        ]);
+        // Only update started_at if it's null (first time) or status is not in_progress
+        // This prevents overwriting the original start time when called multiple times
+        if ($this->status !== 'in_progress') {
+            $this->update([
+                'status' => 'in_progress',
+                'started_at' => $this->started_at ?? now(),
+            ]);
+        }
+        // If already in_progress, do nothing (idempotent operation)
     }
 
     /**

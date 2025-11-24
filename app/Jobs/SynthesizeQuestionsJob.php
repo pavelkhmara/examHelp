@@ -10,6 +10,7 @@ use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
 use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Queue\SerializesModels;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 
 class SynthesizeQuestionsJob implements ShouldQueue
@@ -48,15 +49,69 @@ class SynthesizeQuestionsJob implements ShouldQueue
             Log::info('Synthesize questions job started', [
                 'task_id' => $task->id,
                 'exam_id' => $exam->id,
+                'plan_ids_requested' => $task->request['plan_ids'] ?? null,
             ]);
 
-            // Load all generation plans (pending or failed - allow retries for failed plans)
-            $plans = GenerationPlan::where('exam_id', $exam->id)
-                ->whereIn('status', ['pending', 'failed'])
-                ->get();
+            // Load generation plans - support specific plan_ids or all pending/failed
+            // Use atomic UPDATE to prevent race conditions (optimistic locking)
+            if (isset($task->request['plan_ids']) && is_array($task->request['plan_ids'])) {
+                // Specific plans requested - atomic CAS (Compare-And-Swap) update
+                $planIds = $task->request['plan_ids'];
 
-            if ($plans->isEmpty()) {
-                throw new \Exception('No generation plans found (pending or failed). All plans may already be completed.');
+                Log::info('Atomically claiming specific plans', [
+                    'plan_ids' => $planIds,
+                ]);
+
+                // Atomic update - only claim plans that are NOT already in_progress
+                // Uses optimistic locking: if another worker already claimed, we skip
+                $updated = GenerationPlan::whereIn('id', $planIds)
+                    ->whereNotIn('status', ['in_progress', 'completed'])
+                    ->update([
+                        'status' => 'in_progress',
+                        'started_at' => DB::raw('COALESCE(started_at, NOW())'),
+                    ]);
+
+                // Load claimed plans
+                $plans = GenerationPlan::whereIn('id', $planIds)->get();
+
+                Log::info('Loaded specific plans', [
+                    'requested' => count($planIds),
+                    'updated' => $updated,
+                    'found' => $plans->count(),
+                ]);
+
+                if ($plans->isEmpty()) {
+                    throw new \Exception('Requested generation plans not found: ' . implode(', ', $planIds));
+                }
+            } else {
+                // Load all pending/failed plans for this exam
+                Log::info('Atomically claiming pending/failed plans', [
+                    'exam_id' => $exam->id,
+                ]);
+
+                // Atomic update - claim all pending/failed plans
+                $updated = GenerationPlan::where('exam_id', $exam->id)
+                    ->whereIn('status', ['pending', 'failed'])
+                    ->update([
+                        'status' => 'in_progress',
+                        'started_at' => DB::raw('COALESCE(started_at, NOW())'),
+                    ]);
+
+                // Load claimed plans
+                $plans = GenerationPlan::where('exam_id', $exam->id)
+                    ->where('status', 'in_progress')
+                    ->whereNotNull('started_at')
+                    ->where('started_at', '>=', now()->subSeconds(5)) // Only recent claims
+                    ->get();
+
+                Log::info('Loaded pending/failed plans', [
+                    'updated' => $updated,
+                    'found' => $plans->count(),
+                ]);
+
+                if ($plans->isEmpty()) {
+                    throw new \Exception('No generation plans found (pending or failed). All plans may already be completed.');
+                }
             }
 
             $task->addActivity('plans_status_check', 'Generation plans status', [

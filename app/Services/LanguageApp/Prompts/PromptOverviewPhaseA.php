@@ -5,7 +5,7 @@ namespace App\Services\LanguageApp\Prompts;
 /**
  * Phase A: Exam Skeleton Generation
  *
- * Generates the structural skeleton of the exam without individual task details.
+ * Generates the structural skeleton of the exam without individual question details.
  * Output conforms to s2_exam_json_archetype_v2.json schema.
  */
 class PromptOverviewPhaseA
@@ -31,7 +31,7 @@ class PromptOverviewPhaseA
 
 **Цель этого запроса:** Сформируй **только скелет экзамена** (структуру без отдельных заданий) строго по схеме `s2_exam_json_archetype_v2.json`.
 
-**Важно:** В этом запросе ты НЕ генерируешь отдельные экзаменационные вопросы (tasks). Только структуру секций.
+**Важно:** В этом запросе ты НЕ генерируешь отдельные экзаменационные вопросы (questions). Только структуру секций.
 
 # Входные данные
 **Exam Title**: {$examTitle}
@@ -94,19 +94,19 @@ class PromptOverviewPhaseA
 
 Опциональные поля секции:
 - `title` (string) - название секции
-- `time_policy` (string) - per_section|per_task|hybrid
+- `time_policy` (string) - per_section|per_question|hybrid
 - `weight` (number) - вес секции 0-1
 - `pair_mode` (string) - solo|paired (для speaking)
 - `playbacks` (integer) - количество воспроизведений (для listening): 1 или 2
 - `phases` (array) - фазы выполнения
 - `navigation` (object) - правила навигации для секции
-- `expected_task_count` (object) - ожидаемое количество экзаменационных вопросов:
+- `expected_question_count` (object) - ожидаемое количество экзаменационных вопросов:
   - `target` (integer) - целевое количество
   - `min` (integer) - минимум
   - `max` (integer) - максимум
 
 ## Ограничения:
-- **Никаких** `tasks[]` - экзаменационные вопросы генерируются в Phase B
+- **Никаких** `questions[]` - экзаменационные вопросы генерируются в Phase B
 - **Никаких** `assembly` - это для Phase B
 - Строго соответствуй ключам и типам из `s2_exam_json_archetype_v2.json`
 - Не используй `pattern`, `type_specific` и другие нестандартные поля
@@ -119,7 +119,7 @@ class PromptOverviewPhaseA
 2. **Section Duration**: IMPORTANT for each section
    - Listening: X minutes, Reading: Y minutes, etc.
    - Use `duration_min` field in each section
-3. **Expected Question Count**: Use `expected_task_count` if question counts are known
+3. **Expected Question Count**: Use `expected_question_count` if question counts are known
    - Helps Phase B understand how many exam questions to generate
 
 # Source Quality & Research:
@@ -180,7 +180,7 @@ Before including any source, verify that the URL:
    - id, skill, level: string
    - duration_min: integer (целое число)
    - max_score, min_pass_percent, threshold_percent: number (может быть дробным)
-5. ✅ НЕТ полей tasks[] или assembly{} в секциях (это Phase B, не Phase A!)
+5. ✅ НЕТ полей questions[] или assembly{} в секциях (это Phase B, не Phase A!)
 6. ✅ Все skill значения из списка: listening|reading|writing|speaking|use_of_english|grammar_lexis
 
 Если хотя бы одна проверка не прошла — исправь JSON и проверь снова.
@@ -292,7 +292,7 @@ SCHEMA;
                     'mic' => 'boolean (optional)',
                     'screen' => 'boolean (optional)',
                 ],
-                'policy_precedence' => 'string (optional - default: "task>section>exam")',
+                'policy_precedence' => 'string (optional - default: "question>section>exam")',
             ],
             'resources' => 'object (optional - global exam resources)',
             'sections' => [
@@ -301,7 +301,7 @@ SCHEMA;
                     'title' => 'string (optional - section title)',
                     'skill' => 'string (listening|reading|writing|speaking|use_of_english|grammar_lexis)',
                     'duration_min' => 'integer (section duration in minutes)',
-                    'time_policy' => 'string (optional - per_section|per_task|hybrid)',
+                    'time_policy' => 'string (optional - per_section|per_question|hybrid)',
                     'max_score' => 'number (maximum score for section)',
                     'weight' => 'number (optional - section weight 0-1)',
                     'min_pass_percent' => 'number (minimum pass percentage 0-100)',
@@ -311,7 +311,7 @@ SCHEMA;
                     'navigation' => [
                         'backtracking' => 'boolean (optional)',
                     ],
-                    'expected_task_count' => [
+                    'expected_question_count' => [
                         'target' => 'integer (optional - target exam question count)',
                         'min' => 'integer (optional - minimum exam questions)',
                         'max' => 'integer (optional - maximum exam questions)',
@@ -368,7 +368,7 @@ SCHEMA;
                     'playbacks' => 'integer',
                     'phases' => ['string'],
                     'navigation' => ['backtracking' => 'boolean'],
-                    'expected_task_count' => [
+                    'expected_question_count' => [
                         'target' => 'integer',
                         'min' => 'integer',
                         'max' => 'integer',

@@ -194,7 +194,7 @@ class ExamFullViewRenderer
      */
     private function renderAssemblyModeExplanation(string $assemblyMode, array $sectionData, ?string $dataSource, $questions): string
     {
-        $expectedCount = $sectionData['expected_task_count']['target'] ?? null;
+        $expectedCount = $sectionData['expected_question_count']['target'] ?? null;
         $questionsCount = $questions->count();
 
         $html = '';
@@ -281,7 +281,7 @@ class ExamFullViewRenderer
     }
 
     /**
-     * Render inline questions (all tasks from section)
+     * Render inline questions (all questions from section)
      * Supports both grouped (question_groups) and ungrouped questions
      */
     private function renderInlineQuestions($questions, ?string $dataSource): string
@@ -415,7 +415,7 @@ class ExamFullViewRenderer
             $html .= $this->renderGroupAudio($questionGroup, $stimulus['audio']);
         }
 
-        // Text (with gap replacement for fill-in-blank tasks)
+        // Text (with gap replacement for fill-in-blank questions)
         if (!empty($stimulus['text_html'])) {
             $textHtml = $stimulus['text_html'];
 
@@ -423,7 +423,7 @@ class ExamFullViewRenderer
             $inputHtml = '<input type="text" style="border: 1px solid #d1d5db; border-radius: 4px; padding: 2px 6px; min-width: 80px; background: #fff; font-size: 14px;" placeholder="..." disabled>';
             $textHtml = preg_replace('/_{3,}|(?:\[__[A-Z]?__\])/', $inputHtml, $textHtml);
 
-            // Check if this is a two-column matching task (Kolumna I / Kolumna II)
+            // Check if this is a two-column matching question (Kolumna I / Kolumna II)
             $isColumnTask = preg_match('/Kolumna\s+I/i', $textHtml) && preg_match('/Kolumna\s+II/i', $textHtml);
 
             if ($isColumnTask) {
@@ -438,7 +438,7 @@ class ExamFullViewRenderer
             }
         }
 
-        // Options table (for matching tasks like Zadanie III)
+        // Options table (for matching questions like Zadanie III)
         if (!empty($stimulus['options_html'])) {
             $html .= '<div style="margin-bottom: 12px; padding: 12px; background: #fef3c7; border-radius: 4px; border: 1px solid #f59e0b;">';
             $html .= '<div style="font-size: 14px; font-weight: 600; color: #92400e; margin-bottom: 8px;">Варианты ответов:</div>';
@@ -446,7 +446,7 @@ class ExamFullViewRenderer
             $html .= '</div>';
         }
 
-        // Images (with labels A, B, C... for matching tasks)
+        // Images (with labels A, B, C... for matching questions)
         if (!empty($stimulus['images']) && is_array($stimulus['images'])) {
             $html .= '<div style="margin-bottom: 12px; display: flex; flex-wrap: wrap; gap: 12px;">';
             $labelIndex = 0;
@@ -590,7 +590,7 @@ JS;
     }
 
     /**
-     * Render two-column stimulus as a table (for matching tasks with Kolumna I / Kolumna II)
+     * Render two-column stimulus as a table (for matching questions with Kolumna I / Kolumna II)
      */
     private function renderTwoColumnStimulus(string $textHtml): string
     {

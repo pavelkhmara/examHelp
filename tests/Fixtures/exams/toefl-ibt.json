@@ -1141,7 +1141,7 @@
       "description": "2 tasks: Integrated (read+listen+write, 20 min) and Academic Discussion (10 min)",
       "question_groups": [
         {
-          "group_id": "writing-task-1",
+          "group_id": "writing-question-1",
           "title": "Task 1 - Integrated Writing",
           "order": 1,
           "instructions": {
@@ -1186,7 +1186,7 @@
           ]
         },
         {
-          "group_id": "writing-task-2",
+          "group_id": "writing-question-2",
           "title": "Task 2 - Academic Discussion",
           "order": 2,
           "instructions": {

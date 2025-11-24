@@ -290,7 +290,7 @@ class OverviewStructureBuilder extends AbstractAiService
             ]),
         ]);
 
-        // STRICT VALIDATION of tasks (types/payload/scoring)
+        // STRICT VALIDATION of tasks (types/payload/scoring) - legacy v1 format only
         $overview_normalized = $this->validateTasks($overview_normalized);
 
         // Update exam meta
@@ -810,6 +810,10 @@ class OverviewStructureBuilder extends AbstractAiService
 
     /**
      * Validate tasks with QuestionTypeContract
+     *
+     * NOTE: This validates legacy v1 format ('tasks' or 'examples').
+     * V2 format uses 'question_archetypes' which is validated by JsonSchemaExamV2.
+     * This function is kept for backward compatibility with v1 imports.
      */
     protected function validateTasks(array $overview_normalized): array
     {
@@ -863,34 +867,34 @@ class OverviewStructureBuilder extends AbstractAiService
 
         foreach ($sections as $sectionIdx => &$section) {
             $sectionDuration = $section['duration_minutes'] ?? null;
-            $tasks = $section['tasks'] ?? [];
-            $taskCount = count($tasks);
+            $questions = $section['questions'] ?? [];
+            $questionCount = count($questions);
 
-            if (!$sectionDuration || $taskCount === 0) {
+            if (!$sectionDuration || $questionCount === 0) {
                 continue;
             }
 
             // Calculate how much time is already allocated
-            $tasksWithoutDuration = [];
+            $questionsWithoutDuration = [];
             $allocatedTime = 0;
 
-            foreach ($tasks as $idx => $task) {
-                if (isset($task['step_duration']) && $task['step_duration'] > 0) {
-                    $allocatedTime += $task['step_duration'];
+            foreach ($questions as $idx => $question) {
+                if (isset($question['step_duration']) && $question['step_duration'] > 0) {
+                    $allocatedTime += $question['step_duration'];
                 } else {
-                    $tasksWithoutDuration[] = $idx;
+                    $questionsWithoutDuration[] = $idx;
                 }
             }
 
-            // Distribute remaining time among tasks without duration
-            if (!empty($tasksWithoutDuration)) {
+            // Distribute remaining time among questions without duration
+            if (!empty($questionsWithoutDuration)) {
                 $remainingTime = $sectionDuration - $allocatedTime;
-                $timePerTask = $remainingTime > 0
-                    ? round($remainingTime / count($tasksWithoutDuration), 1)
-                    : round($sectionDuration / $taskCount, 1);
+                $timePerQuestion = $remainingTime > 0
+                    ? round($remainingTime / count($questionsWithoutDuration), 1)
+                    : round($sectionDuration / $questionCount, 1);
 
-                foreach ($tasksWithoutDuration as $idx) {
-                    $section['tasks'][$idx]['step_duration'] = max(1, $timePerTask);
+                foreach ($questionsWithoutDuration as $idx) {
+                    $section['questions'][$idx]['step_duration'] = max(1, $timePerQuestion);
                 }
 
                 Log::debug('Filled missing step_duration', [
