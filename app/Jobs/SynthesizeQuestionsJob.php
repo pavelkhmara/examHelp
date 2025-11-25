@@ -50,6 +50,10 @@ class SynthesizeQuestionsJob implements ShouldQueue
             $task->addActivity('synthesize_started', 'Starting question synthesis for all sections');
             $task->updateHeartbeat();
 
+            // Clean up stale generated_questions_v2 data
+            // This prevents accumulation of questions with outdated section_ids
+            $this->cleanupGeneratedQuestions($exam, $task);
+
             Log::info('Synthesize questions job started', [
                 'task_id' => $task->id,
                 'exam_id' => $exam->id,
@@ -101,20 +105,44 @@ class SynthesizeQuestionsJob implements ShouldQueue
                         'started_at' => DB::raw('COALESCE(started_at, NOW())'),
                     ]);
 
-                // Load claimed plans
+                // Load ALL in_progress plans (not just recently claimed)
+                // This allows us to track plans claimed by other workers too
                 $plans = GenerationPlan::where('exam_id', $exam->id)
                     ->where('status', 'in_progress')
-                    ->whereNotNull('started_at')
-                    ->where('started_at', '>=', now()->subSeconds(5)) // Only recent claims
                     ->get();
 
-                Log::info('Loaded pending/failed plans', [
+                Log::info('Loaded in_progress plans', [
                     'updated' => $updated,
                     'found' => $plans->count(),
                 ]);
 
+                // If no plans in_progress, check if all completed
                 if ($plans->isEmpty()) {
-                    throw new \Exception('No generation plans found (pending or failed). All plans may already be completed.');
+                    $completedCount = GenerationPlan::where('exam_id', $exam->id)
+                        ->where('status', 'completed')
+                        ->count();
+                    $totalCount = GenerationPlan::where('exam_id', $exam->id)->count();
+
+                    if ($completedCount === $totalCount && $totalCount > 0) {
+                        // All plans already completed - this is success, not error
+                        Log::info('All generation plans already completed', [
+                            'exam_id' => $exam->id,
+                            'completed_count' => $completedCount,
+                        ]);
+                        $task->addActivity('all_plans_completed', 'All generation plans already completed', [
+                            'completed_count' => $completedCount,
+                        ]);
+                        $task->result = [
+                            'success' => true,
+                            'message' => 'All plans were already completed',
+                            'plans_completed' => $completedCount,
+                        ];
+                        $task->status = 'completed';
+                        $task->save();
+                        return;
+                    }
+
+                    throw new \Exception('No generation plans found (pending, failed or in_progress). Total: ' . $totalCount . ', completed: ' . $completedCount);
                 }
             }
 
@@ -142,6 +170,9 @@ class SynthesizeQuestionsJob implements ShouldQueue
             $totalGenerated = collect($results)->sum('generated');
             $totalAttached = collect($results)->sum('attached');
 
+            // Generate audio for question groups (listening sections)
+            $audioStats = $this->generateGroupAudio($exam, $task);
+
             // Update task
             $task->result = [
                 'success' => true,
@@ -149,6 +180,7 @@ class SynthesizeQuestionsJob implements ShouldQueue
                 'total_generated' => $totalGenerated,
                 'total_attached' => $totalAttached,
                 'results' => $results,
+                'audio_stats' => $audioStats,
             ];
             $task->status = 'completed';
             $task->save();
@@ -157,6 +189,7 @@ class SynthesizeQuestionsJob implements ShouldQueue
                 'plans_processed' => $plans->count(),
                 'total_generated' => $totalGenerated,
                 'total_attached' => $totalAttached,
+                'audio_generated' => $audioStats['audio_generated'] ?? 0,
             ]);
             $task->updateHeartbeat();
 
@@ -315,6 +348,26 @@ class SynthesizeQuestionsJob implements ShouldQueue
     {
         Log::info("Dispatching task-level jobs for plan {$plan->id}");
 
+        // Check if jobs were already dispatched (by another worker)
+        // If meta.total_filters is set, jobs were already dispatched - just wait for them
+        if (isset($plan->meta['total_filters']) && $plan->meta['total_filters'] > 0) {
+            $totalFilters = $plan->meta['total_filters'];
+            $completedFilters = $plan->meta['filters_completed'] ?? 0;
+
+            Log::info("Jobs already dispatched for plan {$plan->id}, skipping dispatch", [
+                'total_filters' => $totalFilters,
+                'completed_filters' => $completedFilters,
+            ]);
+
+            $task->addActivity('jobs_already_dispatched', "Jobs already dispatched for plan #{$plan->id}", [
+                'plan_id' => $plan->id,
+                'total_filters' => $totalFilters,
+                'completed_filters' => $completedFilters,
+            ]);
+
+            return; // Don't dispatch again, just wait for completion
+        }
+
         // Get plan data
         $planData = $plan->plan_data ?? [];
         $mode = $plan->assembly_mode;
@@ -421,6 +474,123 @@ class SynthesizeQuestionsJob implements ShouldQueue
             if (time() - $startTime > $maxWaitTime) {
                 throw new \RuntimeException("Timeout waiting for filters to complete (plan {$plan->id})");
             }
+        }
+    }
+
+    /**
+     * Clean up stale generated_questions_v2 data before synthesis.
+     *
+     * This removes questions with section_ids that no longer exist in current ExamCategories.
+     * Prevents accumulation of outdated data when Research is re-run (which recreates categories).
+     *
+     * @param Exam $exam
+     * @param GenerationTask $task
+     * @return void
+     */
+    protected function cleanupGeneratedQuestions(Exam $exam, GenerationTask $task): void
+    {
+        $meta = $exam->meta ?? [];
+        $existingQuestions = $meta['generated_questions_v2'] ?? [];
+
+        if (empty($existingQuestions)) {
+            return;
+        }
+
+        // Get current category IDs
+        $currentCategoryIds = $exam->categories()->pluck('id')->toArray();
+
+        // Filter out questions with stale section_ids
+        $validQuestions = array_filter($existingQuestions, function ($q) use ($currentCategoryIds) {
+            $sectionId = $q['section_id'] ?? null;
+            return $sectionId !== null && in_array($sectionId, $currentCategoryIds);
+        });
+
+        $removedCount = count($existingQuestions) - count($validQuestions);
+
+        if ($removedCount > 0) {
+            Log::info('[SynthesizeQuestionsJob] Cleaned up stale generated_questions_v2', [
+                'exam_id' => $exam->id,
+                'original_count' => count($existingQuestions),
+                'valid_count' => count($validQuestions),
+                'removed_count' => $removedCount,
+            ]);
+
+            $task->addActivity('cleanup_stale_questions', "Removed {$removedCount} questions with outdated section_ids", [
+                'removed_count' => $removedCount,
+                'remaining_count' => count($validQuestions),
+            ]);
+
+            // Update meta
+            $meta['generated_questions_v2'] = array_values($validQuestions);
+            $exam->meta = $meta;
+            $exam->save();
+        }
+    }
+
+    /**
+     * Generate audio for question groups (listening sections)
+     *
+     * @param Exam $exam
+     * @param GenerationTask $task
+     * @return array{processed: int, audio_generated: int, errors: int, skipped: int}
+     */
+    private function generateGroupAudio(Exam $exam, GenerationTask $task): array
+    {
+        // Check if TTS is enabled
+        if (!config('ai.tts.enabled', false)) {
+            Log::info('TTS disabled, skipping group audio generation', [
+                'exam_id' => $exam->id,
+            ]);
+            return [
+                'processed' => 0,
+                'audio_generated' => 0,
+                'errors' => 0,
+                'skipped' => 0,
+            ];
+        }
+
+        try {
+            $task->addActivity('audio_generation_start', 'Starting audio generation for question groups');
+            $task->updateHeartbeat();
+
+            // Keep connection alive
+            $this->keepConnectionAlive();
+
+            /** @var \App\Services\LanguageApp\QuestionGroupAudioProcessor $audioProcessor */
+            $audioProcessor = app(\App\Services\LanguageApp\QuestionGroupAudioProcessor::class);
+
+            $stats = $audioProcessor->processExam($exam);
+
+            $task->addActivity('audio_generation_completed', 'Audio generation completed', [
+                'processed' => $stats['processed'],
+                'audio_generated' => $stats['audio_generated'],
+                'errors' => $stats['errors'],
+                'skipped' => $stats['skipped'],
+            ]);
+
+            Log::info('Group audio generation completed', [
+                'exam_id' => $exam->id,
+                'stats' => $stats,
+            ]);
+
+            return $stats;
+
+        } catch (\Throwable $e) {
+            Log::error('Group audio generation failed', [
+                'exam_id' => $exam->id,
+                'error' => $e->getMessage(),
+            ]);
+
+            $task->addActivity('audio_generation_failed', 'Audio generation failed: ' . $e->getMessage());
+
+            // Don't fail the whole job - audio is not critical
+            return [
+                'processed' => 0,
+                'audio_generated' => 0,
+                'errors' => 1,
+                'skipped' => 0,
+                'error' => $e->getMessage(),
+            ];
         }
     }
 }

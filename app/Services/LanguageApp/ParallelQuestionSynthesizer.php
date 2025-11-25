@@ -418,12 +418,33 @@ class ParallelQuestionSynthesizer extends AbstractAiService
 
     /**
      * Prepare AI request for inline mode
+     *
+     * Inline mode supports two data structures:
+     * 1. Legacy: plan_data.placeholders[] - flat list of questions
+     * 2. New: plan_data.question_groups[].questions[] - grouped questions with shared stimulus
      */
     protected function prepareInlineRequest(GenerationPlan $plan, Exam $exam, array $section): array
     {
         $planData = $plan->plan_data;
+        $examLanguage = \App\Support\LanguageHelper::getLanguageName($exam->language_of_test);
+        $examLevel = $exam->level ?? 'B2';
+
+        // NEW: Check for question_groups first (inline + question_groups mode)
+        $questionGroups = $planData['question_groups'] ?? [];
+        if (!empty($questionGroups)) {
+            return $this->prepareInlineRequestWithGroups($plan, $exam, $section, $questionGroups);
+        }
+
+        // LEGACY: Fall back to placeholders
         $placeholders = $planData['placeholders'] ?? [];
         $totalQuestions = count($placeholders);
+
+        if ($totalQuestions === 0) {
+            Log::warning('[ParallelQuestionSynthesizer] No placeholders or question_groups in inline plan', [
+                'plan_id' => $plan->id,
+                'plan_data_keys' => array_keys($planData),
+            ]);
+        }
 
         // For simplicity, generate all inline questions in one AI request
         $firstPlaceholder = $placeholders[0] ?? [];
@@ -436,22 +457,17 @@ class ParallelQuestionSynthesizer extends AbstractAiService
             questionType: $questionType,
             archetypeConfig: $config,
             sectionSkill: $section['skill'],
-            examLanguage: \App\Support\LanguageHelper::getLanguageName($exam->language_of_test),
-            examLevel: $exam->level ?? 'B2',
+            examLanguage: $examLanguage,
+            examLevel: $examLevel,
             quantity: $totalQuestions,
             filters: null,
             contextHint: "Generate questions for inline mode ({$totalQuestions} questions total)"
         );
 
-        $examLanguage = \App\Support\LanguageHelper::getLanguageName($exam->language_of_test);
-
         // Special instructions for audio-based question types
-        $audioInstructions = '';
-        if (in_array($questionType, ['listen_mcq', 'dictation'])) {
-            $audioInstructions = " CRITICAL FOR AUDIO TYPES: The stimulus.text_html field MUST contain the ACTUAL SPOKEN TEXT (dialogue, monologue, or sentence) that would be read aloud. DO NOT write meta-descriptions like 'Fragment dyskusji o...' or 'Nagranie zawiera...'. DO NOT include prefixes like 'Nagranie:', 'Audio:', 'Wysłuchaj:', 'Odtwórz nagranie'. DO NOT include playback instructions. Generate realistic conversation/speech text that test-takers would HEAR. For dialogues, use speaker labels (e.g., 'Ekspert 1: ... Professor: ...'). For monologues, provide full spoken text as paragraphs.";
-        }
+        $audioInstructions = $this->getAudioInstructions($questionType);
 
-        $userPrompt = "Generate exactly {$totalQuestions} questions of type {$questionType} for a {$examLanguage} language exam at {$exam->level} level. ALL user-facing content (instructions, stimulus, options) MUST be in {$examLanguage}.{$audioInstructions} Return ONLY a valid JSON array with {$totalQuestions} question objects.";
+        $userPrompt = "Generate exactly {$totalQuestions} questions of type {$questionType} for a {$examLanguage} language exam at {$examLevel} level. ALL user-facing content (instructions, stimulus, options) MUST be in {$examLanguage}.{$audioInstructions} Return ONLY a valid JSON array with {$totalQuestions} question objects.";
 
         return [
             'payload' => [
@@ -465,8 +481,8 @@ class ParallelQuestionSynthesizer extends AbstractAiService
                     $questionType,
                     $config,
                     $section['skill'],
-                    \App\Support\LanguageHelper::getLanguageName($exam->language_of_test),
-                    $exam->level ?? 'B2',
+                    $examLanguage,
+                    $examLevel,
                     $totalQuestions,
                     null,
                     null,
@@ -476,6 +492,165 @@ class ParallelQuestionSynthesizer extends AbstractAiService
                 'json_schema_name' => 'question_generation',
             ],
         ];
+    }
+
+    /**
+     * Prepare AI request for inline mode with question_groups
+     *
+     * Generates questions for each group separately, considering:
+     * - Shared stimulus (audio/text) for the group
+     * - Different question types within a group
+     * - Group context for coherent question generation
+     */
+    protected function prepareInlineRequestWithGroups(
+        GenerationPlan $plan,
+        Exam $exam,
+        array $section,
+        array $questionGroups
+    ): array {
+        $examLanguage = \App\Support\LanguageHelper::getLanguageName($exam->language_of_test);
+        $examLevel = $exam->level ?? 'B2';
+
+        // Extract all questions from all groups with their context
+        $allQuestions = [];
+        $groupContexts = [];
+
+        foreach ($questionGroups as $groupIndex => $group) {
+            $groupId = $group['id'] ?? "group_{$groupIndex}";
+            $groupTitle = $group['title'] ?? '';
+            $groupStimulus = $group['stimulus'] ?? [];
+            $groupQuestions = $group['questions'] ?? [];
+
+            $groupContexts[$groupId] = [
+                'title' => $groupTitle,
+                'stimulus' => $groupStimulus,
+                'question_count' => count($groupQuestions),
+            ];
+
+            foreach ($groupQuestions as $qIndex => $q) {
+                $allQuestions[] = [
+                    'type' => $q['type'] ?? 'single_select',
+                    'config' => $q['config'] ?? [],
+                    'group_id' => $groupId,
+                    'group_title' => $groupTitle,
+                    'group_stimulus' => $groupStimulus,
+                    'order_in_group' => $qIndex,
+                ];
+            }
+        }
+
+        $totalQuestions = count($allQuestions);
+
+        Log::info('[ParallelQuestionSynthesizer] Preparing inline request with question_groups', [
+            'plan_id' => $plan->id,
+            'groups_count' => count($questionGroups),
+            'total_questions' => $totalQuestions,
+            'group_contexts' => $groupContexts,
+        ]);
+
+        if ($totalQuestions === 0) {
+            Log::warning('[ParallelQuestionSynthesizer] No questions in question_groups', [
+                'plan_id' => $plan->id,
+            ]);
+            return [
+                'payload' => [],
+                'opts' => [],
+            ];
+        }
+
+        // Group questions by type for more efficient generation
+        $questionsByType = [];
+        foreach ($allQuestions as $q) {
+            $type = $q['type'];
+            if (!isset($questionsByType[$type])) {
+                $questionsByType[$type] = [];
+            }
+            $questionsByType[$type][] = $q;
+        }
+
+        // For now, generate all questions in one request
+        // Use the most common type as primary, with context about groups
+        $primaryType = array_key_first($questionsByType);
+        $model = $this->selectModelForType($primaryType);
+
+        // Build detailed prompt with group information
+        $groupDescriptions = [];
+        foreach ($questionGroups as $group) {
+            $groupId = $group['id'] ?? '';
+            $groupTitle = $group['title'] ?? '';
+            $groupQuestions = $group['questions'] ?? [];
+            $stimulus = $group['stimulus'] ?? [];
+
+            $stimulusDesc = '';
+            if (!empty($stimulus['audio'])) {
+                $stimulusDesc = 'shared audio stimulus';
+            } elseif (!empty($stimulus['text_html'])) {
+                $stimulusDesc = 'shared text stimulus';
+            }
+
+            $questionTypes = array_map(fn($q) => $q['type'] ?? 'unknown', $groupQuestions);
+            $typeCounts = array_count_values($questionTypes);
+            $typeDesc = implode(', ', array_map(fn($t, $c) => "{$c}x {$t}", array_keys($typeCounts), $typeCounts));
+
+            $groupDescriptions[] = "- Group \"{$groupTitle}\" ({$groupId}): {$typeDesc}" . ($stimulusDesc ? " with {$stimulusDesc}" : '');
+        }
+
+        $audioInstructions = $this->getAudioInstructions($primaryType);
+
+        $contextHint = "Generate questions for inline mode with question groups:\n" . implode("\n", $groupDescriptions);
+
+        $userPrompt = <<<PROMPT
+Generate exactly {$totalQuestions} questions for a {$examLanguage} language exam at {$examLevel} level.
+
+The questions are organized in groups with shared stimulus:
+{$contextHint}
+
+IMPORTANT:
+- Generate questions in the EXACT order they appear in the groups
+- Questions in the same group share the same stimulus context
+- ALL user-facing content (instructions, stimulus, options) MUST be in {$examLanguage}
+{$audioInstructions}
+
+Return ONLY a valid JSON array with {$totalQuestions} question objects.
+PROMPT;
+
+        return [
+            'payload' => [
+                'exam_title' => $exam->title,
+                'input' => $userPrompt,
+                'user_input' => $userPrompt,
+            ],
+            'opts' => [
+                'prompt_class' => PromptQuestionSynthesis::class,
+                'prompt_args' => [
+                    $primaryType,
+                    [], // config
+                    $section['skill'],
+                    $examLanguage,
+                    $examLevel,
+                    $totalQuestions,
+                    null,
+                    $contextHint,
+                ],
+                'model' => $model,
+                'json_schema' => QuestionArraySchema::getSchema($primaryType),
+                'json_schema_name' => 'question_generation',
+                // Pass group info for post-processing
+                '_question_groups' => $questionGroups,
+                '_questions_by_group' => $allQuestions,
+            ],
+        ];
+    }
+
+    /**
+     * Get audio-specific instructions for AI prompt
+     */
+    protected function getAudioInstructions(string $questionType): string
+    {
+        if (in_array($questionType, ['listen_mcq', 'listen_true_false', 'listen_yes_no_ng', 'dictation'])) {
+            return " CRITICAL FOR AUDIO TYPES: The stimulus.text_html field MUST contain the ACTUAL SPOKEN TEXT (dialogue, monologue, or sentence) that would be read aloud. DO NOT write meta-descriptions like 'Fragment dyskusji o...' or 'Nagranie zawiera...'. DO NOT include prefixes like 'Nagranie:', 'Audio:', 'Wysłuchaj:', 'Odtwórz nagranie'. DO NOT include playback instructions. Generate realistic conversation/speech text that test-takers would HEAR. For dialogues, use speaker labels (e.g., 'Ekspert 1: ... Professor: ...'). For monologues, provide full spoken text as paragraphs.";
+        }
+        return '';
     }
 
     /**

@@ -37,14 +37,24 @@ class QuestionAttacher
             // ========== CREATE QUESTION RECORDS IN DATABASE ==========
             // Convert generated questions (array) to Question model records
             $questionRecords = [];
-            foreach ($questions as $questionData) {
+
+            // Get section info for unique question_id generation
+            $category = ExamCategory::find($plan->section_id);
+            $sectionKey = $category ? $category->key : "section_{$plan->section_id}";
+
+            foreach ($questions as $qIndex => $questionData) {
                 try {
+                    // Generate unique question_id with section prefix to avoid collisions
+                    // e.g., "sec-listening_q1" instead of just "q1"
+                    $rawQuestionId = $questionData['id'] ?? "q{$qIndex}";
+                    $uniqueQuestionId = "{$sectionKey}_{$rawQuestionId}";
+
                     // CRITICAL: Question::insert() bypasses model casts, so we must manually
                     // json_encode() all JSON fields before inserting into database
                     $questionRecord = [
                         'exam_id' => $exam->id,
                         'section_id' => (int) $plan->section_id, // Cast to integer for database
-                        'question_id' => $questionData['id'] ?? 'q_' . uniqid(),
+                        'question_id' => $uniqueQuestionId,
                         'type' => $questionData['type'] ?? 'single_select',
                         'skills_measured' => json_encode($questionData['skills_measured'] ?? [], JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE),
                         'time_limit_sec' => $questionData['time_limit_sec'] ?? 0,

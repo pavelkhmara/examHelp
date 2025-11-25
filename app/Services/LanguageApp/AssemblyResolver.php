@@ -94,6 +94,9 @@ class AssemblyResolver
                     'assembly_mode' => $mode,
                 ]);
 
+                // ✅ VALIDATE: Listening sections MUST use inline + question_groups
+                $this->validateListeningMode($section, $sectionId);
+
                 // Resolve based on mode
                 $planData = match ($mode) {
                     'pool' => $this->resolvePool($section, $assembly),
@@ -594,5 +597,66 @@ class AssemblyResolver
             ],
             'total_questions' => $totalQuestions,
         ];
+    }
+
+    /**
+     * Validate that listening sections use inline mode with question_groups.
+     *
+     * @param array $section Section configuration from structure_v2
+     * @param string $sectionId Section ID for error messages
+     * @throws \InvalidArgumentException if validation fails
+     */
+    protected function validateListeningMode(array $section, string $sectionId): void
+    {
+        // Check if this is listening section
+        $skill = $section['skill'] ?? null;
+        $isListening = $skill === 'listening';
+
+        if (!$isListening) {
+            return; // Not listening, skip validation
+        }
+
+        $assembly = $section['assembly'] ?? [];
+        $mode = $assembly['mode'] ?? null;
+
+        // Listening MUST be inline with question_groups
+        if ($mode !== 'inline') {
+            throw new \InvalidArgumentException(
+                "🚨 VALIDATION ERROR: Listening section MUST use 'inline' mode with question_groups.\n" .
+                "Current mode: '{$mode}'\n" .
+                "Section: {$sectionId}\n\n" .
+                "This is a CRITICAL error in Phase B generation.\n" .
+                "AI should NEVER use pool or blueprint for listening sections!\n\n" .
+                "Expected structure:\n" .
+                "{\n" .
+                "  \"assembly\": {\n" .
+                "    \"mode\": \"inline\",\n" .
+                "    \"question_groups\": [...]\n" .
+                "  }\n" .
+                "}\n\n" .
+                "Please check:\n" .
+                "1. Phase B prompt contains question_groups instructions\n" .
+                "2. Phase A skeleton provides task structure metadata\n" .
+                "3. AI model (GPT-5) is used for Phase B\n"
+            );
+        }
+
+        if (!isset($assembly['question_groups']) || empty($assembly['question_groups'])) {
+            throw new \InvalidArgumentException(
+                "🚨 VALIDATION ERROR: Listening section with 'inline' mode MUST have question_groups array.\n" .
+                "Section: {$sectionId}\n" .
+                "Mode: {$mode} (correct)\n" .
+                "But: question_groups array is missing or empty!\n\n" .
+                "Question groups are REQUIRED for shared audio stimulus in listening tasks.\n\n" .
+                "Available assembly keys: " . implode(', ', array_keys($assembly))
+            );
+        }
+
+        // Success!
+        Log::info('✅ Listening section validation passed', [
+            'section_id' => $sectionId,
+            'mode' => $mode,
+            'groups_count' => count($assembly['question_groups']),
+        ]);
     }
 }

@@ -284,110 +284,12 @@ class PromptOverviewPhaseB
 
 # Выбор режима assembly для секции
 
-## 🚨 CRITICAL REQUIREMENT: Listening секции MUST use inline + question_groups
+## ВАЖНО: Приоритет для Listening/Reading секций
 
-**Listening секции ОБЯЗАНЫ использовать `inline` mode с `question_groups`:**
-
-⚠️ **VALIDATION WILL FAIL if:**
-- Listening section uses `pool` mode → ❌ INCORRECT (validation error)
-- Listening section uses `blueprint` mode → ❌ INCORRECT (validation error)
-- No `question_groups` in listening section → ❌ INCORRECT (validation error)
-
-✅ **CORRECT structure for listening:**
-```json
-{
-  "assembly": {
-    "mode": "inline",  // ← REQUIRED for listening!
-    "question_groups": [  // ← REQUIRED! Not optional!
-      {
-        "id": "listening-task-1",
-        "title": "Task I",
-        "stimulus": {"audio": ["placeholder_url"]},
-        "playback_settings": {"max_plays": 2, "enforcement": "strict"},
-        "questions": [
-          {"id": "q1", "type": "listen_mcq"},
-          {"id": "q2", "type": "listen_mcq"}
-        ]
-      }
-    ]
-  }
-}
-```
-
-**Why question_groups required for listening:**
-1. Listening = Task I (audio 1 → Q1-Q6), Task II (audio 2 → Q7-Q12)
-2. Each task has ONE shared audio + MULTIPLE questions
-3. This structure REQUIRES `question_groups` with shared stimulus
-4. Using pool/blueprint for listening is WRONG and will be rejected
-
-**Do NOT use pool or blueprint for listening sections!**
-
-## ✅ CORRECT Examples: Listening with question_groups
-
-### Example 1: Polish B1 Listening
-```json
-{
-  "assembly": {
-    "mode": "inline",
-    "question_groups": [
-      {
-        "id": "listening-task-1",
-        "title": "Zadanie I",
-        "stimulus": {"audio": ["listening_task1.mp3"]},
-        "playback_settings": {"max_plays": 1, "enforcement": "strict"},
-        "questions": [
-          {"id": "q1", "type": "listen_mcq"},
-          {"id": "q2", "type": "listen_mcq"},
-          {"id": "q3", "type": "listen_mcq"},
-          {"id": "q4", "type": "listen_mcq"},
-          {"id": "q5", "type": "listen_mcq"},
-          {"id": "q6", "type": "listen_mcq"}
-        ]
-      },
-      {
-        "id": "listening-task-2",
-        "title": "Zadanie II",
-        "stimulus": {"audio": ["listening_task2.mp3"]},
-        "playback_settings": {"max_plays": 2, "enforcement": "strict"},
-        "questions": [
-          {"id": "q7", "type": "listen_true_false"},
-          {"id": "q8", "type": "listen_true_false"},
-          {"id": "q9", "type": "listen_true_false"},
-          {"id": "q10", "type": "listen_true_false"}
-        ]
-      }
-    ]
-  }
-}
-```
-
-## ❌ INCORRECT Examples (DO NOT DO THIS!)
-
-### ❌ Listening with pool mode (WRONG!)
-```json
-{
-  "assembly": {
-    "mode": "pool",  // ← WRONG! Never use pool for listening!
-    "filters": [{"type": "listen_mcq", "pick": 10}]
-  }
-}
-```
-**Why wrong:** Pool cannot handle shared audio stimulus. Each question would need its own audio.
-
-### ❌ Listening with blueprint mode (WRONG!)
-```json
-{
-  "assembly": {
-    "mode": "blueprint",  // ← WRONG! Never use blueprint for listening!
-    "slots": [{"slot_id": "part1", "type": "listen_mcq", "pick": 6}]
-  }
-}
-```
-**Why wrong:** Blueprint pulls independent questions from pool. Listening needs grouped questions with shared audio.
-
-**Remember:** Listening ALWAYS needs `inline` + `question_groups`!
-
-## Reading секции
+**Для Listening секций языковых экзаменов:**
+→ ВСЕГДА используй `inline` с `question_groups` если экзамен имеет задания (questions) где несколько вопросов слушают одно аудио
+→ Типичная структура: Task I (аудио 1 → 5-6 вопросов), Task II (аудио 2 → 5-6 вопросов), и т.д.
+→ Это создаёт QuestionGroup записи с shared stimulus
 
 **Для Reading секций:**
 → Используй `inline` с `question_groups` если текст(ы) с несколькими вопросами на каждый
@@ -396,16 +298,15 @@ class PromptOverviewPhaseB
 ## Когда использовать `pool`:
 - Grammar/Use of English секции где вопросы независимы друг от друга
 - Когда нет shared stimulus между вопросами
-- **НИКОГДА для listening с общим аудио!**
+- **НЕ для listening с общим аудио!**
 
 ## Когда использовать `blueprint`:
 - Секция состоит из РАЗНЫХ частей с разными критериями
 - Пример: Writing section = Part 1 (email, 150 words) + Part 2 (essay, 250 words)
 - С `shared_stimulus: true` в slot → создаст QuestionGroup
-- **НИКОГДА для listening секций!**
 
 ## Когда использовать `inline` с `question_groups`:
-- **ОБЯЗАТЕЛЬНО для Listening секций** с заданиями где 2+ вопроса на одно аудио
+- **ВСЕГДА для Listening секций** с заданиями где 2+ вопроса на одно аудио
 - Reading секции где группа вопросов относится к одному тексту
 - Пример: Listening (Part I) = 1 аудио → 6 вопросов = 1 question_group
 

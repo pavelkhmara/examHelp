@@ -364,6 +364,12 @@ class QuestionValidator
     {
         $fixes = [];
 
+        // Schema Fix #1: Auto-fix missing instructions.brief
+        [$question, $fix0] = $this->autoFixInstructionsBrief($question);
+        if ($fix0) {
+            $fixes[] = $fix0;
+        }
+
         // Rule #1: Auto-fix invalid answer_key references
         [$question, $fix1] = $this->autoFixAnswerKey($question);
         if ($fix1) {
@@ -408,7 +414,58 @@ class QuestionValidator
     }
 
     /**
+     * SCHEMA FIX #1: Auto-fix missing instructions.brief
+     *
+     * JSON Schema требует обязательное поле instructions.brief.
+     * Если отсутствует - генерируем из instructions.text_html или типа вопроса.
+     *
+     * @param array<string, mixed> $question
+     * @return array{array<string, mixed>, string|null}
+     */
+    protected function autoFixInstructionsBrief(array $question): array
+    {
+        $instructions = $question['instructions'] ?? [];
+
+        // Если brief уже есть - ничего не делаем
+        if (!empty($instructions['brief']) && is_string($instructions['brief'])) {
+            return [$question, null];
+        }
+
+        // Генерируем brief из text_html (первые 100 символов без HTML тегов)
+        if (!empty($instructions['text_html'])) {
+            $textHtml = $instructions['text_html'];
+            $plainText = strip_tags($textHtml);
+            $brief = mb_substr($plainText, 0, 100);
+
+            if (mb_strlen($plainText) > 100) {
+                $brief .= '...';
+            }
+
+            $question['instructions']['brief'] = $brief;
+            return [$question, "instructions.brief: generated from text_html"];
+        }
+
+        // Fallback: генерируем из типа вопроса
+        $type = $question['type'] ?? 'unknown';
+        $defaultBrief = match($type) {
+            'single_select', 'multi_select' => 'Choose the correct answer(s)',
+            'true_false' => 'Mark as True or False',
+            'writing_prompt' => 'Write your answer',
+            'speaking_prompt' => 'Record your answer',
+            'matching' => 'Match the items',
+            'dictation' => 'Listen and write',
+            default => 'Complete the task',
+        };
+
+        $question['instructions']['brief'] = $defaultBrief;
+        return [$question, "instructions.brief: generated default for type '{$type}'"];
+    }
+
+    /**
      * AUTO-FIX Rule #1: Fix invalid answer_key references
+     *
+     * Для selection типов собирает valid IDs из interaction.options[].
+     * Для matching типа собирает IDs из interaction.matches[] (источники и цели).
      *
      * @param array<string, mixed> $question
      * @return array{array<string, mixed>, string|null}
@@ -419,13 +476,36 @@ class QuestionValidator
             return [$question, null];
         }
 
-        $optionIds = collect($question['interaction']['options'] ?? [])
+        // Собираем valid IDs из interaction.options[]
+        $validIds = collect($question['interaction']['options'] ?? [])
             ->pluck('id')
             ->filter()
             ->values()
             ->all();
 
-        if (empty($optionIds)) {
+        // Для matching типа добавляем IDs из interaction.matches[]
+        $type = $question['type'] ?? null;
+        if ($type === 'matching' && isset($question['interaction']['matches'])) {
+            $matches = $question['interaction']['matches'];
+
+            // Собираем ID источников (stems) и целей (options/targets)
+            foreach ($matches as $match) {
+                if (isset($match['stem_id']) && is_string($match['stem_id'])) {
+                    $validIds[] = $match['stem_id'];
+                }
+                if (isset($match['option_id']) && is_string($match['option_id'])) {
+                    $validIds[] = $match['option_id'];
+                }
+                if (isset($match['target_id']) && is_string($match['target_id'])) {
+                    $validIds[] = $match['target_id'];
+                }
+            }
+
+            // Удаляем дубликаты
+            $validIds = array_unique($validIds);
+        }
+
+        if (empty($validIds)) {
             return [$question, null];
         }
 
@@ -435,9 +515,9 @@ class QuestionValidator
         $newAnswerKey = [];
 
         foreach ($answerIds as $answerId) {
-            if ($answerId !== null && ! in_array($answerId, $optionIds, true)) {
-                // Invalid answer_key - replace with first valid option
-                $newAnswerKey[] = $optionIds[0];
+            if ($answerId !== null && ! in_array($answerId, $validIds, true)) {
+                // Invalid answer_key - replace with first valid ID
+                $newAnswerKey[] = $validIds[0];
                 $fixed = true;
             } else {
                 $newAnswerKey[] = $answerId;
@@ -447,7 +527,7 @@ class QuestionValidator
         if ($fixed) {
             $question['scoring']['answer_key'] = $newAnswerKey;
 
-            return [$question, "answer_key: remapped invalid IDs to first valid option"];
+            return [$question, "answer_key: remapped invalid IDs to first valid ID"];
         }
 
         return [$question, null];

@@ -182,8 +182,13 @@ class QuestionGroupGenerationService
             throw new \Exception("Question '{$questionSpec['id']}' in group '{$questionGroup->group_id}' missing required field: type");
         }
 
+        // Generate unique question_id with group prefix to avoid collisions
+        // e.g., "listening-task-1_q1" instead of just "q1"
+        $uniqueQuestionId = "{$questionGroup->group_id}_{$questionSpec['id']}";
+
         Log::debug('[QuestionGroupGenerationService] Creating question', [
-            'question_id' => $questionSpec['id'],
+            'question_id' => $uniqueQuestionId,
+            'raw_id' => $questionSpec['id'],
             'type' => $questionSpec['type'],
             'group_id' => $questionGroup->group_id,
             'order' => $order,
@@ -195,7 +200,7 @@ class QuestionGroupGenerationService
             'exam_id' => $plan->exam_id,
             'section_id' => $plan->section_id,
             'question_group_id' => $questionGroup->id,
-            'question_id' => $questionSpec['id'],
+            'question_id' => $uniqueQuestionId,
             'type' => $questionSpec['type'],
 
             // v2 archetype fields (use [] for JSON, 0 for integers)

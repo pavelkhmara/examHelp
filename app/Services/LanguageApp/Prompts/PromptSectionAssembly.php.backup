@@ -39,12 +39,6 @@ class PromptSectionAssembly
 
 Ты НЕ создаёшь тексты вопросов, stimulus, конкретные options. Только архетипы и стратегию сборки.
 
-⚠️ **CRITICAL VALIDATION RULE for question_groups:**
-When using `inline` mode with `question_groups`, EVERY group MUST have a non-empty `stimulus` field:
-- **Listening sections:** `"stimulus": {"audio": ["placeholder_audio.mp3"]}`
-- **Reading sections:** `"stimulus": {"text_html": "<article><h2>Title</h2><p>Placeholder text...</p></article>"}`
-- **NEVER:** `"stimulus": {}` or `"stimulus": null` → ❌ VALIDATION WILL FAIL!
-
 # Входные данные
 
 **Exam Title**: {$examTitle}
@@ -110,160 +104,10 @@ When using `inline` mode with `question_groups`, EVERY group MUST have a non-emp
 **Доступные режимы:**
 {$assemblyModesDescription}
 
-### 🚨 CRITICAL REQUIREMENT: Listening секции MUST use inline + question_groups
-
-**Listening секции ОБЯЗАНЫ использовать `inline` mode с `question_groups`:**
-
-⚠️ **VALIDATION WILL FAIL if:**
-- Listening section uses `pool` mode → ❌ INCORRECT (validation error)
-- Listening section uses `blueprint` mode → ❌ INCORRECT (validation error)
-- No `question_groups` in listening section → ❌ INCORRECT (validation error)
-
-✅ **CORRECT structure for listening:**
-```json
-{
-  "assembly": {
-    "mode": "inline",  // ← REQUIRED for listening!
-    "question_groups": [  // ← REQUIRED! Not optional!
-      {
-        "id": "listening-task-1",
-        "title": "Task I",
-        "stimulus": {"audio": ["placeholder_url"]},
-        "playback_settings": {"max_plays": 2, "enforcement": "strict"},
-        "questions": [
-          {"id": "q1", "type": "listen_mcq"},
-          {"id": "q2", "type": "listen_mcq"}
-        ]
-      }
-    ]
-  }
-}
-```
-
-**Why question_groups required for listening:**
-1. Listening = Task I (audio 1 → Q1-Q6), Task II (audio 2 → Q7-Q12)
-2. Each task has ONE shared audio + MULTIPLE questions
-3. This structure REQUIRES `question_groups` with shared stimulus
-4. Using pool/blueprint for listening is WRONG and will be rejected
-
-**Do NOT use pool or blueprint for listening sections!**
-
-### ✅ CORRECT Example: Listening with question_groups
-```json
-{
-  "assembly": {
-    "mode": "inline",
-    "question_groups": [
-      {
-        "id": "listening-task-1",
-        "title": "Zadanie I",
-        "stimulus": {"audio": ["listening_task1.mp3"]},
-        "playback_settings": {"max_plays": 1, "enforcement": "strict"},
-        "questions": [
-          {"id": "q1", "type": "listen_mcq"},
-          {"id": "q2", "type": "listen_mcq"},
-          {"id": "q3", "type": "listen_mcq"},
-          {"id": "q4", "type": "listen_mcq"},
-          {"id": "q5", "type": "listen_mcq"},
-          {"id": "q6", "type": "listen_mcq"}
-        ]
-      },
-      {
-        "id": "listening-task-2",
-        "title": "Zadanie II",
-        "stimulus": {"audio": ["listening_task2.mp3"]},
-        "playback_settings": {"max_plays": 2, "enforcement": "strict"},
-        "questions": [
-          {"id": "q7", "type": "listen_true_false"},
-          {"id": "q8", "type": "listen_true_false"},
-          {"id": "q9", "type": "listen_true_false"},
-          {"id": "q10", "type": "listen_true_false"}
-        ]
-      }
-    ]
-  }
-}
-```
-
-### ❌ INCORRECT Examples (DO NOT DO THIS!)
-
-**❌ Listening with pool mode (WRONG!):**
-```json
-{
-  "assembly": {
-    "mode": "pool",  // ← WRONG! Never use pool for listening!
-    "filters": [{"type": "listen_mcq", "pick": 10}]
-  }
-}
-```
-**Why wrong:** Pool cannot handle shared audio stimulus. Each question would need its own audio.
-
-**❌ Listening with blueprint mode (WRONG!):**
-```json
-{
-  "assembly": {
-    "mode": "blueprint",  // ← WRONG! Never use blueprint for listening!
-    "slots": [{"slot_id": "part1", "type": "listen_mcq", "pick": 6}]
-  }
-}
-```
-**Why wrong:** Blueprint pulls independent questions from pool. Listening needs grouped questions with shared audio.
-
-**Remember:** Listening ALWAYS needs `inline` + `question_groups`!
-
-### ✅ CORRECT Example: Reading Section with question_groups
-
-**Reading sections with shared text passage MUST also use inline + question_groups:**
-
-```json
-{
-  "assembly": {
-    "mode": "inline",
-    "question_groups": [
-      {
-        "id": "reading-task-1",
-        "title": "Text 1 - Article about Technology",
-        "stimulus": {
-          "text_html": "<article><h2>The Future of AI</h2><p>Artificial intelligence is transforming...</p></article>"
-        },
-        "playback_settings": null,
-        "questions": [
-          {"id": "q1", "type": "read_mcq"},
-          {"id": "q2", "type": "read_mcq"},
-          {"id": "q3", "type": "read_true_false"},
-          {"id": "q4", "type": "read_true_false"},
-          {"id": "q5", "type": "read_yes_no_ng"}
-        ]
-      },
-      {
-        "id": "reading-task-2",
-        "title": "Text 2 - Letter to the Editor",
-        "stimulus": {
-          "text_html": "<article><h2>Dear Editor,</h2><p>I am writing to express my concern...</p></article>"
-        },
-        "playback_settings": null,
-        "questions": [
-          {"id": "q6", "type": "read_mcq"},
-          {"id": "q7", "type": "read_mcq"},
-          {"id": "q8", "type": "matching"},
-          {"id": "q9", "type": "fill_in_blank"}
-        ]
-      }
-    ]
-  }
-}
-```
-
-**⚠️ IMPORTANT for Reading stimulus:**
-- Use `"stimulus": {"text_html": "<article>...</article>"}` (NOT empty!)
-- The `text_html` field MUST contain placeholder text (AI will not generate full text)
-- Use realistic placeholder like `"<article><h2>Title</h2><p>Text content...</p></article>"`
-- NEVER leave stimulus empty: `"stimulus": {}` → ❌ VALIDATION WILL FAIL!
-
-### Рекомендации по выбору для других секций:
-- **Pool** → для Grammar/Use of English секций где вопросы независимы
-- **Blueprint** → для Writing/Speaking секций с разными уровнями сложности
-- **Inline** → для Reading/Listening секций с question groups (shared stimulus + несколько вопросов)
+**Рекомендации по выбору:**
+- **Pool** → для секций с фиксированными типами заданий (listening, reading с MCQ)
+- **Blueprint** → для секций с известным составом, но разными уровнями (writing, speaking с промптами)
+- **Inline** → для секций с уникальными заданиями (question groups, integrated tasks)
 
 ## Часть 3: Создать Assembly Configuration
 

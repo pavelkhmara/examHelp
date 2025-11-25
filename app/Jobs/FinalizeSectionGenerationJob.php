@@ -166,37 +166,48 @@ class FinalizeSectionGenerationJob implements ShouldQueue
                 }
             }
 
-            // Generate example questions
-            try {
-                $task->addActivity('example_generation_started', 'Generating example questions for archetypes');
-                $task->updateHeartbeat();
+            // Generate example questions (skip if skip_examples flag is set)
+            $skipExamples = (bool) ($task->request['skip_examples'] ?? false);
 
-                $exampleResult = $svc->generateExamples($exam, $task, 1);
-
-                $task->updateHeartbeat();
-
-                $examplesCount = $exampleResult['examples_created'] ?? 0;
-                $task->addActivity('example_generation_completed', "Generated {$examplesCount} example questions", [
-                    'examples_count' => $examplesCount,
-                ]);
-
-                $result = (array) ($task->result ?? []);
-                $result['examples'] = $exampleResult;
-                $task->result = $result;
-                $task->save();
-            } catch (\Throwable $e) {
-                Log::error('Example generation failed', [
+            if ($skipExamples) {
+                $task->addActivity('example_generation_skipped', 'Example generation skipped (skip_examples=true)');
+                Log::info('Skipping example generation in FinalizeSectionGenerationJob', [
                     'exam_id' => $exam->id,
                     'task_id' => $task->id,
-                    'error' => $e->getMessage(),
+                    'reason' => 'skip_examples flag set',
                 ]);
+            } else {
+                try {
+                    $task->addActivity('example_generation_started', 'Generating example questions for archetypes');
+                    $task->updateHeartbeat();
 
-                $task->addActivity('example_generation_failed', 'Example generation failed: ' . $e->getMessage());
+                    $exampleResult = $svc->generateExamples($exam, $task, 1);
 
-                $result = (array) ($task->result ?? []);
-                $result['examples_error'] = $e->getMessage();
-                $task->result = $result;
-                $task->save();
+                    $task->updateHeartbeat();
+
+                    $examplesCount = $exampleResult['examples_created'] ?? 0;
+                    $task->addActivity('example_generation_completed', "Generated {$examplesCount} example questions", [
+                        'examples_count' => $examplesCount,
+                    ]);
+
+                    $result = (array) ($task->result ?? []);
+                    $result['examples'] = $exampleResult;
+                    $task->result = $result;
+                    $task->save();
+                } catch (\Throwable $e) {
+                    Log::error('Example generation failed', [
+                        'exam_id' => $exam->id,
+                        'task_id' => $task->id,
+                        'error' => $e->getMessage(),
+                    ]);
+
+                    $task->addActivity('example_generation_failed', 'Example generation failed: ' . $e->getMessage());
+
+                    $result = (array) ($task->result ?? []);
+                    $result['examples_error'] = $e->getMessage();
+                    $task->result = $result;
+                    $task->save();
+                }
             }
 
             // Materialize structure_v2 into database tables (ExamCategory, QuestionGroup, Question)

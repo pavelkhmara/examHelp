@@ -66,7 +66,9 @@ class RunOverviewPhaseAAction extends Action
                 'exam_id' => $exam->id,
                 'type' => 'research_phase_a',
                 'status' => 'queued',
-                'request' => [],
+                'request' => [
+                    'skip_examples' => true, // Examples generated separately via "3.5️⃣ Generate Examples"
+                ],
             ]);
 
             $task->addActivity('phase_a_queued', 'Operator requested Phase A via Nova action');
