@@ -59,6 +59,19 @@ class AssemblyResolver
         DB::beginTransaction();
 
         try {
+            // Delete all old generation plans for this exam before creating new ones
+            // This ensures we only have plans from the current assembly resolution
+            // Note: Plans are also cascade-deleted when ExamCategory is deleted in createCategories()
+            $deletedPlansCount = \App\Models\GenerationPlan::where('exam_id', $exam->id)->delete();
+
+            Log::info('[AssemblyResolver] Deleted old generation plans', [
+                'exam_id' => $exam->id,
+                'deleted_plans_count' => $deletedPlansCount,
+            ]);
+
+            // Track already processed skills to avoid duplicates
+            $processedSkills = [];
+
             foreach ($sections as $section) {
                 $sectionId = $section['id'] ?? null;
                 $assembly = $section['assembly'] ?? null;
@@ -81,6 +94,9 @@ class AssemblyResolver
                     'assembly_mode' => $mode,
                 ]);
 
+                // ✅ VALIDATE: Listening sections MUST use inline + question_groups
+                $this->validateListeningMode($section, $sectionId);
+
                 // Resolve based on mode
                 $planData = match ($mode) {
                     'pool' => $this->resolvePool($section, $assembly),
@@ -96,6 +112,16 @@ class AssemblyResolver
                     throw new \Exception("Section {$sectionId} has no 'skill' field. Cannot match to ExamCategory.");
                 }
 
+                // Skip duplicate sections with same skill
+                if (isset($processedSkills[$skill])) {
+                    Log::warning('[AssemblyResolver] Skipping duplicate section with same skill', [
+                        'section_id' => $sectionId,
+                        'skill' => $skill,
+                        'previous_section' => $processedSkills[$skill],
+                    ]);
+                    continue;
+                }
+
                 $category = ExamCategory::where('exam_id', $exam->id)
                     ->where('skill', $skill)
                     ->first();
@@ -104,27 +130,27 @@ class AssemblyResolver
                     throw new \Exception("ExamCategory not found for skill '{$skill}' (section {$sectionId}). Ensure categories are created before resolving assembly.");
                 }
 
-                // Create or update generation plan (using numeric category ID)
-                $plan = GenerationPlan::updateOrCreate(
-                    [
-                        'exam_id' => $exam->id,
-                        'section_id' => $category->id, // Use numeric ID instead of string
-                    ],
-                    [
-                        'assembly_mode' => $mode,
-                        'plan_data' => $planData['plan_data'],
-                        'total_questions' => $planData['total_questions'],
-                        'status' => 'pending',
-                        'generated_questions' => 0,
-                        'error' => null,
-                    ]
-                );
+                // Create generation plan (old plans already deleted above)
+                $plan = GenerationPlan::create([
+                    'exam_id' => $exam->id,
+                    'section_id' => $category->id, // Use numeric ID instead of string
+                    'assembly_mode' => $mode,
+                    'plan_data' => $planData['plan_data'],
+                    'total_questions' => $planData['total_questions'],
+                    'status' => 'pending',
+                    'generated_questions' => 0,
+                    'error' => null,
+                ]);
 
                 $plans[] = $plan;
 
-                Log::info('[AssemblyResolver] Plan created/updated', [
+                // Mark this skill as processed
+                $processedSkills[$skill] = $sectionId;
+
+                Log::info('[AssemblyResolver] Plan created', [
                     'plan_id' => $plan->id,
                     'section_id' => $sectionId,
+                    'skill' => $skill,
                     'assembly_mode' => $mode,
                     'total_questions' => $planData['total_questions'],
                 ]);
@@ -152,6 +178,58 @@ class AssemblyResolver
     }
 
     /**
+     * Normalize invalid question types to valid enum values
+     *
+     * Phase B AI sometimes generates invalid types like "read_mcq", "read_true_false"
+     * that don't exist in QuestionType enum. This method normalizes them to valid types.
+     *
+     * @param string $type Raw type from AI
+     * @return string Normalized type
+     */
+    protected function normalizeQuestionType(string $type): string
+    {
+        // Type mapping: invalid → valid
+        $mapping = [
+            // Reading types (invalid prefixes)
+            'read_mcq' => 'single_select',
+            'read_true_false' => 'true_false',
+            'read_yes_no_ng' => 'yes_no_ng',
+            'rdg_mcq' => 'single_select',
+
+            // Listening types (normalize variations)
+            'listen_true_false' => 'listen_mcq',
+            'listen_yes_no_ng' => 'listen_mcq',
+
+            // Grammar/Lexis types
+            'sentence_completion' => 'single_select',
+            'text_input' => 'short_answer',
+
+            // Common variations
+            'multiple_choice' => 'single_select',
+            'multiple_select' => 'multi_select',
+            'fill_in_the_blank' => 'gap_cloze',
+        ];
+
+        if (isset($mapping[$type])) {
+            Log::info('[AssemblyResolver] Normalized question type', [
+                'original' => $type,
+                'normalized' => $mapping[$type],
+            ]);
+            return $mapping[$type];
+        }
+
+        // Validate against enum
+        if (!in_array($type, \App\Domain\Taxonomy\QuestionType::all(), true)) {
+            Log::warning('[AssemblyResolver] Unknown question type, defaulting to single_select', [
+                'type' => $type,
+            ]);
+            return 'single_select';
+        }
+
+        return $type;
+    }
+
+    /**
      * Resolve pool assembly mode
      *
      * Pool mode generates questions from a single pool with filters.
@@ -163,7 +241,7 @@ class AssemblyResolver
      *   "filters": { "type": ["single_select"], "difficulty": "medium" },
      *   "pick": 40,
      *   "seed": "exam-123-listening",
-     *   "assertions": { "total_tasks_equals": 40 }
+     *   "assertions": { "total_questions_equals": 40 }
      * }
      *
      * Output:
@@ -176,33 +254,67 @@ class AssemblyResolver
      *   },
      *   "total_questions": 40
      * }
+     *
+     * FIXED (24.11.2025): Normalizes invalid question types in filters
      */
     public function resolvePool(array $section, array $assembly): array
     {
-        $poolId = $assembly['pool_id'] ?? null;
+        // Auto-generate pool_id if not provided (AI may omit it)
+        $poolId = $assembly['pool_id'] ?? "pool_{$section['id']}_" . md5(json_encode($assembly['filters'] ?? []));
         $filters = $assembly['filters'] ?? [];
-        $pick = $assembly['pick'] ?? 0;
+
+        // ✅ FIX: Normalize question types in filters
+        foreach ($filters as $index => $filter) {
+            if (isset($filter['type'])) {
+                $filters[$index]['type'] = $this->normalizeQuestionType($filter['type']);
+            }
+        }
+
+        // Support both pick (old) and questions_count (new) for backward compatibility
+        // If not specified at assembly level, sum from filters
+        $questionsCount = $assembly['questions_count'] ?? $assembly['pick'] ?? null;
+
+        if ($questionsCount === null && !empty($filters)) {
+            // Sum pick from all filters
+            $questionsCount = 0;
+            foreach ($filters as $filter) {
+                $questionsCount += $filter['pick'] ?? $filter['questions_count'] ?? 0;
+            }
+        }
+
+        $pick = $questionsCount; // Keep $pick for backward compatibility in plan_data
+
         $seed = $assembly['seed'] ?? null;
         $assertions = $assembly['assertions'] ?? [];
 
-        if (!$poolId) {
-            throw new \Exception("Pool mode requires pool_id for section {$section['id']}");
-        }
-
-        if ($pick <= 0) {
-            throw new \Exception("Pool mode requires pick > 0 for section {$section['id']}");
+        if ($questionsCount <= 0) {
+            throw new \Exception("Pool mode requires questions_count (or pick) > 0 for section {$section['id']}");
         }
 
         // Extract total questions from assertions
-        $totalQuestions = $assertions['total_tasks_equals'] ?? $pick;
+        $totalQuestions = $assertions['total_questions_equals'] ?? $questionsCount;
+
+        // Build plan_data with new fields (Phase 1-2: explicit stimulus structure)
+        $planData = [
+            'pool_id' => $poolId,
+            'filters' => $filters,
+            'pick' => $pick,
+            'seed' => $seed,
+        ];
+
+        // Add new fields if present (optional for backward compatibility)
+        if (isset($assembly['questions_count'])) {
+            $planData['questions_count'] = $assembly['questions_count'];
+        }
+        if (isset($assembly['shared_stimulus'])) {
+            $planData['shared_stimulus'] = $assembly['shared_stimulus'];
+        }
+        if (isset($assembly['stimulus_type'])) {
+            $planData['stimulus_type'] = $assembly['stimulus_type'];
+        }
 
         return [
-            'plan_data' => [
-                'pool_id' => $poolId,
-                'filters' => $filters,
-                'pick' => $pick,
-                'seed' => $seed,
-            ],
+            'plan_data' => $planData,
             'total_questions' => $totalQuestions,
         ];
     }
@@ -230,7 +342,7 @@ class AssemblyResolver
      *       "filters": { "type": ["multi_select"] }
      *     }
      *   ],
-     *   "assertions": { "total_tasks_equals": 20 }
+     *   "assertions": { "total_questions_equals": 20 }
      * }
      *
      * Output:
@@ -256,31 +368,89 @@ class AssemblyResolver
      */
     public function resolveBlueprint(array $section, array $assembly): array
     {
-        $blueprint = $assembly['blueprint'] ?? [];
+        // Support both 'blueprint' and 'slots' keys for backward compatibility
+        $blueprint = $assembly['blueprint'] ?? $assembly['slots'] ?? [];
         $assertions = $assembly['assertions'] ?? [];
 
         if (empty($blueprint)) {
-            throw new \Exception("Blueprint mode requires blueprint array for section {$section['id']}");
+            throw new \Exception("Blueprint mode requires blueprint or slots array for section {$section['id']}");
         }
 
         // Calculate total questions from slots
         $totalFromSlots = 0;
         foreach ($blueprint as $slot) {
-            $pick = $slot['pick'] ?? 0;
-            $totalFromSlots += $pick;
+            // Support both pick (old) and questions_count (new) for backward compatibility
+            $questionsCount = $slot['questions_count'] ?? $slot['pick'] ?? 0;
+            $totalFromSlots += $questionsCount;
 
-            if ($pick <= 0) {
-                throw new \Exception("Blueprint slot requires pick > 0 for section {$section['id']}");
+            if ($questionsCount <= 0) {
+                throw new \Exception("Blueprint slot requires questions_count (or pick) > 0 for section {$section['id']}");
             }
         }
 
         // Validate assertions
-        $expectedTotal = $assertions['total_tasks_equals'] ?? null;
+        $expectedTotal = $assertions['total_questions_equals'] ?? null;
         if ($expectedTotal !== null && $totalFromSlots !== $expectedTotal) {
             throw new \Exception(
                 "Blueprint total mismatch for section {$section['id']}: " .
                 "slots sum to {$totalFromSlots}, but assertions expect {$expectedTotal}"
             );
+        }
+
+        // AUTO-GROUP: For listening sections, convert slots to question_groups
+        // This ensures QuestionGroup records are created for shared audio stimulus
+        $skill = $section['skill'] ?? '';
+        if ($skill === 'listening') {
+            Log::info('[AssemblyResolver] Converting listening blueprint slots to question_groups', [
+                'section_id' => $section['id'],
+                'slots_count' => count($blueprint),
+            ]);
+
+            $questionGroups = [];
+            $ungroupedQuestions = [];
+            $groupIndex = 0;
+
+            foreach ($blueprint as $index => $slot) {
+                $slotId = $slot['slot_id'] ?? $slot['slot'] ?? "slot_{$index}";
+                $questionsCount = $slot['questions_count'] ?? $slot['pick'] ?? 1;
+                $type = $slot['type'] ?? 'listen_mcq';
+
+                // Only create group if 2+ questions (group = shared stimulus)
+                if ($questionsCount >= 2) {
+                    $questionGroups[] = [
+                        'id' => "listening-group-{$groupIndex}",
+                        'title' => $slot['title'] ?? "Task " . ($groupIndex + 1),
+                        'stimulus' => ['audio' => []], // Will be generated by synthesizer
+                        'playback_settings' => [
+                            'max_plays' => 2,
+                            'enforcement' => 'advisory',
+                        ],
+                        'questions' => array_map(fn($i) => [
+                            'id' => "{$slotId}_q{$i}",
+                            'type' => $type,
+                            'difficulty' => $slot['difficulty'] ?? 'medium',
+                            'tags' => $slot['tags'] ?? [],
+                        ], range(1, $questionsCount)),
+                    ];
+                    $groupIndex++;
+                } else {
+                    // Single questions go ungrouped
+                    $ungroupedQuestions[] = [
+                        'id' => "{$slotId}_q1",
+                        'type' => $type,
+                        'difficulty' => $slot['difficulty'] ?? 'medium',
+                        'tags' => $slot['tags'] ?? [],
+                    ];
+                }
+            }
+
+            return [
+                'plan_data' => [
+                    'question_groups' => $questionGroups,
+                    'ungrouped_questions' => $ungroupedQuestions,
+                ],
+                'total_questions' => $totalFromSlots,
+            ];
         }
 
         return [
@@ -313,17 +483,17 @@ class AssemblyResolver
      *       ]
      *     }
      *   ],
-     *   "assertions": { "total_tasks_equals": 2 }
+     *   "assertions": { "total_questions_equals": 2 }
      * }
      *
      * Input with placeholders (legacy):
      * {
      *   "mode": "inline",
      *   "placeholders": [
-     *     { "id": "writing-task-1", "type": "graph_description" },
-     *     { "id": "writing-task-2", "type": "essay" }
+     *     { "id": "writing-question-1", "type": "graph_description" },
+     *     { "id": "writing-question-2", "type": "essay" }
      *   ],
-     *   "assertions": { "total_tasks_equals": 2 }
+     *   "assertions": { "total_questions_equals": 2 }
      * }
      *
      * Output:
@@ -353,7 +523,7 @@ class AssemblyResolver
             );
 
             // Validate assertions if present
-            $expectedTotal = $assertions['total_tasks_equals'] ?? null;
+            $expectedTotal = $assertions['total_questions_equals'] ?? null;
             if ($expectedTotal !== null && $result['total_questions'] !== $expectedTotal) {
                 throw new \Exception(
                     "Question groups total mismatch for section {$sectionId}: " .
@@ -364,24 +534,45 @@ class AssemblyResolver
             return $result;
         }
 
-        // LEGACY: Fall back to placeholders/tasks (existing behavior)
+        // LEGACY: Fall back to placeholders/questions (existing behavior)
         Log::info('[AssemblyResolver] Using placeholders for inline mode (legacy)', [
             'section_id' => $sectionId,
         ]);
 
         $placeholders = $assembly['placeholders'] ?? [];
-        $tasks = $section['tasks'] ?? [];
+        $questions = $section['questions'] ?? [];
 
-        // If placeholders not in assembly, use tasks from section
-        if (empty($placeholders) && !empty($tasks)) {
-            // Convert tasks to placeholders format
-            $placeholders = array_map(function ($task, $index) {
+        // If placeholders not in assembly, use questions from section
+        if (empty($placeholders) && !empty($questions)) {
+            // Convert questions to placeholders format
+            $placeholders = array_map(function ($question, $index) {
                 return [
-                    'id' => $task['id'] ?? 'task_' . ($index + 1),
-                    'type' => $task['type'] ?? 'inline_task',
-                    'spec' => $task,
+                    'id' => $question['id'] ?? 'question_' . ($index + 1),
+                    'type' => $question['type'] ?? 'inline_question',
+                    'spec' => $question,
                 ];
-            }, $tasks, array_keys($tasks));
+            }, $questions, array_keys($questions));
+        }
+
+        // FALLBACK: If still no placeholders, try to create from question_archetypes
+        if (empty($placeholders)) {
+            $questionArchetypes = $section['question_archetypes'] ?? [];
+
+            if (!empty($questionArchetypes)) {
+                Log::info('[AssemblyResolver] Creating placeholders from question_archetypes (fallback)', [
+                    'section_id' => $sectionId,
+                    'archetypes_count' => count($questionArchetypes),
+                ]);
+
+                // Convert archetypes to placeholders
+                $placeholders = array_map(function ($archetype, $index) {
+                    return [
+                        'id' => $archetype['id'] ?? 'archetype_' . ($index + 1),
+                        'type' => $archetype['type'] ?? 'unknown',
+                        'archetype' => $archetype,
+                    ];
+                }, $questionArchetypes, array_keys($questionArchetypes));
+            }
         }
 
         if (empty($placeholders)) {
@@ -392,7 +583,7 @@ class AssemblyResolver
         $totalQuestions = count($placeholders);
 
         // Validate assertions
-        $expectedTotal = $assertions['total_tasks_equals'] ?? null;
+        $expectedTotal = $assertions['total_questions_equals'] ?? null;
         if ($expectedTotal !== null && $totalQuestions !== $expectedTotal) {
             throw new \Exception(
                 "Inline total mismatch for section {$sectionId}: " .
@@ -406,5 +597,66 @@ class AssemblyResolver
             ],
             'total_questions' => $totalQuestions,
         ];
+    }
+
+    /**
+     * Validate that listening sections use inline mode with question_groups.
+     *
+     * @param array $section Section configuration from structure_v2
+     * @param string $sectionId Section ID for error messages
+     * @throws \InvalidArgumentException if validation fails
+     */
+    protected function validateListeningMode(array $section, string $sectionId): void
+    {
+        // Check if this is listening section
+        $skill = $section['skill'] ?? null;
+        $isListening = $skill === 'listening';
+
+        if (!$isListening) {
+            return; // Not listening, skip validation
+        }
+
+        $assembly = $section['assembly'] ?? [];
+        $mode = $assembly['mode'] ?? null;
+
+        // Listening MUST be inline with question_groups
+        if ($mode !== 'inline') {
+            throw new \InvalidArgumentException(
+                "🚨 VALIDATION ERROR: Listening section MUST use 'inline' mode with question_groups.\n" .
+                "Current mode: '{$mode}'\n" .
+                "Section: {$sectionId}\n\n" .
+                "This is a CRITICAL error in Phase B generation.\n" .
+                "AI should NEVER use pool or blueprint for listening sections!\n\n" .
+                "Expected structure:\n" .
+                "{\n" .
+                "  \"assembly\": {\n" .
+                "    \"mode\": \"inline\",\n" .
+                "    \"question_groups\": [...]\n" .
+                "  }\n" .
+                "}\n\n" .
+                "Please check:\n" .
+                "1. Phase B prompt contains question_groups instructions\n" .
+                "2. Phase A skeleton provides task structure metadata\n" .
+                "3. AI model (GPT-5) is used for Phase B\n"
+            );
+        }
+
+        if (!isset($assembly['question_groups']) || empty($assembly['question_groups'])) {
+            throw new \InvalidArgumentException(
+                "🚨 VALIDATION ERROR: Listening section with 'inline' mode MUST have question_groups array.\n" .
+                "Section: {$sectionId}\n" .
+                "Mode: {$mode} (correct)\n" .
+                "But: question_groups array is missing or empty!\n\n" .
+                "Question groups are REQUIRED for shared audio stimulus in listening tasks.\n\n" .
+                "Available assembly keys: " . implode(', ', array_keys($assembly))
+            );
+        }
+
+        // Success!
+        Log::info('✅ Listening section validation passed', [
+            'section_id' => $sectionId,
+            'mode' => $mode,
+            'groups_count' => count($assembly['question_groups']),
+        ]);
     }
 }

@@ -100,6 +100,8 @@ class QuestionSynthesizer extends AbstractAiService
      *
      * Generates questions by "sampling" from a virtual pool with filters.
      * NOTE: Currently pools don't exist yet - AI generates all questions from scratch.
+     *
+     * FIXED (24.11.2025): Pass section instead of single archetype to generateQuestionBatch
      */
     protected function synthesizeFromPool(GenerationPlan $plan, Exam $exam): array
     {
@@ -116,12 +118,11 @@ class QuestionSynthesizer extends AbstractAiService
 
         // Get section metadata from exam structure
         $section = $this->getSectionMetadata($exam, $plan->section_id);
-        $archetype = $this->getArchetypeForPool($section, $filters);
 
-        // Generate questions in batch
+        // ✅ FIX: Pass section instead of single archetype
         $questions = $this->generateQuestionBatch(
             $exam,
-            $archetype,
+            $section,  // ← Changed: Pass entire section
             $section['skill'],
             $pick,
             $filters,
@@ -136,6 +137,8 @@ class QuestionSynthesizer extends AbstractAiService
      *
      * Generates questions for each slot in the blueprint.
      * Each slot specifies: from_pool, filters, pick.
+     *
+     * FIXED (24.11.2025): Pass section instead of single archetype to generateQuestionBatch
      */
     protected function synthesizeFromBlueprint(GenerationPlan $plan, Exam $exam): array
     {
@@ -161,13 +164,10 @@ class QuestionSynthesizer extends AbstractAiService
                 'filters' => $filters,
             ]);
 
-            // Get archetype for this slot
-            $archetype = $this->getArchetypeForPool($section, $filters);
-
-            // Generate questions for this slot
+            // ✅ FIX: Pass section instead of single archetype
             $slotQuestions = $this->generateQuestionBatch(
                 $exam,
-                $archetype,
+                $section,  // ← Changed: Pass entire section
                 $section['skill'],
                 $pick,
                 $filters,
@@ -232,49 +232,105 @@ class QuestionSynthesizer extends AbstractAiService
     /**
      * Generate a batch of questions (for pool/blueprint modes)
      *
+     * IMPORTANT: For pool mode, iterates through filters and generates
+     * questions of DIFFERENT TYPES as specified in each filter.
+     *
      * NOTE: Generates questions ONE AT A TIME for better reliability
+     *
+     * FIXED (24.11.2025): Now gets archetype for EACH filter type instead of using same archetype
+     *
+     * VISIBILITY: Changed to public for SynthesizeTaskQuestionsJob access (task-level parallelization)
      */
-    protected function generateQuestionBatch(
+    public function generateQuestionBatch(
         Exam $exam,
-        array $archetype,
+        array $section,
         string $sectionSkill,
         int $quantity,
         array $filters,
         GenerationPlan $plan
     ): array {
-        $questionType = $archetype['type'] ?? 'single_select';
-
-        Log::debug('[QuestionSynthesizer] Generating question batch', [
-            'type' => $questionType,
-            'quantity' => $quantity,
-            'mode' => 'one-at-a-time',
-        ]);
-
-        // Generate questions ONE AT A TIME (more reliable than batch)
         $allQuestions = [];
-        for ($i = 1; $i <= $quantity; $i++) {
-            try {
-                $question = $this->generateSingleQuestion(
-                    $exam,
-                    $questionType,
-                    $archetype,
-                    $sectionSkill,
-                    $plan
-                );
 
-                $allQuestions[] = $question;
+        // If filters is empty, fall back to first archetype
+        if (empty($filters)) {
+            $archetype = $section['question_archetypes'][0] ?? [];
+            $questionType = $archetype['type'] ?? 'single_select';
 
-                Log::debug('[QuestionSynthesizer] Generated question in batch', [
-                    'index' => $i,
-                    'of' => $quantity,
+            Log::debug('[QuestionSynthesizer] No filters provided, using first archetype', [
+                'type' => $questionType,
+                'quantity' => $quantity,
+            ]);
+
+            // Generate all questions of same type
+            for ($i = 1; $i <= $quantity; $i++) {
+                try {
+                    $question = $this->generateSingleQuestion(
+                        $exam,
+                        $questionType,
+                        $archetype,
+                        $sectionSkill,
+                        $plan,
+                        null
+                    );
+
+                    $allQuestions[] = $question;
+                } catch (\Throwable $e) {
+                    Log::error('[QuestionSynthesizer] Failed to generate question', [
+                        'index' => $i,
+                        'error' => $e->getMessage(),
+                    ]);
+                }
+            }
+        } else {
+            // FIXED: Get archetype for EACH filter type
+            Log::info('[QuestionSynthesizer] Pool mode: Generating questions from filters', [
+                'filter_count' => count($filters),
+            ]);
+
+            foreach ($filters as $filterIndex => $filter) {
+                $filterType = $filter['type'] ?? 'single_select';
+                $filterPick = $filter['pick'] ?? 1;
+
+                // ✅ FIX: Get archetype matching THIS filter's type
+                $archetype = $this->getArchetypeByType($section, $filterType);
+
+                Log::debug('[QuestionSynthesizer] Processing filter with matched archetype', [
+                    'index' => $filterIndex,
+                    'type' => $filterType,
+                    'pick' => $filterPick,
+                    'archetype_id' => $archetype['id'] ?? 'unknown',
                 ]);
-            } catch (\Throwable $e) {
-                Log::error('[QuestionSynthesizer] Failed to generate question in batch', [
-                    'index' => $i,
-                    'of' => $quantity,
-                    'error' => $e->getMessage(),
-                ]);
-                // Continue with remaining questions instead of failing completely
+
+                // Generate {pick} questions of {type}
+                for ($i = 1; $i <= $filterPick; $i++) {
+                    try {
+                        $question = $this->generateSingleQuestion(
+                            $exam,
+                            $filterType,
+                            $archetype,  // ← Now matches filter type!
+                            $sectionSkill,
+                            $plan,
+                            $filter
+                        );
+
+                        $allQuestions[] = $question;
+
+                        Log::debug('[QuestionSynthesizer] Generated question from filter', [
+                            'filter_index' => $filterIndex,
+                            'question_index' => $i,
+                            'of' => $filterPick,
+                            'type' => $filterType,
+                        ]);
+                    } catch (\Throwable $e) {
+                        Log::error('[QuestionSynthesizer] Failed to generate question from filter', [
+                            'filter_index' => $filterIndex,
+                            'question_index' => $i,
+                            'type' => $filterType,
+                            'error' => $e->getMessage(),
+                        ]);
+                        // Continue with remaining questions instead of failing completely
+                    }
+                }
             }
         }
 
@@ -282,31 +338,39 @@ class QuestionSynthesizer extends AbstractAiService
             throw new \Exception('No valid questions generated in batch');
         }
 
-        if (count($allQuestions) !== $quantity) {
-            Log::warning('[QuestionSynthesizer] Question count mismatch in batch', [
-                'expected' => $quantity,
-                'actual' => count($allQuestions),
-            ]);
-        }
+        Log::info('[QuestionSynthesizer] Batch generation completed', [
+            'expected' => $quantity,
+            'actual' => count($allQuestions),
+            'filters_used' => !empty($filters),
+        ]);
 
         return $allQuestions;
     }
 
     /**
      * Generate a single question (for inline mode)
+     *
+     * @param  Exam  $exam
+     * @param  string  $questionType  Type of question to generate
+     * @param  array  $config  Archetype configuration
+     * @param  string  $sectionSkill  Section skill (reading, listening, etc.)
+     * @param  GenerationPlan  $plan
+     * @param  array|null  $filter  Optional filter specification (type, difficulty, tags, etc.)
      */
     protected function generateSingleQuestion(
         Exam $exam,
         string $questionType,
         array $config,
         string $sectionSkill,
-        GenerationPlan $plan
+        GenerationPlan $plan,
+        ?array $filter = null
     ): array {
         $model = $this->selectModelForType($questionType);
 
         Log::debug('[QuestionSynthesizer] Generating single question', [
             'type' => $questionType,
             'model' => $model,
+            'filter' => $filter,
         ]);
 
         // Build prompt
@@ -317,7 +381,7 @@ class QuestionSynthesizer extends AbstractAiService
             examLanguage: \App\Support\LanguageHelper::getLanguageName($exam->language_of_test),
             examLevel: $exam->level ?? 'B2',
             quantity: 1,
-            filters: null,
+            filters: $filter,  // Pass filter to prompt (was null before)
             contextHint: null
         );
 
@@ -362,6 +426,14 @@ class QuestionSynthesizer extends AbstractAiService
 
     /**
      * Parse AI response and validate questions
+     *
+     * Handles multiple response formats:
+     * 1. Flat array: [{"id": "q1"}, {"id": "q2"}]
+     * 2. Nested object: {"content": {"questions": [...]}}
+     * 3. Numeric keys: {"0": {...}, "1": {...}}
+     * 4. Single object: {"id": "q1", ...}
+     *
+     * FIXED (24.11.2025): Enhanced to handle nested objects from AI
      */
     protected function parseAndValidateQuestions(string $content): array
     {
@@ -375,19 +447,55 @@ class QuestionSynthesizer extends AbstractAiService
             throw new \Exception('Invalid JSON response from AI: '.json_last_error_msg());
         }
 
-        // Ensure array of questions
         if (! is_array($decoded)) {
             throw new \Exception('AI response is not an array');
         }
 
-        // If single object returned, wrap in array
-        if ($this->isAssoc($decoded)) {
+        // ✅ FIX 1: Handle nested {"content": {"questions": [...]}}
+        if (isset($decoded['content'])) {
+            Log::debug('[QuestionSynthesizer] Unwrapping nested content object');
+
+            if (isset($decoded['content']['questions']) && is_array($decoded['content']['questions'])) {
+                $decoded = $decoded['content']['questions'];
+            } elseif (is_array($decoded['content'])) {
+                $decoded = $decoded['content'];
+            }
+        }
+
+        // ✅ FIX 2: Handle {"questions": [...}} at top level
+        if (isset($decoded['questions']) && is_array($decoded['questions'])) {
+            Log::debug('[QuestionSynthesizer] Unwrapping questions array');
+            $decoded = $decoded['questions'];
+        }
+
+        // ✅ FIX 3: Handle numeric keys {"0": {...}, "1": {...}}
+        if (isset($decoded[0]) && is_array($decoded[0])) {
+            // Already a flat array, ensure numeric keys
+            $decoded = array_values($decoded);
+        }
+
+        // ✅ FIX 4: Handle single object {"id": "q1", ...}
+        if ($this->isAssoc($decoded) && isset($decoded['id'])) {
+            Log::debug('[QuestionSynthesizer] Wrapping single question object');
             $decoded = [$decoded];
+        }
+
+        // ✅ FIX 5: Final validation - must be array of objects
+        if (!is_array($decoded) || empty($decoded)) {
+            throw new \Exception('Failed to extract questions array from AI response');
         }
 
         // Validate each question
         $validatedQuestions = [];
         foreach ($decoded as $index => $question) {
+            if (!is_array($question)) {
+                Log::warning('[QuestionSynthesizer] Skipping non-array item', [
+                    'index' => $index,
+                    'type' => gettype($question),
+                ]);
+                continue;
+            }
+
             try {
                 $validated = $this->validator->validate($question);
                 $validatedQuestions[] = $validated;
@@ -403,8 +511,14 @@ class QuestionSynthesizer extends AbstractAiService
         }
 
         if (empty($validatedQuestions)) {
-            throw new \Exception('No valid questions generated');
+            throw new \Exception('No valid questions generated - all failed validation');
         }
+
+        Log::info('[QuestionSynthesizer] Parsed and validated questions', [
+            'total_parsed' => count($decoded),
+            'validated' => count($validatedQuestions),
+            'failed' => count($decoded) - count($validatedQuestions),
+        ]);
 
         return $validatedQuestions;
     }
@@ -497,7 +611,45 @@ class QuestionSynthesizer extends AbstractAiService
     }
 
     /**
+     * Get archetype matching specific question type
+     *
+     * @param array $section Section metadata with question_archetypes
+     * @param string $questionType Question type (single_select, multi_select, etc.)
+     * @return array Archetype configuration
+     * @throws \Exception If no matching archetype found
+     */
+    protected function getArchetypeByType(array $section, string $questionType): array
+    {
+        $archetypes = $section['question_archetypes'] ?? [];
+
+        if (empty($archetypes)) {
+            throw new \Exception('No archetypes found in section');
+        }
+
+        // Find archetype matching the question type
+        foreach ($archetypes as $archetype) {
+            if (($archetype['type'] ?? null) === $questionType) {
+                Log::debug('[QuestionSynthesizer] Found matching archetype', [
+                    'question_type' => $questionType,
+                    'archetype_id' => $archetype['id'] ?? 'unknown',
+                ]);
+                return $archetype;
+            }
+        }
+
+        // Fallback: Use first archetype as template
+        Log::warning('[QuestionSynthesizer] No exact archetype match, using first', [
+            'question_type' => $questionType,
+            'available_types' => array_column($archetypes, 'type'),
+        ]);
+
+        return $archetypes[0];
+    }
+
+    /**
      * Get archetype configuration for pool-based generation
+     *
+     * @deprecated Use getArchetypeByType() instead - this always returns first archetype
      */
     protected function getArchetypeForPool(array $section, array $filters): array
     {

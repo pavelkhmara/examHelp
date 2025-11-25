@@ -308,3 +308,36 @@ Route::prefix('exams')->group(function () {
 });
 
 Route::get('/diagnostics/system-config', [\App\Http\Controllers\Api\TaskManagementController::class, 'getSystemConfig']);
+
+// ===== MOBILE API routes =====
+Route::prefix('mobile')->group(function () {
+    // Export exam for mobile app
+    Route::get('/exams/{exam}/export', [\App\Http\Controllers\Api\ExportController::class, 'export'])
+        ->name('mobile.exams.export');
+
+    // Session management
+    Route::post('/sessions/start', [\App\Http\Controllers\Api\SessionController::class, 'start'])
+        ->name('mobile.sessions.start');
+    Route::get('/sessions/{session}', [\App\Http\Controllers\Api\SessionController::class, 'show'])
+        ->name('mobile.sessions.show');
+    Route::post('/sessions/{session}/finish', [\App\Http\Controllers\Api\SessionController::class, 'finish'])
+        ->name('mobile.sessions.finish');
+    Route::get('/sessions/{session}/answers', [\App\Http\Controllers\Api\SessionController::class, 'answers'])
+        ->name('mobile.sessions.answers');
+    Route::get('/sessions/{session}/result', [\App\Http\Controllers\Api\SessionController::class, 'result'])
+        ->name('mobile.sessions.result');
+
+    // Answer submission
+    Route::post('/answers/submit', [\App\Http\Controllers\Api\AnswerController::class, 'submit'])
+        ->name('mobile.answers.submit');
+    Route::get('/answers/{answer}', [\App\Http\Controllers\Api\AnswerController::class, 'show'])
+        ->name('mobile.answers.show');
+
+    // Recommendations
+    Route::get('/sessions/{session}/recommendations', [\App\Http\Controllers\Api\RecommendationController::class, 'forSession'])
+        ->name('mobile.sessions.recommendations');
+    Route::post('/sessions/{session}/recommendations/regenerate', [\App\Http\Controllers\Api\RecommendationController::class, 'regenerate'])
+        ->name('mobile.sessions.recommendations.regenerate');
+    Route::get('/users/{userId}/recommendations', [\App\Http\Controllers\Api\RecommendationController::class, 'forUser'])
+        ->name('mobile.users.recommendations');
+});

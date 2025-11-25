@@ -1,0 +1,206 @@
+{
+  "exam": {
+    "title": "DELF B1 tout public",
+    "language_of_test": "fr",
+    "level": "B1",
+    "provider": "France Education International",
+    "family": "DELF",
+    "description": "Diplôme d'études en langue française, niveau B1. Épreuves collectives (1h55) + épreuve individuelle (15 min). Total: 100 points, seuil de réussite: 50/100."
+  },
+  "sections": [
+    {
+      "key": "listening",
+      "name": "Compréhension de l'oral",
+      "skill": "listening",
+      "duration_min": 25,
+      "max_score": 25,
+      "description": "Réponse à des questionnaires de compréhension portant sur plusieurs documents enregistrés (deux écoutes). Durée maximale des documents: 6 minutes.",
+      "question_groups": [
+        {
+          "group_id": "DELF-B1-L1",
+          "title": "Exercice 1 - Conversation",
+          "order": 1,
+          "instructions": {"text_html": "Vous écoutez une conversation. Lisez les questions. Écoutez le document puis répondez."},
+          "stimulus": {"audio": ["conversation_celia_fete.mp3"]},
+          "playback_settings": {"max_plays": 2, "enforcement": "strict"},
+          "metadata": {"total_points": 7},
+          "questions": [
+            {"question_id": "DELF-B1-L1-1", "type": "single_select", "order": 1, "instructions": {"text_html": "Qu'est-ce que Célia va fêter?"}, "interaction": {"options": [{"id": "a", "label": "Son diplôme"}, {"id": "b", "label": "Son mariage"}, {"id": "c", "label": "Son anniversaire"}]}, "scoring": {"max_points": 1}},
+            {"question_id": "DELF-B1-L1-2", "type": "single_select", "order": 2, "instructions": {"text_html": "Il y aura seulement quelques amis à la fête parce que..."}, "interaction": {"options": [{"id": "a", "label": "la maison est petite"}, {"id": "b", "label": "beaucoup ne sont pas disponibles"}, {"id": "c", "label": "Célia veut avoir le temps de discuter avec chacun"}]}, "scoring": {"max_points": 1.5}},
+            {"question_id": "DELF-B1-L1-3", "type": "single_select", "order": 3, "instructions": {"text_html": "Lilian va arriver un peu plus tard parce qu'il..."}, "interaction": {"options": [{"id": "a", "label": "va manger chez ses parents"}, {"id": "b", "label": "doit s'occuper de ses enfants"}, {"id": "c", "label": "travaille une partie du week-end"}]}, "scoring": {"max_points": 1}},
+            {"question_id": "DELF-B1-L1-4", "type": "single_select", "order": 4, "instructions": {"text_html": "Lilian accepte de venir à la fête parce qu'il..."}, "interaction": {"options": [{"id": "a", "label": "adore la montagne"}, {"id": "b", "label": "est très proche de Célia"}, {"id": "c", "label": "souhaite découvrir la région"}]}, "scoring": {"max_points": 1.5}},
+            {"question_id": "DELF-B1-L1-5", "type": "single_select", "order": 5, "instructions": {"text_html": "Le repas de la fête sera préparé par..."}, "interaction": {"options": [{"id": "a", "label": "Célia"}, {"id": "b", "label": "tout le monde"}, {"id": "c", "label": "un restaurateur"}]}, "scoring": {"max_points": 1}},
+            {"question_id": "DELF-B1-L1-6", "type": "single_select", "order": 6, "instructions": {"text_html": "Pour sa fête, Célia espère..."}, "interaction": {"options": [{"id": "a", "label": "qu'il fera beau"}, {"id": "b", "label": "qu'elle aura un beau cadeau"}, {"id": "c", "label": "que tous ses amis viendront"}]}, "scoring": {"max_points": 1}}
+          ]
+        },
+        {
+          "group_id": "DELF-B1-L2",
+          "title": "Exercice 2 - Radio (Association)",
+          "order": 2,
+          "instructions": {"text_html": "Vous écoutez la radio. Lisez les questions. Écoutez le document puis répondez."},
+          "stimulus": {"audio": ["radio_un_regard_pour_toi.mp3"]},
+          "playback_settings": {"max_plays": 2, "enforcement": "strict"},
+          "metadata": {"total_points": 9},
+          "questions": [
+            {"question_id": "DELF-B1-L2-1", "type": "single_select", "order": 1, "instructions": {"text_html": "Grâce à Un regard pour toi, les personnes malvoyantes peuvent acheter leurs vêtements..."}, "interaction": {"options": [{"id": "a", "label": "accompagnées par un bénévole"}, {"id": "b", "label": "dans des magasins spécialisés"}, {"id": "c", "label": "sur le site internet de l'association"}]}, "scoring": {"max_points": 1}},
+            {"question_id": "DELF-B1-L2-2", "type": "single_select", "order": 2, "instructions": {"text_html": "Hayette trouve que les employés des magasins sont trop..."}, "interaction": {"options": [{"id": "a", "label": "curieux"}, {"id": "b", "label": "occupés"}, {"id": "c", "label": "désagréables"}]}, "scoring": {"max_points": 1}},
+            {"question_id": "DELF-B1-L2-3", "type": "single_select", "order": 3, "instructions": {"text_html": "Grâce à l'association, Hayette..."}, "interaction": {"options": [{"id": "a", "label": "a de nouveaux amis"}, {"id": "b", "label": "s'habille de manière différente"}, {"id": "c", "label": "dépense moins d'argent pour s'habiller"}]}, "scoring": {"max_points": 1}},
+            {"question_id": "DELF-B1-L2-4", "type": "single_select", "order": 4, "instructions": {"text_html": "Les collègues d'Hayette..."}, "interaction": {"options": [{"id": "a", "label": "lui donnent des conseils"}, {"id": "b", "label": "sont surpris par sa façon de s'habiller"}, {"id": "c", "label": "veulent savoir où elle trouve ses vêtements"}]}, "scoring": {"max_points": 1.5}},
+            {"question_id": "DELF-B1-L2-5", "type": "single_select", "order": 5, "instructions": {"text_html": "Pour les malvoyants, les vêtements permettent de..."}, "interaction": {"options": [{"id": "a", "label": "développer la confiance en soi"}, {"id": "b", "label": "s'intégrer professionnellement"}, {"id": "c", "label": "discuter de la mode avec leurs amis"}]}, "scoring": {"max_points": 1.5}},
+            {"question_id": "DELF-B1-L2-6", "type": "single_select", "order": 6, "instructions": {"text_html": "Quel appel lance Hayette?"}, "interaction": {"options": [{"id": "a", "label": "Elle a besoin de personnes pour l'aider"}, {"id": "b", "label": "Elle invite les malvoyants à la contacter"}, {"id": "c", "label": "Elle recherche un local pour l'association"}]}, "scoring": {"max_points": 1.5}},
+            {"question_id": "DELF-B1-L2-7", "type": "single_select", "order": 7, "instructions": {"text_html": "Quand ils entrent dans l'association, les bénévoles doivent..."}, "interaction": {"options": [{"id": "a", "label": "assister à une présentation de la responsable"}, {"id": "b", "label": "participer à une réunion avec d'autres membres"}, {"id": "c", "label": "avoir un rendez-vous téléphonique avec un malvoyant"}]}, "scoring": {"max_points": 1.5}}
+          ]
+        },
+        {
+          "group_id": "DELF-B1-L3",
+          "title": "Exercice 3 - Radio (Entreprise)",
+          "order": 3,
+          "instructions": {"text_html": "Vous écoutez la radio. Lisez les questions. Écoutez le document puis répondez."},
+          "stimulus": {"audio": ["radio_baluchon.mp3"]},
+          "playback_settings": {"max_plays": 2, "enforcement": "strict"},
+          "metadata": {"total_points": 9},
+          "questions": [
+            {"question_id": "DELF-B1-L3-1", "type": "single_select", "order": 1, "instructions": {"text_html": "La société Baluchon..."}, "interaction": {"options": [{"id": "a", "label": "apporte des repas dans les entreprises"}, {"id": "b", "label": "propose des cours de cuisine aux salariés"}, {"id": "c", "label": "livre des produits dans les restaurations collectives"}]}, "scoring": {"max_points": 1.5}},
+            {"question_id": "DELF-B1-L3-2", "type": "single_select", "order": 2, "instructions": {"text_html": "Selon François Dechy, le temps que les gens prennent pour manger..."}, "interaction": {"options": [{"id": "a", "label": "diminue"}, {"id": "b", "label": "est stable"}, {"id": "c", "label": "augmente"}]}, "scoring": {"max_points": 1}},
+            {"question_id": "DELF-B1-L3-3", "type": "single_select", "order": 3, "instructions": {"text_html": "Selon François Dechy, le moment du déjeuner est important pour..."}, "interaction": {"options": [{"id": "a", "label": "mieux travailler"}, {"id": "b", "label": "rester en bonne santé"}, {"id": "c", "label": "rencontrer ses collègues"}]}, "scoring": {"max_points": 1}},
+            {"question_id": "DELF-B1-L3-4", "type": "single_select", "order": 4, "instructions": {"text_html": "François Dechy veut proposer un service..."}, "interaction": {"options": [{"id": "a", "label": "rapide"}, {"id": "b", "label": "biologique"}, {"id": "c", "label": "bon marché"}]}, "scoring": {"max_points": 1}},
+            {"question_id": "DELF-B1-L3-5", "type": "single_select", "order": 5, "instructions": {"text_html": "François Dechy travaille avec..."}, "interaction": {"options": [{"id": "a", "label": "de jeunes étudiants"}, {"id": "b", "label": "des personnes en difficulté"}, {"id": "c", "label": "des diplômés de la restauration"}]}, "scoring": {"max_points": 1.5}},
+            {"question_id": "DELF-B1-L3-6", "type": "single_select", "order": 6, "instructions": {"text_html": "Baluchon est une entreprise qui propose aussi..."}, "interaction": {"options": [{"id": "a", "label": "des formations professionnalisantes"}, {"id": "b", "label": "des rencontres avec de grands cuisiniers"}, {"id": "c", "label": "des cours de lecture et de mathématiques"}]}, "scoring": {"max_points": 1.5}},
+            {"question_id": "DELF-B1-L3-7", "type": "single_select", "order": 7, "instructions": {"text_html": "Quel est l'avantage de la cuisine prêtée par la mairie? Elle est..."}, "interaction": {"options": [{"id": "a", "label": "bien située"}, {"id": "b", "label": "très grande"}, {"id": "c", "label": "toute équipée"}]}, "scoring": {"max_points": 1.5}}
+          ]
+        }
+      ]
+    },
+    {
+      "key": "reading",
+      "name": "Compréhension des écrits",
+      "skill": "reading",
+      "duration_min": 45,
+      "max_score": 25,
+      "description": "Réponse à des questionnaires de compréhension portant sur plusieurs documents écrits.",
+      "question_groups": [
+        {
+          "group_id": "DELF-B1-R1",
+          "title": "Exercice 1 - Restaurants",
+          "order": 1,
+          "instructions": {"text_html": "Vous travaillez à Lyon. Vous devez organiser un repas d'affaires avec des clients étrangers. Vous cherchez un restaurant qui correspond à vos critères: cuisine régionale, menus sans viande ni poisson, lieu calme, service de qualité. Pour chaque annonce, cochez OUI ou NON."},
+          "stimulus": {"text_html": "<h4>Au Balcon</h4><p>Depuis la salle panoramique de ce restaurant, la vue sur la ville de Lyon est magnifique. C'est le cadre idéal pour un dîner romantique, mais c'est aussi un endroit tranquille pour les repas d'affaires. La cuisine est classique et à base de produits régionaux. Le menu « tout légumes » est très apprécié des personnes qui ne mangent ni viande, ni poisson. Les serveurs sont mal organisés, c'est dommage.</p><h4>Le Bonheur dans l'assiette</h4><p>Dans cet établissement bien connu du centre de Lyon, on nous propose une cuisine gourmande pour un excellent rapport qualité-prix. C'est une très bonne adresse pour les amateurs de viande et de charcuterie. Si vous ne mangez que des légumes, ce restaurant n'est pas pour vous! Le chef cuisine des spécialités de la région lyonnaise avec des produits de saison. L'ambiance animée est un peu trop bruyante. Les serveurs sont sympas et très attentionnés.</p><h4>Le Lyon exotique</h4><p>La cuisine proposée par Luis, un jeune cuisinier brésilien, est authentique et 100% faite maison. Deux types de plats sont proposés: des plats typiques de Lyon et des plats de son pays d'origine. Au menu: saucisson lyonnais mais aussi gratin de patates douces ou plats de légumes colorés. Les serveurs sont souriants mais peu efficaces. Un lieu un peu trop bruyant surtout en fin de semaine.</p><h4>Le Piano</h4><p>Les deux jeunes cuisiniers du Piano travaillent exclusivement avec des produits frais. Vous pourrez découvrir leur cuisine gourmande et naturelle à travers les meilleures recettes lyonnaises. Il n'y a cependant pas de plats de légumes à la carte. Le service est très professionnel, les serveurs savent conseiller les clients. Le restaurant possède un petit salon calme pour les réunions et les dîners privés.</p>"},
+          "metadata": {"total_points": 8},
+          "questions": [
+            {"question_id": "DELF-B1-R1-1", "type": "true_false", "order": 1, "instructions": {"text_html": "Au Balcon - Cuisine régionale"}, "scoring": {"max_points": 0.5}},
+            {"question_id": "DELF-B1-R1-2", "type": "true_false", "order": 2, "instructions": {"text_html": "Au Balcon - Menus sans viande ni poisson"}, "scoring": {"max_points": 0.5}},
+            {"question_id": "DELF-B1-R1-3", "type": "true_false", "order": 3, "instructions": {"text_html": "Au Balcon - Lieu calme"}, "scoring": {"max_points": 0.5}},
+            {"question_id": "DELF-B1-R1-4", "type": "true_false", "order": 4, "instructions": {"text_html": "Au Balcon - Service de qualité"}, "scoring": {"max_points": 0.5}},
+            {"question_id": "DELF-B1-R1-5", "type": "true_false", "order": 5, "instructions": {"text_html": "Le Bonheur dans l'assiette - Cuisine régionale"}, "scoring": {"max_points": 0.5}},
+            {"question_id": "DELF-B1-R1-6", "type": "true_false", "order": 6, "instructions": {"text_html": "Le Bonheur dans l'assiette - Menus sans viande ni poisson"}, "scoring": {"max_points": 0.5}},
+            {"question_id": "DELF-B1-R1-7", "type": "true_false", "order": 7, "instructions": {"text_html": "Le Bonheur dans l'assiette - Lieu calme"}, "scoring": {"max_points": 0.5}},
+            {"question_id": "DELF-B1-R1-8", "type": "true_false", "order": 8, "instructions": {"text_html": "Le Bonheur dans l'assiette - Service de qualité"}, "scoring": {"max_points": 0.5}},
+            {"question_id": "DELF-B1-R1-9", "type": "true_false", "order": 9, "instructions": {"text_html": "Le Lyon exotique - Cuisine régionale"}, "scoring": {"max_points": 0.5}},
+            {"question_id": "DELF-B1-R1-10", "type": "true_false", "order": 10, "instructions": {"text_html": "Le Lyon exotique - Menus sans viande ni poisson"}, "scoring": {"max_points": 0.5}},
+            {"question_id": "DELF-B1-R1-11", "type": "true_false", "order": 11, "instructions": {"text_html": "Le Lyon exotique - Lieu calme"}, "scoring": {"max_points": 0.5}},
+            {"question_id": "DELF-B1-R1-12", "type": "true_false", "order": 12, "instructions": {"text_html": "Le Lyon exotique - Service de qualité"}, "scoring": {"max_points": 0.5}},
+            {"question_id": "DELF-B1-R1-13", "type": "true_false", "order": 13, "instructions": {"text_html": "Le Piano - Cuisine régionale"}, "scoring": {"max_points": 0.5}},
+            {"question_id": "DELF-B1-R1-14", "type": "true_false", "order": 14, "instructions": {"text_html": "Le Piano - Menus sans viande ni poisson"}, "scoring": {"max_points": 0.5}},
+            {"question_id": "DELF-B1-R1-15", "type": "true_false", "order": 15, "instructions": {"text_html": "Le Piano - Lieu calme"}, "scoring": {"max_points": 0.5}},
+            {"question_id": "DELF-B1-R1-16", "type": "true_false", "order": 16, "instructions": {"text_html": "Le Piano - Service de qualité"}, "scoring": {"max_points": 0.5}}
+          ]
+        },
+        {
+          "group_id": "DELF-B1-R2",
+          "title": "Exercice 2 - Bilinguisme",
+          "order": 2,
+          "instructions": {"text_html": "Vous lisez cet article sur Internet."},
+          "stimulus": {"text_html": "<h3>PARLER DEUX LANGUES EST-IL UN ATOUT OU UN HANDICAP POUR LES ENFANTS?</h3><p>En France, un enfant sur cinq naît dans un foyer bilingue. Il n'y a pas beaucoup de différences dans le développement du langage entre un enfant bilingue et un enfant monolingue. « À 24 mois, les enfants connaissent une cinquantaine de mots, souligne Barbara Abdelilah-Bauer, linguiste. Pour les enfants bilingues, ces mots sont partagés entre les deux langues. » Cette situation pourrait laisser croire qu'il y a un retard dans l'apprentissage d'une des deux langues, mais « quand on étudie le vocabulaire des enfants bilingues et monolingues à trois ans, on trouve le même nombre de mots, en moyenne. »</p><p>Chaque famille a sa propre expérience du bilinguisme. Ainsi, Johanna, qui est irlandaise et vit à Nantes, témoigne: « En France, si je parle anglais à mon fils, Mathias, il me répond plutôt en français. Ce n'est qu'en Irlande, là où vit ma famille, et au bout de quelques semaines, qu'il fait des phrases en anglais. Lorsqu'il m'arrive de me fâcher contre mon fils, j'utilise spontanément ma langue maternelle. Je regrette tout de suite après car j'ai peur qu'il associe la langue anglaise à quelque chose de désagréable. »</p><p>Ibsen est danois. Pour lui, parler sa langue maternelle avec ses filles, c'est surtout transmettre quelque chose de la culture danoise. « Je leur apprends des chansons en danois et elles regardent aussi des dessins animés en danois. Mais dans leur vie quotidienne, comme à l'école ou avec leurs copains, c'est clair, c'est le français qui l'emporte. Ce n'est vraiment pas simple de transmettre sa langue lorsqu'on n'est pas dans son pays d'origine! »</p><p>Barbara Abdelilah-Bauer évoque un autre point: « Encore aujourd'hui, certains pensent qu'un enfant élevé dans deux langues différentes réussit moins bien à l'école. » Ce qui est faux. De plus, les langues n'ont pas la même image dans la société. « Malheureusement, on voit souvent la capacité à parler anglais comme une force, mais pas forcément d'autres langues, regrette Barbara Abdelilah-Bauer. Je reçois par exemple des couples franco-espagnols qui n'ont qu'une envie: que leur enfant apprenne l'anglais. »</p><p><em>D'après Oihana GABRIEL, www.20minutes.fr</em></p>"},
+          "metadata": {"total_points": 8},
+          "questions": [
+            {"question_id": "DELF-B1-R2-1", "type": "single_select", "order": 1, "instructions": {"text_html": "Selon Barbara Abdelilah-Bauer, vers 3 ans, les enfants bilingues..."}, "interaction": {"options": [{"id": "a", "label": "ont tendance à mélanger les deux langues"}, {"id": "b", "label": "apprennent plus rapidement des mots dans les deux langues"}, {"id": "c", "label": "possèdent autant de vocabulaire que les enfants monolingues"}]}, "scoring": {"max_points": 1}},
+            {"question_id": "DELF-B1-R2-2", "type": "true_false", "order": 2, "instructions": {"text_html": "En Irlande, le fils de Johanna a besoin de temps pour communiquer en anglais avec sa famille."}, "scoring": {"max_points": 1}},
+            {"question_id": "DELF-B1-R2-3", "type": "true_false", "order": 3, "instructions": {"text_html": "Johanna parle plus naturellement l'anglais quand elle est en colère contre son fils."}, "scoring": {"max_points": 1}},
+            {"question_id": "DELF-B1-R2-4", "type": "single_select", "order": 4, "instructions": {"text_html": "Les filles d'Ibsen utilisent le danois quand elles..."}, "interaction": {"options": [{"id": "a", "label": "discutent en famille"}, {"id": "b", "label": "jouent avec leurs amis"}, {"id": "c", "label": "chantent avec leur père"}]}, "scoring": {"max_points": 1}},
+            {"question_id": "DELF-B1-R2-5", "type": "true_false", "order": 5, "instructions": {"text_html": "Au quotidien, il est facile et naturel pour Ibsen de parler danois à ses filles."}, "scoring": {"max_points": 1}},
+            {"question_id": "DELF-B1-R2-6", "type": "single_select", "order": 6, "instructions": {"text_html": "Certaines personnes pensent que les enfants bilingues... à l'école."}, "interaction": {"options": [{"id": "a", "label": "apprennent moins vite"}, {"id": "b", "label": "ont de moins bons résultats"}, {"id": "c", "label": "communiquent moins facilement"}]}, "scoring": {"max_points": 1.5}},
+            {"question_id": "DELF-B1-R2-7", "type": "single_select", "order": 7, "instructions": {"text_html": "Barbara Abdelilah-Bauer regrette que..."}, "interaction": {"options": [{"id": "a", "label": "l'enseignement des langues soit peu varié"}, {"id": "b", "label": "la société donne trop d'importance à l'anglais"}, {"id": "c", "label": "les enfants bilingues soient aussi peu accompagnés"}]}, "scoring": {"max_points": 1.5}}
+          ]
+        },
+        {
+          "group_id": "DELF-B1-R3",
+          "title": "Exercice 3 - Locations saisonnières",
+          "order": 3,
+          "instructions": {"text_html": "Vous lisez cet article dans un magazine."},
+          "stimulus": {"text_html": "<h3>L'IMPACT DES LOCATIONS SAISONNIÈRES SUR L'IMMOBILIER</h3><p>C'est un fait inquiétant qu'on constate dans toutes les capitales européennes: les touristes séjournent de plus en plus dans des appartements loués sur des sites internet. Laurent Lopez, directeur d'hôtel, est directement concerné: « notre chiffre d'affaire baisse de 10% chaque année depuis 3 ans. » En parallèle, ce nouveau mode d'hébergement a provoqué une augmentation du prix du mètre carré. Ainsi, à Barcelone, le quartier historique se vide peu à peu de ses habitants qui, pour des raisons économiques, préfèrent déménager en banlieue.</p><p>Par ailleurs, Yolande, qui habite à Paris, nous explique que son quotidien est devenu très difficile en raison des locations saisonnières: « Les arrivées et départs à n'importe quelle heure de la journée, les fêtes toute la nuit, les groupes de touristes qui envahissent le hall de l'immeuble avec leurs valises... On ne se sent plus chez soi. Nous ne voulions pas d'ascenseur, mais un voisin qui loue son appartement en voulait absolument un pour attirer les touristes. Ça nous a donc coûté de l'argent, s'énerve-t-elle. J'ai été me plaindre à la mairie mais ça n'a servi à rien! »</p><p>Le marché de la location saisonnière peut rapporter beaucoup d'argent: en moyenne 350€ supplémentaires par mois pour les propriétaires de logements loués sur les sites internet de locations saisonnières à Amsterdam. Dans cette ville, tout comme à Paris et Londres, les autorités ont déjà décidé de mettre en place des règles pour limiter la durée de location. Les sites internet de locations saisonnières protestent et affirment que les problèmes de logement existaient déjà avant leur arrivée.</p><p>Pour les habitants des quartiers historiques, la vie n'est plus la même: les rues pleines de touristes perdent peu à peu leurs magasins de quartier. Fini les boutiques d'autrefois, adieu les voisins qu'on connaît bien. Maintenant, les rues se remplissent de restaurants chics, de boutiques de souvenirs et de valises à roulettes.</p><p><em>D'après Anne MAUREL, www.partenaire-europeen.fr</em></p>"},
+          "metadata": {"total_points": 9},
+          "questions": [
+            {"question_id": "DELF-B1-R3-1", "type": "true_false", "order": 1, "instructions": {"text_html": "En Europe, les réservations dans les hôtels ont fortement augmenté."}, "scoring": {"max_points": 1}},
+            {"question_id": "DELF-B1-R3-2", "type": "single_select", "order": 2, "instructions": {"text_html": "À Barcelone, les habitants quittent le centre-ville car les logements sont trop..."}, "interaction": {"options": [{"id": "a", "label": "chers"}, {"id": "b", "label": "petits"}, {"id": "c", "label": "bruyants"}]}, "scoring": {"max_points": 1.5}},
+            {"question_id": "DELF-B1-R3-3", "type": "single_select", "order": 3, "instructions": {"text_html": "Yolande trouve que les locations saisonnières..."}, "interaction": {"options": [{"id": "a", "label": "donnent une mauvaise image de la ville"}, {"id": "b", "label": "ne lui rapportent pas suffisamment d'argent"}, {"id": "c", "label": "provoquent trop de passage dans son immeuble"}]}, "scoring": {"max_points": 1.5}},
+            {"question_id": "DELF-B1-R3-4", "type": "single_select", "order": 4, "instructions": {"text_html": "Pour quelle raison Yolande est-elle en colère? Parce que..."}, "interaction": {"options": [{"id": "a", "label": "les touristes ne la saluent pas"}, {"id": "b", "label": "les dépenses de l'immeuble ont augmenté"}, {"id": "c", "label": "la mairie autorise trop de locations saisonnières"}]}, "scoring": {"max_points": 1.5}},
+            {"question_id": "DELF-B1-R3-5", "type": "true_false", "order": 5, "instructions": {"text_html": "D'après les sites internet de locations saisonnières, les difficultés à se loger en centre-ville ne sont pas nouvelles."}, "scoring": {"max_points": 1}},
+            {"question_id": "DELF-B1-R3-6", "type": "single_select", "order": 6, "instructions": {"text_html": "Les habitants des centres-villes regrettent..."}, "interaction": {"options": [{"id": "a", "label": "l'absence de solidarité des voisins"}, {"id": "b", "label": "le manque d'éducation des touristes"}, {"id": "c", "label": "la disparition des commerces de proximité"}]}, "scoring": {"max_points": 1.5}},
+            {"question_id": "DELF-B1-R3-7", "type": "true_false", "order": 7, "instructions": {"text_html": "En séjournant dans les centres-villes, les touristes ont accès à une vie de quartier traditionnelle."}, "scoring": {"max_points": 1}}
+          ]
+        }
+      ]
+    },
+    {
+      "key": "writing",
+      "name": "Production écrite",
+      "skill": "writing",
+      "duration_min": 45,
+      "max_score": 25,
+      "description": "Épreuve portant sur l'expression écrite d'un point de vue personnel sur un thème général (essai, courrier, article...).",
+      "question_groups": [
+        {
+          "group_id": "DELF-B1-W1",
+          "title": "Réponse à un email",
+          "order": 1,
+          "instructions": {"text_html": "Vous recevez ce mail de Louisa, une amie française. Vous répondez à Louisa. Vous lui donnez votre opinion en lui donnant des exemples d'expériences diverses."},
+          "stimulus": {"text_html": "<p><strong>De:</strong> louisa@yahoo.fr<br><strong>Objet:</strong> New York</p><p>Salut,<br>Mon entreprise me propose de quitter Brest pour aller travailler à New York. C'est une bonne nouvelle, mais comment je vais faire dans une si grande ville alors que j'adore la nature? Il y a aussi les problèmes de la langue, du logement, des amis... Je me sens un peu perdue. Tu en penses quoi?<br>À très vite!<br>Louisa</p>"},
+          "metadata": {"total_points": 25, "word_minimum": 160},
+          "questions": [
+            {"question_id": "DELF-B1-W1-1", "type": "writing_prompt", "order": 1, "instructions": {"text_html": "Répondez à Louisa en donnant votre opinion et des exemples d'expériences diverses. 160 mots minimum."}, "scoring": {"max_points": 25, "criteria": ["respect_de_la_consigne", "capacite_a_presenter_des_faits", "capacite_a_exprimer_sa_pensee", "coherence_et_cohesion", "competence_lexicale", "competence_grammaticale"]}}
+          ]
+        }
+      ]
+    },
+    {
+      "key": "speaking",
+      "name": "Production orale",
+      "skill": "speaking",
+      "duration_min": 15,
+      "max_score": 25,
+      "description": "Épreuve en trois parties: entretien dirigé, exercice en interaction, expression d'un point de vue à partir d'un document déclencheur. Préparation: 10 minutes (3e partie seulement).",
+      "question_groups": [
+        {
+          "group_id": "DELF-B1-S1",
+          "title": "Partie 1 - Entretien dirigé",
+          "order": 1,
+          "instructions": {"text_html": "L'examinateur vous pose des questions sur vous, votre famille, vos goûts, vos activités... (2-3 minutes)"},
+          "metadata": {"total_points": 5, "suggested_time_sec": 180},
+          "questions": [
+            {"question_id": "DELF-B1-S1-1", "type": "speaking_prompt", "order": 1, "instructions": {"text_html": "Parlez de vous, de votre famille, de vos goûts ou de vos activités."}, "scoring": {"max_points": 5}}
+          ]
+        },
+        {
+          "group_id": "DELF-B1-S2",
+          "title": "Partie 2 - Exercice en interaction",
+          "order": 2,
+          "instructions": {"text_html": "Vous tirez au sort un sujet. Vous jouez le rôle indiqué dans une situation de la vie quotidienne. (3-4 minutes)"},
+          "metadata": {"total_points": 10, "suggested_time_sec": 240},
+          "questions": [
+            {"question_id": "DELF-B1-S2-1", "type": "roleplay", "order": 1, "instructions": {"text_html": "Jouez une situation de la vie quotidienne avec l'examinateur selon le sujet tiré au sort."}, "scoring": {"max_points": 10}}
+          ]
+        },
+        {
+          "group_id": "DELF-B1-S3",
+          "title": "Partie 3 - Expression d'un point de vue",
+          "order": 3,
+          "instructions": {"text_html": "Vous tirez au sort un document. Après 10 minutes de préparation, vous dégagez le thème et présentez votre opinion de manière argumentée. L'examinateur peut vous poser des questions. (5-7 minutes)"},
+          "metadata": {"total_points": 10, "suggested_time_sec": 420, "preparation_time_sec": 600},
+          "questions": [
+            {"question_id": "DELF-B1-S3-1", "type": "speaking_prompt", "order": 1, "instructions": {"text_html": "Présentez le thème du document et exprimez votre point de vue de manière argumentée."}, "scoring": {"max_points": 10}}
+          ]
+        }
+      ]
+    }
+  ]
+}

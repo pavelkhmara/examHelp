@@ -1,0 +1,18 @@
+[mysqld]
+# Performance buffers
+sort_buffer_size = 16777216
+read_rnd_buffer_size = 8388608
+max_allowed_packet = 67108864
+innodb_buffer_pool_size = 536870912
+
+# Connection settings for long-running jobs
+max_connections = 200
+wait_timeout = 28800
+interactive_timeout = 28800
+connect_timeout = 10
+
+# Thread cache for better connection reuse
+thread_cache_size = 16
+
+# InnoDB lock timeout (seconds)
+innodb_lock_wait_timeout = 120

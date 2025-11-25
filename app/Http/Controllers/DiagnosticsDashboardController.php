@@ -7,6 +7,7 @@ use App\Models\ExamCategory;
 use App\Models\ExamExampleQuestion;
 use App\Models\GenerationLog;
 use App\Models\GenerationTask;
+use App\Models\Question;
 use App\Services\LanguageApp\ExamStructureRecoveryService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -413,6 +414,193 @@ class DiagnosticsDashboardController extends Controller
                 'trace' => app()->environment('local') ? $e->getTraceAsString() : null,
             ], 500);
         }
+    }
+
+    /**
+     * Compare generated exam with reference exam
+     * GET /diagnostics-dashboard/compare/{genId}/{refId}
+     */
+    public function compareExams(string $genId, string $refId)
+    {
+        $gen = Exam::find($genId);
+        $ref = Exam::find($refId);
+
+        if (!$gen) {
+            return response()->json(['success' => false, 'error' => "Generated exam not found: $genId"], 404);
+        }
+        if (!$ref) {
+            return response()->json(['success' => false, 'error' => "Reference exam not found: $refId"], 404);
+        }
+
+        // Basic info
+        $genSections = $gen->categories()->count();
+        $refSections = $ref->categories()->count();
+        $genQuestions = $gen->questions()->count();
+        $refQuestions = $ref->questions()->count();
+        $genGroups = $gen->questionGroups()->count();
+        $refGroups = $ref->questionGroups()->count();
+
+        // Section comparison
+        $refCats = $ref->categories->keyBy('key');
+        $genCats = $gen->categories->keyBy('key');
+
+        $keyMapping = [
+            'sec-listening' => 'listening',
+            'sec-reading' => 'reading',
+            'sec-writing' => 'writing',
+            'sec-speaking' => 'speaking',
+            'sec-grammar' => 'grammar',
+            'sec-grammar-lexis' => 'grammar',
+        ];
+
+        $sectionComparison = [];
+        foreach ($refCats as $refKey => $refCat) {
+            $refQCount = $refCat->questions()->count();
+            $refGCount = $refCat->questionGroups()->count();
+
+            $genKey = array_search($refKey, $keyMapping) ?: $refKey;
+            $genCat = $genCats->get($genKey) ?? $genCats->get("sec-{$refKey}");
+
+            if ($genCat) {
+                $genQCount = $genCat->questions()->count();
+                $genGCount = $genCat->questionGroups()->count();
+                $qScore = $refQCount > 0 ? min(100, round($genQCount / $refQCount * 100)) : 100;
+                $gScore = $refGCount > 0 ? min(100, round($genGCount / $refGCount * 100)) : ($genGCount == 0 ? 100 : 50);
+                $avgScore = round(($qScore + $gScore) / 2);
+
+                $sectionComparison[$refKey] = [
+                    'name' => $refCat->name,
+                    'gen_questions' => $genQCount,
+                    'ref_questions' => $refQCount,
+                    'q_score' => $qScore,
+                    'gen_groups' => $genGCount,
+                    'ref_groups' => $refGCount,
+                    'g_score' => $gScore,
+                    'avg_score' => $avgScore,
+                    'status' => $avgScore >= 80 ? 'good' : ($avgScore >= 50 ? 'warning' : 'bad'),
+                ];
+            } else {
+                $sectionComparison[$refKey] = [
+                    'name' => $refCat->name,
+                    'gen_questions' => 0,
+                    'ref_questions' => $refQCount,
+                    'q_score' => 0,
+                    'gen_groups' => 0,
+                    'ref_groups' => $refGCount,
+                    'g_score' => 0,
+                    'avg_score' => 0,
+                    'status' => 'missing',
+                ];
+            }
+        }
+
+        // Question types
+        $genTypes = Question::whereHas('section', fn($q) => $q->where('exam_id', $genId))
+            ->selectRaw('type, COUNT(*) as count')
+            ->groupBy('type')
+            ->pluck('count', 'type')
+            ->toArray();
+
+        $refTypes = Question::whereHas('section', fn($q) => $q->where('exam_id', $refId))
+            ->selectRaw('type, COUNT(*) as count')
+            ->groupBy('type')
+            ->pluck('count', 'type')
+            ->toArray();
+
+        $allTypes = array_unique(array_merge(array_keys($genTypes), array_keys($refTypes)));
+        sort($allTypes);
+
+        $typeComparison = [];
+        foreach ($allTypes as $type) {
+            $g = $genTypes[$type] ?? 0;
+            $r = $refTypes[$type] ?? 0;
+            $typeComparison[$type] = [
+                'gen' => $g,
+                'ref' => $r,
+                'status' => $g == 0 && $r > 0 ? 'missing' : ($g > 0 && $r == 0 ? 'extra' : 'ok'),
+            ];
+        }
+
+        // Calculate scores
+        $structureScore = $refQuestions > 0 ? min(100, round($genQuestions / $refQuestions * 100)) : 0;
+        $groupScore = $refGroups > 0 ? min(100, round($genGroups / $refGroups * 100)) : 0;
+        $sectionScores = array_column($sectionComparison, 'avg_score');
+        $sectionAvg = count($sectionScores) > 0 ? round(array_sum($sectionScores) / count($sectionScores)) : 0;
+        $overallScore = round(($structureScore * 0.4 + $groupScore * 0.3 + $sectionAvg * 0.3));
+
+        // Recommendations
+        $recommendations = [];
+        if ($genGroups == 0 && $refGroups > 0) {
+            $recommendations[] = "Question groups are missing - need to implement group generation";
+        }
+        if ($genQuestions < $refQuestions * 0.7) {
+            $missing = $refQuestions - $genQuestions;
+            $recommendations[] = "Need ~{$missing} more questions to match reference";
+        }
+        foreach ($sectionComparison as $key => $data) {
+            if ($data['avg_score'] < 50) {
+                $recommendations[] = "Section '{$key}' needs more content (target: {$data['ref_questions']} questions)";
+            }
+        }
+        $missingTypes = array_keys(array_filter($typeComparison, fn($t) => $t['status'] === 'missing'));
+        if (!empty($missingTypes)) {
+            $recommendations[] = "Missing question types: " . implode(', ', $missingTypes);
+        }
+
+        return response()->json([
+            'success' => true,
+            'generated' => [
+                'id' => $gen->id,
+                'title' => $gen->title,
+                'level' => $gen->level,
+                'language' => $gen->language_of_test,
+                'sections' => $genSections,
+                'groups' => $genGroups,
+                'questions' => $genQuestions,
+            ],
+            'reference' => [
+                'id' => $ref->id,
+                'title' => $ref->title,
+                'level' => $ref->level,
+                'language' => $ref->language_of_test,
+                'sections' => $refSections,
+                'groups' => $refGroups,
+                'questions' => $refQuestions,
+            ],
+            'section_comparison' => $sectionComparison,
+            'type_comparison' => $typeComparison,
+            'scores' => [
+                'structure' => $structureScore,
+                'groups' => $groupScore,
+                'sections' => $sectionAvg,
+                'overall' => $overallScore,
+                'grade' => $overallScore >= 80 ? 'excellent' : ($overallScore >= 60 ? 'acceptable' : ($overallScore >= 40 ? 'needs_improvement' : 'poor')),
+            ],
+            'recommendations' => $recommendations,
+        ]);
+    }
+
+    /**
+     * Get list of reference exams
+     * GET /diagnostics-dashboard/reference-exams
+     */
+    public function referenceExams()
+    {
+        $refs = Exam::whereJsonContains('meta->is_reference_exam', true)
+            ->get()
+            ->map(fn($exam) => [
+                'id' => $exam->id,
+                'title' => $exam->title,
+                'level' => $exam->level,
+                'language' => $exam->language_of_test,
+                'questions' => $exam->questions()->count(),
+                'groups' => $exam->questionGroups()->count(),
+            ]);
+
+        return response()->json([
+            'success' => true,
+            'exams' => $refs,
+        ]);
     }
 
     /**

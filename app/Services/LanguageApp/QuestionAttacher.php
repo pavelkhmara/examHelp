@@ -37,14 +37,24 @@ class QuestionAttacher
             // ========== CREATE QUESTION RECORDS IN DATABASE ==========
             // Convert generated questions (array) to Question model records
             $questionRecords = [];
-            foreach ($questions as $questionData) {
+
+            // Get section info for unique question_id generation
+            $category = ExamCategory::find($plan->section_id);
+            $sectionKey = $category ? $category->key : "section_{$plan->section_id}";
+
+            foreach ($questions as $qIndex => $questionData) {
                 try {
+                    // Generate unique question_id with section prefix to avoid collisions
+                    // e.g., "sec-listening_q1" instead of just "q1"
+                    $rawQuestionId = $questionData['id'] ?? "q{$qIndex}";
+                    $uniqueQuestionId = "{$sectionKey}_{$rawQuestionId}";
+
                     // CRITICAL: Question::insert() bypasses model casts, so we must manually
                     // json_encode() all JSON fields before inserting into database
                     $questionRecord = [
                         'exam_id' => $exam->id,
                         'section_id' => (int) $plan->section_id, // Cast to integer for database
-                        'question_id' => $questionData['id'] ?? 'q_' . uniqid(),
+                        'question_id' => $uniqueQuestionId,
                         'type' => $questionData['type'] ?? 'single_select',
                         'skills_measured' => json_encode($questionData['skills_measured'] ?? [], JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE),
                         'time_limit_sec' => $questionData['time_limit_sec'] ?? 0,
@@ -74,15 +84,73 @@ class QuestionAttacher
             }
 
             // Bulk insert questions (much faster than individual creates)
-            // Use insertOrIgnore to handle retry scenarios (idempotent insert)
+            // PRE-CHECK for duplicates to avoid insertOrIgnore returning 0 on first duplicate
             if (!empty($questionRecords)) {
-                $inserted = Question::insertOrIgnore($questionRecords);
-                Log::info('[QuestionAttacher] Created question records in database', [
-                    'exam_id' => $exam->id,
-                    'section_id' => $plan->section_id,
-                    'count' => count($questionRecords),
-                    'inserted' => $inserted,
-                ]);
+                try {
+                    // CRITICAL: Check for existing question_ids BEFORE insert
+                    // This prevents insertOrIgnore() from returning 0 when first record is duplicate
+                    $allQuestionIds = array_map(fn($r) => $r['question_id'], $questionRecords);
+
+                    $existingIds = Question::whereIn('question_id', $allQuestionIds)
+                        ->pluck('question_id')
+                        ->toArray();
+
+                    // Filter out duplicates
+                    $newRecords = array_filter(
+                        $questionRecords,
+                        fn($r) => !in_array($r['question_id'], $existingIds)
+                    );
+
+                    $duplicatesCount = count($questionRecords) - count($newRecords);
+
+                    if ($duplicatesCount > 0) {
+                        Log::warning('[QuestionAttacher] Skipping duplicate question_ids', [
+                            'exam_id' => $exam->id,
+                            'section_id' => $plan->section_id,
+                            'total_records' => count($questionRecords),
+                            'duplicates' => $duplicatesCount,
+                            'new_records' => count($newRecords),
+                            'duplicate_ids' => array_slice($existingIds, 0, 5), // First 5 for logging
+                        ]);
+                    }
+
+                    // Insert only new records
+                    if (!empty($newRecords)) {
+                        $inserted = Question::insertOrIgnore($newRecords);
+
+                        Log::info('[QuestionAttacher] Created question records in database', [
+                            'exam_id' => $exam->id,
+                            'section_id' => $plan->section_id,
+                            'prepared' => count($newRecords),
+                            'inserted' => $inserted,
+                            'skipped_duplicates' => $duplicatesCount,
+                        ]);
+
+                        // Sanity check: inserted should equal newRecords count
+                        if ($inserted !== count($newRecords)) {
+                            Log::warning('[QuestionAttacher] Inserted count mismatch', [
+                                'exam_id' => $exam->id,
+                                'section_id' => $plan->section_id,
+                                'expected' => count($newRecords),
+                                'actual' => $inserted,
+                            ]);
+                        }
+                    } else {
+                        Log::info('[QuestionAttacher] All questions already exist (skipped)', [
+                            'exam_id' => $exam->id,
+                            'section_id' => $plan->section_id,
+                            'total' => count($questionRecords),
+                        ]);
+                    }
+                } catch (\Throwable $e) {
+                    Log::error('[QuestionAttacher] Bulk insert failed', [
+                        'exam_id' => $exam->id,
+                        'section_id' => $plan->section_id,
+                        'error' => $e->getMessage(),
+                        'trace' => $e->getTraceAsString(),
+                    ]);
+                    throw $e; // Re-throw to rollback transaction
+                }
             }
 
             // Update exam meta with generated questions
@@ -120,10 +188,9 @@ class QuestionAttacher
         // После создания вопросов - генерируем аудио где необходимо
         $this->generateAudioForQuestions($exam, $plan);
 
-        if ($exam->meta['generated_questions_v2']) {
-            return $exam->meta['generated_questions_v2'];
-        }
-        return [];
+        // FIXED: Return only the questions that were attached in THIS call,
+        // not all accumulated questions in exam.meta (over-generation bug)
+        return $questions;
     }
 
     /**

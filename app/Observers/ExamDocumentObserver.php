@@ -4,6 +4,7 @@ namespace App\Observers;
 
 use App\Jobs\AnalyzeExamMetadataJob;
 use App\Models\ExamDocument;
+use App\Services\LanguageApp\FileAttachmentService;
 use Illuminate\Support\Facades\Log;
 
 class ExamDocumentObserver
@@ -36,7 +37,19 @@ class ExamDocumentObserver
      */
     public function deleted(ExamDocument $document): void
     {
-        //
+        // Cleanup OpenAI file attachment if enabled
+        if ($document->openai_file_id && config('ai.file_attachments.auto_cleanup', true)) {
+            try {
+                $fileService = app(FileAttachmentService::class);
+                $fileService->deleteDocument($document);
+            } catch (\Throwable $e) {
+                Log::warning('FileAttachment cleanup failed on delete', [
+                    'doc_id' => $document->id,
+                    'file_id' => $document->openai_file_id,
+                    'error' => $e->getMessage(),
+                ]);
+            }
+        }
     }
 
     /**

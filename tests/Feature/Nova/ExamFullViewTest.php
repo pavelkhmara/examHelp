@@ -25,6 +25,9 @@ class ExamFullViewTest extends TestCase
             'email' => 'admin@example.com',
         ]);
 
+        // Bypass Nova gate for testing
+        \Illuminate\Support\Facades\Gate::define('viewNova', fn () => true);
+
         $this->actingAs($this->user);
     }
 
@@ -220,7 +223,7 @@ class ExamFullViewTest extends TestCase
                             'title' => 'Reading',
                             'skill' => 'reading',
                             'assembly' => ['mode' => 'blueprint'],
-                            'expected_task_count' => ['target' => 10],
+                            'expected_question_count' => ['target' => 10],
                         ],
                     ],
                 ],
@@ -257,7 +260,7 @@ class ExamFullViewTest extends TestCase
                             'title' => 'Reading',
                             'skill' => 'reading',
                             'assembly' => ['mode' => 'pool'],
-                            'expected_task_count' => ['target' => 5],
+                            'expected_question_count' => ['target' => 5],
                         ],
                     ],
                 ],

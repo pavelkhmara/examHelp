@@ -13,7 +13,7 @@ use Illuminate\Support\Facades\Log;
  * Service for boosting confidence in exam identity
  *
  * Responsibilities:
- * - Boost confidence from 0.90-0.96 to >0.97 through family ruleset verification
+ * - Boost confidence from 0.70-0.79 to >0.8 through family ruleset verification
  * - Returns updated identity result with new confidence and explanation
  *
  * IMPORTANT: This service only INCREASES confidence, never decreases it.
@@ -24,7 +24,7 @@ class ConfidenceBoostService extends AbstractAiService
 {
     /**
      * Stage: confidence_boost
-     * - Boosts confidence from 0.90-0.96 to >0.97 through family ruleset verification
+     * - Boosts confidence from 0.70-0.79 to >0.8 through family ruleset verification
      * - Returns updated identity result with new confidence and explanation
      * - NEVER lowers confidence below original value (boost only, no penalties)
      */
@@ -180,7 +180,7 @@ class ConfidenceBoostService extends AbstractAiService
         ]);
 
         // Update hold based on new confidence
-        if ($boostedIdentity['confidence'] >= 0.97 && $boostedIdentity['status'] === 'certain') {
+        if ($boostedIdentity['confidence'] >= 0.8 && $boostedIdentity['status'] === 'certain') {
             $boostedIdentity['hold'] = true;
         } else {
             $boostedIdentity['hold'] = false;

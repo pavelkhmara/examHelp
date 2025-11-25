@@ -47,7 +47,7 @@ class RunConfidenceBoostJobTest extends TestCase
         $svc->shouldReceive('runConfidenceBoost')
             ->once()
             ->andReturn([
-                'confidence' => 0.98, // Boosted above 0.97
+                'confidence' => 0.85, // Boosted above 0.8
                 'confidence_boosted_at' => now()->toISOString(),
                 'status' => 'certain',
                 'exam_name' => 'IELTS',
@@ -61,7 +61,7 @@ class RunConfidenceBoostJobTest extends TestCase
         // Check task was updated
         $task->refresh();
         $this->assertEquals('queued', $task->status, 'Task should be queued for next stage');
-        $this->assertGreaterThanOrEqual(0.97, $task->result['identity']['confidence'] ?? 0);
+        $this->assertGreaterThanOrEqual(0.8, $task->result['identity']['confidence'] ?? 0);
         $this->assertNotNull($task->result['identity']['confidence_boosted_at'] ?? null);
 
         // Check that RunExamResearchJob was dispatched to continue pipeline
@@ -92,7 +92,7 @@ class RunConfidenceBoostJobTest extends TestCase
         $svc->shouldReceive('runConfidenceBoost')
             ->once()
             ->andReturn([
-                'confidence' => 0.90, // Still below 0.97
+                'confidence' => 0.75, // Still below 0.8
                 'confidence_boosted_at' => now()->toISOString(),
                 'status' => 'certain',
             ]);
@@ -102,7 +102,7 @@ class RunConfidenceBoostJobTest extends TestCase
 
         $task->refresh();
         $this->assertEquals('pending_confirmation', $task->status);
-        $this->assertLessThan(0.97, $task->result['identity']['confidence'] ?? 0);
+        $this->assertLessThan(0.8, $task->result['identity']['confidence'] ?? 0);
     }
 
     public function test_confidence_boost_job_skips_if_already_high(): void

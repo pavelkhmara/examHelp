@@ -290,7 +290,7 @@ class OverviewStructureBuilder extends AbstractAiService
             ]),
         ]);
 
-        // STRICT VALIDATION of tasks (types/payload/scoring)
+        // STRICT VALIDATION of tasks (types/payload/scoring) - legacy v1 format only
         $overview_normalized = $this->validateTasks($overview_normalized);
 
         // Update exam meta
@@ -407,6 +407,16 @@ class OverviewStructureBuilder extends AbstractAiService
 
         $createdCategories = [];
         DB::transaction(function () use ($exam, $buckets, $categoryOrder, &$createdCategories) {
+            // Delete all old categories for this exam before creating new ones
+            // This ensures we only have the categories from the current research run
+            // Cascade deletes: GenerationPlan, QuestionGroup, ExamExampleQuestion, Question
+            $deletedCount = ExamCategory::where('exam_id', $exam->id)->delete();
+
+            Log::info('[OverviewStructureBuilder] Deleted old exam categories', [
+                'exam_id' => $exam->id,
+                'deleted_count' => $deletedCount,
+            ]);
+
             $pos = 1;
             foreach ($categoryOrder as $catKey) {
                 $items = $buckets[$catKey] ?? [];
@@ -435,7 +445,8 @@ class OverviewStructureBuilder extends AbstractAiService
                 ];
 
                 /** @var ExamCategory $catModel */
-                $catModel = ExamCategory::query()->updateOrCreate(['exam_id' => $exam->id, 'key' => $key], $category_model);
+                // Always create new (old categories already deleted above)
+                $catModel = ExamCategory::query()->create(array_merge(['exam_id' => $exam->id, 'key' => $key], $category_model));
 
                 Log::debug('OverviewStructureBuilder category model', ['category_model' => $category_model]);
 
@@ -799,6 +810,10 @@ class OverviewStructureBuilder extends AbstractAiService
 
     /**
      * Validate tasks with QuestionTypeContract
+     *
+     * NOTE: This validates legacy v1 format ('tasks' or 'examples').
+     * V2 format uses 'question_archetypes' which is validated by JsonSchemaExamV2.
+     * This function is kept for backward compatibility with v1 imports.
      */
     protected function validateTasks(array $overview_normalized): array
     {
@@ -852,34 +867,34 @@ class OverviewStructureBuilder extends AbstractAiService
 
         foreach ($sections as $sectionIdx => &$section) {
             $sectionDuration = $section['duration_minutes'] ?? null;
-            $tasks = $section['tasks'] ?? [];
-            $taskCount = count($tasks);
+            $questions = $section['questions'] ?? [];
+            $questionCount = count($questions);
 
-            if (!$sectionDuration || $taskCount === 0) {
+            if (!$sectionDuration || $questionCount === 0) {
                 continue;
             }
 
             // Calculate how much time is already allocated
-            $tasksWithoutDuration = [];
+            $questionsWithoutDuration = [];
             $allocatedTime = 0;
 
-            foreach ($tasks as $idx => $task) {
-                if (isset($task['step_duration']) && $task['step_duration'] > 0) {
-                    $allocatedTime += $task['step_duration'];
+            foreach ($questions as $idx => $question) {
+                if (isset($question['step_duration']) && $question['step_duration'] > 0) {
+                    $allocatedTime += $question['step_duration'];
                 } else {
-                    $tasksWithoutDuration[] = $idx;
+                    $questionsWithoutDuration[] = $idx;
                 }
             }
 
-            // Distribute remaining time among tasks without duration
-            if (!empty($tasksWithoutDuration)) {
+            // Distribute remaining time among questions without duration
+            if (!empty($questionsWithoutDuration)) {
                 $remainingTime = $sectionDuration - $allocatedTime;
-                $timePerTask = $remainingTime > 0
-                    ? round($remainingTime / count($tasksWithoutDuration), 1)
-                    : round($sectionDuration / $taskCount, 1);
+                $timePerQuestion = $remainingTime > 0
+                    ? round($remainingTime / count($questionsWithoutDuration), 1)
+                    : round($sectionDuration / $questionCount, 1);
 
-                foreach ($tasksWithoutDuration as $idx) {
-                    $section['tasks'][$idx]['step_duration'] = max(1, $timePerTask);
+                foreach ($questionsWithoutDuration as $idx) {
+                    $section['questions'][$idx]['step_duration'] = max(1, $timePerQuestion);
                 }
 
                 Log::debug('Filled missing step_duration', [
@@ -1178,5 +1193,109 @@ class OverviewStructureBuilder extends AbstractAiService
         ]);
 
         return $structure_normalized;
+    }
+
+    /**
+     * Generate assembly plan for a SINGLE section (for parallel processing)
+     *
+     * This method is used by GenerateSectionAssemblyJob to generate assembly configuration
+     * for one section in parallel with other sections.
+     *
+     * @param Exam $exam
+     * @param GenerationTask $task
+     * @param array $sectionSkeleton Section skeleton from Phase A
+     * @return array Complete section with assembly configuration
+     */
+    public function generateSectionAssembly(Exam $exam, GenerationTask $task, array $sectionSkeleton): array
+    {
+        $sectionId = $sectionSkeleton['id'] ?? 'unknown';
+
+        Log::debug('OverviewStructureBuilder: generating assembly for section', [
+            'exam_id' => $exam->id,
+            'task_id' => $task->id,
+            'section_id' => $sectionId,
+        ]);
+
+        $files = $this->buildFilesForExam($exam);
+
+        // Get full skeleton from exam.meta for context
+        $fullSkeleton = $exam->meta['structure_v2'] ?? [];
+
+        // Build payload for single section
+        $payload = [
+            'exam_slug' => $exam->slug,
+            'stage' => 'section_assembly',
+            'exam_title' => $exam->title,
+            'exam_level' => $exam->level,
+            'exam_description' => trim($exam->description),
+            'input' => trim($task->notes) ?? null,
+            'section_skeleton' => $sectionSkeleton,
+            'full_skeleton' => $fullSkeleton,
+        ];
+
+        // Use GPT-5 for section assembly
+        $modelAlias = 'thinking'; // Maps to AI_MODEL_THINKING (gpt-5)
+
+        // Build prompt args for section assembly
+        $promptArgs = [
+            $exam->title,                     // examTitle
+            trim($task->notes) ?? '',        // userInput
+            trim($exam->description),         // contextNotes
+            $sectionSkeleton,                 // sectionSkeleton
+            $fullSkeleton,                    // fullSkeleton (for context)
+            null,                             // retryHint
+        ];
+
+        $opts = [
+            'web' => false, // Section assembly doesn't need web search
+            'files' => $files,
+            'model' => $modelAlias,
+            'prompt_class' => Prompts\PromptSectionAssembly::class,
+            'prompt_args' => $promptArgs,
+        ];
+
+        // Call AI
+        $res = $this->callAi($payload, $opts);
+        $this->log($task, 'section_assembly_' . $sectionId, $payload, $res);
+
+        Log::debug('OverviewStructureBuilder section assembly result', [
+            'section_id' => $sectionId,
+            'result' => $res['content'] ?? null,
+        ]);
+
+        // Decode and validate response
+        $decoded = $this->decodeOverview($res);
+
+        // Validate section structure
+        try {
+            // For now, just check that we have the required fields
+            if (!isset($decoded['id']) || !isset($decoded['assembly'])) {
+                throw new \RuntimeException('Section assembly response missing required fields (id, assembly)');
+            }
+
+            if ($decoded['id'] !== $sectionId) {
+                throw new \RuntimeException("Section ID mismatch: expected {$sectionId}, got {$decoded['id']}");
+            }
+
+            Log::info('OverviewStructureBuilder: Section assembly completed', [
+                'exam_id' => $exam->id,
+                'section_id' => $sectionId,
+                'has_archetypes' => isset($decoded['question_archetypes']),
+                'has_assembly' => isset($decoded['assembly']),
+                'assembly_mode' => $decoded['assembly']['mode'] ?? null,
+            ]);
+
+            return $decoded;
+        } catch (\Throwable $ve) {
+            Log::error('OverviewStructureBuilder section assembly validation failed', [
+                'exam_id' => $exam->id,
+                'task_id' => $task->id,
+                'section_id' => $sectionId,
+                'error' => $ve->getMessage(),
+                'decoded' => $decoded,
+            ]);
+
+            throw new \RuntimeException('Section assembly validation failed: ' . $ve->getMessage(), 0, $ve);
+        }
     }
 }

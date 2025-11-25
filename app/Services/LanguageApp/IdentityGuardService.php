@@ -35,6 +35,9 @@ class IdentityGuardService extends AbstractAiService
         // Extract document text if available
         $extracted = $this->extractDocumentText($docId);
 
+        // Get file IDs for attachments (if enabled)
+        $fileIds = $this->getDocumentFileIds($docId);
+
         // Load marker pack (placeholder for now - could be expanded later)
         $markerPack = [];
 
@@ -46,9 +49,10 @@ class IdentityGuardService extends AbstractAiService
         $aiPayload = PromptIdentityGuard::buildPayload($user, $extracted, $markerPack, $existingIdentity, $userMeta);
 
         try {
-            // Call AI provider
+            // Call AI provider with file attachments if available
             $aiResponse = $this->ai->generate($aiPayload, [
                 'json_schema' => PromptIdentityGuard::schema(),
+                'file_ids' => $fileIds,
             ]);
 
             // Extract and validate content
@@ -320,6 +324,23 @@ class IdentityGuardService extends AbstractAiService
     }
 
     /**
+     * Get OpenAI file IDs for document if file attachments enabled.
+     */
+    protected function getDocumentFileIds(string|int|null $docId): array
+    {
+        if (! $docId || ! config('ai.file_attachments.enabled')) {
+            return [];
+        }
+
+        $doc = ExamDocument::query()->find($docId);
+        if (! $doc || ! $doc->openai_file_id || $doc->file_attachment_status !== 'uploaded') {
+            return [];
+        }
+
+        return [$doc->openai_file_id];
+    }
+
+    /**
      * Extract content from AI response
      */
     protected function extractContent(array $aiResponse): mixed
@@ -344,10 +365,10 @@ class IdentityGuardService extends AbstractAiService
      */
     protected function setConfidenceFlags(array $res): array
     {
-        // Hold if: certain status + confidence >= 0.97 + no red_flags
+        // Hold if: certain status + confidence >= 0.8 + no red_flags
         $shouldHold = (
             ($res['status'] ?? '') === 'certain'
-            && ($res['confidence'] ?? 0) >= 0.97
+            && ($res['confidence'] ?? 0) >= 0.8
             && empty($res['red_flags'] ?? [])
         );
 
@@ -355,11 +376,11 @@ class IdentityGuardService extends AbstractAiService
             $res['hold'] = true;
         }
 
-        // If confidence is between 0.90 and 0.97, we need additional verification
+        // If confidence is between 0.70 and 0.8, we need additional verification
         $needsBoost = (
             ($res['status'] ?? '') === 'certain'
-            && ($res['confidence'] ?? 0) >= 0.90
-            && ($res['confidence'] ?? 0) < 0.97
+            && ($res['confidence'] ?? 0) >= 0.70
+            && ($res['confidence'] ?? 0) < 0.8
             && empty($res['red_flags'] ?? [])
         );
 

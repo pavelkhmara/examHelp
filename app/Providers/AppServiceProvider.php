@@ -4,6 +4,8 @@ namespace App\Providers;
 
 use App\Services\LanguageApp\AiProvider;
 use App\Services\LanguageApp\AiProviderFactory;
+use App\Services\LanguageApp\FileAttachmentService;
+use App\Services\LanguageApp\Providers\OpenAiProvider;
 use Illuminate\Support\ServiceProvider;
 
 class AppServiceProvider extends ServiceProvider
@@ -28,6 +30,22 @@ class AppServiceProvider extends ServiceProvider
 
         $this->app->singleton('task-dispatcher', function ($app) {
             return new \App\Support\Queue\TaskDispatcher;
+        });
+
+        // FileAttachmentService for OpenAI file uploads
+        $this->app->singleton(FileAttachmentService::class, function ($app) {
+            $cfg = config('ai.openai', []);
+            $http = new \GuzzleHttp\Client([
+                'base_uri' => rtrim($cfg['base_url'] ?? 'https://api.openai.com/v1', '/') . '/',
+                'timeout' => $cfg['timeout'] ?? 180,
+            ]);
+            $provider = new OpenAiProvider(
+                $http,
+                $cfg['api_key'] ?? '',
+                $cfg['base_url'] ?? 'https://api.openai.com/v1',
+                $cfg['model'] ?? 'gpt-5-mini'
+            );
+            return new FileAttachmentService($provider);
         });
     }
 

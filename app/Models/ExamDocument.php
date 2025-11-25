@@ -25,12 +25,16 @@ class ExamDocument extends Model
         'size',
         'status',
         'extracted_text',
+        'openai_file_id',
+        'file_attachment_status',
+        'file_attached_at',
         'error',
         'meta',
     ];
 
     protected $casts = [
         'meta' => AsArrayWithUnescapedSlashes::class,
+        'file_attached_at' => 'datetime',
     ];
 
     public function exam(): BelongsTo

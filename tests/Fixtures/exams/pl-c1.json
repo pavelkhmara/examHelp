@@ -1,0 +1,2713 @@
+{
+    "exam": {
+        "title": "Egzamin Certyfikatowy z Języka Polskiego jako Obcego - C1",
+        "language_of_test": "Polish",
+        "level": "C1",
+        "provider": "Państwowa Komisja ds. Poświadczania Znajomości Języka Polskiego jako Obcego",
+        "family": "Polish State Certificate",
+        "description": "Official Polish language certificate exam at C1 (Effective Operational Proficiency) level."
+    },
+    "sections": [
+        {
+            "key": "listening",
+            "name": "Rozumienie ze słuchu",
+            "skill": "listening",
+            "duration_min": 40,
+            "max_score": 40,
+            "description": "5 zadań testujących rozumienie ze słuchu",
+            "question_groups": [
+                {
+                    "group_id": "listening-question-1",
+                    "title": "Zadanie I",
+                    "order": 1,
+                    "instructions": {
+                        "text_html": "<p>Proszę wysłuchać kilku krótkich tekstów i zaznaczyć właściwe odpowiedzi.</p><p><strong>Uwaga!</strong> Nagranie zostanie odtworzone <u>tylko jeden raz</u>.</p>"
+                    },
+                    "stimulus": {
+                        "audio": [
+                            "placeholder_c1_listening_1.mp3"
+                        ]
+                    },
+                    "playback_settings": {
+                        "max_plays": 1,
+                        "enforcement": "strict"
+                    },
+                    "metadata": {
+                        "total_points": 6,
+                        "points_per_item": 1
+                    },
+                    "questions": [
+                        {
+                            "question_id": "C1-L1-1",
+                            "type": "single_select",
+                            "order": 1,
+                            "instructions": {
+                                "text_html": "Z tego nagrania wynika, że"
+                            },
+                            "interaction": {
+                                "options": [
+                                    {
+                                        "id": "a",
+                                        "label": "w wyborach mogą brać udział tylko osoby pełnoletnie"
+                                    },
+                                    {
+                                        "id": "b",
+                                        "label": "głos można oddawać na dwa sposoby"
+                                    },
+                                    {
+                                        "id": "c",
+                                        "label": "głosowaniu podlegają projekty ogólnokrajowe"
+                                    }
+                                ]
+                            },
+                            "scoring": {
+                                "max_points": 1,
+                                "correct_answer": null
+                            }
+                        },
+                        {
+                            "question_id": "C1-L1-2",
+                            "type": "single_select",
+                            "order": 2,
+                            "instructions": {
+                                "text_html": "Z tego nagrania wynika, że"
+                            },
+                            "interaction": {
+                                "options": [
+                                    {
+                                        "id": "a",
+                                        "label": "mecz z Izraelem ma decydujące znaczenie w eliminacjach"
+                                    },
+                                    {
+                                        "id": "b",
+                                        "label": "drużyna polska zakwalifikowała się do mistrzostw Europy"
+                                    },
+                                    {
+                                        "id": "c",
+                                        "label": "polscy piłkarze nie traktują tego meczu poważnie"
+                                    }
+                                ]
+                            },
+                            "scoring": {
+                                "max_points": 1,
+                                "correct_answer": null
+                            }
+                        },
+                        {
+                            "question_id": "C1-L1-3",
+                            "type": "single_select",
+                            "order": 3,
+                            "instructions": {
+                                "text_html": "Z tego nagrania wynika, że"
+                            },
+                            "interaction": {
+                                "options": [
+                                    {
+                                        "id": "a",
+                                        "label": "jubileusz Hawany stał się powodem nocnych zamieszek"
+                                    },
+                                    {
+                                        "id": "b",
+                                        "label": "Kubańczycy świętują datę uniezależnienia się od Hiszpanii"
+                                    },
+                                    {
+                                        "id": "c",
+                                        "label": "w swojej mowie rektor nawiązał do trudnej historii Hawany"
+                                    }
+                                ]
+                            },
+                            "scoring": {
+                                "max_points": 1,
+                                "correct_answer": null
+                            }
+                        },
+                        {
+                            "question_id": "C1-L1-4",
+                            "type": "single_select",
+                            "order": 4,
+                            "instructions": {
+                                "text_html": "Z tego nagrania wynika, że"
+                            },
+                            "interaction": {
+                                "options": [
+                                    {
+                                        "id": "a",
+                                        "label": "LOT wycofał z użycia wszystkie samoloty boeing 737 MAX"
+                                    },
+                                    {
+                                        "id": "b",
+                                        "label": "rejs do Astany był ostatnim rejsem samolotem tego typu"
+                                    },
+                                    {
+                                        "id": "c",
+                                        "label": "linie lotnicze na całym świecie zawiesiły użycie boeingów 737 MAX"
+                                    }
+                                ]
+                            },
+                            "scoring": {
+                                "max_points": 1,
+                                "correct_answer": null
+                            }
+                        },
+                        {
+                            "question_id": "C1-L1-5",
+                            "type": "single_select",
+                            "order": 5,
+                            "instructions": {
+                                "text_html": "Z tego nagrania wynika, że"
+                            },
+                            "interaction": {
+                                "options": [
+                                    {
+                                        "id": "a",
+                                        "label": "przywódca grupy przestępczej nie był wcześniej karany"
+                                    },
+                                    {
+                                        "id": "b",
+                                        "label": "bandyci napadali głównie na policjantów"
+                                    },
+                                    {
+                                        "id": "c",
+                                        "label": "przestępców aresztowano podczas jednego z napadów"
+                                    }
+                                ]
+                            },
+                            "scoring": {
+                                "max_points": 1,
+                                "correct_answer": null
+                            }
+                        },
+                        {
+                            "question_id": "C1-L1-6",
+                            "type": "single_select",
+                            "order": 6,
+                            "instructions": {
+                                "text_html": "Z tego nagrania wynika, że"
+                            },
+                            "interaction": {
+                                "options": [
+                                    {
+                                        "id": "a",
+                                        "label": "przeszczepy krzyżowe podlegają specjalnej procedurze prawnej"
+                                    },
+                                    {
+                                        "id": "b",
+                                        "label": "jedna z kobiet otrzymała nerkę męża drugiej kobiety"
+                                    },
+                                    {
+                                        "id": "c",
+                                        "label": "przeszczep nerek odbył się między osobami spokrewnionymi"
+                                    }
+                                ]
+                            },
+                            "scoring": {
+                                "max_points": 1,
+                                "correct_answer": null
+                            }
+                        }
+                    ]
+                },
+                {
+                    "group_id": "listening-question-2",
+                    "title": "Zadanie II",
+                    "order": 2,
+                    "instructions": {
+                        "text_html": "<p>Proszę wysłuchać rozmowy na temat zabezpieczeń banknotów i zaznaczyć: <strong>TAK</strong> – gdy zdanie jest zgodne z tekstem; <strong>NIE</strong> – gdy nie jest zgodne z tekstem.</p><p><strong>Uwaga!</strong> Nagranie zostanie odtworzone <u>dwukrotnie</u>.</p>"
+                    },
+                    "stimulus": {
+                        "audio": [
+                            "placeholder_c1_listening_2.mp3"
+                        ]
+                    },
+                    "playback_settings": {
+                        "max_plays": 2,
+                        "enforcement": "strict"
+                    },
+                    "metadata": {
+                        "total_points": 8,
+                        "points_per_item": 1
+                    },
+                    "questions": [
+                        {
+                            "question_id": "C1-L2-1",
+                            "type": "true_false",
+                            "order": 1,
+                            "instructions": {
+                                "text_html": "Specjaliści nie stosują określenia lifting w odniesieniu do pieniędzy."
+                            },
+                            "interaction": {
+                                "options": [
+                                    {
+                                        "id": "tak",
+                                        "label": "TAK"
+                                    },
+                                    {
+                                        "id": "nie",
+                                        "label": "NIE"
+                                    }
+                                ]
+                            },
+                            "scoring": {
+                                "max_points": 1,
+                                "correct_answer": null
+                            }
+                        },
+                        {
+                            "question_id": "C1-L2-2",
+                            "type": "true_false",
+                            "order": 2,
+                            "instructions": {
+                                "text_html": "Celem przeprowadzonych zmian miało być unowocześnienie szaty graficznej."
+                            },
+                            "interaction": {
+                                "options": [
+                                    {
+                                        "id": "tak",
+                                        "label": "TAK"
+                                    },
+                                    {
+                                        "id": "nie",
+                                        "label": "NIE"
+                                    }
+                                ]
+                            },
+                            "scoring": {
+                                "max_points": 1,
+                                "correct_answer": null
+                            }
+                        },
+                        {
+                            "question_id": "C1-L2-3",
+                            "type": "true_false",
+                            "order": 3,
+                            "instructions": {
+                                "text_html": "Na powierzchni wszystkich banknotów umieszczono jednakowe wzory."
+                            },
+                            "interaction": {
+                                "options": [
+                                    {
+                                        "id": "tak",
+                                        "label": "TAK"
+                                    },
+                                    {
+                                        "id": "nie",
+                                        "label": "NIE"
+                                    }
+                                ]
+                            },
+                            "scoring": {
+                                "max_points": 1,
+                                "correct_answer": null
+                            }
+                        },
+                        {
+                            "question_id": "C1-L2-4",
+                            "type": "true_false",
+                            "order": 4,
+                            "instructions": {
+                                "text_html": "Umieszczanie eurionów to drugi, obok okręgów, sposób zabezpieczania banknotów."
+                            },
+                            "interaction": {
+                                "options": [
+                                    {
+                                        "id": "tak",
+                                        "label": "TAK"
+                                    },
+                                    {
+                                        "id": "nie",
+                                        "label": "NIE"
+                                    }
+                                ]
+                            },
+                            "scoring": {
+                                "max_points": 1,
+                                "correct_answer": null
+                            }
+                        },
+                        {
+                            "question_id": "C1-L2-5",
+                            "type": "true_false",
+                            "order": 5,
+                            "instructions": {
+                                "text_html": "Większość zabezpieczeń znana jest głównie ekspertom, autorom i projektantom banknotów."
+                            },
+                            "interaction": {
+                                "options": [
+                                    {
+                                        "id": "tak",
+                                        "label": "TAK"
+                                    },
+                                    {
+                                        "id": "nie",
+                                        "label": "NIE"
+                                    }
+                                ]
+                            },
+                            "scoring": {
+                                "max_points": 1,
+                                "correct_answer": null
+                            }
+                        },
+                        {
+                            "question_id": "C1-L2-6",
+                            "type": "true_false",
+                            "order": 6,
+                            "instructions": {
+                                "text_html": "Tylko pomysłodawcy lub emitenci mogą w stu procentach ocenić autentyczność pieniędzy."
+                            },
+                            "interaction": {
+                                "options": [
+                                    {
+                                        "id": "tak",
+                                        "label": "TAK"
+                                    },
+                                    {
+                                        "id": "nie",
+                                        "label": "NIE"
+                                    }
+                                ]
+                            },
+                            "scoring": {
+                                "max_points": 1,
+                                "correct_answer": null
+                            }
+                        },
+                        {
+                            "question_id": "C1-L2-7",
+                            "type": "true_false",
+                            "order": 7,
+                            "instructions": {
+                                "text_html": "Biegły jest obecny na wszystkich etapach weryfikacji autentyczności banknotów."
+                            },
+                            "interaction": {
+                                "options": [
+                                    {
+                                        "id": "tak",
+                                        "label": "TAK"
+                                    },
+                                    {
+                                        "id": "nie",
+                                        "label": "NIE"
+                                    }
+                                ]
+                            },
+                            "scoring": {
+                                "max_points": 1,
+                                "correct_answer": null
+                            }
+                        },
+                        {
+                            "question_id": "C1-L2-8",
+                            "type": "true_false",
+                            "order": 8,
+                            "instructions": {
+                                "text_html": "Identyfikacja banknotów dokonywana jest w ściśle określonych miejscach."
+                            },
+                            "interaction": {
+                                "options": [
+                                    {
+                                        "id": "tak",
+                                        "label": "TAK"
+                                    },
+                                    {
+                                        "id": "nie",
+                                        "label": "NIE"
+                                    }
+                                ]
+                            },
+                            "scoring": {
+                                "max_points": 1,
+                                "correct_answer": null
+                            }
+                        }
+                    ]
+                },
+                {
+                    "group_id": "listening-question-3",
+                    "title": "Zadanie III",
+                    "order": 3,
+                    "instructions": {
+                        "text_html": "<p>Proszę wysłuchać informacji na temat najczęstszych zjawisk paranormalnych i dopasować nazwy zjawisk (1-5) do ich charakterystycznych cech (A-J).</p><p><strong>Zjawiska:</strong> 1 – DÉJÀ VU, 2 – LUNATYKOWANIE, 3 – PRZECZUCIA, 4 – ODCZUWANIE CZYJEJŚ OBECNOŚCI, 5 – KSENOGLOSJA</p><p><strong>Uwaga!</strong> Nagranie zostanie odtworzone <u>dwukrotnie</u>.</p>"
+                    },
+                    "stimulus": {
+                        "audio": [
+                            "placeholder_c1_listening_3.mp3"
+                        ]
+                    },
+                    "playback_settings": {
+                        "max_plays": 2,
+                        "enforcement": "strict"
+                    },
+                    "metadata": {
+                        "total_points": 10,
+                        "points_per_item": 1
+                    },
+                    "questions": [
+                        {
+                            "question_id": "C1-L3-A",
+                            "type": "single_select",
+                            "order": 1,
+                            "instructions": {
+                                "text_html": "A. może mieć podłoże genetyczne?"
+                            },
+                            "interaction": {
+                                "options": [
+                                    {
+                                        "id": "1",
+                                        "label": "1"
+                                    },
+                                    {
+                                        "id": "2",
+                                        "label": "2"
+                                    },
+                                    {
+                                        "id": "3",
+                                        "label": "3"
+                                    },
+                                    {
+                                        "id": "4",
+                                        "label": "4"
+                                    },
+                                    {
+                                        "id": "5",
+                                        "label": "5"
+                                    }
+                                ]
+                            },
+                            "scoring": {
+                                "max_points": 1,
+                                "correct_answer": null
+                            }
+                        },
+                        {
+                            "question_id": "C1-L3-B",
+                            "type": "single_select",
+                            "order": 2,
+                            "instructions": {
+                                "text_html": "B. najczęściej jest wynikiem autosugestii?"
+                            },
+                            "interaction": {
+                                "options": [
+                                    {
+                                        "id": "1",
+                                        "label": "1"
+                                    },
+                                    {
+                                        "id": "2",
+                                        "label": "2"
+                                    },
+                                    {
+                                        "id": "3",
+                                        "label": "3"
+                                    },
+                                    {
+                                        "id": "4",
+                                        "label": "4"
+                                    },
+                                    {
+                                        "id": "5",
+                                        "label": "5"
+                                    }
+                                ]
+                            },
+                            "scoring": {
+                                "max_points": 1,
+                                "correct_answer": null
+                            }
+                        },
+                        {
+                            "question_id": "C1-L3-C",
+                            "type": "single_select",
+                            "order": 3,
+                            "instructions": {
+                                "text_html": "C. umożliwia wpływanie na bieg wydarzeń?"
+                            },
+                            "interaction": {
+                                "options": [
+                                    {
+                                        "id": "1",
+                                        "label": "1"
+                                    },
+                                    {
+                                        "id": "2",
+                                        "label": "2"
+                                    },
+                                    {
+                                        "id": "3",
+                                        "label": "3"
+                                    },
+                                    {
+                                        "id": "4",
+                                        "label": "4"
+                                    },
+                                    {
+                                        "id": "5",
+                                        "label": "5"
+                                    }
+                                ]
+                            },
+                            "scoring": {
+                                "max_points": 1,
+                                "correct_answer": null
+                            }
+                        },
+                        {
+                            "question_id": "C1-L3-D",
+                            "type": "single_select",
+                            "order": 4,
+                            "instructions": {
+                                "text_html": "D. może prowadzić do bardzo poważnych konsekwencji?"
+                            },
+                            "interaction": {
+                                "options": [
+                                    {
+                                        "id": "1",
+                                        "label": "1"
+                                    },
+                                    {
+                                        "id": "2",
+                                        "label": "2"
+                                    },
+                                    {
+                                        "id": "3",
+                                        "label": "3"
+                                    },
+                                    {
+                                        "id": "4",
+                                        "label": "4"
+                                    },
+                                    {
+                                        "id": "5",
+                                        "label": "5"
+                                    }
+                                ]
+                            },
+                            "scoring": {
+                                "max_points": 1,
+                                "correct_answer": null
+                            }
+                        },
+                        {
+                            "question_id": "C1-L3-E",
+                            "type": "single_select",
+                            "order": 5,
+                            "instructions": {
+                                "text_html": "E. można wyjaśnić na podstawie praw fizyki?"
+                            },
+                            "interaction": {
+                                "options": [
+                                    {
+                                        "id": "1",
+                                        "label": "1"
+                                    },
+                                    {
+                                        "id": "2",
+                                        "label": "2"
+                                    },
+                                    {
+                                        "id": "3",
+                                        "label": "3"
+                                    },
+                                    {
+                                        "id": "4",
+                                        "label": "4"
+                                    },
+                                    {
+                                        "id": "5",
+                                        "label": "5"
+                                    }
+                                ]
+                            },
+                            "scoring": {
+                                "max_points": 1,
+                                "correct_answer": null
+                            }
+                        },
+                        {
+                            "question_id": "C1-L3-F",
+                            "type": "single_select",
+                            "order": 6,
+                            "instructions": {
+                                "text_html": "F. może być skutkiem nieprawidłowej podaży tlenu do mózgu?"
+                            },
+                            "interaction": {
+                                "options": [
+                                    {
+                                        "id": "1",
+                                        "label": "1"
+                                    },
+                                    {
+                                        "id": "2",
+                                        "label": "2"
+                                    },
+                                    {
+                                        "id": "3",
+                                        "label": "3"
+                                    },
+                                    {
+                                        "id": "4",
+                                        "label": "4"
+                                    },
+                                    {
+                                        "id": "5",
+                                        "label": "5"
+                                    }
+                                ]
+                            },
+                            "scoring": {
+                                "max_points": 1,
+                                "correct_answer": null
+                            }
+                        },
+                        {
+                            "question_id": "C1-L3-G",
+                            "type": "single_select",
+                            "order": 7,
+                            "instructions": {
+                                "text_html": "G. zwykle dotyka ludzi dbających o swoją kondycję umysłową?"
+                            },
+                            "interaction": {
+                                "options": [
+                                    {
+                                        "id": "1",
+                                        "label": "1"
+                                    },
+                                    {
+                                        "id": "2",
+                                        "label": "2"
+                                    },
+                                    {
+                                        "id": "3",
+                                        "label": "3"
+                                    },
+                                    {
+                                        "id": "4",
+                                        "label": "4"
+                                    },
+                                    {
+                                        "id": "5",
+                                        "label": "5"
+                                    }
+                                ]
+                            },
+                            "scoring": {
+                                "max_points": 1,
+                                "correct_answer": null
+                            }
+                        },
+                        {
+                            "question_id": "C1-L3-H",
+                            "type": "single_select",
+                            "order": 8,
+                            "instructions": {
+                                "text_html": "H. może być wynikiem opóźnionego przepływu informacji w strukturach mózgu?"
+                            },
+                            "interaction": {
+                                "options": [
+                                    {
+                                        "id": "1",
+                                        "label": "1"
+                                    },
+                                    {
+                                        "id": "2",
+                                        "label": "2"
+                                    },
+                                    {
+                                        "id": "3",
+                                        "label": "3"
+                                    },
+                                    {
+                                        "id": "4",
+                                        "label": "4"
+                                    },
+                                    {
+                                        "id": "5",
+                                        "label": "5"
+                                    }
+                                ]
+                            },
+                            "scoring": {
+                                "max_points": 1,
+                                "correct_answer": null
+                            }
+                        },
+                        {
+                            "question_id": "C1-L3-I",
+                            "type": "single_select",
+                            "order": 9,
+                            "instructions": {
+                                "text_html": "I. bywa wynikiem poniesionej straty?"
+                            },
+                            "interaction": {
+                                "options": [
+                                    {
+                                        "id": "1",
+                                        "label": "1"
+                                    },
+                                    {
+                                        "id": "2",
+                                        "label": "2"
+                                    },
+                                    {
+                                        "id": "3",
+                                        "label": "3"
+                                    },
+                                    {
+                                        "id": "4",
+                                        "label": "4"
+                                    },
+                                    {
+                                        "id": "5",
+                                        "label": "5"
+                                    }
+                                ]
+                            },
+                            "scoring": {
+                                "max_points": 1,
+                                "correct_answer": null
+                            }
+                        },
+                        {
+                            "question_id": "C1-L3-J",
+                            "type": "single_select",
+                            "order": 10,
+                            "instructions": {
+                                "text_html": "J. dotyczy większości społeczeństwa?"
+                            },
+                            "interaction": {
+                                "options": [
+                                    {
+                                        "id": "1",
+                                        "label": "1"
+                                    },
+                                    {
+                                        "id": "2",
+                                        "label": "2"
+                                    },
+                                    {
+                                        "id": "3",
+                                        "label": "3"
+                                    },
+                                    {
+                                        "id": "4",
+                                        "label": "4"
+                                    },
+                                    {
+                                        "id": "5",
+                                        "label": "5"
+                                    }
+                                ]
+                            },
+                            "scoring": {
+                                "max_points": 1,
+                                "correct_answer": null
+                            }
+                        }
+                    ]
+                },
+                {
+                    "group_id": "listening-question-4",
+                    "title": "Zadanie IV",
+                    "order": 4,
+                    "instructions": {
+                        "text_html": "<p>Proszę wysłuchać reportażu na temat sytuacji życiowej jednego z mieszkańców Nowej Huty i zaznaczyć właściwe odpowiedzi.</p><p><strong>Uwaga!</strong> Nagranie zostanie odtworzone <u>dwukrotnie</u>.</p>"
+                    },
+                    "stimulus": {
+                        "audio": [
+                            "placeholder_c1_listening_4.mp3"
+                        ]
+                    },
+                    "playback_settings": {
+                        "max_plays": 2,
+                        "enforcement": "strict"
+                    },
+                    "metadata": {
+                        "total_points": 8,
+                        "points_per_item": 1
+                    },
+                    "questions": [
+                        {
+                            "question_id": "C1-L4-1",
+                            "type": "single_select",
+                            "order": 1,
+                            "instructions": {
+                                "text_html": "\"Połaź z nami\" to projekt"
+                            },
+                            "interaction": {
+                                "options": [
+                                    {
+                                        "id": "a",
+                                        "label": "zainicjowany przez pana Tadeusza kilka lat temu"
+                                    },
+                                    {
+                                        "id": "b",
+                                        "label": "zwiedzania w Nowej Hucie lokali z lat 70"
+                                    },
+                                    {
+                                        "id": "c",
+                                        "label": "oferujący oprowadzanie po Nowej Hucie"
+                                    }
+                                ]
+                            },
+                            "scoring": {
+                                "max_points": 1,
+                                "correct_answer": null
+                            }
+                        },
+                        {
+                            "question_id": "C1-L4-2",
+                            "type": "single_select",
+                            "order": 2,
+                            "instructions": {
+                                "text_html": "Bohater audycji"
+                            },
+                            "interaction": {
+                                "options": [
+                                    {
+                                        "id": "a",
+                                        "label": "pracował jako przewodnik, kiedy był młodszy"
+                                    },
+                                    {
+                                        "id": "b",
+                                        "label": "ma swoje ulubione tematy związane z Nową Hutą"
+                                    },
+                                    {
+                                        "id": "c",
+                                        "label": "planuje zapisać się na kurs przewodników po Krakowie"
+                                    }
+                                ]
+                            },
+                            "scoring": {
+                                "max_points": 1,
+                                "correct_answer": null
+                            }
+                        },
+                        {
+                            "question_id": "C1-L4-3",
+                            "type": "single_select",
+                            "order": 3,
+                            "instructions": {
+                                "text_html": "Zdaniem pana Tadeusza"
+                            },
+                            "interaction": {
+                                "options": [
+                                    {
+                                        "id": "a",
+                                        "label": "w jego sytuacji trudno o optymizm"
+                                    },
+                                    {
+                                        "id": "b",
+                                        "label": "nie wszyscy potrafią cieszyć się życiem"
+                                    },
+                                    {
+                                        "id": "c",
+                                        "label": "są sytuacje, w których trzeba się poddać"
+                                    }
+                                ]
+                            },
+                            "scoring": {
+                                "max_points": 1,
+                                "correct_answer": null
+                            }
+                        },
+                        {
+                            "question_id": "C1-L4-4",
+                            "type": "single_select",
+                            "order": 4,
+                            "instructions": {
+                                "text_html": "Spacery z panem Tadeuszem"
+                            },
+                            "interaction": {
+                                "options": [
+                                    {
+                                        "id": "a",
+                                        "label": "przyciągnęły już 20 tysięcy chętnych"
+                                    },
+                                    {
+                                        "id": "b",
+                                        "label": "odbywają się nawet kilka razy dziennie"
+                                    },
+                                    {
+                                        "id": "c",
+                                        "label": "pozwoliły zebrać pieniądze na wynajem mieszkania"
+                                    }
+                                ]
+                            },
+                            "scoring": {
+                                "max_points": 1,
+                                "correct_answer": null
+                            }
+                        },
+                        {
+                            "question_id": "C1-L4-5",
+                            "type": "single_select",
+                            "order": 5,
+                            "instructions": {
+                                "text_html": "Trudno wynająć mieszkanie dla pana Tadeusza, ponieważ"
+                            },
+                            "interaction": {
+                                "options": [
+                                    {
+                                        "id": "a",
+                                        "label": "problemem jest wiek pana Tadeusza"
+                                    },
+                                    {
+                                        "id": "b",
+                                        "label": "mężczyzna odrzuca wszystkie propozycje"
+                                    },
+                                    {
+                                        "id": "c",
+                                        "label": "właściciele lokali nie chcą ich wynajmować tylko na rok"
+                                    }
+                                ]
+                            },
+                            "scoring": {
+                                "max_points": 1,
+                                "correct_answer": null
+                            }
+                        },
+                        {
+                            "question_id": "C1-L4-6",
+                            "type": "single_select",
+                            "order": 6,
+                            "instructions": {
+                                "text_html": "Inicjatorzy akcji szukają mieszkania w Nowej Hucie, ponieważ"
+                            },
+                            "interaction": {
+                                "options": [
+                                    {
+                                        "id": "a",
+                                        "label": "to ulubiona dzielnica bohatera reportażu"
+                                    },
+                                    {
+                                        "id": "b",
+                                        "label": "jest tam największy wybór mieszkań"
+                                    },
+                                    {
+                                        "id": "c",
+                                        "label": "pan Tadeusz nie będzie musiał dojeżdżać do pracy"
+                                    }
+                                ]
+                            },
+                            "scoring": {
+                                "max_points": 1,
+                                "correct_answer": null
+                            }
+                        },
+                        {
+                            "question_id": "C1-L4-7",
+                            "type": "single_select",
+                            "order": 7,
+                            "instructions": {
+                                "text_html": "Jolanta Kaczmarczyk mówi o"
+                            },
+                            "interaction": {
+                                "options": [
+                                    {
+                                        "id": "a",
+                                        "label": "kłopotach związanych z bezdomnymi dotąd lokatorami"
+                                    },
+                                    {
+                                        "id": "b",
+                                        "label": "potrzebie angażowania się w sprawy społeczne"
+                                    },
+                                    {
+                                        "id": "c",
+                                        "label": "przyczynach bezdomności w dużych miastach"
+                                    }
+                                ]
+                            },
+                            "scoring": {
+                                "max_points": 1,
+                                "correct_answer": null
+                            }
+                        },
+                        {
+                            "question_id": "C1-L4-8",
+                            "type": "single_select",
+                            "order": 8,
+                            "instructions": {
+                                "text_html": "Warto wynajmować mieszkania osobom bezdomnym,"
+                            },
+                            "interaction": {
+                                "options": [
+                                    {
+                                        "id": "a",
+                                        "label": "tylko jeśli mają wsparcie finansowe organizacji charytatywnych"
+                                    },
+                                    {
+                                        "id": "b",
+                                        "label": "bo to przynosi radość przede wszystkim właścicielom mieszkania"
+                                    },
+                                    {
+                                        "id": "c",
+                                        "label": "gdyż dzięki temu wpływa się pozytywnie na rzeczywistość"
+                                    }
+                                ]
+                            },
+                            "scoring": {
+                                "max_points": 1,
+                                "correct_answer": null
+                            }
+                        }
+                    ]
+                },
+                {
+                    "group_id": "listening-question-5",
+                    "title": "Zadanie V",
+                    "order": 5,
+                    "instructions": {
+                        "text_html": "<p>Proszę wysłuchać reportażu na temat psychobiotyków i odpowiedzieć na pytania.</p><p><strong>Uwaga!</strong> Forma gramatyczna odpowiedzi powinna być dopasowana do pytania. Nagranie zostanie odtworzone <u>dwukrotnie</u>.</p>"
+                    },
+                    "stimulus": {
+                        "audio": [
+                            "placeholder_c1_listening_5.mp3"
+                        ]
+                    },
+                    "playback_settings": {
+                        "max_plays": 2,
+                        "enforcement": "strict"
+                    },
+                    "metadata": {
+                        "total_points": 8
+                    },
+                    "questions": [
+                        {
+                            "question_id": "C1-L5-1",
+                            "type": "text_input",
+                            "order": 1,
+                            "instructions": {
+                                "text_html": "1. Czym są mikrobiomy?"
+                            },
+                            "scoring": {
+                                "max_points": 1,
+                                "correct_answer": null
+                            }
+                        },
+                        {
+                            "question_id": "C1-L5-2",
+                            "type": "text_input",
+                            "order": 2,
+                            "instructions": {
+                                "text_html": "2. Jaką rolę, zdaniem Igora Łoniewskiego, mogą spełniać psychobiotyki?"
+                            },
+                            "scoring": {
+                                "max_points": 1,
+                                "correct_answer": null
+                            }
+                        },
+                        {
+                            "question_id": "C1-L5-3a",
+                            "type": "text_input",
+                            "order": 3,
+                            "instructions": {
+                                "text_html": "3a. Którzy specjaliści powinni zalecać stosowanie psychobiotyków?"
+                            },
+                            "scoring": {
+                                "max_points": 0.5,
+                                "correct_answer": null
+                            }
+                        },
+                        {
+                            "question_id": "C1-L5-3b",
+                            "type": "text_input",
+                            "order": 4,
+                            "instructions": {
+                                "text_html": "3b. (drugi specjalista)"
+                            },
+                            "scoring": {
+                                "max_points": 0.5,
+                                "correct_answer": null
+                            }
+                        },
+                        {
+                            "question_id": "C1-L5-3c",
+                            "type": "text_input",
+                            "order": 5,
+                            "instructions": {
+                                "text_html": "3c. (trzeci specjalista)"
+                            },
+                            "scoring": {
+                                "max_points": 0.5,
+                                "correct_answer": null
+                            }
+                        },
+                        {
+                            "question_id": "C1-L5-4",
+                            "type": "text_input",
+                            "order": 6,
+                            "instructions": {
+                                "text_html": "4. Dlaczego jogurty naturalne nie są bogate w psychobiotyki?"
+                            },
+                            "scoring": {
+                                "max_points": 1,
+                                "correct_answer": null
+                            }
+                        },
+                        {
+                            "question_id": "C1-L5-5",
+                            "type": "text_input",
+                            "order": 7,
+                            "instructions": {
+                                "text_html": "5. Po jakim czasie od zastosowania stwierdzono skuteczność psychobiotyków w leczeniu depresji?"
+                            },
+                            "scoring": {
+                                "max_points": 0.5,
+                                "correct_answer": null
+                            }
+                        },
+                        {
+                            "question_id": "C1-L5-6",
+                            "type": "text_input",
+                            "order": 8,
+                            "instructions": {
+                                "text_html": "6. Jak długo można było obserwować pozytywne skutki działania psychobiotyków u pacjentów z depresją?"
+                            },
+                            "scoring": {
+                                "max_points": 0.5,
+                                "correct_answer": null
+                            }
+                        },
+                        {
+                            "question_id": "C1-L5-7a",
+                            "type": "text_input",
+                            "order": 9,
+                            "instructions": {
+                                "text_html": "7a. Jakie metody wspierania leczenia farmakologicznego wymienia doktor Łoniewski?"
+                            },
+                            "scoring": {
+                                "max_points": 0.5,
+                                "correct_answer": null
+                            }
+                        },
+                        {
+                            "question_id": "C1-L5-7b",
+                            "type": "text_input",
+                            "order": 10,
+                            "instructions": {
+                                "text_html": "7b. (druga metoda)"
+                            },
+                            "scoring": {
+                                "max_points": 0.5,
+                                "correct_answer": null
+                            }
+                        },
+                        {
+                            "question_id": "C1-L5-7c",
+                            "type": "text_input",
+                            "order": 11,
+                            "instructions": {
+                                "text_html": "7c. (trzecia metoda)"
+                            },
+                            "scoring": {
+                                "max_points": 0.5,
+                                "correct_answer": null
+                            }
+                        },
+                        {
+                            "question_id": "C1-L5-8",
+                            "type": "text_input",
+                            "order": 12,
+                            "instructions": {
+                                "text_html": "8. Co udowadniają przywołane w programie badania?"
+                            },
+                            "scoring": {
+                                "max_points": 1,
+                                "correct_answer": null
+                            }
+                        }
+                    ]
+                }
+            ]
+        },
+        {
+            "key": "reading",
+            "name": "Rozumienie tekstów pisanych",
+            "skill": "reading",
+            "duration_min": 60,
+            "max_score": 40,
+            "description": "5 zadań testujących rozumienie tekstów pisanych",
+            "question_groups": [
+                {
+                    "group_id": "reading-task-1",
+                    "title": "Zadanie I",
+                    "order": 1,
+                    "instructions": {
+                        "text_html": "<p>Proszę przeczytać tekst, a następnie zaznaczyć właściwą odpowiedź.</p>"
+                    },
+                    "stimulus": {
+                        "text_html": "<h4>20-latki odrzucają konsumpcyjny styl życia rodziców</h4><p>Polacy, którzy wchodzą dziś w dorosłe życie, to tzw. pokolenie Z...</p>"
+                    },
+                    "metadata": {
+                        "total_points": 7,
+                        "points_per_item": 1
+                    },
+                    "questions": [
+                        {
+                            "question_id": "C1-R1-1",
+                            "type": "single_select",
+                            "order": 1,
+                            "instructions": {
+                                "text_html": "1. Pokolenie X"
+                            },
+                            "interaction": {
+                                "options": [
+                                    {
+                                        "id": "a",
+                                        "label": "osiągnęło sukces w pracy bez większego wysiłku"
+                                    },
+                                    {
+                                        "id": "b",
+                                        "label": "stawiało karierę zawodową na pierwszym miejscu"
+                                    },
+                                    {
+                                        "id": "c",
+                                        "label": "często odwlekało zakładanie rodziny"
+                                    }
+                                ]
+                            },
+                            "scoring": {
+                                "max_points": 1,
+                                "correct_answer": "b"
+                            }
+                        },
+                        {
+                            "question_id": "C1-R1-2",
+                            "type": "single_select",
+                            "order": 2,
+                            "instructions": {
+                                "text_html": "2. Z tekstu wynika, że generacja Z"
+                            },
+                            "interaction": {
+                                "options": [
+                                    {
+                                        "id": "a",
+                                        "label": "całkowicie odrzuca model życia rodziców"
+                                    },
+                                    {
+                                        "id": "b",
+                                        "label": "zachowuje się nieracjonalnie"
+                                    },
+                                    {
+                                        "id": "c",
+                                        "label": "pragnie zachować równowagę w życiu"
+                                    }
+                                ]
+                            },
+                            "scoring": {
+                                "max_points": 1,
+                                "correct_answer": "c"
+                            }
+                        },
+                        {
+                            "question_id": "C1-R1-3",
+                            "type": "single_select",
+                            "order": 3,
+                            "instructions": {
+                                "text_html": "3. Media społecznościowe"
+                            },
+                            "interaction": {
+                                "options": [
+                                    {
+                                        "id": "a",
+                                        "label": "pogarszają sytuację materialną młodych ludzi"
+                                    },
+                                    {
+                                        "id": "b",
+                                        "label": "ograniczają aktywność społeczną nastolatków"
+                                    },
+                                    {
+                                        "id": "c",
+                                        "label": "pomagają w propagowaniu postaw ekologicznych"
+                                    }
+                                ]
+                            },
+                            "scoring": {
+                                "max_points": 1,
+                                "correct_answer": "c"
+                            }
+                        },
+                        {
+                            "question_id": "C1-R1-4",
+                            "type": "single_select",
+                            "order": 4,
+                            "instructions": {
+                                "text_html": "4. Z tekstu wynika, że młodzi ludzie"
+                            },
+                            "interaction": {
+                                "options": [
+                                    {
+                                        "id": "a",
+                                        "label": "dostrzegają sens w dzieleniu się różnymi dobrami"
+                                    },
+                                    {
+                                        "id": "b",
+                                        "label": "chętnie biorą pożyczki mieszkaniowe"
+                                    },
+                                    {
+                                        "id": "c",
+                                        "label": "dążą do tego, by mieć coś tylko dla siebie"
+                                    }
+                                ]
+                            },
+                            "scoring": {
+                                "max_points": 1,
+                                "correct_answer": "a"
+                            }
+                        },
+                        {
+                            "question_id": "C1-R1-5",
+                            "type": "single_select",
+                            "order": 5,
+                            "instructions": {
+                                "text_html": "5. Brak przywiązania do rzeczy u wielu młodych osób wynika"
+                            },
+                            "interaction": {
+                                "options": [
+                                    {
+                                        "id": "a",
+                                        "label": "ze specyficznej sytuacji rodzinnej w dzieciństwie"
+                                    },
+                                    {
+                                        "id": "b",
+                                        "label": "ze strachu przed niepowodzeniami"
+                                    },
+                                    {
+                                        "id": "c",
+                                        "label": "z obawy o wysokie koszty utrzymania"
+                                    }
+                                ]
+                            },
+                            "scoring": {
+                                "max_points": 1,
+                                "correct_answer": "a"
+                            }
+                        },
+                        {
+                            "question_id": "C1-R1-6",
+                            "type": "single_select",
+                            "order": 6,
+                            "instructions": {
+                                "text_html": "6. Z tekstu wynika, że"
+                            },
+                            "interaction": {
+                                "options": [
+                                    {
+                                        "id": "a",
+                                        "label": "większość młodych ludzi prezentuje postawy proekologiczne"
+                                    },
+                                    {
+                                        "id": "b",
+                                        "label": "niechęć do konsumpcjonizmu dominuje w metropoliach"
+                                    },
+                                    {
+                                        "id": "c",
+                                        "label": "konsumpcjonizm jest charakterystyczny dla dużych miast"
+                                    }
+                                ]
+                            },
+                            "scoring": {
+                                "max_points": 1,
+                                "correct_answer": "b"
+                            }
+                        },
+                        {
+                            "question_id": "C1-R1-7",
+                            "type": "single_select",
+                            "order": 7,
+                            "instructions": {
+                                "text_html": "7. Młodzież zarówno z małych, jak i dużych miast łączy"
+                            },
+                            "interaction": {
+                                "options": [
+                                    {
+                                        "id": "a",
+                                        "label": "zamiłowanie do zakupów w galeriach handlowych"
+                                    },
+                                    {
+                                        "id": "b",
+                                        "label": "wybór spaceru jako bezpłatnej formy rekreacji"
+                                    },
+                                    {
+                                        "id": "c",
+                                        "label": "taka sama forma aktywności społecznej"
+                                    }
+                                ]
+                            },
+                            "scoring": {
+                                "max_points": 1,
+                                "correct_answer": "c"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "group_id": "reading-task-2",
+                    "title": "Zadanie II",
+                    "order": 2,
+                    "instructions": {
+                        "text_html": "<p>Proszę przeczytać tekst, a następnie zaznaczyć: <strong>TAK</strong> – gdy zdanie jest zgodne z tekstem; <strong>NIE</strong> – gdy nie jest zgodne z tekstem; <strong>BI</strong> – gdy w tekście brakuje informacji na dany temat.</p>"
+                    },
+                    "stimulus": {
+                        "text_html": "<h4>Rozwiązywanie problemów podczas snu? Teraz to możliwe</h4><p>Sen nie tylko pozwala zregenerować siły, umożliwia również usystematyzowanie zdobytej wiedzy, a nawet rozwiązywanie problemów...</p>"
+                    },
+                    "metadata": {
+                        "total_points": 10,
+                        "points_per_item": 1
+                    },
+                    "questions": [
+                        {
+                            "question_id": "C1-R2-1",
+                            "type": "yes_no_ng",
+                            "order": 1,
+                            "instructions": {
+                                "text_html": "Po przebudzeniu mamy świeże spojrzenie na sytuacje życiowe i zwykle podejmujemy najtrafniejsze decyzje."
+                            },
+                            "interaction": {
+                                "options": [
+                                    {"id": "tak", "label": "TAK"},
+                                    {"id": "nie", "label": "NIE"},
+                                    {"id": "bi", "label": "BI"}
+                                ]
+                            },
+                            "scoring": {"max_points": 1, "correct_answer": null}
+                        },
+                        {
+                            "question_id": "C1-R2-2",
+                            "type": "yes_no_ng",
+                            "order": 2,
+                            "instructions": {
+                                "text_html": "Dziewięciogodzinny sen powoduje zwielokrotnienie procesów pamięciowych i potęguje ryzyko choroby."
+                            },
+                            "interaction": {
+                                "options": [
+                                    {"id": "tak", "label": "TAK"},
+                                    {"id": "nie", "label": "NIE"},
+                                    {"id": "bi", "label": "BI"}
+                                ]
+                            },
+                            "scoring": {"max_points": 1, "correct_answer": null}
+                        },
+                        {
+                            "question_id": "C1-R2-3",
+                            "type": "yes_no_ng",
+                            "order": 3,
+                            "instructions": {
+                                "text_html": "Naukowcy zastanawiali się, w jaki sposób pomóc umysłowi zająć się danym problemem podczas snu."
+                            },
+                            "interaction": {
+                                "options": [
+                                    {"id": "tak", "label": "TAK"},
+                                    {"id": "nie", "label": "NIE"},
+                                    {"id": "bi", "label": "BI"}
+                                ]
+                            },
+                            "scoring": {"max_points": 1, "correct_answer": null}
+                        },
+                        {
+                            "question_id": "C1-R2-4",
+                            "type": "yes_no_ng",
+                            "order": 4,
+                            "instructions": {
+                                "text_html": "Jeśli rozwiążemy trudny problem, w mózgu powstaną nowe ścieżki służące szukaniu wyjścia z kłopotu."
+                            },
+                            "interaction": {
+                                "options": [
+                                    {"id": "tak", "label": "TAK"},
+                                    {"id": "nie", "label": "NIE"},
+                                    {"id": "bi", "label": "BI"}
+                                ]
+                            },
+                            "scoring": {"max_points": 1, "correct_answer": null}
+                        },
+                        {
+                            "question_id": "C1-R2-5",
+                            "type": "yes_no_ng",
+                            "order": 5,
+                            "instructions": {
+                                "text_html": "Przeprowadzający badania dowiedli, że uczestnicy eksperymentu mogą rozwiązać łamigłówki w czasie snu."
+                            },
+                            "interaction": {
+                                "options": [
+                                    {"id": "tak", "label": "TAK"},
+                                    {"id": "nie", "label": "NIE"},
+                                    {"id": "bi", "label": "BI"}
+                                ]
+                            },
+                            "scoring": {"max_points": 1, "correct_answer": null}
+                        },
+                        {
+                            "question_id": "C1-R2-6",
+                            "type": "yes_no_ng",
+                            "order": 6,
+                            "instructions": {
+                                "text_html": "Osoby, które brały udział w badaniu, rozwiązywały ten sam zestaw zagadek przed snem i po przebudzeniu."
+                            },
+                            "interaction": {
+                                "options": [
+                                    {"id": "tak", "label": "TAK"},
+                                    {"id": "nie", "label": "NIE"},
+                                    {"id": "bi", "label": "BI"}
+                                ]
+                            },
+                            "scoring": {"max_points": 1, "correct_answer": null}
+                        },
+                        {
+                            "question_id": "C1-R2-7",
+                            "type": "yes_no_ng",
+                            "order": 7,
+                            "instructions": {
+                                "text_html": "Podczas badania wykorzystano specyficzne dźwięki, które były przypisane konkretnej zagadce."
+                            },
+                            "interaction": {
+                                "options": [
+                                    {"id": "tak", "label": "TAK"},
+                                    {"id": "nie", "label": "NIE"},
+                                    {"id": "bi", "label": "BI"}
+                                ]
+                            },
+                            "scoring": {"max_points": 1, "correct_answer": null}
+                        },
+                        {
+                            "question_id": "C1-R2-8",
+                            "type": "yes_no_ng",
+                            "order": 8,
+                            "instructions": {
+                                "text_html": "Sygnały akustyczne towarzyszące łamigłówkom były słyszane podczas snu."
+                            },
+                            "interaction": {
+                                "options": [
+                                    {"id": "tak", "label": "TAK"},
+                                    {"id": "nie", "label": "NIE"},
+                                    {"id": "bi", "label": "BI"}
+                                ]
+                            },
+                            "scoring": {"max_points": 1, "correct_answer": null}
+                        },
+                        {
+                            "question_id": "C1-R2-9",
+                            "type": "yes_no_ng",
+                            "order": 9,
+                            "instructions": {
+                                "text_html": "Liczba zagadek rozwiązanych dzięki przywołaniu dźwięków, które słyszał badany, była niemal o połowę wyższa niż tych bez sygnałów akustycznych."
+                            },
+                            "interaction": {
+                                "options": [
+                                    {"id": "tak", "label": "TAK"},
+                                    {"id": "nie", "label": "NIE"},
+                                    {"id": "bi", "label": "BI"}
+                                ]
+                            },
+                            "scoring": {"max_points": 1, "correct_answer": null}
+                        },
+                        {
+                            "question_id": "C1-R2-10",
+                            "type": "yes_no_ng",
+                            "order": 10,
+                            "instructions": {
+                                "text_html": "Według autorów badania nie da się znaleźć wyjścia z problematycznych sytuacji, kiedy śpimy niewystarczająco długo."
+                            },
+                            "interaction": {
+                                "options": [
+                                    {"id": "tak", "label": "TAK"},
+                                    {"id": "nie", "label": "NIE"},
+                                    {"id": "bi", "label": "BI"}
+                                ]
+                            },
+                            "scoring": {"max_points": 1, "correct_answer": null}
+                        }
+                    ]
+                },
+                {
+                    "group_id": "reading-task-3",
+                    "title": "Zadanie III",
+                    "order": 3,
+                    "instructions": {
+                        "text_html": "<p>Proszę przeczytać tekst i dopasować usunięte z niego fragmenty (A–M). <strong>Uwaga!</strong> Dwa fragmenty są zbędne.</p>"
+                    },
+                    "stimulus": {
+                        "text_html": "<h4>Jak odciążyć uczniów?</h4><p>Rzecznik Praw Obywatelskich wraz z organizacjami pozarządowymi pracuje nad przygotowaniem dla szkół wskazówek, które dotyczą zadawania prac domowych. Ma to być [__A__]<sup>PRZYKŁAD</sup>.</p><p>Co zrobić, żeby prace domowe miały sens? Niech będzie ich mniej, ale niech służą rzeczywistemu rozwojowi uczniów i pomagają im w nauce. Z takiego założenia wyszedł Rzecznik Praw Obywatelskich i wraz z ruchem «Obywatele dla edukacji» [______]<sup>1</sup>, jak podejść do tematu. W świetle prawa prace domowe nie muszą być zadawane i niektóre szkoły próbują już wcielać owe wytyczne w życie. Temu fragmentowi oświatowej rzeczywistości zaczęły też przyglądać się samorządy. Warszawa jesienią [______]<sup>2</sup> «Szkoła bez zadań domowych».</p><p>Rzecznik Praw Obywatelskich, po wielu spotkaniach w całym kraju, uważa, że uczniowie, nauczyciele i rodzice cierpią z powodu nadmiernego [______]<sup>3</sup> – po szkole. Ten problem wielokrotnie podnoszony był także przez media. Dramatycznie nasilił się w ostatnich latach przy okazji [______]<sup>4</sup> i zamieszania związanego z wprowadzeniem nowych programów w podstawówkach. Specjaliści zwracają uwagę, że przytłaczanie dzieci pracą i nauką w domu [______]<sup>5</sup>, i nauczycieli. Jest też niezgodne z nowoczesnymi trendami edukacyjnymi, bo prace domowe nie zawsze pomagają się uczyć, mogą za to zniechęcić uczniów, a wręcz [______]<sup>6</sup>, jeśli wymagają pomocy i zaangażowania rodziców.</p><p>Dlatego RPO przy wsparciu ekspertów oświatowych i działaczy społecznych zachęca, by zasady zadawania prac domowych uzgadniać wspólnie. Pytać uczniów, [______]<sup>7</sup> i naprawdę pomagają im się uczyć. Warto ustalić konkrety: ile zadań jest teraz zadawanych, a ile powinno ich być? Kto i jak może je koordynować, [______]<sup>8</sup>, a wykorzystać pokrewieństwa tematów omawianych na lekcjach różnych przedmiotów? Poradnik [______]<sup>9</sup>, jak zabrać się do przeprowadzenia debaty. RPO wystąpił do Ministerstwa Edukacji Narodowej z prośbą o wypromowanie tej akcji. Zwłaszcza że – przynajmniej teoretycznie – można by oczekiwać, iż temat [______]<sup>10</sup> ekipę innego biura: Rzecznika Praw Dziecka.</p>",
+                        "options_html": "<table><tr><td>A</td><td><strong>PRZYKŁAD</strong><br/>prezent dla uczniów, a także dla nauczycieli</td></tr><tr><td>B</td><td>zmiany systemu oświaty</td></tr><tr><td>C</td><td>obciążenia obowiązkami szkolnymi</td></tr><tr><td>D</td><td>które obowiązki domowe lubią</td></tr><tr><td>E</td><td>krok po kroku rozpisuje</td></tr><tr><td>F</td><td>przygotował poradnik dla szkół</td></tr><tr><td>G</td><td>żeby uniknąć kumulacji prac</td></tr><tr><td>H</td><td>demoluje życie rodzinne i uczniów</td></tr><tr><td>I</td><td>zainspiruje do działania</td></tr><tr><td>J</td><td>zaproponowała program pilotażowy</td></tr><tr><td>K</td><td>pogłębiać nierówności społeczne</td></tr><tr><td>L</td><td>wpływa korzystnie na funkcjonowanie</td></tr><tr><td>M</td><td>które zadania są dla nich użyteczne</td></tr></table>"
+                    },
+                    "metadata": {
+                        "total_points": 10,
+                        "points_per_item": 1
+                    },
+                    "questions": [
+                        {
+                            "question_id": "C1-R3-1",
+                            "type": "gap_match",
+                            "order": 1,
+                            "instructions": {"text_html": "Luka 1"},
+                            "scoring": {"max_points": 1, "correct_answer": "F"}
+                        },
+                        {
+                            "question_id": "C1-R3-2",
+                            "type": "gap_match",
+                            "order": 2,
+                            "instructions": {"text_html": "Luka 2"},
+                            "scoring": {"max_points": 1, "correct_answer": "J"}
+                        },
+                        {
+                            "question_id": "C1-R3-3",
+                            "type": "gap_match",
+                            "order": 3,
+                            "instructions": {"text_html": "Luka 3"},
+                            "scoring": {"max_points": 1, "correct_answer": "C"}
+                        },
+                        {
+                            "question_id": "C1-R3-4",
+                            "type": "gap_match",
+                            "order": 4,
+                            "instructions": {"text_html": "Luka 4"},
+                            "scoring": {"max_points": 1, "correct_answer": "B"}
+                        },
+                        {
+                            "question_id": "C1-R3-5",
+                            "type": "gap_match",
+                            "order": 5,
+                            "instructions": {"text_html": "Luka 5"},
+                            "scoring": {"max_points": 1, "correct_answer": "H"}
+                        },
+                        {
+                            "question_id": "C1-R3-6",
+                            "type": "gap_match",
+                            "order": 6,
+                            "instructions": {"text_html": "Luka 6"},
+                            "scoring": {"max_points": 1, "correct_answer": "K"}
+                        },
+                        {
+                            "question_id": "C1-R3-7",
+                            "type": "gap_match",
+                            "order": 7,
+                            "instructions": {"text_html": "Luka 7"},
+                            "scoring": {"max_points": 1, "correct_answer": "M"}
+                        },
+                        {
+                            "question_id": "C1-R3-8",
+                            "type": "gap_match",
+                            "order": 8,
+                            "instructions": {"text_html": "Luka 8"},
+                            "scoring": {"max_points": 1, "correct_answer": "G"}
+                        },
+                        {
+                            "question_id": "C1-R3-9",
+                            "type": "gap_match",
+                            "order": 9,
+                            "instructions": {"text_html": "Luka 9"},
+                            "scoring": {"max_points": 1, "correct_answer": "E"}
+                        },
+                        {
+                            "question_id": "C1-R3-10",
+                            "type": "gap_match",
+                            "order": 10,
+                            "instructions": {"text_html": "Luka 10"},
+                            "scoring": {"max_points": 1, "correct_answer": "I"}
+                        }
+                    ]
+                },
+                {
+                    "group_id": "reading-task-4",
+                    "title": "Zadanie IV",
+                    "order": 4,
+                    "instructions": {
+                        "text_html": "<p>Proszę podkreślić najlepszą spośród możliwości podanych w nawiasach.</p>"
+                    },
+                    "stimulus": {
+                        "text_html": "<h4>Abakanowicz wywróciła polski rynek aukcyjny do góry nogami</h4><p>29 października sprzedano najdroższe dzieło w historii polskiego rynku...</p>"
+                    },
+                    "metadata": {
+                        "total_points": 5,
+                        "points_per_item": 0.5
+                    },
+                    "questions": [
+                        {
+                            "question_id": "C1-R4-1",
+                            "type": "single_select",
+                            "order": 1,
+                            "instructions": {"text_html": "(kurator, obserwator, kolekcjoner, zbieracz)"},
+                            "interaction": {
+                                "options": [
+                                    {"id": "a", "label": "kurator"},
+                                    {"id": "b", "label": "obserwator"},
+                                    {"id": "c", "label": "kolekcjoner"},
+                                    {"id": "d", "label": "zbieracz"}
+                                ]
+                            },
+                            "scoring": {"max_points": 0.5, "correct_answer": "c"}
+                        },
+                        {
+                            "question_id": "C1-R4-2",
+                            "type": "single_select",
+                            "order": 2,
+                            "instructions": {"text_html": "(odlana, przelana, wylana, napełniona)"},
+                            "interaction": {
+                                "options": [
+                                    {"id": "a", "label": "odlana"},
+                                    {"id": "b", "label": "przelana"},
+                                    {"id": "c", "label": "wylana"},
+                                    {"id": "d", "label": "napełniona"}
+                                ]
+                            },
+                            "scoring": {"max_points": 0.5, "correct_answer": "a"}
+                        },
+                        {
+                            "question_id": "C1-R4-3",
+                            "type": "single_select",
+                            "order": 3,
+                            "instructions": {"text_html": "(zwierzchnika, dysponenta, gospodarza, właściciela)"},
+                            "interaction": {
+                                "options": [
+                                    {"id": "a", "label": "zwierzchnika"},
+                                    {"id": "b", "label": "dysponenta"},
+                                    {"id": "c", "label": "gospodarza"},
+                                    {"id": "d", "label": "właściciela"}
+                                ]
+                            },
+                            "scoring": {"max_points": 0.5, "correct_answer": "d"}
+                        },
+                        {
+                            "question_id": "C1-R4-4",
+                            "type": "single_select",
+                            "order": 4,
+                            "instructions": {"text_html": "(pokaźną, szeroką, niezmierzoną, niezmierną)"},
+                            "interaction": {
+                                "options": [
+                                    {"id": "a", "label": "pokaźną"},
+                                    {"id": "b", "label": "szeroką"},
+                                    {"id": "c", "label": "niezmierzoną"},
+                                    {"id": "d", "label": "niezmierną"}
+                                ]
+                            },
+                            "scoring": {"max_points": 0.5, "correct_answer": "b"}
+                        },
+                        {
+                            "question_id": "C1-R4-5",
+                            "type": "single_select",
+                            "order": 5,
+                            "instructions": {"text_html": "(tężała, sztywniała, rosła, gęstniała)"},
+                            "interaction": {
+                                "options": [
+                                    {"id": "a", "label": "tężała"},
+                                    {"id": "b", "label": "sztywniała"},
+                                    {"id": "c", "label": "rosła"},
+                                    {"id": "d", "label": "gęstniała"}
+                                ]
+                            },
+                            "scoring": {"max_points": 0.5, "correct_answer": "d"}
+                        },
+                        {
+                            "question_id": "C1-R4-6",
+                            "type": "single_select",
+                            "order": 6,
+                            "instructions": {"text_html": "(blasku, cieniu, błysku, mroku)"},
+                            "interaction": {
+                                "options": [
+                                    {"id": "a", "label": "blasku"},
+                                    {"id": "b", "label": "cieniu"},
+                                    {"id": "c", "label": "błysku"},
+                                    {"id": "d", "label": "mroku"}
+                                ]
+                            },
+                            "scoring": {"max_points": 0.5, "correct_answer": "b"}
+                        },
+                        {
+                            "question_id": "C1-R4-7",
+                            "type": "single_select",
+                            "order": 7,
+                            "instructions": {"text_html": "(zasługuje, wskazuje, koncentruje, zwraca)"},
+                            "interaction": {
+                                "options": [
+                                    {"id": "a", "label": "zasługuje"},
+                                    {"id": "b", "label": "wskazuje"},
+                                    {"id": "c", "label": "koncentruje"},
+                                    {"id": "d", "label": "zwraca"}
+                                ]
+                            },
+                            "scoring": {"max_points": 0.5, "correct_answer": "a"}
+                        },
+                        {
+                            "question_id": "C1-R4-8",
+                            "type": "single_select",
+                            "order": 8,
+                            "instructions": {"text_html": "(brylowały, dyrygowały, zasiadały, królowały)"},
+                            "interaction": {
+                                "options": [
+                                    {"id": "a", "label": "brylowały"},
+                                    {"id": "b", "label": "dyrygowały"},
+                                    {"id": "c", "label": "zasiadały"},
+                                    {"id": "d", "label": "królowały"}
+                                ]
+                            },
+                            "scoring": {"max_points": 0.5, "correct_answer": "d"}
+                        },
+                        {
+                            "question_id": "C1-R4-9",
+                            "type": "single_select",
+                            "order": 9,
+                            "instructions": {"text_html": "(układankę, krzyżówkę, łamigłówkę, piramidę)"},
+                            "interaction": {
+                                "options": [
+                                    {"id": "a", "label": "układankę"},
+                                    {"id": "b", "label": "krzyżówkę"},
+                                    {"id": "c", "label": "łamigłówkę"},
+                                    {"id": "d", "label": "piramidę"}
+                                ]
+                            },
+                            "scoring": {"max_points": 0.5, "correct_answer": "d"}
+                        },
+                        {
+                            "question_id": "C1-R4-10",
+                            "type": "single_select",
+                            "order": 10,
+                            "instructions": {"text_html": "(intensywnym, niesłabnącym, niemijającym, uporczywym)"},
+                            "interaction": {
+                                "options": [
+                                    {"id": "a", "label": "intensywnym"},
+                                    {"id": "b", "label": "niesłabnącym"},
+                                    {"id": "c", "label": "niemijającym"},
+                                    {"id": "d", "label": "uporczywym"}
+                                ]
+                            },
+                            "scoring": {"max_points": 0.5, "correct_answer": "b"}
+                        }
+                    ]
+                },
+                {
+                    "group_id": "reading-task-5",
+                    "title": "Zadanie V",
+                    "order": 5,
+                    "instructions": {
+                        "text_html": "<p>Proszę przeczytać fragmenty tekstów i zaznaczyć właściwą odpowiedź.</p>"
+                    },
+                    "metadata": {
+                        "total_points": 8,
+                        "points_per_item": 1
+                    },
+                    "questions": [
+                        {
+                            "question_id": "C1-R5-1",
+                            "type": "single_select",
+                            "order": 1,
+                            "stimulus": {
+                                "text_html": "Coraz trudniej zrobić w czasie wakacji coś, czym nie zajmują się inni, dlatego pomysły na turystykę niszową stają się coraz bardziej ekstrawaganckie..."
+                            },
+                            "instructions": {"text_html": "Ten tekst informuje o tym, że"},
+                            "interaction": {
+                                "options": [
+                                    {"id": "a", "label": "szukamy pomysłów na piesze wakacje"},
+                                    {"id": "b", "label": "lubimy spędzać wakacje w drodze"},
+                                    {"id": "c", "label": "następuje dywersyfikacja produktów niszowych"}
+                                ]
+                            },
+                            "scoring": {"max_points": 1, "correct_answer": null}
+                        },
+                        {
+                            "question_id": "C1-R5-2",
+                            "type": "single_select",
+                            "order": 2,
+                            "stimulus": {
+                                "text_html": "Latem na Bliskim Wschodzie nie da się wytrzymać na świeżym powietrzu zbyt długo. Katar jest tego najlepszym przykładem..."
+                            },
+                            "instructions": {"text_html": "Ten tekst informuje o tym, że władze Kataru"},
+                            "interaction": {
+                                "options": [
+                                    {"id": "a", "label": "sądzą, iż znalazły sposób na walkę z wysokimi temperaturami"},
+                                    {"id": "b", "label": "wprowadziły zakaz przebywania latem na otwartych przestrzeniach"},
+                                    {"id": "c", "label": "walczą z upałem poprzez nowoczesne klimatyzowanie wnętrz"}
+                                ]
+                            },
+                            "scoring": {"max_points": 1, "correct_answer": null}
+                        },
+                        {
+                            "question_id": "C1-R5-3",
+                            "type": "single_select",
+                            "order": 3,
+                            "stimulus": {
+                                "text_html": "Badacze alarmują, że jeśli się nie zatrzymamy, to zniszczymy bezpowrotnie ptaki morskie..."
+                            },
+                            "instructions": {"text_html": "Ten tekst informuje o tym, że"},
+                            "interaction": {
+                                "options": [
+                                    {"id": "a", "label": "badacze zajęli się tempem produkcji śmieci na wybrzeżach"},
+                                    {"id": "b", "label": "niektóre gatunki ptaków są poważnie zagrożone wyginięciem"},
+                                    {"id": "c", "label": "w ostatniej dekadzie dwukrotnie wzrosła liczba ginących gatunków"}
+                                ]
+                            },
+                            "scoring": {"max_points": 1, "correct_answer": null}
+                        },
+                        {
+                            "question_id": "C1-R5-4",
+                            "type": "single_select",
+                            "order": 4,
+                            "stimulus": {
+                                "text_html": "Po dziesięciu latach walki zmniejszył się VAT na e-booki oraz audiobooki..."
+                            },
+                            "instructions": {"text_html": "Ten tekst informuje o tym, że"},
+                            "interaction": {
+                                "options": [
+                                    {"id": "a", "label": "podatek na książki papierowe będzie niższy niż 10 lat temu"},
+                                    {"id": "b", "label": "w Europie Zachodniej czyta się o kilka procent więcej książek niż w Polsce"},
+                                    {"id": "c", "label": "ponad połowa Polaków w ogóle nie sięga po książki"}
+                                ]
+                            },
+                            "scoring": {"max_points": 1, "correct_answer": null}
+                        },
+                        {
+                            "question_id": "C1-R5-5",
+                            "type": "single_select",
+                            "order": 5,
+                            "stimulus": {
+                                "text_html": "Dżakarta, dziesięciomilionowe miasto, dosłownie tonie. Do 2050 roku metropolia zniknie pod wodą..."
+                            },
+                            "instructions": {"text_html": "Ten tekst mówi o tym, że"},
+                            "interaction": {
+                                "options": [
+                                    {"id": "a", "label": "Dżakarta może zostać zalana w ciągu najbliższych 30 lat"},
+                                    {"id": "b", "label": "według prognoz pogodowych w 2050 roku Dżakarcie grozi powódź"},
+                                    {"id": "c", "label": "poziom wody w rzekach na terenie Dżakarty od roku wzrasta"}
+                                ]
+                            },
+                            "scoring": {"max_points": 1, "correct_answer": null}
+                        },
+                        {
+                            "question_id": "C1-R5-6",
+                            "type": "single_select",
+                            "order": 6,
+                            "stimulus": {
+                                "text_html": "Ma 720 płci i potrafi się uczyć. Blob, nowy lokator paryskiego zoo..."
+                            },
+                            "instructions": {"text_html": "Ten tekst informuje o tym, że"},
+                            "interaction": {
+                                "options": [
+                                    {"id": "a", "label": "w paryskim ogrodzie zoologicznym odkryto nowego zdolnego lokatora"},
+                                    {"id": "b", "label": "nowa atrakcja zoo wygląda jak grzyb i ma zdolność uczenia się"},
+                                    {"id": "c", "label": "Blob nie posiada kończyn i mózgu, ale przemieszcza się i może się uczyć"}
+                                ]
+                            },
+                            "scoring": {"max_points": 1, "correct_answer": null}
+                        },
+                        {
+                            "question_id": "C1-R5-7",
+                            "type": "single_select",
+                            "order": 7,
+                            "stimulus": {
+                                "text_html": "Kim jesteś na zakupach? «Fundamentalista» planuje zakupy nabiału, pieczywa czy napojów..."
+                            },
+                            "instructions": {"text_html": "Ten tekst mówi o tym, że"},
+                            "interaction": {
+                                "options": [
+                                    {"id": "a", "label": "ponad połowa kupujących wybiera konkretne marki produktów"},
+                                    {"id": "b", "label": "osoby niemające listy zakupów stanowią niewielką grupę kupujących"},
+                                    {"id": "c", "label": "ważnym klientem jest ten, który kupuje produkty spoza listy"}
+                                ]
+                            },
+                            "scoring": {"max_points": 1, "correct_answer": null}
+                        },
+                        {
+                            "question_id": "C1-R5-8",
+                            "type": "single_select",
+                            "order": 8,
+                            "stimulus": {
+                                "text_html": "Koleją miejską, tramwajem, piechotą – nieważne jak, byle niskoemisyjnie dotrzeć do biura..."
+                            },
+                            "instructions": {"text_html": "Tekst ten informuje o tym, że"},
+                            "interaction": {
+                                "options": [
+                                    {"id": "a", "label": "firma z Gdańska motywuje pracowników do dbania o kondycję fizyczną"},
+                                    {"id": "b", "label": "dla Dynatrace ważne jest zapewnienie pracownikom dodatków do wynagrodzenia"},
+                                    {"id": "c", "label": "gdańska firma propaguje wśród zatrudnionych troskę o środowisko naturalne"}
+                                ]
+                            },
+                            "scoring": {"max_points": 1, "correct_answer": null}
+                        }
+                    ]
+                }
+            ]
+        },
+        {
+            "key": "grammar",
+            "name": "Poprawność gramatyczna",
+            "skill": "grammar",
+            "duration_min": 60,
+            "max_score": 40,
+            "description": "8 zadań testujących poprawność gramatyczną na poziomie zaawansowanym",
+            "question_groups": [
+                {
+                    "group_id": "c1-grammar-1",
+                    "title": "Zadanie I",
+                    "order": 1,
+                    "instructions": {
+                        "brief": "Proszę wybrać poprawną formę."
+                    },
+                    "metadata": {
+                        "total_points": 5
+                    },
+                    "questions": [
+                        {
+                            "question_id": "C1-G1-1",
+                            "type": "single_select",
+                            "order": 1,
+                            "instructions": {
+                                "text_html": "Gdyby nie _____ deszcz, poszlibyśmy na spacer."
+                            },
+                            "interaction": {
+                                "options": [
+                                    {
+                                        "id": "a",
+                                        "label": "padający"
+                                    },
+                                    {
+                                        "id": "b",
+                                        "label": "padał"
+                                    },
+                                    {
+                                        "id": "c",
+                                        "label": "padałby"
+                                    }
+                                ]
+                            },
+                            "scoring": {
+                                "max_points": 1,
+                                "correct_answer": "a"
+                            }
+                        },
+                        {
+                            "question_id": "C1-G1-2",
+                            "type": "single_select",
+                            "order": 2,
+                            "instructions": {
+                                "text_html": "Mimo _____ trudności udało się zakończyć projekt."
+                            },
+                            "interaction": {
+                                "options": [
+                                    {
+                                        "id": "a",
+                                        "label": "licznych"
+                                    },
+                                    {
+                                        "id": "b",
+                                        "label": "liczne"
+                                    },
+                                    {
+                                        "id": "c",
+                                        "label": "licznym"
+                                    }
+                                ]
+                            },
+                            "scoring": {
+                                "max_points": 1,
+                                "correct_answer": "a"
+                            }
+                        },
+                        {
+                            "question_id": "C1-G1-3",
+                            "type": "single_select",
+                            "order": 3,
+                            "instructions": {
+                                "text_html": "Wygląda na to, _____ będzie burza."
+                            },
+                            "interaction": {
+                                "options": [
+                                    {
+                                        "id": "a",
+                                        "label": "że"
+                                    },
+                                    {
+                                        "id": "b",
+                                        "label": "żeby"
+                                    },
+                                    {
+                                        "id": "c",
+                                        "label": "aby"
+                                    }
+                                ]
+                            },
+                            "scoring": {
+                                "max_points": 1,
+                                "correct_answer": "a"
+                            }
+                        },
+                        {
+                            "question_id": "C1-G1-4",
+                            "type": "single_select",
+                            "order": 4,
+                            "instructions": {
+                                "text_html": "Im więcej pracuję, _____ jestem zmęczony."
+                            },
+                            "interaction": {
+                                "options": [
+                                    {
+                                        "id": "a",
+                                        "label": "tym bardziej"
+                                    },
+                                    {
+                                        "id": "b",
+                                        "label": "tym więcej"
+                                    },
+                                    {
+                                        "id": "c",
+                                        "label": "to więcej"
+                                    }
+                                ]
+                            },
+                            "scoring": {
+                                "max_points": 1,
+                                "correct_answer": "a"
+                            }
+                        },
+                        {
+                            "question_id": "C1-G1-5",
+                            "type": "single_select",
+                            "order": 5,
+                            "instructions": {
+                                "text_html": "Wbrew _____ oczekiwaniom projekt odniósł sukces."
+                            },
+                            "interaction": {
+                                "options": [
+                                    {
+                                        "id": "a",
+                                        "label": "wszystkim"
+                                    },
+                                    {
+                                        "id": "b",
+                                        "label": "wszystkich"
+                                    },
+                                    {
+                                        "id": "c",
+                                        "label": "wszystkie"
+                                    }
+                                ]
+                            },
+                            "scoring": {
+                                "max_points": 1,
+                                "correct_answer": "a"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "group_id": "c1-grammar-2",
+                    "title": "Zadanie II",
+                    "order": 2,
+                    "instructions": {
+                        "brief": "Proszę przekształcić zdanie, używając wyrazu w nawiasie."
+                    },
+                    "metadata": {
+                        "total_points": 5
+                    },
+                    "questions": [
+                        {
+                            "question_id": "C1-G2-1",
+                            "type": "text_input",
+                            "order": 1,
+                            "instructions": {
+                                "text_html": "To zdanie jest zbyt trudne do przetłumaczenia. → To zdanie jest _____ trudne, żeby je przetłumaczyć. (zbyt)"
+                            },
+                            "scoring": {
+                                "max_points": 1,
+                                "correct_answer": "zbyt"
+                            }
+                        },
+                        {
+                            "question_id": "C1-G2-2",
+                            "type": "text_input",
+                            "order": 2,
+                            "instructions": {
+                                "text_html": "Bez Twojej pomocy nie dałbym sobie rady. → _____ mi nie pomógł, nie dałbym sobie rady. (gdyby)"
+                            },
+                            "scoring": {
+                                "max_points": 1,
+                                "correct_answer": "Gdybyś"
+                            }
+                        },
+                        {
+                            "question_id": "C1-G2-3",
+                            "type": "text_input",
+                            "order": 3,
+                            "instructions": {
+                                "text_html": "Deszcz padał przez cały dzień. → Deszcz padał _____. (nieprzerwanie)"
+                            },
+                            "scoring": {
+                                "max_points": 1,
+                                "correct_answer": "nieprzerwanie"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "group_id": "c1-grammar-3",
+                    "title": "Zadanie III",
+                    "order": 3,
+                    "instructions": {
+                        "brief": "Proszę uzupełnić tekst odpowiednią formą czasownika."
+                    },
+                    "stimulus": {
+                        "text_html": "<p>Gdybym wcześniej [___]<sup>1</sup> (wiedzieć) o tym spotkaniu, na pewno bym [___]<sup>2</sup> (przyjść). Niestety, nikt mi nie [___]<sup>3</sup> (powiedzieć) o terminie.</p>"
+                    },
+                    "metadata": {
+                        "total_points": 3
+                    },
+                    "questions": [
+                        {
+                            "question_id": "C1-G3-1",
+                            "type": "text_input",
+                            "order": 1,
+                            "instructions": {
+                                "text_html": "Luka 1"
+                            },
+                            "scoring": {
+                                "max_points": 1,
+                                "correct_answer": "wiedział/wiedziała"
+                            }
+                        },
+                        {
+                            "question_id": "C1-G3-2",
+                            "type": "text_input",
+                            "order": 2,
+                            "instructions": {
+                                "text_html": "Luka 2"
+                            },
+                            "scoring": {
+                                "max_points": 1,
+                                "correct_answer": "przyszedł/przyszła"
+                            }
+                        },
+                        {
+                            "question_id": "C1-G3-3",
+                            "type": "text_input",
+                            "order": 3,
+                            "instructions": {
+                                "text_html": "Luka 3"
+                            },
+                            "scoring": {
+                                "max_points": 1,
+                                "correct_answer": "powiedział"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "group_id": "c1-grammar-4",
+                    "title": "Zadanie IV",
+                    "order": 4,
+                    "instructions": {
+                        "brief": "Proszę utworzyć właściwą formę wyrazu."
+                    },
+                    "metadata": {
+                        "total_points": 4
+                    },
+                    "questions": [
+                        {
+                            "question_id": "C1-G4-1",
+                            "type": "text_input",
+                            "order": 1,
+                            "instructions": {
+                                "text_html": "Ta decyzja była całkowicie _____. (odpowiedzialność)"
+                            },
+                            "scoring": {
+                                "max_points": 1,
+                                "correct_answer": "nieodpowiedzialna"
+                            }
+                        },
+                        {
+                            "question_id": "C1-G4-2",
+                            "type": "text_input",
+                            "order": 2,
+                            "instructions": {
+                                "text_html": "Jego _____ była naprawdę imponująca. (wiedza)"
+                            },
+                            "scoring": {
+                                "max_points": 1,
+                                "correct_answer": "wiedza"
+                            }
+                        },
+                        {
+                            "question_id": "C1-G4-3",
+                            "type": "text_input",
+                            "order": 3,
+                            "instructions": {
+                                "text_html": "To było bardzo _____ zachowanie. (profesjonalizm)"
+                            },
+                            "scoring": {
+                                "max_points": 1,
+                                "correct_answer": "profesjonalne"
+                            }
+                        },
+                        {
+                            "question_id": "C1-G4-4",
+                            "type": "text_input",
+                            "order": 4,
+                            "instructions": {
+                                "text_html": "Jej _____ do tej sprawy jest całkowicie zrozumiałe. (podchodzić)"
+                            },
+                            "scoring": {
+                                "max_points": 1,
+                                "correct_answer": "podejście"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "group_id": "c1-grammar-5",
+                    "title": "Zadanie V",
+                    "order": 5,
+                    "instructions": {
+                        "brief": "Proszę uzupełnić tekst poprawnymi formami wyrazów odczasownikowych."
+                    },
+                    "stimulus": {
+                        "text_html": "<p>Już w początkach XIX rozpoczęły się poszukiwania grobu Kopernika w katedrze we Fromborku...</p>"
+                    },
+                    "metadata": {"total_points": 5, "points_per_item": 0.5},
+                    "questions": [
+                        {"question_id": "C1-G5-1", "type": "text_input", "order": 1, "instructions": {"text_html": "(odkryć)"}, "scoring": {"max_points": 0.5, "correct_answer": "odkrycia"}},
+                        {"question_id": "C1-G5-2", "type": "text_input", "order": 2, "instructions": {"text_html": "(analizować)"}, "scoring": {"max_points": 0.5, "correct_answer": "analizom"}},
+                        {"question_id": "C1-G5-3", "type": "text_input", "order": 3, "instructions": {"text_html": "(rekonstruować)"}, "scoring": {"max_points": 0.5, "correct_answer": "rekonstrukcję"}},
+                        {"question_id": "C1-G5-4", "type": "text_input", "order": 4, "instructions": {"text_html": "(pochować)"}, "scoring": {"max_points": 0.5, "correct_answer": "pochówku"}},
+                        {"question_id": "C1-G5-5", "type": "text_input", "order": 5, "instructions": {"text_html": "(osiągnąć)"}, "scoring": {"max_points": 0.5, "correct_answer": "osiągnięć"}},
+                        {"question_id": "C1-G5-6", "type": "text_input", "order": 6, "instructions": {"text_html": "(rozwinąć)"}, "scoring": {"max_points": 0.5, "correct_answer": "rozwojowi"}},
+                        {"question_id": "C1-G5-7", "type": "text_input", "order": 7, "instructions": {"text_html": "(rozkwitać)"}, "scoring": {"max_points": 0.5, "correct_answer": "rozkwitu"}},
+                        {"question_id": "C1-G5-8", "type": "text_input", "order": 8, "instructions": {"text_html": "(malować)"}, "scoring": {"max_points": 0.5, "correct_answer": "malowideł"}},
+                        {"question_id": "C1-G5-9", "type": "text_input", "order": 9, "instructions": {"text_html": "(dotrzeć)"}, "scoring": {"max_points": 0.5, "correct_answer": "dotarcie"}},
+                        {"question_id": "C1-G5-10", "type": "text_input", "order": 10, "instructions": {"text_html": "(użyć)"}, "scoring": {"max_points": 0.5, "correct_answer": "użyciu"}}
+                    ]
+                },
+                {
+                    "group_id": "c1-grammar-6",
+                    "title": "Zadanie VI",
+                    "order": 6,
+                    "instructions": {
+                        "brief": "Proszę uzupełnić tekst poprawnymi formami imiesłowów."
+                    },
+                    "stimulus": {
+                        "text_html": "<p>Oglądając nowy film Michała Węgrzyna, czuje się wyraźnie, że twórca postawił w większym stopniu na biografię...</p>"
+                    },
+                    "metadata": {"total_points": 5, "points_per_item": 0.5},
+                    "questions": [
+                        {"question_id": "C1-G6-1", "type": "text_input", "order": 1, "instructions": {"text_html": "(być)"}, "scoring": {"max_points": 0.5, "correct_answer": "będące"}},
+                        {"question_id": "C1-G6-2", "type": "text_input", "order": 2, "instructions": {"text_html": "(uznać)"}, "scoring": {"max_points": 0.5, "correct_answer": "uznany"}},
+                        {"question_id": "C1-G6-3", "type": "text_input", "order": 3, "instructions": {"text_html": "(zrealizować)"}, "scoring": {"max_points": 0.5, "correct_answer": "zrealizowany"}},
+                        {"question_id": "C1-G6-4", "type": "text_input", "order": 4, "instructions": {"text_html": "(zostawiać)"}, "scoring": {"max_points": 0.5, "correct_answer": "zostawiając"}},
+                        {"question_id": "C1-G6-5", "type": "text_input", "order": 5, "instructions": {"text_html": "(doszyć)"}, "scoring": {"max_points": 0.5, "correct_answer": "doszyty"}},
+                        {"question_id": "C1-G6-6", "type": "text_input", "order": 6, "instructions": {"text_html": "(doszukiwać się)"}, "scoring": {"max_points": 0.5, "correct_answer": "doszukując się"}},
+                        {"question_id": "C1-G6-7", "type": "text_input", "order": 7, "instructions": {"text_html": "(zaangażować)"}, "scoring": {"max_points": 0.5, "correct_answer": "zaangażowani"}},
+                        {"question_id": "C1-G6-8", "type": "text_input", "order": 8, "instructions": {"text_html": "(Wynieść)"}, "scoring": {"max_points": 0.5, "correct_answer": "Wyniósłszy"}},
+                        {"question_id": "C1-G6-9", "type": "text_input", "order": 9, "instructions": {"text_html": "(Przeżyć)"}, "scoring": {"max_points": 0.5, "correct_answer": "Przeżywszy"}},
+                        {"question_id": "C1-G6-10", "type": "text_input", "order": 10, "instructions": {"text_html": "(odstawać)"}, "scoring": {"max_points": 0.5, "correct_answer": "odstające"}}
+                    ]
+                },
+                {
+                    "group_id": "c1-grammar-7",
+                    "title": "Zadanie VII",
+                    "order": 7,
+                    "instructions": {
+                        "brief": "Proszę uzupełnić tekst poprawnymi formami czasowników (aspekt i różne formy)."
+                    },
+                    "stimulus": {
+                        "text_html": "<p>O stacji Szczecin Główny mówi się coraz więcej. Przeprowadzając modernizację tej stacji, zainwestowano w komfort podróżnych...</p>"
+                    },
+                    "metadata": {"total_points": 5, "points_per_item": 0.5},
+                    "questions": [
+                        {"question_id": "C1-G7-1", "type": "text_input", "order": 1, "instructions": {"text_html": "(montować/zamontować)"}, "scoring": {"max_points": 0.5, "correct_answer": "zamontowano"}},
+                        {"question_id": "C1-G7-2", "type": "text_input", "order": 2, "instructions": {"text_html": "(pokrywać/pokryć)"}, "scoring": {"max_points": 0.5, "correct_answer": "pokryto"}},
+                        {"question_id": "C1-G7-3", "type": "text_input", "order": 3, "instructions": {"text_html": "(zyskiwać/zyskać)"}, "scoring": {"max_points": 0.5, "correct_answer": "zyskało"}},
+                        {"question_id": "C1-G7-4", "type": "text_input", "order": 4, "instructions": {"text_html": "(wzrastać/wzrosnąć)"}, "scoring": {"max_points": 0.5, "correct_answer": "wzrósł"}},
+                        {"question_id": "C1-G7-5", "type": "text_input", "order": 5, "instructions": {"text_html": "(wspierać/wesprzeć)"}, "scoring": {"max_points": 0.5, "correct_answer": "wsparto"}},
+                        {"question_id": "C1-G7-6", "type": "text_input", "order": 6, "instructions": {"text_html": "(kłaść/położyć)"}, "scoring": {"max_points": 0.5, "correct_answer": "kładli"}},
+                        {"question_id": "C1-G7-7", "type": "text_input", "order": 7, "instructions": {"text_html": "(potykać się/potknąć się)"}, "scoring": {"max_points": 0.5, "correct_answer": "potykać się"}},
+                        {"question_id": "C1-G7-8", "type": "text_input", "order": 8, "instructions": {"text_html": "(łączyć/połączyć)"}, "scoring": {"max_points": 0.5, "correct_answer": "połączy"}},
+                        {"question_id": "C1-G7-9", "type": "text_input", "order": 9, "instructions": {"text_html": "(oceniać/ocenić)"}, "scoring": {"max_points": 0.5, "correct_answer": "ocenia się"}},
+                        {"question_id": "C1-G7-10", "type": "text_input", "order": 10, "instructions": {"text_html": "(oddawać/oddać)"}, "scoring": {"max_points": 0.5, "correct_answer": "oddadzą"}}
+                    ]
+                },
+                {
+                    "group_id": "c1-grammar-8",
+                    "title": "Zadanie VIII",
+                    "order": 8,
+                    "instructions": {
+                        "brief": "Proszę uzupełnić tekst poprawnymi formami wyrazów (odmiana rzeczowników, przymiotników, zaimków)."
+                    },
+                    "stimulus": {
+                        "text_html": "<p>Według dawnych przekazów Polacy pobili Cezara, a od Noego dzieliło ich w prostej linii trzynaście pokoleń...</p>"
+                    },
+                    "metadata": {"total_points": 5, "points_per_item": 0.5},
+                    "questions": [
+                        {"question_id": "C1-G8-1", "type": "text_input", "order": 1, "instructions": {"text_html": "(ów)"}, "scoring": {"max_points": 0.5, "correct_answer": "owym"}},
+                        {"question_id": "C1-G8-2", "type": "text_input", "order": 2, "instructions": {"text_html": "(kronika)"}, "scoring": {"max_points": 0.5, "correct_answer": "kronikom"}},
+                        {"question_id": "C1-G8-3", "type": "text_input", "order": 3, "instructions": {"text_html": "(dziejopis)"}, "scoring": {"max_points": 0.5, "correct_answer": "dziejopisowie"}},
+                        {"question_id": "C1-G8-4", "type": "text_input", "order": 4, "instructions": {"text_html": "(lud)"}, "scoring": {"max_points": 0.5, "correct_answer": "ludy"}},
+                        {"question_id": "C1-G8-5", "type": "text_input", "order": 5, "instructions": {"text_html": "(swój – lm)"}, "scoring": {"max_points": 0.5, "correct_answer": "swoich"}},
+                        {"question_id": "C1-G8-6", "type": "text_input", "order": 6, "instructions": {"text_html": "(początek – lm)"}, "scoring": {"max_points": 0.5, "correct_answer": "początków"}},
+                        {"question_id": "C1-G8-7", "type": "text_input", "order": 7, "instructions": {"text_html": "(gęstwina)"}, "scoring": {"max_points": 0.5, "correct_answer": "gęstwinie"}},
+                        {"question_id": "C1-G8-8", "type": "text_input", "order": 8, "instructions": {"text_html": "(znamię – lm)"}, "scoring": {"max_points": 0.5, "correct_answer": "znamiona"}},
+                        {"question_id": "C1-G8-9", "type": "text_input", "order": 9, "instructions": {"text_html": "(współczesny)"}, "scoring": {"max_points": 0.5, "correct_answer": "współcześni"}},
+                        {"question_id": "C1-G8-10", "type": "text_input", "order": 10, "instructions": {"text_html": "(uczony)"}, "scoring": {"max_points": 0.5, "correct_answer": "uczeni"}}
+                    ]
+                },
+                {
+                    "group_id": "c1-grammar-9",
+                    "title": "Zadanie IX",
+                    "order": 9,
+                    "instructions": {
+                        "brief": "Proszę – zgodnie z przykładem – użyć odpowiedniej formy wyrazów lub wyrażeń podanych w nawiasach i przekształcić zdania tak, by nie zmieniły sensu. Uwaga! Zamiana zdań złożonych na zdania pojedyncze.",
+                        "example_html": "<p><strong>Przykład:</strong><br>Kiedy usłyszałem tę wiadomość, ucieszyłem się bardzo.<br>→ <em>Po usłyszeniu tej wiadomości ucieszyłem się bardzo.</em></p>"
+                    },
+                    "metadata": {"total_points": 5, "points_per_item": 1},
+                    "questions": [
+                        {
+                            "question_id": "C1-G9-1",
+                            "type": "text_input",
+                            "order": 1,
+                            "stimulus": {"text_html": "Zanim wyjechałem za granicę, nauczyłem się języka obcego."},
+                            "instructions": {"text_html": "(przed) ..."},
+                            "scoring": {"max_points": 1, "correct_answer": "Przed wyjazdem za granicę nauczyłem się języka obcego."}
+                        },
+                        {
+                            "question_id": "C1-G9-2",
+                            "type": "text_input",
+                            "order": 2,
+                            "stimulus": {"text_html": "Kiedy przygotowywałem się do egzaminu, często korzystałem ze słownika."},
+                            "instructions": {"text_html": "(podczas) ..."},
+                            "scoring": {"max_points": 1, "correct_answer": "Podczas przygotowywania się do egzaminu często korzystałem ze słownika."}
+                        },
+                        {
+                            "question_id": "C1-G9-3",
+                            "type": "text_input",
+                            "order": 3,
+                            "stimulus": {"text_html": "Chociaż miał trudności finansowe, nie zrezygnował ze studiów."},
+                            "instructions": {"text_html": "(mimo) ..."},
+                            "scoring": {"max_points": 1, "correct_answer": "Mimo trudności finansowych nie zrezygnował ze studiów."}
+                        },
+                        {
+                            "question_id": "C1-G9-4",
+                            "type": "text_input",
+                            "order": 4,
+                            "stimulus": {"text_html": "Ponieważ zachorował, nie mógł przyjść na spotkanie."},
+                            "instructions": {"text_html": "(z powodu) ..."},
+                            "scoring": {"max_points": 1, "correct_answer": "Z powodu choroby nie mógł przyjść na spotkanie."}
+                        },
+                        {
+                            "question_id": "C1-G9-5",
+                            "type": "text_input",
+                            "order": 5,
+                            "stimulus": {"text_html": "Gdy skończyła studia, od razu znalazła pracę."},
+                            "instructions": {"text_html": "(po) ..."},
+                            "scoring": {"max_points": 1, "correct_answer": "Po skończeniu studiów od razu znalazła pracę."}
+                        }
+                    ]
+                }
+            ]
+        },
+        {
+            "key": "writing",
+            "name": "Pisanie",
+            "skill": "writing",
+            "duration_min": 90,
+            "max_score": 40,
+            "description": "Część pisemna - wybór 1 z 3 zestawów. Łącznie min. 400 słów.",
+            "question_groups": [
+                {
+                    "group_id": "c1-writing-zestaw-1",
+                    "title": "Zestaw I",
+                    "order": 1,
+                    "instructions": {
+                        "brief": "Proszę wybrać JEDEN zestaw i napisać oba teksty. Łącznie min. 400 słów."
+                    },
+                    "metadata": {
+                        "total_points": 40,
+                        "word_limit": "400+",
+                        "is_choice_set": true
+                    },
+                    "questions": [
+                        {
+                            "question_id": "C1-W1-a",
+                            "type": "writing_prompt",
+                            "order": 1,
+                            "instructions": {
+                                "text_html": "<strong>a) List motywacyjny (150-200 słów)</strong><br>Przeczytałeś/aś ogłoszenie o pracę w międzynarodowej firmie. Napisz list motywacyjny, w którym: przedstawisz swoją kandydaturę, opiszesz swoje kwalifikacje i doświadczenie, wyjaśnisz, dlaczego chcesz pracować w tej firmie."
+                            },
+                            "scoring": {
+                                "max_points": 15
+                            }
+                        },
+                        {
+                            "question_id": "C1-W1-b",
+                            "type": "writing_prompt",
+                            "order": 2,
+                            "instructions": {
+                                "text_html": "<strong>b) Opowiadanie (250-300 słów)</strong><br>Napisz opowiadanie, które zaczyna się od słów: \"Nigdy nie zapomnę tego dnia, kiedy wszystko się zmieniło...\""
+                            },
+                            "scoring": {
+                                "max_points": 25
+                            }
+                        }
+                    ]
+                },
+                {
+                    "group_id": "c1-writing-zestaw-2",
+                    "title": "Zestaw II",
+                    "order": 2,
+                    "instructions": {
+                        "brief": "Proszę wybrać JEDEN zestaw i napisać oba teksty. Łącznie min. 400 słów."
+                    },
+                    "metadata": {
+                        "total_points": 40,
+                        "word_limit": "400+",
+                        "is_choice_set": true
+                    },
+                    "questions": [
+                        {
+                            "question_id": "C1-W2-a",
+                            "type": "writing_prompt",
+                            "order": 1,
+                            "instructions": {
+                                "text_html": "<strong>a) Relacja (150-200 słów)</strong><br>Byłeś/aś uczestnikiem ważnego wydarzenia kulturalnego. Napisz relację do czasopisma studenckiego, w której: opiszesz przebieg wydarzenia, przedstawisz swoje wrażenia, zachęcisz czytelników do udziału w podobnych wydarzeniach."
+                            },
+                            "scoring": {
+                                "max_points": 15
+                            }
+                        },
+                        {
+                            "question_id": "C1-W2-b",
+                            "type": "writing_prompt",
+                            "order": 2,
+                            "instructions": {
+                                "text_html": "<strong>b) Tekst argumentacyjny (250-300 słów)</strong><br>\"Czy sztuczna inteligencja zagraża ludzkości?\" - przedstaw argumenty za i przeciw, a następnie wyraź własną opinię."
+                            },
+                            "scoring": {
+                                "max_points": 25
+                            }
+                        }
+                    ]
+                },
+                {
+                    "group_id": "c1-writing-zestaw-3",
+                    "title": "Zestaw III",
+                    "order": 3,
+                    "instructions": {
+                        "brief": "Proszę wybrać JEDEN zestaw i napisać oba teksty. Łącznie min. 400 słów."
+                    },
+                    "metadata": {
+                        "total_points": 40,
+                        "word_limit": "400+",
+                        "is_choice_set": true
+                    },
+                    "questions": [
+                        {
+                            "question_id": "C1-W3-a",
+                            "type": "writing_prompt",
+                            "order": 1,
+                            "instructions": {
+                                "text_html": "<strong>a) Recenzja (150-200 słów)</strong><br>Napisz recenzję ostatnio przeczytanej książki lub obejrzanego filmu. Przedstaw główne wątki, oceń wartość artystyczną, poleć lub odradzaj odbiorcom."
+                            },
+                            "scoring": {
+                                "max_points": 15
+                            }
+                        },
+                        {
+                            "question_id": "C1-W3-b",
+                            "type": "writing_prompt",
+                            "order": 2,
+                            "instructions": {
+                                "text_html": "<strong>b) Esej (250-300 słów)</strong><br>\"Czy tradycyjne wartości mają jeszcze znaczenie we współczesnym świecie?\" - rozważ temat, odwołując się do przykładów z życia społecznego i kultury."
+                            },
+                            "scoring": {
+                                "max_points": 25
+                            }
+                        }
+                    ]
+                }
+            ]
+        },
+        {
+            "key": "speaking",
+            "name": "Mówienie",
+            "skill": "speaking",
+            "duration_min": 20,
+            "max_score": 40,
+            "description": "Część ustna - 3 zadania na poziomie zaawansowanym",
+            "question_groups": [
+                {
+                    "group_id": "c1-speaking-1",
+                    "title": "Zadanie 1 (prezentacja)",
+                    "order": 1,
+                    "instructions": {
+                        "brief": "Proszę przygotować i wygłosić krótką prezentację (5 minut)."
+                    },
+                    "metadata": {
+                        "total_points": 15,
+                        "time_limit_sec": 300
+                    },
+                    "questions": [
+                        {
+                            "question_id": "C1-S1-1",
+                            "type": "speaking_prompt",
+                            "order": 1,
+                            "instructions": {
+                                "text_html": "Temat: \"Wyzwania współczesnego społeczeństwa\"<br>Proszę omówić jeden z następujących problemów: zmiany klimatyczne, starzenie się społeczeństwa, globalizacja. Przedstaw przyczyny problemu, jego konsekwencje oraz możliwe rozwiązania."
+                            },
+                            "scoring": {
+                                "max_points": 15
+                            }
+                        }
+                    ]
+                },
+                {
+                    "group_id": "c1-speaking-2",
+                    "title": "Zadanie 2 (dyskusja)",
+                    "order": 2,
+                    "instructions": {
+                        "brief": "Proszę wziąć udział w dyskusji z egzaminatorem (5 minut)."
+                    },
+                    "metadata": {
+                        "total_points": 15,
+                        "time_limit_sec": 300
+                    },
+                    "questions": [
+                        {
+                            "question_id": "C1-S2-1",
+                            "type": "speaking_prompt",
+                            "order": 1,
+                            "instructions": {
+                                "text_html": "Temat dyskusji: \"Czy media społecznościowe mają więcej zalet czy wad?\"<br>Proszę przedstawić swoje stanowisko, reagować na argumenty egzaminatora, bronić swojego zdania lub modyfikować je w świetle nowych argumentów."
+                            },
+                            "scoring": {
+                                "max_points": 15
+                            }
+                        }
+                    ]
+                },
+                {
+                    "group_id": "c1-speaking-3",
+                    "title": "Zadanie 3 (negocjacje)",
+                    "order": 3,
+                    "instructions": {
+                        "brief": "Proszę przeprowadzić negocjacje w podanej sytuacji (5 minut)."
+                    },
+                    "metadata": {
+                        "total_points": 10,
+                        "time_limit_sec": 300
+                    },
+                    "questions": [
+                        {
+                            "question_id": "C1-S3-1",
+                            "type": "roleplay",
+                            "order": 1,
+                            "instructions": {
+                                "text_html": "Sytuacja: Jesteś przedstawicielem grupy studenckiej. Negocjujesz z dziekanem warunki organizacji konferencji naukowej na uczelni. Musisz uzgodnić: termin, budżet, listę prelegentów i kwestie organizacyjne."
+                            },
+                            "scoring": {
+                                "max_points": 10
+                            }
+                        }
+                    ]
+                }
+            ]
+        }
+    ],
+    "_meta": {
+        "source": "docs/samples/documents/real_exams_examples/pl_C1.pdf",
+        "created_at": "2025-11-21",
+        "total_points": 200
+    }
+}

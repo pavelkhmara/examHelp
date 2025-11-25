@@ -51,7 +51,7 @@ class RunPhaseBJob implements ShouldQueue
             $exam->research_status = 'running_phase_b';
             $exam->save();
 
-            $task->addActivity('phase_b_started', 'Starting Phase B (Assembly v2)');
+            $task->addActivity('phase_b_started', 'Starting Phase B (Assembly v2) - parallel mode');
             $task->updateHeartbeat();
 
             // Get skeleton from exam
@@ -60,33 +60,57 @@ class RunPhaseBJob implements ShouldQueue
                 throw new \RuntimeException('Phase A structure_v2 is required before Phase B');
             }
 
-            Log::info('Phase B job started', [
+            $sections = $skeleton['sections'] ?? [];
+            if (empty($sections)) {
+                throw new \RuntimeException('No sections found in Phase A skeleton');
+            }
+
+            Log::info('Phase B job started - parallel section generation', [
                 'task_id' => $task->id,
                 'exam_id' => $exam->id,
+                'sections_count' => count($sections),
             ]);
 
-            // Run Phase B
-            $task->updateHeartbeat();
-            $result = $svc->runPhaseB($exam, $task, $skeleton);
+            // === PARALLEL SECTION GENERATION ===
+            // Dispatch GenerateSectionAssemblyJob for each section
+            $sectionIds = array_column($sections, 'id');
 
-            // Save result to exam
-            $exam->structure_v2 = $result;
-            $exam->research_status = 'completed';
-            $exam->save();
+            // Initialize sections_status tracking
+            $sectionsStatus = [];
+            foreach ($sectionIds as $sid) {
+                $sectionsStatus[$sid] = 'pending';
+            }
 
-            // Update task
-            $task->result = $result;
-            $task->status = 'completed';
+            $task->request = array_merge($task->request ?? [], [
+                'expected_sections' => $sectionIds,
+                'sections_status' => $sectionsStatus,
+            ]);
             $task->save();
 
-            $task->addActivity('phase_b_completed', 'Phase B completed successfully - assembly config saved');
+            $task->addActivity('dispatching_sections', "Dispatching " . count($sections) . " section assembly jobs (parallel)", [
+                'sections' => $sectionIds,
+                'mode' => 'parallel',
+            ]);
+
+            foreach ($sections as $section) {
+                GenerateSectionAssemblyJob::dispatch($task->id, $section['id'], $section);
+            }
+
+            // Dispatch coordinator job to wait for all sections and finalize
+            $task->addActivity('finalize_job_dispatched', 'Coordinator job dispatched - will wait for all sections to complete');
+            FinalizeSectionGenerationJob::dispatch($task->id)->delay(now()->addSeconds(30));
+
             $task->updateHeartbeat();
 
-            Log::info('Phase B job completed', [
+            Log::info('Phase B parallel jobs dispatched', [
                 'task_id' => $task->id,
                 'exam_id' => $exam->id,
-                'categories_count' => count($result['categories'] ?? []),
+                'sections' => $sectionIds,
             ]);
+
+            // NOTE: Task completion happens in FinalizeSectionGenerationJob
+            // This job ends here after dispatching all section jobs
+
         } catch (\Throwable $e) {
             Log::error('Phase B job failed', [
                 'task_id' => $task->id,

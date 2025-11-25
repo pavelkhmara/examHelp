@@ -274,7 +274,7 @@ class ExamMetadataAnalysisService extends AbstractAiService
         $confidence = $validated['confidence'] ?? 0;
 
         // Confidence checks
-        if ($confidence >= 0.97) {
+        if ($confidence >= 0.8) {
             $analysis['info'][] = sprintf('Confidence is very high - %.2f', $confidence);
         } elseif ($confidence < 0.5) {
             $analysis['warning'][] = 'Confidence too low - ' . sprintf('%.2f', $confidence);

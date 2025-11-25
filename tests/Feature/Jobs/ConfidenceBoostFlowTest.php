@@ -82,8 +82,8 @@ class ConfidenceBoostFlowTest extends TestCase
             ]);
         }
 
-        // If confidence reached 0.97+, task should be pending_confirmation
-        if (($identity['confidence'] ?? 0) >= 0.97) {
+        // If confidence reached 0.8+, task should be pending_confirmation
+        if (($identity['confidence'] ?? 0) >= 0.8) {
             $this->assertEquals('pending_confirmation', $task->status);
             $this->assertTrue($identity['hold'] ?? false);
         }
@@ -103,7 +103,7 @@ class ConfidenceBoostFlowTest extends TestCase
             'result' => [
                 'identity' => [
                     'status' => 'certain',
-                    'confidence' => 0.97,
+                    'confidence' => 0.8,
                     'hold' => true,
                 ],
             ],

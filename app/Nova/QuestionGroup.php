@@ -84,7 +84,7 @@ class QuestionGroup extends Resource
 
                 Text::make('Group ID', 'group_id')
                     ->rules('required', 'max:255')
-                    ->help('Unique identifier for this question group (e.g., "listening-task-1")')
+                    ->help('Unique identifier for this question group (e.g., "listening-question-1")')
                     ->sortable(),
 
                 Text::make('Title')

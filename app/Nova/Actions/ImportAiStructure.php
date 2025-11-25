@@ -19,6 +19,8 @@ class ImportAiStructure extends Action
 
     public $name = 'Import AI Structure';
 
+    public $uriKey = 'import-ai-structure';
+
     public function fields(NovaRequest $request)
     {
         return [

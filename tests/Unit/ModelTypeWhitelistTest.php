@@ -25,12 +25,21 @@ class ModelTypeWhitelistTest extends TestCase
 
     public function test_exam_example_question_accepts_valid_type(): void
     {
+        $exam = \App\Models\Exam::factory()->create();
+        $category = \App\Models\ExamCategory::factory()->create(['exam_id' => $exam->id]);
+
         $row = ExamExampleQuestion::create([
-            'exam_id' => 1,
-            'exam_category_id' => 1,
+            'exam_id' => $exam->id,
+            'exam_category_id' => $category->id,
             'question' => 'dummy',
             'type' => 'single_select',
-            'payload' => ['sample' => true],
+            'payload' => [
+                'options' => [
+                    ['id' => 'A', 'text' => 'Option A'],
+                    ['id' => 'B', 'text' => 'Option B'],
+                ],
+                'answer' => 'A',
+            ],
         ]);
         $this->assertSame('single_select', $row->type->value);
     }

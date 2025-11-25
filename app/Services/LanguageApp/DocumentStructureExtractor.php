@@ -17,8 +17,8 @@ use Illuminate\Support\Facades\Log;
  *
  * Extracted data includes:
  * - Identity: exam name, provider, level, language
- * - Structure: sections, section duration, task count
- * - Archetypes: task details, duration, points, format
+ * - Structure: sections, section duration, question count
+ * - Archetypes: question details, duration, points, format
  * - Scoring: points distribution, thresholds
  */
 class DocumentStructureExtractor extends AbstractAiService
@@ -40,7 +40,12 @@ class DocumentStructureExtractor extends AbstractAiService
 
         try {
             $payload = $this->buildExtractionPayload($document->extracted_text);
+
+            // Get file ID for attachment if available
+            $fileIds = $this->getDocumentFileIds($document);
+
             $response = $this->ai->generate($payload, [
+                'file_ids' => $fileIds,
                 'json_schema' => [
                     'type' => 'object',
                     'properties' => [
@@ -66,7 +71,7 @@ class DocumentStructureExtractor extends AbstractAiService
                                         'properties' => [
                                             'name' => ['type' => 'string'],
                                             'duration_minutes' => ['type' => ['integer', 'null']],
-                                            'tasks' => [
+                                            'questions' => [
                                                 'type' => 'array',
                                                 'items' => [
                                                     'type' => 'object',
@@ -79,7 +84,7 @@ class DocumentStructureExtractor extends AbstractAiService
                                                 ],
                                             ],
                                         ],
-                                        'required' => ['name', 'duration_minutes', 'tasks'],
+                                        'required' => ['name', 'duration_minutes', 'questions'],
                                         'additionalProperties' => false,
                                     ],
                                 ],
@@ -146,8 +151,8 @@ EXTRACTION RULES:
 3. Mark confidence for identity fields (0.0 to 1.0)
 4. Timing rules:
     4.1 Prefer section-level duration terms (e.g., "duration", "exam time", "total duration").
-    4.2 Do NOT use per-task "working time" as the duration of the whole section.
-    4.3 Only if a section-level duration is missing, you may SUM per-task working time
+    4.2 Do NOT use per-question "working time" as the duration of the whole section.
+    4.3 Only if a section-level duration is missing, you may SUM per-question working time
     inside the same section block (between headings like "Reading", "Listening", "Writing", "Speaking").
 5. If multiple sources show different times, note all of them
 
@@ -165,7 +170,7 @@ OUTPUT FORMAT (JSON):
       {
         "section_name": "string",
         "section_duration_minutes": number or null,
-        "task_count": number or null,
+        "question_count": number or null,
         "category": "listening|reading|writing|speaking|other"
       }
     ],
@@ -173,8 +178,8 @@ OUTPUT FORMAT (JSON):
   },
   "archetypes": [
     {
-      "task_name": "string",
-      "task_type": "string",
+      "question_name": "string",
+      "question_type": "string",
       "section": "string",
       "duration_minutes": number or null,
       "points_available": number or null,
@@ -221,6 +226,22 @@ PROMPT;
     }
 
     /**
+     * Get OpenAI file IDs for document if file attachments enabled.
+     */
+    protected function getDocumentFileIds(ExamDocument $doc): array
+    {
+        if (! config('ai.file_attachments.enabled')) {
+            return [];
+        }
+
+        if (! $doc->openai_file_id || $doc->file_attachment_status !== 'uploaded') {
+            return [];
+        }
+
+        return [$doc->openai_file_id];
+    }
+
+    /**
      * Format extracted structure as hints for research pipeline
      *
      * Converts structured data into a format suitable for enhancing
@@ -260,7 +281,7 @@ PROMPT;
         if (!empty($structured['archetypes'])) {
             $hints['document_archetypes'] = [
                 'source' => 'document',
-                'tasks' => $structured['archetypes'],
+                'questions' => $structured['archetypes'],
             ];
         }
 

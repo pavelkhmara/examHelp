@@ -20,6 +20,8 @@ class ResetAndRestartResearch extends Action
 
     public $name = '🔄 Reset & Restart Research';
 
+    public $uriKey = 'reset-restart-research';
+
     public $standalone = false; // Not standalone - requires resource context
 
     public function fields(NovaRequest $request)

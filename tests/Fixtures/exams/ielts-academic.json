@@ -1,0 +1,1338 @@
+{
+  "exam": {
+    "title": "IELTS Academic",
+    "language_of_test": "en",
+    "level": "B2",
+    "provider": "British Council / IDP / Cambridge",
+    "family": "IELTS",
+    "description": "International English Language Testing System - Academic module for university admission and professional registration"
+  },
+  "sections": [
+    {
+      "key": "listening",
+      "name": "Listening",
+      "skill": "listening",
+      "duration_min": 30,
+      "max_score": 40,
+      "description": "4 recordings with 40 questions. Audio played once only.",
+      "question_groups": [
+        {
+          "group_id": "listening-section-1",
+          "title": "Section 1 - Social Conversation",
+          "order": 1,
+          "instructions": {
+            "text": "Listen to a conversation between two people in an everyday social context. Complete the form/notes.",
+            "language": "en"
+          },
+          "stimulus": {
+            "audio": ["placeholder_audio_section1.mp3"],
+            "text_html": "<p>Conversation: Booking accommodation at a holiday resort</p>"
+          },
+          "playback_settings": {
+            "max_plays": 1,
+            "enforcement": "strict"
+          },
+          "metadata": {
+            "total_points": 10,
+            "suggested_time_sec": 420
+          },
+          "questions": [
+            {
+              "question_id": "IELTS-L1-1",
+              "type": "fill_blank",
+              "order": 1,
+              "instructions": {"text": "Complete the form. Write NO MORE THAN TWO WORDS AND/OR A NUMBER for each answer."},
+              "stimulus": {"text_html": "<p>Name: Sarah <strong>___</strong></p>"},
+              "interaction": {"blank_count": 1, "max_words": 2},
+              "scoring": {"max_points": 1, "partial_credit": false}
+            },
+            {
+              "question_id": "IELTS-L1-2",
+              "type": "fill_blank",
+              "order": 2,
+              "instructions": {"text": "Complete the form."},
+              "stimulus": {"text_html": "<p>Phone number: <strong>___</strong></p>"},
+              "interaction": {"blank_count": 1, "max_words": 1},
+              "scoring": {"max_points": 1}
+            },
+            {
+              "question_id": "IELTS-L1-3",
+              "type": "fill_blank",
+              "order": 3,
+              "instructions": {"text": "Complete the form."},
+              "stimulus": {"text_html": "<p>Check-in date: <strong>___</strong> July</p>"},
+              "interaction": {"blank_count": 1, "max_words": 1},
+              "scoring": {"max_points": 1}
+            },
+            {
+              "question_id": "IELTS-L1-4",
+              "type": "fill_blank",
+              "order": 4,
+              "instructions": {"text": "Complete the form."},
+              "stimulus": {"text_html": "<p>Number of nights: <strong>___</strong></p>"},
+              "interaction": {"blank_count": 1, "max_words": 1},
+              "scoring": {"max_points": 1}
+            },
+            {
+              "question_id": "IELTS-L1-5",
+              "type": "fill_blank",
+              "order": 5,
+              "instructions": {"text": "Complete the form."},
+              "stimulus": {"text_html": "<p>Room type: <strong>___</strong></p>"},
+              "interaction": {"blank_count": 1, "max_words": 2},
+              "scoring": {"max_points": 1}
+            },
+            {
+              "question_id": "IELTS-L1-6",
+              "type": "single_select",
+              "order": 6,
+              "instructions": {"text": "Choose the correct letter, A, B or C."},
+              "stimulus": {"text_html": "<p>What facilities does Sarah ask about?</p>"},
+              "interaction": {
+                "options": [
+                  {"id": "A", "text": "swimming pool"},
+                  {"id": "B", "text": "gym"},
+                  {"id": "C", "text": "spa"}
+                ]
+              },
+              "scoring": {"max_points": 1, "correct_answer": "A"}
+            },
+            {
+              "question_id": "IELTS-L1-7",
+              "type": "single_select",
+              "order": 7,
+              "instructions": {"text": "Choose the correct letter, A, B or C."},
+              "stimulus": {"text_html": "<p>How will Sarah pay for the booking?</p>"},
+              "interaction": {
+                "options": [
+                  {"id": "A", "text": "credit card"},
+                  {"id": "B", "text": "bank transfer"},
+                  {"id": "C", "text": "cash on arrival"}
+                ]
+              },
+              "scoring": {"max_points": 1, "correct_answer": "A"}
+            },
+            {
+              "question_id": "IELTS-L1-8",
+              "type": "fill_blank",
+              "order": 8,
+              "instructions": {"text": "Complete the notes."},
+              "stimulus": {"text_html": "<p>Special request: room with <strong>___</strong> view</p>"},
+              "interaction": {"blank_count": 1, "max_words": 1},
+              "scoring": {"max_points": 1}
+            },
+            {
+              "question_id": "IELTS-L1-9",
+              "type": "fill_blank",
+              "order": 9,
+              "instructions": {"text": "Complete the notes."},
+              "stimulus": {"text_html": "<p>Confirmation sent to: <strong>___</strong>@email.com</p>"},
+              "interaction": {"blank_count": 1, "max_words": 1},
+              "scoring": {"max_points": 1}
+            },
+            {
+              "question_id": "IELTS-L1-10",
+              "type": "fill_blank",
+              "order": 10,
+              "instructions": {"text": "Complete the notes."},
+              "stimulus": {"text_html": "<p>Reference number: <strong>___</strong></p>"},
+              "interaction": {"blank_count": 1, "max_words": 1},
+              "scoring": {"max_points": 1}
+            }
+          ]
+        },
+        {
+          "group_id": "listening-section-2",
+          "title": "Section 2 - Monologue in Social Context",
+          "order": 2,
+          "instructions": {
+            "text": "Listen to a monologue set in an everyday social context, e.g., a speech about local facilities.",
+            "language": "en"
+          },
+          "stimulus": {
+            "audio": ["placeholder_audio_section2.mp3"],
+            "text_html": "<p>Talk: Welcome to the City Library orientation</p>"
+          },
+          "playback_settings": {
+            "max_plays": 1,
+            "enforcement": "strict"
+          },
+          "metadata": {
+            "total_points": 10,
+            "suggested_time_sec": 420
+          },
+          "questions": [
+            {
+              "question_id": "IELTS-L2-11",
+              "type": "matching",
+              "order": 11,
+              "instructions": {"text": "Match each library area with its location. Write the correct letter A-F."},
+              "stimulus": {"text_html": "<p>11. Children's section</p>"},
+              "interaction": {
+                "options": [
+                  {"id": "A", "text": "Ground floor, east wing"},
+                  {"id": "B", "text": "Ground floor, west wing"},
+                  {"id": "C", "text": "First floor"},
+                  {"id": "D", "text": "Second floor"},
+                  {"id": "E", "text": "Basement"},
+                  {"id": "F", "text": "Third floor"}
+                ]
+              },
+              "scoring": {"max_points": 1, "correct_answer": "A"}
+            },
+            {
+              "question_id": "IELTS-L2-12",
+              "type": "matching",
+              "order": 12,
+              "instructions": {"text": "Match each library area with its location."},
+              "stimulus": {"text_html": "<p>12. Reference collection</p>"},
+              "interaction": {"use_options_from": "IELTS-L2-11"},
+              "scoring": {"max_points": 1, "correct_answer": "C"}
+            },
+            {
+              "question_id": "IELTS-L2-13",
+              "type": "matching",
+              "order": 13,
+              "instructions": {"text": "Match each library area with its location."},
+              "stimulus": {"text_html": "<p>13. Computer room</p>"},
+              "interaction": {"use_options_from": "IELTS-L2-11"},
+              "scoring": {"max_points": 1, "correct_answer": "D"}
+            },
+            {
+              "question_id": "IELTS-L2-14",
+              "type": "matching",
+              "order": 14,
+              "instructions": {"text": "Match each library area with its location."},
+              "stimulus": {"text_html": "<p>14. Archives</p>"},
+              "interaction": {"use_options_from": "IELTS-L2-11"},
+              "scoring": {"max_points": 1, "correct_answer": "E"}
+            },
+            {
+              "question_id": "IELTS-L2-15",
+              "type": "matching",
+              "order": 15,
+              "instructions": {"text": "Match each library area with its location."},
+              "stimulus": {"text_html": "<p>15. Cafe</p>"},
+              "interaction": {"use_options_from": "IELTS-L2-11"},
+              "scoring": {"max_points": 1, "correct_answer": "B"}
+            },
+            {
+              "question_id": "IELTS-L2-16",
+              "type": "single_select",
+              "order": 16,
+              "instructions": {"text": "Choose the correct letter, A, B or C."},
+              "stimulus": {"text_html": "<p>What is the maximum loan period for new members?</p>"},
+              "interaction": {
+                "options": [
+                  {"id": "A", "text": "2 weeks"},
+                  {"id": "B", "text": "3 weeks"},
+                  {"id": "C", "text": "4 weeks"}
+                ]
+              },
+              "scoring": {"max_points": 1, "correct_answer": "B"}
+            },
+            {
+              "question_id": "IELTS-L2-17",
+              "type": "single_select",
+              "order": 17,
+              "instructions": {"text": "Choose the correct letter, A, B or C."},
+              "stimulus": {"text_html": "<p>How many items can members borrow at one time?</p>"},
+              "interaction": {
+                "options": [
+                  {"id": "A", "text": "5"},
+                  {"id": "B", "text": "10"},
+                  {"id": "C", "text": "15"}
+                ]
+              },
+              "scoring": {"max_points": 1, "correct_answer": "C"}
+            },
+            {
+              "question_id": "IELTS-L2-18",
+              "type": "fill_blank",
+              "order": 18,
+              "instructions": {"text": "Complete the notes. Write NO MORE THAN TWO WORDS."},
+              "stimulus": {"text_html": "<p>Late return fee: <strong>___</strong> per day</p>"},
+              "interaction": {"blank_count": 1, "max_words": 2},
+              "scoring": {"max_points": 1}
+            },
+            {
+              "question_id": "IELTS-L2-19",
+              "type": "fill_blank",
+              "order": 19,
+              "instructions": {"text": "Complete the notes."},
+              "stimulus": {"text_html": "<p>Library card replacement cost: <strong>___</strong></p>"},
+              "interaction": {"blank_count": 1, "max_words": 2},
+              "scoring": {"max_points": 1}
+            },
+            {
+              "question_id": "IELTS-L2-20",
+              "type": "fill_blank",
+              "order": 20,
+              "instructions": {"text": "Complete the notes."},
+              "stimulus": {"text_html": "<p>Online reservation service available from <strong>___</strong></p>"},
+              "interaction": {"blank_count": 1, "max_words": 2},
+              "scoring": {"max_points": 1}
+            }
+          ]
+        },
+        {
+          "group_id": "listening-section-3",
+          "title": "Section 3 - Academic Discussion",
+          "order": 3,
+          "instructions": {
+            "text": "Listen to a conversation between up to four people in an educational context.",
+            "language": "en"
+          },
+          "stimulus": {
+            "audio": ["placeholder_audio_section3.mp3"],
+            "text_html": "<p>Discussion: Students and tutor discussing a research project on renewable energy</p>"
+          },
+          "playback_settings": {
+            "max_plays": 1,
+            "enforcement": "strict"
+          },
+          "metadata": {
+            "total_points": 10,
+            "suggested_time_sec": 480
+          },
+          "questions": [
+            {
+              "question_id": "IELTS-L3-21",
+              "type": "single_select",
+              "order": 21,
+              "instructions": {"text": "Choose the correct letter, A, B or C."},
+              "stimulus": {"text_html": "<p>What is the main focus of the students' research project?</p>"},
+              "interaction": {
+                "options": [
+                  {"id": "A", "text": "solar energy in urban areas"},
+                  {"id": "B", "text": "wind power efficiency"},
+                  {"id": "C", "text": "comparing renewable energy sources"}
+                ]
+              },
+              "scoring": {"max_points": 1, "correct_answer": "C"}
+            },
+            {
+              "question_id": "IELTS-L3-22",
+              "type": "single_select",
+              "order": 22,
+              "instructions": {"text": "Choose the correct letter, A, B or C."},
+              "stimulus": {"text_html": "<p>What problem did the students encounter with their data collection?</p>"},
+              "interaction": {
+                "options": [
+                  {"id": "A", "text": "insufficient sample size"},
+                  {"id": "B", "text": "equipment malfunction"},
+                  {"id": "C", "text": "conflicting information from sources"}
+                ]
+              },
+              "scoring": {"max_points": 1, "correct_answer": "C"}
+            },
+            {
+              "question_id": "IELTS-L3-23",
+              "type": "single_select",
+              "order": 23,
+              "instructions": {"text": "Choose the correct letter, A, B or C."},
+              "stimulus": {"text_html": "<p>The tutor suggests that the students should</p>"},
+              "interaction": {
+                "options": [
+                  {"id": "A", "text": "narrow their research scope"},
+                  {"id": "B", "text": "extend the deadline"},
+                  {"id": "C", "text": "consult more academic journals"}
+                ]
+              },
+              "scoring": {"max_points": 1, "correct_answer": "A"}
+            },
+            {
+              "question_id": "IELTS-L3-24",
+              "type": "single_select",
+              "order": 24,
+              "instructions": {"text": "Choose the correct letter, A, B or C."},
+              "stimulus": {"text_html": "<p>What aspect of their presentation is the tutor most concerned about?</p>"},
+              "interaction": {
+                "options": [
+                  {"id": "A", "text": "the visual aids"},
+                  {"id": "B", "text": "the structure"},
+                  {"id": "C", "text": "the length"}
+                ]
+              },
+              "scoring": {"max_points": 1, "correct_answer": "B"}
+            },
+            {
+              "question_id": "IELTS-L3-25",
+              "type": "matching",
+              "order": 25,
+              "instructions": {"text": "What does each student say about the project? Match each statement with the correct student A-C."},
+              "stimulus": {"text_html": "<p>25. \"We need more primary sources\"</p>"},
+              "interaction": {
+                "options": [
+                  {"id": "A", "text": "Maria"},
+                  {"id": "B", "text": "James"},
+                  {"id": "C", "text": "Both students"}
+                ]
+              },
+              "scoring": {"max_points": 1, "correct_answer": "A"}
+            },
+            {
+              "question_id": "IELTS-L3-26",
+              "type": "matching",
+              "order": 26,
+              "instructions": {"text": "Match each statement with the correct student."},
+              "stimulus": {"text_html": "<p>26. \"The statistics are difficult to interpret\"</p>"},
+              "interaction": {"use_options_from": "IELTS-L3-25"},
+              "scoring": {"max_points": 1, "correct_answer": "B"}
+            },
+            {
+              "question_id": "IELTS-L3-27",
+              "type": "matching",
+              "order": 27,
+              "instructions": {"text": "Match each statement with the correct student."},
+              "stimulus": {"text_html": "<p>27. \"We should include case studies\"</p>"},
+              "interaction": {"use_options_from": "IELTS-L3-25"},
+              "scoring": {"max_points": 1, "correct_answer": "C"}
+            },
+            {
+              "question_id": "IELTS-L3-28",
+              "type": "fill_blank",
+              "order": 28,
+              "instructions": {"text": "Complete the notes. Write NO MORE THAN TWO WORDS."},
+              "stimulus": {"text_html": "<p>Next meeting date: <strong>___</strong></p>"},
+              "interaction": {"blank_count": 1, "max_words": 2},
+              "scoring": {"max_points": 1}
+            },
+            {
+              "question_id": "IELTS-L3-29",
+              "type": "fill_blank",
+              "order": 29,
+              "instructions": {"text": "Complete the notes."},
+              "stimulus": {"text_html": "<p>Materials to bring: draft and <strong>___</strong></p>"},
+              "interaction": {"blank_count": 1, "max_words": 2},
+              "scoring": {"max_points": 1}
+            },
+            {
+              "question_id": "IELTS-L3-30",
+              "type": "fill_blank",
+              "order": 30,
+              "instructions": {"text": "Complete the notes."},
+              "stimulus": {"text_html": "<p>Presentation room: <strong>___</strong></p>"},
+              "interaction": {"blank_count": 1, "max_words": 2},
+              "scoring": {"max_points": 1}
+            }
+          ]
+        },
+        {
+          "group_id": "listening-section-4",
+          "title": "Section 4 - Academic Lecture",
+          "order": 4,
+          "instructions": {
+            "text": "Listen to a monologue on an academic subject, e.g., a university lecture.",
+            "language": "en"
+          },
+          "stimulus": {
+            "audio": ["placeholder_audio_section4.mp3"],
+            "text_html": "<p>Lecture: The history and development of urban planning</p>"
+          },
+          "playback_settings": {
+            "max_plays": 1,
+            "enforcement": "strict"
+          },
+          "metadata": {
+            "total_points": 10,
+            "suggested_time_sec": 480
+          },
+          "questions": [
+            {
+              "question_id": "IELTS-L4-31",
+              "type": "fill_blank",
+              "order": 31,
+              "instructions": {"text": "Complete the notes. Write NO MORE THAN TWO WORDS AND/OR A NUMBER for each answer."},
+              "stimulus": {"text_html": "<p>Modern urban planning began in the <strong>___</strong> century</p>"},
+              "interaction": {"blank_count": 1, "max_words": 2},
+              "scoring": {"max_points": 1}
+            },
+            {
+              "question_id": "IELTS-L4-32",
+              "type": "fill_blank",
+              "order": 32,
+              "instructions": {"text": "Complete the notes."},
+              "stimulus": {"text_html": "<p>The Industrial Revolution led to rapid <strong>___</strong></p>"},
+              "interaction": {"blank_count": 1, "max_words": 2},
+              "scoring": {"max_points": 1}
+            },
+            {
+              "question_id": "IELTS-L4-33",
+              "type": "fill_blank",
+              "order": 33,
+              "instructions": {"text": "Complete the notes."},
+              "stimulus": {"text_html": "<p>Garden cities concept developed by Ebenezer <strong>___</strong></p>"},
+              "interaction": {"blank_count": 1, "max_words": 1},
+              "scoring": {"max_points": 1}
+            },
+            {
+              "question_id": "IELTS-L4-34",
+              "type": "fill_blank",
+              "order": 34,
+              "instructions": {"text": "Complete the notes."},
+              "stimulus": {"text_html": "<p>Key principle: balance between <strong>___</strong> and green spaces</p>"},
+              "interaction": {"blank_count": 1, "max_words": 2},
+              "scoring": {"max_points": 1}
+            },
+            {
+              "question_id": "IELTS-L4-35",
+              "type": "fill_blank",
+              "order": 35,
+              "instructions": {"text": "Complete the notes."},
+              "stimulus": {"text_html": "<p>Percentage of world population in cities by 2050: <strong>___</strong>%</p>"},
+              "interaction": {"blank_count": 1, "max_words": 1},
+              "scoring": {"max_points": 1}
+            },
+            {
+              "question_id": "IELTS-L4-36",
+              "type": "single_select",
+              "order": 36,
+              "instructions": {"text": "Choose the correct letter, A, B or C."},
+              "stimulus": {"text_html": "<p>According to the lecturer, the main challenge for urban planners today is</p>"},
+              "interaction": {
+                "options": [
+                  {"id": "A", "text": "housing affordability"},
+                  {"id": "B", "text": "transportation infrastructure"},
+                  {"id": "C", "text": "environmental sustainability"}
+                ]
+              },
+              "scoring": {"max_points": 1, "correct_answer": "C"}
+            },
+            {
+              "question_id": "IELTS-L4-37",
+              "type": "single_select",
+              "order": 37,
+              "instructions": {"text": "Choose the correct letter, A, B or C."},
+              "stimulus": {"text_html": "<p>The lecturer mentions Singapore as an example of</p>"},
+              "interaction": {
+                "options": [
+                  {"id": "A", "text": "successful public housing"},
+                  {"id": "B", "text": "green building innovation"},
+                  {"id": "C", "text": "smart city technology"}
+                ]
+              },
+              "scoring": {"max_points": 1, "correct_answer": "B"}
+            },
+            {
+              "question_id": "IELTS-L4-38",
+              "type": "fill_blank",
+              "order": 38,
+              "instructions": {"text": "Complete the notes."},
+              "stimulus": {"text_html": "<p>New concept: <strong>___</strong> minute city (all services within walking distance)</p>"},
+              "interaction": {"blank_count": 1, "max_words": 1},
+              "scoring": {"max_points": 1}
+            },
+            {
+              "question_id": "IELTS-L4-39",
+              "type": "fill_blank",
+              "order": 39,
+              "instructions": {"text": "Complete the notes."},
+              "stimulus": {"text_html": "<p>Mixed-use development reduces <strong>___</strong></p>"},
+              "interaction": {"blank_count": 1, "max_words": 2},
+              "scoring": {"max_points": 1}
+            },
+            {
+              "question_id": "IELTS-L4-40",
+              "type": "fill_blank",
+              "order": 40,
+              "instructions": {"text": "Complete the notes."},
+              "stimulus": {"text_html": "<p>Assignment: analyze planning in your <strong>___</strong></p>"},
+              "interaction": {"blank_count": 1, "max_words": 2},
+              "scoring": {"max_points": 1}
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "key": "reading",
+      "name": "Reading",
+      "skill": "reading",
+      "duration_min": 60,
+      "max_score": 40,
+      "description": "3 long texts with 40 questions. Academic texts from books, journals, magazines, newspapers.",
+      "question_groups": [
+        {
+          "group_id": "reading-passage-1",
+          "title": "Passage 1 - Descriptive/Factual Text",
+          "order": 1,
+          "instructions": {
+            "text": "Read the passage and answer questions 1-13.",
+            "language": "en"
+          },
+          "stimulus": {
+            "text_html": "<h3>The Development of the Printing Press</h3><p>The invention of the printing press by Johannes Gutenberg in the mid-15th century is widely regarded as one of the most transformative events in human history. Before Gutenberg's innovation, books were copied by hand, a laborious process that made them expensive and rare. The printing press revolutionized the dissemination of knowledge...</p><p>[Full passage approximately 700-900 words about the history, technology, and impact of printing]</p>"
+          },
+          "metadata": {
+            "total_points": 13,
+            "suggested_time_sec": 1200
+          },
+          "questions": [
+            {
+              "question_id": "IELTS-R1-1",
+              "type": "true_false",
+              "order": 1,
+              "instructions": {"text": "Do the following statements agree with the information given in the passage? Write TRUE, FALSE, or NOT GIVEN."},
+              "stimulus": {"text_html": "<p>Before the printing press, books were only available to wealthy people.</p>"},
+              "interaction": {
+                "options": [
+                  {"id": "TRUE", "text": "TRUE"},
+                  {"id": "FALSE", "text": "FALSE"},
+                  {"id": "NOT_GIVEN", "text": "NOT GIVEN"}
+                ]
+              },
+              "scoring": {"max_points": 1, "correct_answer": "TRUE"}
+            },
+            {
+              "question_id": "IELTS-R1-2",
+              "type": "true_false",
+              "order": 2,
+              "instructions": {"text": "Write TRUE, FALSE, or NOT GIVEN."},
+              "stimulus": {"text_html": "<p>Gutenberg invented the printing press without any prior knowledge of similar technologies.</p>"},
+              "interaction": {
+                "options": [
+                  {"id": "TRUE", "text": "TRUE"},
+                  {"id": "FALSE", "text": "FALSE"},
+                  {"id": "NOT_GIVEN", "text": "NOT GIVEN"}
+                ]
+              },
+              "scoring": {"max_points": 1, "correct_answer": "NOT_GIVEN"}
+            },
+            {
+              "question_id": "IELTS-R1-3",
+              "type": "true_false",
+              "order": 3,
+              "instructions": {"text": "Write TRUE, FALSE, or NOT GIVEN."},
+              "stimulus": {"text_html": "<p>The printing press led to increased literacy rates across Europe.</p>"},
+              "interaction": {
+                "options": [
+                  {"id": "TRUE", "text": "TRUE"},
+                  {"id": "FALSE", "text": "FALSE"},
+                  {"id": "NOT_GIVEN", "text": "NOT GIVEN"}
+                ]
+              },
+              "scoring": {"max_points": 1, "correct_answer": "TRUE"}
+            },
+            {
+              "question_id": "IELTS-R1-4",
+              "type": "true_false",
+              "order": 4,
+              "instructions": {"text": "Write TRUE, FALSE, or NOT GIVEN."},
+              "stimulus": {"text_html": "<p>Gutenberg's press could print 3,600 pages per day.</p>"},
+              "interaction": {
+                "options": [
+                  {"id": "TRUE", "text": "TRUE"},
+                  {"id": "FALSE", "text": "FALSE"},
+                  {"id": "NOT_GIVEN", "text": "NOT GIVEN"}
+                ]
+              },
+              "scoring": {"max_points": 1, "correct_answer": "FALSE"}
+            },
+            {
+              "question_id": "IELTS-R1-5",
+              "type": "fill_blank",
+              "order": 5,
+              "instructions": {"text": "Complete the summary using words from the passage. Write NO MORE THAN TWO WORDS for each answer."},
+              "stimulus": {"text_html": "<p>Gutenberg's key innovation was the use of <strong>___</strong> type.</p>"},
+              "interaction": {"blank_count": 1, "max_words": 2},
+              "scoring": {"max_points": 1}
+            },
+            {
+              "question_id": "IELTS-R1-6",
+              "type": "fill_blank",
+              "order": 6,
+              "instructions": {"text": "Complete the summary."},
+              "stimulus": {"text_html": "<p>The first major book printed was the <strong>___</strong>.</p>"},
+              "interaction": {"blank_count": 1, "max_words": 2},
+              "scoring": {"max_points": 1}
+            },
+            {
+              "question_id": "IELTS-R1-7",
+              "type": "fill_blank",
+              "order": 7,
+              "instructions": {"text": "Complete the summary."},
+              "stimulus": {"text_html": "<p>By 1500, an estimated <strong>___</strong> books had been printed in Europe.</p>"},
+              "interaction": {"blank_count": 1, "max_words": 3},
+              "scoring": {"max_points": 1}
+            },
+            {
+              "question_id": "IELTS-R1-8",
+              "type": "matching",
+              "order": 8,
+              "instructions": {"text": "Match each date with the correct event. Write the correct letter A-F."},
+              "stimulus": {"text_html": "<p>8. 1440</p>"},
+              "interaction": {
+                "options": [
+                  {"id": "A", "text": "First printed Bible completed"},
+                  {"id": "B", "text": "Gutenberg began experimenting with printing"},
+                  {"id": "C", "text": "First printing press in England"},
+                  {"id": "D", "text": "Gutenberg's death"},
+                  {"id": "E", "text": "First newspaper printed"},
+                  {"id": "F", "text": "Copyright laws established"}
+                ]
+              },
+              "scoring": {"max_points": 1, "correct_answer": "B"}
+            },
+            {
+              "question_id": "IELTS-R1-9",
+              "type": "matching",
+              "order": 9,
+              "instructions": {"text": "Match each date with the correct event."},
+              "stimulus": {"text_html": "<p>9. 1455</p>"},
+              "interaction": {"use_options_from": "IELTS-R1-8"},
+              "scoring": {"max_points": 1, "correct_answer": "A"}
+            },
+            {
+              "question_id": "IELTS-R1-10",
+              "type": "matching",
+              "order": 10,
+              "instructions": {"text": "Match each date with the correct event."},
+              "stimulus": {"text_html": "<p>10. 1476</p>"},
+              "interaction": {"use_options_from": "IELTS-R1-8"},
+              "scoring": {"max_points": 1, "correct_answer": "C"}
+            },
+            {
+              "question_id": "IELTS-R1-11",
+              "type": "single_select",
+              "order": 11,
+              "instructions": {"text": "Choose the correct letter, A, B, C or D."},
+              "stimulus": {"text_html": "<p>What was the main impact of the printing press on religion?</p>"},
+              "interaction": {
+                "options": [
+                  {"id": "A", "text": "It strengthened the Catholic Church's control"},
+                  {"id": "B", "text": "It enabled the spread of Protestant ideas"},
+                  {"id": "C", "text": "It had no significant impact on religion"},
+                  {"id": "D", "text": "It led to the immediate decline of monasteries"}
+                ]
+              },
+              "scoring": {"max_points": 1, "correct_answer": "B"}
+            },
+            {
+              "question_id": "IELTS-R1-12",
+              "type": "single_select",
+              "order": 12,
+              "instructions": {"text": "Choose the correct letter, A, B, C or D."},
+              "stimulus": {"text_html": "<p>According to the passage, what made Gutenberg's press different from earlier printing methods?</p>"},
+              "interaction": {
+                "options": [
+                  {"id": "A", "text": "It used oil-based ink"},
+                  {"id": "B", "text": "It could print on both sides of paper"},
+                  {"id": "C", "text": "It used movable metal type"},
+                  {"id": "D", "text": "It was operated by a single person"}
+                ]
+              },
+              "scoring": {"max_points": 1, "correct_answer": "C"}
+            },
+            {
+              "question_id": "IELTS-R1-13",
+              "type": "single_select",
+              "order": 13,
+              "instructions": {"text": "Choose the correct letter, A, B, C or D."},
+              "stimulus": {"text_html": "<p>The writer's main purpose in this passage is to</p>"},
+              "interaction": {
+                "options": [
+                  {"id": "A", "text": "describe the technical details of printing"},
+                  {"id": "B", "text": "explain the historical significance of the printing press"},
+                  {"id": "C", "text": "compare different printing technologies"},
+                  {"id": "D", "text": "argue that the printing press was overrated"}
+                ]
+              },
+              "scoring": {"max_points": 1, "correct_answer": "B"}
+            }
+          ]
+        },
+        {
+          "group_id": "reading-passage-2",
+          "title": "Passage 2 - Discursive/Argumentative Text",
+          "order": 2,
+          "instructions": {
+            "text": "Read the passage and answer questions 14-26.",
+            "language": "en"
+          },
+          "stimulus": {
+            "text_html": "<h3>The Economics of Renewable Energy</h3><p>The transition from fossil fuels to renewable energy sources has become one of the most significant economic shifts of the 21st century. While proponents argue that renewable energy represents a sustainable path to economic growth, critics point to the substantial costs and technical challenges involved...</p><p>[Full passage approximately 800-1000 words discussing economic arguments for and against renewable energy]</p>"
+          },
+          "metadata": {
+            "total_points": 13,
+            "suggested_time_sec": 1200
+          },
+          "questions": [
+            {
+              "question_id": "IELTS-R2-14",
+              "type": "matching",
+              "order": 14,
+              "instructions": {"text": "The passage has seven paragraphs, A-G. Which paragraph contains the following information? Write the correct letter A-G."},
+              "stimulus": {"text_html": "<p>14. A comparison of job creation between renewable and fossil fuel industries</p>"},
+              "interaction": {
+                "options": [
+                  {"id": "A", "text": "Paragraph A"},
+                  {"id": "B", "text": "Paragraph B"},
+                  {"id": "C", "text": "Paragraph C"},
+                  {"id": "D", "text": "Paragraph D"},
+                  {"id": "E", "text": "Paragraph E"},
+                  {"id": "F", "text": "Paragraph F"},
+                  {"id": "G", "text": "Paragraph G"}
+                ]
+              },
+              "scoring": {"max_points": 1, "correct_answer": "C"}
+            },
+            {
+              "question_id": "IELTS-R2-15",
+              "type": "matching",
+              "order": 15,
+              "instructions": {"text": "Which paragraph contains the following information?"},
+              "stimulus": {"text_html": "<p>15. A mention of government subsidies for energy production</p>"},
+              "interaction": {"use_options_from": "IELTS-R2-14"},
+              "scoring": {"max_points": 1, "correct_answer": "D"}
+            },
+            {
+              "question_id": "IELTS-R2-16",
+              "type": "matching",
+              "order": 16,
+              "instructions": {"text": "Which paragraph contains the following information?"},
+              "stimulus": {"text_html": "<p>16. Examples of countries leading in renewable energy adoption</p>"},
+              "interaction": {"use_options_from": "IELTS-R2-14"},
+              "scoring": {"max_points": 1, "correct_answer": "F"}
+            },
+            {
+              "question_id": "IELTS-R2-17",
+              "type": "matching",
+              "order": 17,
+              "instructions": {"text": "Which paragraph contains the following information?"},
+              "stimulus": {"text_html": "<p>17. The challenge of energy storage</p>"},
+              "interaction": {"use_options_from": "IELTS-R2-14"},
+              "scoring": {"max_points": 1, "correct_answer": "E"}
+            },
+            {
+              "question_id": "IELTS-R2-18",
+              "type": "yes_no",
+              "order": 18,
+              "instructions": {"text": "Do the following statements agree with the views/claims of the writer? Write YES, NO, or NOT GIVEN."},
+              "stimulus": {"text_html": "<p>Renewable energy is already cheaper than fossil fuels in all cases.</p>"},
+              "interaction": {
+                "options": [
+                  {"id": "YES", "text": "YES"},
+                  {"id": "NO", "text": "NO"},
+                  {"id": "NOT_GIVEN", "text": "NOT GIVEN"}
+                ]
+              },
+              "scoring": {"max_points": 1, "correct_answer": "NO"}
+            },
+            {
+              "question_id": "IELTS-R2-19",
+              "type": "yes_no",
+              "order": 19,
+              "instructions": {"text": "Write YES, NO, or NOT GIVEN."},
+              "stimulus": {"text_html": "<p>The transition to renewable energy will create more jobs than it eliminates.</p>"},
+              "interaction": {
+                "options": [
+                  {"id": "YES", "text": "YES"},
+                  {"id": "NO", "text": "NO"},
+                  {"id": "NOT_GIVEN", "text": "NOT GIVEN"}
+                ]
+              },
+              "scoring": {"max_points": 1, "correct_answer": "YES"}
+            },
+            {
+              "question_id": "IELTS-R2-20",
+              "type": "yes_no",
+              "order": 20,
+              "instructions": {"text": "Write YES, NO, or NOT GIVEN."},
+              "stimulus": {"text_html": "<p>Nuclear power should be classified as renewable energy.</p>"},
+              "interaction": {
+                "options": [
+                  {"id": "YES", "text": "YES"},
+                  {"id": "NO", "text": "NO"},
+                  {"id": "NOT_GIVEN", "text": "NOT GIVEN"}
+                ]
+              },
+              "scoring": {"max_points": 1, "correct_answer": "NOT_GIVEN"}
+            },
+            {
+              "question_id": "IELTS-R2-21",
+              "type": "fill_blank",
+              "order": 21,
+              "instructions": {"text": "Complete the sentences. Write NO MORE THAN TWO WORDS from the passage."},
+              "stimulus": {"text_html": "<p>The cost of solar panels has dropped by <strong>___</strong> percent since 2010.</p>"},
+              "interaction": {"blank_count": 1, "max_words": 2},
+              "scoring": {"max_points": 1}
+            },
+            {
+              "question_id": "IELTS-R2-22",
+              "type": "fill_blank",
+              "order": 22,
+              "instructions": {"text": "Complete the sentences."},
+              "stimulus": {"text_html": "<p>Wind power now employs over <strong>___</strong> workers globally.</p>"},
+              "interaction": {"blank_count": 1, "max_words": 3},
+              "scoring": {"max_points": 1}
+            },
+            {
+              "question_id": "IELTS-R2-23",
+              "type": "fill_blank",
+              "order": 23,
+              "instructions": {"text": "Complete the sentences."},
+              "stimulus": {"text_html": "<p>Battery technology remains the main <strong>___</strong> to widespread renewable adoption.</p>"},
+              "interaction": {"blank_count": 1, "max_words": 1},
+              "scoring": {"max_points": 1}
+            },
+            {
+              "question_id": "IELTS-R2-24",
+              "type": "single_select",
+              "order": 24,
+              "instructions": {"text": "Choose the correct letter, A, B, C or D."},
+              "stimulus": {"text_html": "<p>What is the writer's overall view of renewable energy?</p>"},
+              "interaction": {
+                "options": [
+                  {"id": "A", "text": "It is too expensive to implement"},
+                  {"id": "B", "text": "It is economically viable with continued investment"},
+                  {"id": "C", "text": "It will never replace fossil fuels"},
+                  {"id": "D", "text": "It should be implemented immediately regardless of cost"}
+                ]
+              },
+              "scoring": {"max_points": 1, "correct_answer": "B"}
+            },
+            {
+              "question_id": "IELTS-R2-25",
+              "type": "single_select",
+              "order": 25,
+              "instructions": {"text": "Choose the correct letter, A, B, C or D."},
+              "stimulus": {"text_html": "<p>According to the passage, which factor most influences renewable energy adoption?</p>"},
+              "interaction": {
+                "options": [
+                  {"id": "A", "text": "public opinion"},
+                  {"id": "B", "text": "government policy"},
+                  {"id": "C", "text": "technological innovation"},
+                  {"id": "D", "text": "environmental concerns"}
+                ]
+              },
+              "scoring": {"max_points": 1, "correct_answer": "B"}
+            },
+            {
+              "question_id": "IELTS-R2-26",
+              "type": "single_select",
+              "order": 26,
+              "instructions": {"text": "Choose the correct letter, A, B, C or D."},
+              "stimulus": {"text_html": "<p>The passage suggests that critics of renewable energy are primarily concerned about</p>"},
+              "interaction": {
+                "options": [
+                  {"id": "A", "text": "environmental damage from solar panels"},
+                  {"id": "B", "text": "the reliability of renewable power supply"},
+                  {"id": "C", "text": "job losses in traditional energy sectors"},
+                  {"id": "D", "text": "the aesthetic impact of wind turbines"}
+                ]
+              },
+              "scoring": {"max_points": 1, "correct_answer": "B"}
+            }
+          ]
+        },
+        {
+          "group_id": "reading-passage-3",
+          "title": "Passage 3 - Complex/Abstract Text",
+          "order": 3,
+          "instructions": {
+            "text": "Read the passage and answer questions 27-40.",
+            "language": "en"
+          },
+          "stimulus": {
+            "text_html": "<h3>Cognitive Biases in Decision Making</h3><p>Human decision-making is far from the rational process that classical economics once assumed. Decades of research in behavioral psychology have revealed that our judgments are systematically influenced by cognitive biases - mental shortcuts that often lead to predictable errors...</p><p>[Full passage approximately 900-1100 words about cognitive biases, their origins, and implications]</p>"
+          },
+          "metadata": {
+            "total_points": 14,
+            "suggested_time_sec": 1200
+          },
+          "questions": [
+            {
+              "question_id": "IELTS-R3-27",
+              "type": "single_select",
+              "order": 27,
+              "instructions": {"text": "Choose the correct letter, A, B, C or D."},
+              "stimulus": {"text_html": "<p>What is the main point the writer makes in the first paragraph?</p>"},
+              "interaction": {
+                "options": [
+                  {"id": "A", "text": "Classical economics is outdated"},
+                  {"id": "B", "text": "Human decisions are influenced by predictable biases"},
+                  {"id": "C", "text": "Psychology is more important than economics"},
+                  {"id": "D", "text": "All decisions are irrational"}
+                ]
+              },
+              "scoring": {"max_points": 1, "correct_answer": "B"}
+            },
+            {
+              "question_id": "IELTS-R3-28",
+              "type": "single_select",
+              "order": 28,
+              "instructions": {"text": "Choose the correct letter, A, B, C or D."},
+              "stimulus": {"text_html": "<p>According to the passage, confirmation bias leads people to</p>"},
+              "interaction": {
+                "options": [
+                  {"id": "A", "text": "seek information that supports their existing beliefs"},
+                  {"id": "B", "text": "change their minds frequently"},
+                  {"id": "C", "text": "avoid making decisions"},
+                  {"id": "D", "text": "trust experts more than themselves"}
+                ]
+              },
+              "scoring": {"max_points": 1, "correct_answer": "A"}
+            },
+            {
+              "question_id": "IELTS-R3-29",
+              "type": "single_select",
+              "order": 29,
+              "instructions": {"text": "Choose the correct letter, A, B, C or D."},
+              "stimulus": {"text_html": "<p>The writer mentions the anchoring effect to illustrate</p>"},
+              "interaction": {
+                "options": [
+                  {"id": "A", "text": "how initial information disproportionately influences judgments"},
+                  {"id": "B", "text": "why people are bad at mathematics"},
+                  {"id": "C", "text": "the importance of first impressions in interviews"},
+                  {"id": "D", "text": "how advertising manipulates consumers"}
+                ]
+              },
+              "scoring": {"max_points": 1, "correct_answer": "A"}
+            },
+            {
+              "question_id": "IELTS-R3-30",
+              "type": "single_select",
+              "order": 30,
+              "instructions": {"text": "Choose the correct letter, A, B, C or D."},
+              "stimulus": {"text_html": "<p>What does the writer suggest about the availability heuristic?</p>"},
+              "interaction": {
+                "options": [
+                  {"id": "A", "text": "It always leads to correct judgments"},
+                  {"id": "B", "text": "It causes people to overestimate rare but memorable events"},
+                  {"id": "C", "text": "It is only found in uneducated people"},
+                  {"id": "D", "text": "It can be easily eliminated through training"}
+                ]
+              },
+              "scoring": {"max_points": 1, "correct_answer": "B"}
+            },
+            {
+              "question_id": "IELTS-R3-31",
+              "type": "fill_blank",
+              "order": 31,
+              "instructions": {"text": "Complete the summary using words from the passage. Write NO MORE THAN TWO WORDS."},
+              "stimulus": {"text_html": "<p>Cognitive biases evolved as mental <strong>___</strong> to help early humans make quick decisions.</p>"},
+              "interaction": {"blank_count": 1, "max_words": 2},
+              "scoring": {"max_points": 1}
+            },
+            {
+              "question_id": "IELTS-R3-32",
+              "type": "fill_blank",
+              "order": 32,
+              "instructions": {"text": "Complete the summary."},
+              "stimulus": {"text_html": "<p>The sunk cost fallacy causes people to continue investing in <strong>___</strong> projects.</p>"},
+              "interaction": {"blank_count": 1, "max_words": 2},
+              "scoring": {"max_points": 1}
+            },
+            {
+              "question_id": "IELTS-R3-33",
+              "type": "fill_blank",
+              "order": 33,
+              "instructions": {"text": "Complete the summary."},
+              "stimulus": {"text_html": "<p>Kahneman and Tversky's research earned them the <strong>___</strong> Prize in 2002.</p>"},
+              "interaction": {"blank_count": 1, "max_words": 1},
+              "scoring": {"max_points": 1}
+            },
+            {
+              "question_id": "IELTS-R3-34",
+              "type": "matching",
+              "order": 34,
+              "instructions": {"text": "Match each bias with its correct description. Write the correct letter A-F."},
+              "stimulus": {"text_html": "<p>34. Optimism bias</p>"},
+              "interaction": {
+                "options": [
+                  {"id": "A", "text": "Overvaluing things we already own"},
+                  {"id": "B", "text": "Believing we are less likely to experience negative events"},
+                  {"id": "C", "text": "Preferring the current state of affairs"},
+                  {"id": "D", "text": "Remembering the past more positively than it was"},
+                  {"id": "E", "text": "Following the crowd's decisions"},
+                  {"id": "F", "text": "Attributing success to ourselves and failure to others"}
+                ]
+              },
+              "scoring": {"max_points": 1, "correct_answer": "B"}
+            },
+            {
+              "question_id": "IELTS-R3-35",
+              "type": "matching",
+              "order": 35,
+              "instructions": {"text": "Match each bias with its correct description."},
+              "stimulus": {"text_html": "<p>35. Status quo bias</p>"},
+              "interaction": {"use_options_from": "IELTS-R3-34"},
+              "scoring": {"max_points": 1, "correct_answer": "C"}
+            },
+            {
+              "question_id": "IELTS-R3-36",
+              "type": "matching",
+              "order": 36,
+              "instructions": {"text": "Match each bias with its correct description."},
+              "stimulus": {"text_html": "<p>36. Endowment effect</p>"},
+              "interaction": {"use_options_from": "IELTS-R3-34"},
+              "scoring": {"max_points": 1, "correct_answer": "A"}
+            },
+            {
+              "question_id": "IELTS-R3-37",
+              "type": "matching",
+              "order": 37,
+              "instructions": {"text": "Match each bias with its correct description."},
+              "stimulus": {"text_html": "<p>37. Self-serving bias</p>"},
+              "interaction": {"use_options_from": "IELTS-R3-34"},
+              "scoring": {"max_points": 1, "correct_answer": "F"}
+            },
+            {
+              "question_id": "IELTS-R3-38",
+              "type": "yes_no",
+              "order": 38,
+              "instructions": {"text": "Do the following statements agree with the claims of the writer? Write YES, NO, or NOT GIVEN."},
+              "stimulus": {"text_html": "<p>Cognitive biases can be completely eliminated through awareness.</p>"},
+              "interaction": {
+                "options": [
+                  {"id": "YES", "text": "YES"},
+                  {"id": "NO", "text": "NO"},
+                  {"id": "NOT_GIVEN", "text": "NOT GIVEN"}
+                ]
+              },
+              "scoring": {"max_points": 1, "correct_answer": "NO"}
+            },
+            {
+              "question_id": "IELTS-R3-39",
+              "type": "yes_no",
+              "order": 39,
+              "instructions": {"text": "Write YES, NO, or NOT GIVEN."},
+              "stimulus": {"text_html": "<p>Organizations can reduce the impact of biases through structured decision-making processes.</p>"},
+              "interaction": {
+                "options": [
+                  {"id": "YES", "text": "YES"},
+                  {"id": "NO", "text": "NO"},
+                  {"id": "NOT_GIVEN", "text": "NOT GIVEN"}
+                ]
+              },
+              "scoring": {"max_points": 1, "correct_answer": "YES"}
+            },
+            {
+              "question_id": "IELTS-R3-40",
+              "type": "yes_no",
+              "order": 40,
+              "instructions": {"text": "Write YES, NO, or NOT GIVEN."},
+              "stimulus": {"text_html": "<p>Children are more susceptible to cognitive biases than adults.</p>"},
+              "interaction": {
+                "options": [
+                  {"id": "YES", "text": "YES"},
+                  {"id": "NO", "text": "NO"},
+                  {"id": "NOT_GIVEN", "text": "NOT GIVEN"}
+                ]
+              },
+              "scoring": {"max_points": 1, "correct_answer": "NOT_GIVEN"}
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "key": "writing",
+      "name": "Writing",
+      "skill": "writing",
+      "duration_min": 60,
+      "max_score": 18,
+      "description": "2 tasks: Task 1 (report/letter 150+ words, 20 min) and Task 2 (essay 250+ words, 40 min)",
+      "question_groups": [
+        {
+          "group_id": "writing-question-1",
+          "title": "Task 1 - Report",
+          "order": 1,
+          "instructions": {
+            "text": "You should spend about 20 minutes on this task. Write at least 150 words.",
+            "language": "en"
+          },
+          "metadata": {
+            "total_points": 6,
+            "suggested_time_sec": 1200,
+            "min_words": 150
+          },
+          "questions": [
+            {
+              "question_id": "IELTS-W1-1",
+              "type": "writing_prompt",
+              "order": 1,
+              "instructions": {
+                "text": "Summarise the information by selecting and reporting the main features, and make comparisons where relevant."
+              },
+              "stimulus": {
+                "text_html": "<p>The graph below shows the percentage of households with access to the internet in three European countries between 2005 and 2020.</p><p>[Graph showing internet access trends for UK, Germany, and France]</p>"
+              },
+              "interaction": {
+                "response_format": "extended_text",
+                "min_words": 150
+              },
+              "scoring": {
+                "max_points": 6,
+                "criteria": [
+                  {"name": "Task Achievement", "max": 9, "weight": 0.25},
+                  {"name": "Coherence and Cohesion", "max": 9, "weight": 0.25},
+                  {"name": "Lexical Resource", "max": 9, "weight": 0.25},
+                  {"name": "Grammatical Range and Accuracy", "max": 9, "weight": 0.25}
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "group_id": "writing-question-2",
+          "title": "Task 2 - Essay",
+          "order": 2,
+          "instructions": {
+            "text": "You should spend about 40 minutes on this task. Write at least 250 words.",
+            "language": "en"
+          },
+          "metadata": {
+            "total_points": 12,
+            "suggested_time_sec": 2400,
+            "min_words": 250
+          },
+          "questions": [
+            {
+              "question_id": "IELTS-W2-1",
+              "type": "writing_prompt",
+              "order": 1,
+              "instructions": {
+                "text": "Write about the following topic. Give reasons for your answer and include any relevant examples from your own knowledge or experience."
+              },
+              "stimulus": {
+                "text_html": "<p>Some people believe that universities should focus on providing academic knowledge, while others think they should also prepare students for employment.</p><p>Discuss both views and give your own opinion.</p>"
+              },
+              "interaction": {
+                "response_format": "extended_text",
+                "min_words": 250
+              },
+              "scoring": {
+                "max_points": 12,
+                "criteria": [
+                  {"name": "Task Response", "max": 9, "weight": 0.25},
+                  {"name": "Coherence and Cohesion", "max": 9, "weight": 0.25},
+                  {"name": "Lexical Resource", "max": 9, "weight": 0.25},
+                  {"name": "Grammatical Range and Accuracy", "max": 9, "weight": 0.25}
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "key": "speaking",
+      "name": "Speaking",
+      "skill": "speaking",
+      "duration_min": 14,
+      "max_score": 27,
+      "description": "Face-to-face interview with 3 parts: Introduction, Long turn (cue card), Discussion",
+      "question_groups": [
+        {
+          "group_id": "speaking-part-1",
+          "title": "Part 1 - Introduction and Interview",
+          "order": 1,
+          "instructions": {
+            "text": "The examiner will ask you general questions about yourself and familiar topics such as home, family, work, studies, and interests. This part lasts 4-5 minutes.",
+            "language": "en"
+          },
+          "metadata": {
+            "total_points": 9,
+            "suggested_time_sec": 300
+          },
+          "questions": [
+            {
+              "question_id": "IELTS-S1-1",
+              "type": "speaking_prompt",
+              "order": 1,
+              "instructions": {"text": "Answer the examiner's questions about yourself and familiar topics."},
+              "stimulus": {
+                "text_html": "<p><strong>Topic: Your hometown</strong></p><ul><li>Where is your hometown?</li><li>What do you like most about your hometown?</li><li>Has your hometown changed much in recent years?</li><li>Would you recommend tourists to visit your hometown? Why/Why not?</li></ul>"
+              },
+              "interaction": {"response_format": "spoken"},
+              "scoring": {
+                "max_points": 9,
+                "criteria": [
+                  {"name": "Fluency and Coherence", "max": 9, "weight": 0.25},
+                  {"name": "Lexical Resource", "max": 9, "weight": 0.25},
+                  {"name": "Grammatical Range and Accuracy", "max": 9, "weight": 0.25},
+                  {"name": "Pronunciation", "max": 9, "weight": 0.25}
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "group_id": "speaking-part-2",
+          "title": "Part 2 - Long Turn (Cue Card)",
+          "order": 2,
+          "instructions": {
+            "text": "You will be given a card with a topic and points to include. You have 1 minute to prepare and should speak for 1-2 minutes.",
+            "language": "en"
+          },
+          "metadata": {
+            "total_points": 9,
+            "suggested_time_sec": 240,
+            "preparation_time_sec": 60
+          },
+          "questions": [
+            {
+              "question_id": "IELTS-S2-1",
+              "type": "speaking_prompt",
+              "order": 1,
+              "instructions": {"text": "Describe the topic on the card. You have one minute to prepare and then speak for 1-2 minutes."},
+              "stimulus": {
+                "text_html": "<p><strong>Describe a skill you would like to learn</strong></p><p>You should say:</p><ul><li>what the skill is</li><li>why you want to learn it</li><li>how you would learn it</li><li>and explain how this skill would be useful to you</li></ul>"
+              },
+              "interaction": {
+                "response_format": "spoken",
+                "min_duration_sec": 60,
+                "max_duration_sec": 120
+              },
+              "scoring": {
+                "max_points": 9,
+                "criteria": [
+                  {"name": "Fluency and Coherence", "max": 9, "weight": 0.25},
+                  {"name": "Lexical Resource", "max": 9, "weight": 0.25},
+                  {"name": "Grammatical Range and Accuracy", "max": 9, "weight": 0.25},
+                  {"name": "Pronunciation", "max": 9, "weight": 0.25}
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "group_id": "speaking-part-3",
+          "title": "Part 3 - Two-way Discussion",
+          "order": 3,
+          "instructions": {
+            "text": "The examiner will ask more abstract questions related to the Part 2 topic. This part lasts 4-5 minutes.",
+            "language": "en"
+          },
+          "metadata": {
+            "total_points": 9,
+            "suggested_time_sec": 300
+          },
+          "questions": [
+            {
+              "question_id": "IELTS-S3-1",
+              "type": "speaking_prompt",
+              "order": 1,
+              "instructions": {"text": "Discuss the following questions with the examiner."},
+              "stimulus": {
+                "text_html": "<p><strong>Topic: Skills and Learning</strong></p><ul><li>Why do some people find it difficult to learn new skills as they get older?</li><li>Do you think traditional skills are still important in the modern world?</li><li>How has technology changed the way people learn new skills?</li><li>Should governments invest more in vocational training programs?</li></ul>"
+              },
+              "interaction": {"response_format": "spoken"},
+              "scoring": {
+                "max_points": 9,
+                "criteria": [
+                  {"name": "Fluency and Coherence", "max": 9, "weight": 0.25},
+                  {"name": "Lexical Resource", "max": 9, "weight": 0.25},
+                  {"name": "Grammatical Range and Accuracy", "max": 9, "weight": 0.25},
+                  {"name": "Pronunciation", "max": 9, "weight": 0.25}
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

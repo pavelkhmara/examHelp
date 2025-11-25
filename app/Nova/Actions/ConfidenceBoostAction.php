@@ -18,9 +18,16 @@ class ConfidenceBoostAction extends Action
 
     public $name = 'Boost Confidence';
 
+    public $uriKey = 'boost-confidence';
+
     /**
      * Perform the action on the given models.
      */
+    public function authorizedToRun(\Illuminate\Http\Request $request, $model)
+    {
+        return true;
+    }
+
     public function handle(ActionFields $fields, Collection $models)
     {
         foreach ($models as $exam) {
@@ -42,12 +49,12 @@ class ConfidenceBoostAction extends Action
 
             $confidence = $identity['confidence'] ?? 0.0;
 
-            // Check if confidence boost is applicable (0.80 <= confidence < 0.97)
-            if ($confidence < 0.80) {
+            // Check if confidence boost is applicable (0.70 <= confidence < 0.8)
+            if ($confidence < 0.70) {
                 return Action::danger("Confidence too low ({$confidence}) - cannot boost. Please confirm identity manually or re-run verification.");
             }
 
-            if ($confidence >= 0.97) {
+            if ($confidence >= 0.8) {
                 return Action::danger("Confidence already high ({$confidence}) - boost not needed.");
             }
 

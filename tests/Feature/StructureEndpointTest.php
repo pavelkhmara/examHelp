@@ -49,6 +49,7 @@ class StructureEndpointTest extends TestCase
             'exam_id' => $exam->id,
             'exam_category_id' => $cat->id,
             'type' => 'true_false',
+            'payload' => ['answer' => 'true'],
         ]);
 
         $this->getJson("/api/exams/{$exam->id}/structure")

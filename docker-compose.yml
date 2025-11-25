@@ -40,6 +40,8 @@ services:
       - "3306:3306"
     volumes:
       - mysql_data:/var/lib/mysql
+      - ./docker/mysql/conf.d/custom.cnf:/etc/mysql/conf.d/custom.cnf
+      - ./docker/mysql/startup.sh:/docker-entrypoint-initdb.d/startup.sh:ro
 
   redis:
     image: redis:7-alpine
@@ -58,7 +60,7 @@ services:
       - ./:/var/www/html
       - vendor:/var/www/html/vendor
       - cache:/var/www/html/bootstrap/cache
-    command: sh -lc "php artisan queue:work --tries=2 --backoff=3 --timeout=120 --name=worker-1"
+    command: sh -lc "php artisan queue:work --tries=2 --backoff=3 --timeout=3600 --name=worker-1"
     depends_on:
       - app
       - redis
@@ -76,7 +78,7 @@ services:
       - ./:/var/www/html
       - vendor:/var/www/html/vendor
       - cache:/var/www/html/bootstrap/cache
-    command: sh -lc "php artisan queue:work --tries=2 --backoff=3 --timeout=120 --name=worker-2"
+    command: sh -lc "php artisan queue:work --tries=2 --backoff=3 --timeout=3600 --name=worker-2"
     depends_on:
       - app
       - redis
@@ -94,7 +96,7 @@ services:
       - ./:/var/www/html
       - vendor:/var/www/html/vendor
       - cache:/var/www/html/bootstrap/cache
-    command: sh -lc "php artisan queue:work --tries=2 --backoff=3 --timeout=120 --name=worker-3"
+    command: sh -lc "php artisan queue:work --tries=2 --backoff=3 --timeout=3600 --name=worker-3"
     depends_on:
       - app
       - redis
@@ -112,7 +114,7 @@ services:
       - ./:/var/www/html
       - vendor:/var/www/html/vendor
       - cache:/var/www/html/bootstrap/cache
-    command: sh -lc "php artisan queue:work --tries=2 --backoff=3 --timeout=120 --name=worker-4"
+    command: sh -lc "php artisan queue:work --tries=2 --backoff=3 --timeout=3600 --name=worker-4"
     depends_on:
       - app
       - redis
@@ -130,7 +132,7 @@ services:
       - ./:/var/www/html
       - vendor:/var/www/html/vendor
       - cache:/var/www/html/bootstrap/cache
-    command: sh -lc "php artisan queue:work --tries=2 --backoff=3 --timeout=120 --name=worker-5"
+    command: sh -lc "php artisan queue:work --tries=2 --backoff=3 --timeout=3600 --name=worker-5"
     depends_on:
       - app
       - redis
@@ -148,7 +150,7 @@ services:
       - ./:/var/www/html
       - vendor:/var/www/html/vendor
       - cache:/var/www/html/bootstrap/cache
-    command: sh -lc "php artisan queue:work --tries=2 --backoff=3 --timeout=120 --name=worker-6"
+    command: sh -lc "php artisan queue:work --tries=2 --backoff=3 --timeout=3600 --name=worker-6"
     depends_on:
       - app
       - redis
@@ -166,7 +168,7 @@ services:
       - ./:/var/www/html
       - vendor:/var/www/html/vendor
       - cache:/var/www/html/bootstrap/cache
-    command: sh -lc "php artisan queue:work --tries=2 --backoff=3 --timeout=120 --name=worker-7"
+    command: sh -lc "php artisan queue:work --tries=2 --backoff=3 --timeout=3600 --name=worker-7"
     depends_on:
       - app
       - redis
@@ -184,7 +186,7 @@ services:
       - ./:/var/www/html
       - vendor:/var/www/html/vendor
       - cache:/var/www/html/bootstrap/cache
-    command: sh -lc "php artisan queue:work --tries=2 --backoff=3 --timeout=120 --name=worker-8"
+    command: sh -lc "php artisan queue:work --tries=2 --backoff=3 --timeout=3600 --name=worker-8"
     depends_on:
       - app
       - redis
@@ -202,7 +204,7 @@ services:
       - ./:/var/www/html
       - vendor:/var/www/html/vendor
       - cache:/var/www/html/bootstrap/cache
-    command: sh -lc "php artisan queue:work --tries=2 --backoff=3 --timeout=120 --name=worker-9"
+    command: sh -lc "php artisan queue:work --tries=2 --backoff=3 --timeout=3600 --name=worker-9"
     depends_on:
       - app
       - redis
@@ -220,7 +222,7 @@ services:
       - ./:/var/www/html
       - vendor:/var/www/html/vendor
       - cache:/var/www/html/bootstrap/cache
-    command: sh -lc "php artisan queue:work --tries=2 --backoff=3 --timeout=120 --name=worker-10"
+    command: sh -lc "php artisan queue:work --tries=2 --backoff=3 --timeout=3600 --name=worker-10"
     depends_on:
       - app
       - redis

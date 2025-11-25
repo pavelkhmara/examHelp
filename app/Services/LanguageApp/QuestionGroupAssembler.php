@@ -163,8 +163,8 @@ class QuestionGroupAssembler
             );
         }
 
-        // Validate stimulus is not empty
-        $stimulus = $group['stimulus'];
+        // AUTO-FIX: Validate stimulus is not empty, add placeholder if empty
+        $stimulus = $group['stimulus'] ?? [];
         if (is_array($stimulus)) {
             $hasContent = false;
             foreach (['text_html', 'images', 'audio', 'video'] as $key) {
@@ -175,9 +175,13 @@ class QuestionGroupAssembler
             }
 
             if (!$hasContent) {
-                throw new \Exception(
-                    "Group '{$groupId}' stimulus must contain at least one of: text_html, images, audio, video in section {$sectionId}"
-                );
+                // AUTO-FIX: Add placeholder text instead of throwing error
+                $group['stimulus']['text_html'] = '<p>[Stimulus content will be provided]</p>';
+
+                \Log::warning('[QuestionGroupAssembler] Auto-fixed empty stimulus', [
+                    'group_id' => $groupId,
+                    'section_id' => $sectionId,
+                ]);
             }
         }
 

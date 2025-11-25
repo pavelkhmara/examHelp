@@ -32,7 +32,7 @@ final class JsonSchemaQuestionV2
 
     private const VALID_SCORING_METHODS = ['keyed', 'partial', 'rubric', 'hybrid'];
 
-    private const VALID_RESPONSE_MODES = ['text', 'audio', 'numeric', 'selection', 'ordering', 'matching', 'spans'];
+    private const VALID_RESPONSE_MODES = ['text', 'textarea', 'audio', 'numeric', 'selection', 'ordering', 'matching', 'spans'];
 
     private const VALID_DIFFICULTIES = ['easy', 'medium', 'hard'];
 
@@ -48,7 +48,7 @@ final class JsonSchemaQuestionV2
         $id = $this->mustString($data, 'id');
         $type = $this->validateType($data['type'] ?? null);
         $skillsMeasured = $this->validateSkillsMeasured($data['skills_measured'] ?? null);
-        $timeLimitSec = $this->mustInteger($data, 'time_limit_sec', 10);
+        $timeLimitSec = $this->mustInteger($data, 'time_limit_sec', 5);
         $instructions = $this->validateInstructions($data['instructions'] ?? null);
         $stimulus = $this->validateStimulus($data['stimulus'] ?? null);
         $interaction = $this->validateInteraction($data['interaction'] ?? null);

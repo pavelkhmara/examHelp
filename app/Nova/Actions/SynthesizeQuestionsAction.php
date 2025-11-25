@@ -16,7 +16,40 @@ class SynthesizeQuestionsAction extends Action
 {
     use InteractsWithQueue, Queueable;
 
-    public $name = 'Run Full Pipeline (Generate/Attach)';
+    public $name = '4️⃣ Synthesize Questions';
+
+    public $uriKey = 'synthesize-questions';
+
+    /**
+     * Determine if the action should be available for the given request.
+     *
+     * @param  \Illuminate\Http\Request  $request
+     * @return bool
+     */
+    public function authorizedToSee(\Illuminate\Http\Request $request)
+    {
+        // Nova вызывает authorizedToSee БЕЗ resourceId для первичной проверки
+        // Возвращаем true, чтобы action был виден в UI
+        // Реальная валидация происходит в handle()
+        if (! $request->resourceId) {
+            return true; // CHANGED: было false - блокировало показ action в Nova UI
+        }
+
+        // Если есть resourceId - проверяем, что экзамен существует
+        $exam = \App\Models\Exam::find($request->resourceId);
+        return (bool) $exam;
+    }
+
+    /**
+     * Determine if the user is authorized to run the action.
+     *
+     * @param  \Illuminate\Http\Request  $request
+     * @return bool
+     */
+    public function authorizedToRun(\Illuminate\Http\Request $request, $model)
+    {
+        return true;
+    }
 
     public function handle(ActionFields $fields, Collection $models)
     {
@@ -25,7 +58,7 @@ class SynthesizeQuestionsAction extends Action
             // Validate that generation plans exist
             $plans = GenerationPlan::where('exam_id', $exam->id)->get();
             if ($plans->isEmpty()) {
-                return Action::danger('No generation plans found. Run "Resolve Generation Plans" first.');
+                return Action::danger('❌ No generation plans found. Run "3️⃣ Resolve Plans" first.');
             }
 
             // Create generation task
@@ -47,7 +80,7 @@ class SynthesizeQuestionsAction extends Action
             // Dispatch job
             SynthesizeQuestionsJob::dispatch($task->id);
 
-            return Action::message("Question synthesis queued ({$plans->count()} sections, {$plans->sum('total_questions')} questions total). Check Activity Timeline for progress.");
+            return Action::message("✅ Question synthesis queued ({$plans->count()} sections, {$plans->sum('total_questions')} questions total). Check Activity Timeline for progress.");
         }
 
         return Action::message('Question synthesis queued.');

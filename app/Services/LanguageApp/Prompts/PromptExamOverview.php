@@ -27,7 +27,7 @@ Information from user about exam: {$userInput}
 {$documentPriorityHint}
 
 **CRITICAL - SOURCE QUALITY REQUIREMENTS:**
-Prefer pages that contain the exact answers (explicit timings, task lists, rubrics) even if they are not on .gov/.edu, as long as the information is directly verifiable (official PDF links, scans, or clearly quoted with anchors).
+Prefer pages that contain the exact answers (explicit timings, question lists, rubrics) even if they are not on .gov/.edu, as long as the information is directly verifiable (official PDF links, scans, or clearly quoted with anchors).
 Authority matters, but concrete, checkable evidence wins tie-breaks.
 
 
@@ -38,7 +38,7 @@ Authority matters, but concrete, checkable evidence wins tie-breaks.
 
 **EVIDENCE WEIGHTING (use to choose sources):**
 Score each candidate page 0–1 on:
-- Specificity (0.4): exact numbers, task names, rubrics, sample items on page.
+- Specificity (0.4): exact numbers, question names, rubrics, sample items on page.
 - Verifiability (0.3): direct quotes with anchors, screenshots, or official PDF links.
 - Authority (0.2): official provider/certifying body, .gov/.edu, or accredited test centre.
 - Recency (0.1): most recent official version / publication date.
@@ -69,7 +69,7 @@ Before including any source, VERIFY that the URL:
 These examples show:
 - Official provider domains
 - Specific pages about exam structure/format/content
-- Direct information about sections, timing, and task types
+- Direct information about sections, timing, and question types
 - Not generic "about us" or landing pages
 
 **DO NOT USE:**
@@ -128,7 +128,7 @@ For each section_archetype:
   "allowed_question_types": ["single_select","multi_select","gap_cloze", ...],  // must be from QuestionType enum
   "typical_stimuli": { "text_length": "50–300 words", "audio_repeats": 2, "audio_total_min": "6–12" },
   "item_counts": { "min": 5, "max": 40 },
-  "time_guidance_min": { "min": 10, "max": 60 }, // guidance only if official per-task timing absent
+  "time_guidance_min": { "min": 10, "max": 60 }, // guidance only if official per-question timing absent
   "scoring_focus": ["accuracy","rubric","partial","fuzzy"],
   "common_pitfalls": ["distractor-synonyms","numbers-variants","false-negatives"],
   "constraints": ["no negative marking unless official","show units for numeric"],
@@ -156,7 +156,7 @@ This is type_specific for question_types:
 - Extract patterns at TWO levels:
   (A) section_archetypes (section-level patterns)
   (B) question_archetypes (question-level patterns)
-- **CLASSIFY EVERY TASK** into one of our accepted question types (QuestionType enum keys below).
+- **CLASSIFY EVERY QUESTION** into one of our accepted question types (QuestionType enum keys below).
 - Apply question_archetypes at the **question level**: for each question_archetype include `question_type` and a `type_specific` object with fields required for that type.
 - Keep section mapping via `category_map` (sections → weights per question_archetype).
 
@@ -166,7 +166,7 @@ matching, order_sentences, order_words, highlight_text, short_answer, numeric,
 listen_mcq, dictation, error_correction, writing_prompt, speaking_prompt
 
 **CLASSIFICATION & MAPPING RULES:**
-1) For every task, first pick `question_type` from the ALLOWED list.
+1) For every question, first pick `question_type` from the ALLOWED list.
 2) Build/choose an appropriate `question_archetype` with `question_type` and `type_specific`.
 3) Map that archetype to sections via `category_map` (e.g., reading → {L-MC: 0.4, gap_cloze: 0.2, ...}).
 4) Ensure `section_archetypes[section].allowed_question_types` includes the types you map for that section; otherwise flag inconsistency.
@@ -175,7 +175,7 @@ listen_mcq, dictation, error_correction, writing_prompt, speaking_prompt
 - **CRITICAL TIMING PRIORITIES** (in order of importance):
   1. **HIGHEST**: total_exam_duration (entire exam time) - NEVER guess, must be from official sources
   2. **MEDIUM**: section_duration (time per section: Listening, Reading, etc.) - important for scheduling
-  3. **LOWEST**: step_duration (time per individual task) - useful but not critical
+  3. **LOWEST**: step_duration (time per individual question) - useful but not critical
 - **REQUIRED**: Provide timing at ALL levels if available. Search official sources. If sources conflict, use SMALLER value and note alternatives in rationale. NEVER leave total_exam_duration empty.
 - If evidence conflicts, include both views and explain under rationale.
 {$localizationHint}
@@ -185,12 +185,12 @@ listen_mcq, dictation, error_correction, writing_prompt, speaking_prompt
 IMPORTANT - Timing Hierarchy:
 - **Total Exam Duration**: CRITICAL - sum of all sections (or explicitly stated total time)
 - **Section Duration**: IMPORTANT - time allocated to each major part (Listening: 30 min, Reading: 60 min, etc.)
-- **Task/Step Duration**: OPTIONAL - time for individual tasks within sections (if available)
+- **Question/Step Duration**: OPTIONAL - time for individual questions within sections (if available)
 
 PRIORITY ORDER (do not miss higher priorities):
 1. total_exam_duration - MUST have from official sources
 2. section_duration for each major section - HIGHLY RECOMMENDED
-3. step_duration for individual tasks - nice to have but not required
+3. step_duration for individual questions - nice to have but not required
 
 ### TIMEBOX POLICY (2.5-2.95 minutes)
 If time is short, ensure first:
@@ -240,11 +240,11 @@ REQUIREMENTS:
 2. Extract timing information with STRICT PRIORITY:
    - PRIORITY 1 (CRITICAL): Total exam duration (e.g., "Total time: 2 hours 45 minutes")
    - PRIORITY 2 (IMPORTANT): Section durations (e.g., "Listening: 30 min", "Reading: 60 min")
-   - PRIORITY 3 (OPTIONAL): Task durations (e.g., "Task 1: 15 min", "Task 2: 20 min")
+   - PRIORITY 3 (OPTIONAL): Question durations (e.g., "Question 1: 15 min", "Question 2: 20 min")
 3. Use EXACT timing values from documents (not estimates):
    - Total exam time → use as total_exam_duration
    - Section-level: "Listening: 30 minutes" → use as section_duration
-   - Task-level: "Task 1: 15 minutes" → use as step_duration
+   - Question-level: "question 1: 15 minutes" → use as step_duration
 4. If only section timing given: sum sections to get total_exam_duration
 5. Extract exact question formats, sections, criteria from documents
 6. If documents show actual exam questions, use them as templates for archetypes
@@ -423,8 +423,8 @@ SCHEMA;
                     'skills_measured' => ['string (skills tested by this archetype)'],
                     'common_distractors' => ['string (typical wrong answer patterns)'],
                     'difficulty_band' => 'string (easy|medium|hard)',
-                    'step_duration' => 'number REQUIRED (minutes for THIS TASK - search official sources. If only section timing available, calculate: section_duration/task_count. Use smaller value if sources conflict. NEVER null/empty)',
-                    'sequence_matters' => 'boolean (must tasks be done in order?)',
+                    'step_duration' => 'number REQUIRED (minutes for THIS QUESTION - search official sources. If only section timing available, calculate: section_duration/question_count. Use smaller value if sources conflict. NEVER null/empty)',
+                    'sequence_matters' => 'boolean (must questions be done in order?)',
                     'step_order' => 'number|null (position in sequence if sequence_matters)',
                     'category_weights' => [
                         '<section_name>' => 'number (0.0-1.0, weight for this section - sections are exam parts like listening, reading, writing, speaking)',

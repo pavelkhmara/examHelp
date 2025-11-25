@@ -16,7 +16,9 @@ class ResearchAction extends Action
 {
     use InteractsWithQueue, Queueable, SerializesModels;
 
-    public $name = 'Run Exam Research';
+    public $name = '0️⃣ Research (Legacy)';
+
+    public $uriKey = 'research-legacy';
 
     public $standalone = false; // Not standalone - requires resource context
 
@@ -41,6 +43,17 @@ class ResearchAction extends Action
                 ->help('V2: Generate skeleton (Phase A) + assembly plan (Phase B). V1 (legacy): Single-phase with immediate example generation')
                 ->default(true),
         ];
+    }
+
+    /**
+     * Determine if the user is authorized to run the action.
+     *
+     * @param  \Illuminate\Http\Request  $request
+     * @return bool
+     */
+    public function authorizedToRun(\Illuminate\Http\Request $request, $model)
+    {
+        return true;
     }
 
     public function handle(ActionFields $fields, $models)
@@ -211,6 +224,7 @@ class ResearchAction extends Action
                 'without_confirmation' => false, // Always require confirmation
                 'overview_model' => $fields->overview_model ?? 'gpt-5-mini',
                 'use_two_phase_generation' => $fields->use_two_phase_generation ?? true,
+                'skip_examples' => true, // Research (Legacy) skips examples by default
             ];
 
             // Generate unique idempotency key for this request

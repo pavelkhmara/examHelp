@@ -8,6 +8,11 @@ return [
     'async_enabled' => (bool) env('AI_ASYNC_ENABLED', false),
     'parallel_max' => (int) env('AI_PARALLEL_MAX', 5), // Max parallel AI requests
 
+    // Task-level parallelization (NEW)
+    // When enabled, each filter/slot gets its own job for parallel execution across workers
+    // Expected speedup: 3-4x (20-30min → 4-6min for 40 questions)
+    'use_task_level_parallelization' => (bool) env('AI_USE_TASK_LEVEL_PARALLELIZATION', false),
+
     // Rate limiting configuration
     'rate_limit_enabled' => (bool) env('AI_RATE_LIMIT_ENABLED', true),
     'rate_limit_rpm' => (int) env('AI_RATE_LIMIT_RPM', 60), // Requests per minute
@@ -66,6 +71,20 @@ return [
         'weight' => env('AI_DOCS_PREFERRED_WEIGHT', 2.0),
         // если true — в промпте явно просим предпочесть документы
         'prefer_documents' => env('AI_DOCS_PREFER', true),
+    ],
+
+    // File Attachments (OpenAI Files API) - alternative to text extraction
+    'file_attachments' => [
+        // Enable file attachments instead of text extraction
+        'enabled' => (bool) env('AI_FILE_ATTACHMENTS_ENABLED', false),
+        // Automatically upload documents to OpenAI on extraction complete
+        'auto_upload' => (bool) env('AI_FILE_ATTACHMENTS_AUTO_UPLOAD', true),
+        // Delete files from OpenAI when document deleted
+        'auto_cleanup' => (bool) env('AI_FILE_ATTACHMENTS_CLEANUP', true),
+        // Supported MIME types for file attachments
+        'supported_mimes' => ['application/pdf', 'image/png', 'image/jpeg', 'image/jpg'],
+        // Max file size for attachments (20MB OpenAI limit)
+        'max_size_mb' => (int) env('AI_FILE_ATTACHMENTS_MAX_MB', 20),
     ],
 
     'evaluation' => [

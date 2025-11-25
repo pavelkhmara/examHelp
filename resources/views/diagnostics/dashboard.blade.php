@@ -252,6 +252,185 @@
                 </div>
             </div>
 
+            <!-- Exam Quality Comparison -->
+            <div class="bg-white rounded-lg shadow mb-8" x-data="examComparison()">
+                <div class="px-6 py-4 border-b border-gray-200">
+                    <h2 class="text-lg font-semibold text-gray-900">📊 Exam Quality Comparison</h2>
+                    <p class="text-sm text-gray-600 mt-1">Compare generated exam with reference exam to evaluate quality</p>
+                </div>
+                <div class="p-6">
+                    <!-- Form -->
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Generated Exam ID</label>
+                            <input type="text"
+                                   x-model="genId"
+                                   placeholder="Enter generated exam UUID"
+                                   class="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Reference Exam</label>
+                            <select x-model="refId" class="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500">
+                                <option value="">-- Select reference exam --</option>
+                                <template x-for="ref in referenceExams" :key="ref.id">
+                                    <option :value="ref.id" x-text="`${ref.title} (${ref.level}) - ${ref.questions} Q`"></option>
+                                </template>
+                            </select>
+                        </div>
+                    </div>
+                    <button @click="compare"
+                            :disabled="loading || !genId || !refId"
+                            class="px-6 py-2 bg-purple-600 text-white rounded-md hover:bg-purple-700 disabled:opacity-50 disabled:cursor-not-allowed">
+                        <span x-show="!loading">🔍 Compare</span>
+                        <span x-show="loading" x-cloak>Comparing...</span>
+                    </button>
+
+                    <!-- Error -->
+                    <div x-show="error" x-cloak class="mt-4 p-4 bg-red-50 border border-red-200 rounded-md">
+                        <p class="text-sm text-red-800" x-text="error"></p>
+                    </div>
+
+                    <!-- Results -->
+                    <div x-show="result && !error" x-cloak class="mt-6">
+                        <!-- Overall Score -->
+                        <div class="mb-6 p-6 rounded-lg text-center"
+                             :class="{
+                                 'bg-green-50 border border-green-200': result.scores?.grade === 'excellent',
+                                 'bg-yellow-50 border border-yellow-200': result.scores?.grade === 'acceptable',
+                                 'bg-orange-50 border border-orange-200': result.scores?.grade === 'needs_improvement',
+                                 'bg-red-50 border border-red-200': result.scores?.grade === 'poor'
+                             }">
+                            <p class="text-sm text-gray-600 mb-2">Overall Score</p>
+                            <p class="text-5xl font-bold"
+                               :class="{
+                                   'text-green-600': result.scores?.grade === 'excellent',
+                                   'text-yellow-600': result.scores?.grade === 'acceptable',
+                                   'text-orange-600': result.scores?.grade === 'needs_improvement',
+                                   'text-red-600': result.scores?.grade === 'poor'
+                               }"
+                               x-text="result.scores?.overall + '%'"></p>
+                            <p class="text-lg mt-2 font-medium"
+                               :class="{
+                                   'text-green-700': result.scores?.grade === 'excellent',
+                                   'text-yellow-700': result.scores?.grade === 'acceptable',
+                                   'text-orange-700': result.scores?.grade === 'needs_improvement',
+                                   'text-red-700': result.scores?.grade === 'poor'
+                               }"
+                               x-text="result.scores?.grade?.replace('_', ' ').toUpperCase()"></p>
+                        </div>
+
+                        <!-- Exam Info Cards -->
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+                            <div class="bg-blue-50 p-4 rounded-lg border border-blue-200">
+                                <h4 class="font-semibold text-blue-900 mb-2">Generated Exam</h4>
+                                <p class="text-sm text-blue-800" x-text="result.generated?.title"></p>
+                                <p class="text-xs text-blue-600 mt-1">
+                                    <span x-text="result.generated?.level"></span> |
+                                    <span x-text="result.generated?.sections"></span> sections |
+                                    <span x-text="result.generated?.groups"></span> groups |
+                                    <span x-text="result.generated?.questions"></span> questions
+                                </p>
+                            </div>
+                            <div class="bg-green-50 p-4 rounded-lg border border-green-200">
+                                <h4 class="font-semibold text-green-900 mb-2">Reference Exam</h4>
+                                <p class="text-sm text-green-800" x-text="result.reference?.title"></p>
+                                <p class="text-xs text-green-600 mt-1">
+                                    <span x-text="result.reference?.level"></span> |
+                                    <span x-text="result.reference?.sections"></span> sections |
+                                    <span x-text="result.reference?.groups"></span> groups |
+                                    <span x-text="result.reference?.questions"></span> questions
+                                </p>
+                            </div>
+                        </div>
+
+                        <!-- Score Breakdown -->
+                        <div class="grid grid-cols-3 gap-4 mb-6">
+                            <div class="bg-gray-50 p-4 rounded-lg border text-center">
+                                <p class="text-xs text-gray-500">Structure</p>
+                                <p class="text-2xl font-bold" x-text="result.scores?.structure + '%'"></p>
+                            </div>
+                            <div class="bg-gray-50 p-4 rounded-lg border text-center">
+                                <p class="text-xs text-gray-500">Groups</p>
+                                <p class="text-2xl font-bold" x-text="result.scores?.groups + '%'"></p>
+                            </div>
+                            <div class="bg-gray-50 p-4 rounded-lg border text-center">
+                                <p class="text-xs text-gray-500">Sections</p>
+                                <p class="text-2xl font-bold" x-text="result.scores?.sections + '%'"></p>
+                            </div>
+                        </div>
+
+                        <!-- Section Comparison -->
+                        <div class="mb-6">
+                            <h4 class="font-semibold text-gray-900 mb-3">📑 Section Comparison</h4>
+                            <div class="space-y-2">
+                                <template x-for="(data, key) in result.section_comparison" :key="key">
+                                    <div class="flex items-center justify-between p-3 rounded-lg"
+                                         :class="{
+                                             'bg-green-50 border border-green-200': data.status === 'good',
+                                             'bg-yellow-50 border border-yellow-200': data.status === 'warning',
+                                             'bg-red-50 border border-red-200': data.status === 'bad' || data.status === 'missing'
+                                         }">
+                                        <div class="flex-1">
+                                            <span class="font-medium" x-text="key"></span>
+                                            <span class="text-xs text-gray-500 ml-2" x-text="data.name"></span>
+                                        </div>
+                                        <div class="text-sm">
+                                            <span>Q: <span x-text="data.gen_questions"></span>/<span x-text="data.ref_questions"></span></span>
+                                            <span class="mx-2">|</span>
+                                            <span>G: <span x-text="data.gen_groups"></span>/<span x-text="data.ref_groups"></span></span>
+                                            <span class="ml-3 font-bold" x-text="data.avg_score + '%'"></span>
+                                        </div>
+                                    </div>
+                                </template>
+                            </div>
+                        </div>
+
+                        <!-- Question Types -->
+                        <div class="mb-6">
+                            <h4 class="font-semibold text-gray-900 mb-3">🎯 Question Types</h4>
+                            <div class="grid grid-cols-2 md:grid-cols-3 gap-2">
+                                <template x-for="(data, type) in result.type_comparison" :key="type">
+                                    <div class="flex items-center justify-between p-2 rounded text-sm"
+                                         :class="{
+                                             'bg-green-50': data.status === 'ok',
+                                             'bg-red-50': data.status === 'missing',
+                                             'bg-blue-50': data.status === 'extra'
+                                         }">
+                                        <span x-text="type"></span>
+                                        <span>
+                                            <span x-text="data.gen"></span>/<span x-text="data.ref"></span>
+                                            <span x-show="data.status === 'missing'" class="text-red-600 ml-1">❌</span>
+                                            <span x-show="data.status === 'extra'" class="text-blue-600 ml-1">➕</span>
+                                        </span>
+                                    </div>
+                                </template>
+                            </div>
+                        </div>
+
+                        <!-- Recommendations -->
+                        <div x-show="result.recommendations?.length > 0" class="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
+                            <h4 class="font-semibold text-yellow-900 mb-2">💡 Recommendations</h4>
+                            <ul class="space-y-1 text-sm text-yellow-800">
+                                <template x-for="rec in result.recommendations" :key="rec">
+                                    <li class="flex items-start">
+                                        <span class="mr-2">•</span>
+                                        <span x-text="rec"></span>
+                                    </li>
+                                </template>
+                            </ul>
+                        </div>
+
+                        <!-- TODO Note -->
+                        <div class="mt-4 p-4 bg-blue-50 border border-blue-200 rounded-lg">
+                            <p class="text-sm text-blue-800">
+                                📝 <strong>Coming soon:</strong> AI-based content quality evaluation.
+                                See <a href="/docs/roadmap/exam-quality-evaluation.md" class="underline">roadmap</a> for details.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
             <!-- Statistics Cards -->
             <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
                 <div class="bg-white rounded-lg shadow p-6">
@@ -920,6 +1099,56 @@
 
                 refreshData() {
                     window.location.reload();
+                }
+            }
+        }
+
+        function examComparison() {
+            return {
+                genId: '',
+                refId: '',
+                referenceExams: [],
+                result: null,
+                error: null,
+                loading: false,
+
+                async init() {
+                    try {
+                        const response = await fetch('/diagnostics-dashboard/reference-exams');
+                        const data = await response.json();
+                        if (data.success) {
+                            this.referenceExams = data.exams;
+                        }
+                    } catch (error) {
+                        console.error('Failed to load reference exams:', error);
+                    }
+                },
+
+                async compare() {
+                    if (!this.genId.trim() || !this.refId) {
+                        this.error = 'Please enter generated exam ID and select reference exam';
+                        return;
+                    }
+
+                    this.loading = true;
+                    this.error = null;
+                    this.result = null;
+
+                    try {
+                        const response = await fetch(`/diagnostics-dashboard/compare/${encodeURIComponent(this.genId.trim())}/${encodeURIComponent(this.refId)}`);
+                        const data = await response.json();
+
+                        if (!response.ok || !data.success) {
+                            this.error = data.error || 'Comparison failed';
+                            return;
+                        }
+
+                        this.result = data;
+                    } catch (error) {
+                        this.error = `Error: ${error.message}`;
+                    } finally {
+                        this.loading = false;
+                    }
                 }
             }
         }

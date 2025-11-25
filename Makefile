@@ -1,5 +1,5 @@
 SHELL := /usr/bin/env bash
-.PHONY: up down init migrate seed test cs stan bash app-shell queue queue-shell refresh fast-refresh worker-restart logs lint cache-clear dump-autoload app-bash ctx ctx-models ctx-db ctx-models-db ctx-nova ctx-file ctx-file-auto ctx-help
+.PHONY: up down init migrate seed test cs stan bash app-shell queue queue-shell refresh fast-refresh worker-restart logs lint cache-clear dump-autoload app-bash mysql-buffers ctx ctx-models ctx-db ctx-models-db ctx-nova ctx-file ctx-file-auto ctx-help qs qw
 
 DC = docker compose
 
@@ -67,11 +67,39 @@ worker-restart:
 logs:
 	docker compose logs -f app
 
+# Queue status - показывает какие джобы сейчас выполняются
+qs:
+	@echo "=== QUEUE STATUS $$(date '+%Y-%m-%d %H:%M:%S') ==="
+	@echo ""
+	@echo "📌 RUNNING JOBS (reserved):"
+	@$(DC) exec -T redis redis-cli ZRANGE queues:default:reserved 0 -1 2>/dev/null | \
+		while read -r job; do \
+			class=$$(echo "$$job" | grep -oP '"displayName":"[^"]+' | sed 's/"displayName":"//' | head -1); \
+			task_id=$$(echo "$$job" | grep -oP '"taskId":[0-9]+' | sed 's/"taskId"://' | head -1); \
+			if [ -n "$$class" ]; then \
+				if [ -n "$$task_id" ]; then \
+					echo "   • $$class (task: $$task_id)"; \
+				else \
+					echo "   • $$class"; \
+				fi; \
+			fi; \
+		done || echo "   (none)"
+	@echo ""
+	@echo "⏳ PENDING: $$($(DC) exec -T redis redis-cli LLEN queues:default 2>/dev/null || echo 0)"
+
+# Queue watch - смотрит логи воркеров в реальном времени
+qw:
+	docker compose logs -f --tail=2 queue-worker-1 queue-worker-2 queue-worker-3 queue-worker-4 queue-worker-5 queue-worker-6 queue-worker-7 queue-worker-8 queue-worker-9 queue-worker-10
+
 lint:
 	docker compose exec app vendor/bin/pint --test
 
 app-bash:
 	$(DC) exec app bash
+
+mysql-buffers:
+	@echo "Applying MySQL buffer settings..."
+	@$(DC) exec mysql sh -c 'mysql -uroot -p$$MYSQL_ROOT_PASSWORD -e "SET GLOBAL sort_buffer_size = 16777216; SET GLOBAL read_rnd_buffer_size = 8388608; SELECT \"MySQL buffers configured successfully\" as status, @@GLOBAL.sort_buffer_size / 1024 / 1024 AS sort_buffer_MB, @@GLOBAL.read_rnd_buffer_size / 1024 / 1024 AS read_rnd_buffer_MB;"'
 
 
 
