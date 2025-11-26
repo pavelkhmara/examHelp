@@ -2,12 +2,21 @@ name: CI
 
 on:
   push:
-    branches: [ main, master, develop, feature/**, fix/** ]
+    branches:
+      - master
+      - develop
+      - feature/**
+      - fix/**
   pull_request:
 
 jobs:
   php:
     runs-on: ubuntu-latest
+
+    env:
+      NOVA_USERNAME: ${{ secrets.NOVA_USERNAME }}
+      NOVA_LICENSE_KEY: ${{ secrets.NOVA_LICENSE_KEY }}
+
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -28,9 +37,9 @@ jobs:
           restore-keys: composer-${{ runner.os }}-
 
       - name: Configure Nova auth
-        if: ${{ secrets.NOVA_USERNAME != '' && secrets.NOVA_LICENSE_KEY != '' }}
+        if: ${{ env.NOVA_USERNAME != '' && env.NOVA_LICENSE_KEY != '' }}
         run: |
-          composer config http-basic.nova.laravel.com "${{ secrets.NOVA_USERNAME }}" "${{ secrets.NOVA_LICENSE_KEY }}"
+          composer config http-basic.nova.laravel.com "${{ env.NOVA_USERNAME }}" "${{ env.NOVA_LICENSE_KEY }}"
 
       - name: Install deps
         run: composer install --no-interaction --prefer-dist --no-progress
