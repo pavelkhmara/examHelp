@@ -165,10 +165,16 @@ class QuestionAudioProcessor
             return false;
         }
 
-        // WHITELIST: типы где НУЖНО генерировать аудио (пользователь слушает)
+        // ✅ SMART DETECTION: Все типы начинающиеся с 'listen_' требуют аудио (2025-11-26)
+        // Автоматически поддерживает: listen_mcq, listen_true_false, listen_yes_no_ng и любые новые listen_* типы
+        if (str_starts_with($question->type, 'listen_')) {
+            return true;
+        }
+
+        // WHITELIST: другие типы где НУЖНО генерировать аудио (пользователь слушает)
         $audioTypes = [
-            'listen_mcq',       // Listening comprehension - пользователь слушает и отвечает
             'dictation',        // Диктант - пользователь слушает и пишет
+            'note_completion',  // Заполнение заметок (может быть по аудио)
         ];
 
         if (in_array($question->type, $audioTypes, true)) {

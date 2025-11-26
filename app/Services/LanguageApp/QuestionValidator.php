@@ -27,6 +27,9 @@ class QuestionValidator
         'order_words',
         'highlight_text',
         'listen_mcq',
+        // ✅ NEW: Listening variants (2025-11-26)
+        'listen_true_false',
+        'listen_yes_no_ng',
     ];
 
     public function __construct(

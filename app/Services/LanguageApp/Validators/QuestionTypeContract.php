@@ -32,6 +32,15 @@ final class QuestionTypeContract
         'error_correction' => ['rubric', 'fuzzy', 'regex'],
         'writing_prompt' => ['rubric'],
         'speaking_prompt' => ['rubric'],
+
+        // ✅ NEW: Listening variants (2025-11-26)
+        'listen_true_false' => ['exact'],
+        'listen_yes_no_ng' => ['exact'],
+
+        // ✅ NEW: Additional types (2025-11-26)
+        'translation' => ['rubric', 'fuzzy'],  // Перевод: rubric для общей оценки, fuzzy для точности
+        'roleplay' => ['rubric'],              // Ролевая игра: только rubric (коммуникативные навыки)
+        'note_completion' => ['exact', 'partial'],  // Заполнение заметок: exact или partial credit
     ];
 
     private array $adapters;

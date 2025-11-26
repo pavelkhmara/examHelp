@@ -23,6 +23,15 @@ enum QuestionType: string
     case WRITING_PROMPT = 'writing_prompt';
     case SPEAKING_PROMPT = 'speaking_prompt';
 
+    // ✅ NEW: Listening variants (2025-11-26)
+    case LISTEN_TRUE_FALSE = 'listen_true_false';
+    case LISTEN_YES_NO_NG = 'listen_yes_no_ng';
+
+    // ✅ NEW: Additional question types (2025-11-26)
+    case TRANSLATION = 'translation';
+    case ROLEPLAY = 'roleplay';
+    case NOTE_COMPLETION = 'note_completion';
+
     public static function all(): array
     {
         return array_map(fn (self $e) => $e->value, self::cases());
