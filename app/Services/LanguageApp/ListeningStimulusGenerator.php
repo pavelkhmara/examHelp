@@ -112,9 +112,7 @@ class ListeningStimulusGenerator
     /**
      * Собирает контекст для генерации
      *
-     * @param  QuestionGroup  $group
      * @param  \Illuminate\Database\Eloquent\Collection<int, \App\Models\Question>  $questions
-     * @param  string  $stimulusType
      */
     protected function buildContext(QuestionGroup $group, $questions, string $stimulusType): array
     {

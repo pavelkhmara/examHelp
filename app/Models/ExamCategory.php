@@ -125,6 +125,7 @@ class ExamCategory extends Model
         // Build final templates array with overrides applied
         /** @var \Illuminate\Support\Collection<int, array<string, mixed>> $sequenceCollection */
         $sequenceCollection = collect($sequence); // @phpstan-ignore-line
+
         return $sequenceCollection
             ->map(function ($ref) use ($globalTemplates, $overrides) {
                 $templateId = $ref['template_id'];

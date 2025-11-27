@@ -116,7 +116,6 @@ abstract class AbstractAiService
 
     /**
      * @param  array<int|string, mixed>  $exam_info
-     * @return string
      */
     private function gatherWebHints(array $exam_info, int $limit = 5): string
     {
