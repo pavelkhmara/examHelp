@@ -10,11 +10,10 @@ use Illuminate\Database\Eloquent\Relations\MorphTo;
 
 /**
  * @property string $status Task status: queued, running, completed, failed, pending_confirmation, pending_clarification, cancelled, waiting_for_confirmation
- *
- * @uses HasFactory<\Database\Factories\GenerationTaskFactory>
  */
 class GenerationTask extends Model
 {
+    /** @use HasFactory<\Database\Factories\GenerationTaskFactory> */
     use HasFactory;
 
     protected $fillable = [
@@ -40,6 +39,9 @@ class GenerationTask extends Model
         return $this->belongsTo(Exam::class);
     }
 
+    /**
+     * @return MorphTo<\Illuminate\Database\Eloquent\Model, covariant self>
+     */
     public function subject(): MorphTo
     {
         return $this->morphTo();

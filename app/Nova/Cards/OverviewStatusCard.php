@@ -27,10 +27,13 @@ class OverviewStatusCard extends Card
             'generated_at' => $structure['generated_at'] ?? null,
         ];
 
+        /** @var array<int|string, mixed> $sections */
+        $sections = $structure['sections'] ?? [];
+
         $phaseB = [
             'completed' => ! empty($structure['sections'][0]['assembly'] ?? null),
             'assembly_mode' => $structure['sections'][0]['assembly']['mode'] ?? null,
-            'questions_count' => collect($structure['sections'] ?? [])
+            'questions_count' => collect($sections)
                 ->sum(fn (array $s) => count($s['question_archetypes'] ?? $s['questions'] ?? [])),
         ];
 

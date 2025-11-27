@@ -153,7 +153,7 @@ SYSTEM;
 
         // Build web search section
         $webSearchSection = '';
-        if ($webSearchData && is_array($webSearchData) && ! empty($webSearchData)) {
+        if (is_array($webSearchData) && ! empty($webSearchData)) {
             $webSearchSection = "\n\n**WEB SEARCH RESULTS:**\n";
             $webSearchSection .= "Additional information gathered from web search:\n\n";
 
@@ -177,7 +177,7 @@ SYSTEM;
 
         // Build existing identity section
         $existingIdentitySection = '';
-        if ($existingIdentity && is_array($existingIdentity) && ! empty($existingIdentity)) {
+        if (is_array($existingIdentity) && ! empty($existingIdentity)) {
             $existingIdentityJson = json_encode($existingIdentity, JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT);
             $existingIdentitySection = "\n\n**EXISTING IDENTITY DATA:**\n";
             $existingIdentitySection .= "The following identity information was already captured during exam creation:\n";
@@ -188,7 +188,7 @@ SYSTEM;
 
         // Build user metadata section
         $userMetaSection = '';
-        if ($userMeta && is_array($userMeta) && ! empty($userMeta)) {
+        if (is_array($userMeta) && ! empty($userMeta)) {
             $userMetaJson = json_encode($userMeta, JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT);
             $userMetaSection = "\n\n**USER METADATA (from initial analysis):**\n";
             $userMetaSection .= "Additional information about the user and their exam preparation:\n";

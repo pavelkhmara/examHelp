@@ -1047,7 +1047,7 @@ class OverviewStructureBuilder extends AbstractAiService
             'exam_title' => $exam->title,
             'exam_level' => $exam->level,
             'exam_description' => trim($exam->description),
-            'input' => trim($task->notes) ?? null,
+            'input' => isset($task->request['notes']) ? trim($task->request['notes']) : null,
             'context_policy' => $preferDocs
                 ? 'Prefer insights derived from provided exam documents over generic web sources.'
                 : 'Use both files and web sources.',
@@ -1140,7 +1140,7 @@ class OverviewStructureBuilder extends AbstractAiService
             'exam_title' => $exam->title,
             'exam_level' => $exam->level,
             'exam_description' => trim($exam->description),
-            'input' => trim($task->notes) ?? null,
+            'input' => isset($task->request['notes']) ? trim($task->request['notes']) : null,
             'phase_a_skeleton' => $phaseASkeleton,
         ];
 
@@ -1150,7 +1150,7 @@ class OverviewStructureBuilder extends AbstractAiService
         // Build prompt args for Phase B (different signature than Phase A)
         $promptArgs = [
             $exam->title,                     // examTitle
-            trim($task->notes) ?? '',        // userInput
+            isset($task->request['notes']) ? trim($task->request['notes']) : '',        // userInput
             trim($exam->description),         // contextNotes
             $phaseASkeleton,                  // phaseASkeleton
             null,                             // retryHint
@@ -1242,7 +1242,7 @@ class OverviewStructureBuilder extends AbstractAiService
             'exam_title' => $exam->title,
             'exam_level' => $exam->level,
             'exam_description' => trim($exam->description),
-            'input' => trim($task->notes) ?? null,
+            'input' => isset($task->request['notes']) ? trim($task->request['notes']) : null,
             'section_skeleton' => $sectionSkeleton,
             'full_skeleton' => $fullSkeleton,
         ];
@@ -1253,7 +1253,7 @@ class OverviewStructureBuilder extends AbstractAiService
         // Build prompt args for section assembly
         $promptArgs = [
             $exam->title,                     // examTitle
-            trim($task->notes) ?? '',        // userInput
+            isset($task->request['notes']) ? trim($task->request['notes']) : '',        // userInput
             trim($exam->description),         // contextNotes
             $sectionSkeleton,                 // sectionSkeleton
             $fullSkeleton,                    // fullSkeleton (for context)

@@ -719,7 +719,10 @@ PROMPT;
      * FIX: Changed to read from ExamCategory instead of structure_v2
      * See: docs/fixes/fix-dual-source-of-truth.md
      */
-    protected function getSectionMetadata(Exam $exam, int $categoryId): array
+    /**
+     * @param  int|string  $categoryId
+     */
+    protected function getSectionMetadata(Exam $exam, $categoryId): array
     {
         $category = \App\Models\ExamCategory::find($categoryId);
 
@@ -1050,6 +1053,7 @@ PROMPT;
 
         // Update exam meta with generated questions
         $meta = $exam->meta ?? [];
+        /** @var array<int, array<string, mixed>> $existingQuestions */
         $existingQuestions = $meta['generated_questions_v2'] ?? [];
 
         // Merge with existing (avoid duplicates by 'id')

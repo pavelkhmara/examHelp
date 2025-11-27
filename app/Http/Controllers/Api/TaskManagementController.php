@@ -292,6 +292,7 @@ class TaskManagementController extends Controller
             // Parse user_input from exam
             $userInput = [];
             if (! empty($exam->user_input)) {
+                /** @phpstan-ignore-next-line */
                 if (is_array($exam->user_input)) {
                     $userInput = $exam->user_input;
                 } elseif (is_string($exam->user_input)) {

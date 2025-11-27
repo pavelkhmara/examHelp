@@ -19,11 +19,10 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
  * @property \Carbon\Carbon $updated_at
  * @property-read Exam $exam
  * @property-read \Illuminate\Database\Eloquent\Collection<int, AttemptAnswer> $answers
- *
- * @uses HasFactory<\Database\Factories\AttemptFactory>
  */
 class Attempt extends Model
 {
+    /** @use HasFactory<\Database\Factories\AttemptFactory> */
     use HasFactory, HasUuid;
 
     protected $fillable = ['exam_id', 'user_id', 'started_at', 'completed_at', 'score'];

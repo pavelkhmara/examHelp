@@ -40,11 +40,10 @@ use Illuminate\Database\Eloquent\Relations\HasOne;
  * @property int|null $total_exam_duration
  * @property array $exam_structure
  * @property array $structure_sections
- *
- * @uses HasFactory<\Database\Factories\ExamFactory>
  */
 class Exam extends Model
 {
+    /** @use HasFactory<\Database\Factories\ExamFactory> */
     use HasFactory, HasUuids;
 
     public $incrementing = false;
@@ -189,7 +188,7 @@ class Exam extends Model
     /**
      * Get v1 exam structure from meta['exam_structure'] (for backward compatibility)
      */
-    public function getExamStructureAttribute()
+    public function getExamStructureAttribute(): ?array
     {
         return $this->meta['exam_structure'] ?? null;
     }
@@ -197,7 +196,7 @@ class Exam extends Model
     /**
      * Get total exam duration from v1 structure (backward compatibility)
      */
-    public function getTotalExamDurationAttribute()
+    public function getTotalExamDurationAttribute(): ?int
     {
         return data_get($this->exam_structure, 'total_exam_duration');
     }
@@ -205,7 +204,7 @@ class Exam extends Model
     /**
      * Get sections from v1 structure (backward compatibility)
      */
-    public function getStructureSectionsAttribute()
+    public function getStructureSectionsAttribute(): array
     {
         // NEW v2: Try structure_v2 first (stored in meta)
         $v2 = $this->meta['structure_v2'] ?? null;

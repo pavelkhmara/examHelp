@@ -24,7 +24,6 @@ class ExamPlayController extends Controller
     {
         // NOTE: This is legacy code that needs refactoring
         // Questions no longer use 'options' relationship - they store options in JSON interaction field
-        // @phpstan-ignore-next-line
         $exam = Exam::query()
             ->whereKey($exam)
             ->where('is_active', true)

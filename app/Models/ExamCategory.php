@@ -31,11 +31,10 @@ use Illuminate\Database\Eloquent\Model;
  * @property-read \Illuminate\Database\Eloquent\Collection<int, ExamExampleQuestion> $examples
  * @property-read \Illuminate\Database\Eloquent\Collection<int, Question> $questions
  * @property-read \Illuminate\Database\Eloquent\Collection<int, QuestionGroup> $questionGroups
- *
- * @uses HasFactory<\Database\Factories\ExamCategoryFactory>
  */
 class ExamCategory extends Model
 {
+    /** @use HasFactory<\Database\Factories\ExamCategoryFactory> */
     use HasFactory;
 
     protected $fillable = [

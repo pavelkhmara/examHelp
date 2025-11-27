@@ -45,7 +45,7 @@ class QuestionAttacher
             $sectionKey = $category ? $category->key : "section_{$plan->section_id}";
 
             // Build group_id → database ID mapping for this section
-            $groupIdMap = $this->buildQuestionGroupIdMap($exam, $plan->section_id);
+            $groupIdMap = $this->buildQuestionGroupIdMap($exam, (int) $plan->section_id);
 
             foreach ($questions as $qIndex => $questionData) {
                 try {
@@ -141,15 +141,14 @@ class QuestionAttacher
                         if ($existingQuestion) {
                             // UPDATE existing skeleton question with synthesized content
                             // Check if it's a skeleton (empty interaction)
-                            $isSkeleton = empty($existingQuestion->interaction) ||
-                                          (is_array($existingQuestion->interaction) && count($existingQuestion->interaction) === 0);
+                            $isSkeleton = empty($existingQuestion->interaction);
 
                             // ✅ CHECKPOINT LOGGING: Log before UPDATE
                             Log::info('[Contract:BeforeAttach] Question ready to attach', [
                                 'uniqueQuestionId' => $questionId,
                                 'group_id' => $record['question_group_id'] ?? 'NULL',
                                 'section_id' => $record['section_id'],
-                                'action' => $existingQuestion ? 'UPDATE' : 'INSERT',
+                                'action' => 'UPDATE',
                                 'is_skeleton' => $isSkeleton,
                             ]);
 

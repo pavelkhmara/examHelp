@@ -177,6 +177,7 @@ class ResearchAction extends Action
             // Parse user_input from exam
             $userInput = [];
             if (! empty($exam->user_input)) {
+                /** @phpstan-ignore-next-line */
                 if (is_array($exam->user_input)) {
                     $userInput = $exam->user_input;
                 } elseif (is_string($exam->user_input)) {
@@ -232,7 +233,7 @@ class ResearchAction extends Action
             \Illuminate\Support\Facades\Log::info('🔵 [ResearchAction] Before TaskDispatcher->enqueue()', [
                 'exam_id' => $exam->id,
                 'idempotency_key' => $requestIdempotencyKey,
-                'payload_source' => $payload['source'] ?? 'unknown',
+                'payload_source' => $payload['source'],
             ]);
 
             $task = $tasks->enqueue(

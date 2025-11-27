@@ -354,7 +354,9 @@ class DiagnosticsController extends Controller
             }
 
             $resource = new \App\Nova\Exam($exam);
-            $actions = $resource->actions(request());
+            // Create NovaRequest from current request for Nova compatibility
+            $novaRequest = \Laravel\Nova\Http\Requests\NovaRequest::createFrom(request());
+            $actions = $resource->actions($novaRequest);
 
             $actionsList = collect($actions)->map(function ($action) {
                 return [

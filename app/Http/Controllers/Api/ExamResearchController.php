@@ -499,6 +499,12 @@ class ExamResearchController extends Controller
                     'message' => 'All variants rejected. Research cancelled.',
                     'task_id' => $task->id,
                 ]);
+
+            default:
+                return response()->json([
+                    'status' => 'error',
+                    'message' => 'Invalid clarification type',
+                ], 400);
         }
     }
 

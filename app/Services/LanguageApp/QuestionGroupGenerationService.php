@@ -383,6 +383,7 @@ class QuestionGroupGenerationService
         $existingQuestions = $meta['generated_questions_v2'] ?? [];
 
         // Merge with existing questions (avoid duplicates by 'id')
+        /** @var \Illuminate\Support\Collection<int, array<string, mixed>> $merged */
         $merged = collect($existingQuestions);
         foreach ($generatedQuestions as $newQuestion) {
             $existingIndex = $merged->search(fn ($q) => $q['id'] === $newQuestion['id']);

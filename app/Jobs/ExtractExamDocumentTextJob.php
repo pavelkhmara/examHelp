@@ -134,6 +134,7 @@ class ExtractExamDocumentTextJob implements ShouldQueue
             }
             $langs = (string) config('documents.ocr_langs', 'eng');
             $tess = new TesseractOCR($fullPath);
+            // @phpstan-ignore-next-line - TesseractOCR library method exists but not in PHPStan stubs
             $tess->lang(...array_map('trim', explode('+', $langs)));
             $binPath = config('documents.tesseract_bin');
             if ($binPath) {

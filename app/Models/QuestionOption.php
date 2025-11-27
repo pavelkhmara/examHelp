@@ -7,11 +7,9 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
-/**
- * @uses HasFactory<\Database\Factories\QuestionOptionFactory>
- */
 class QuestionOption extends Model
 {
+    /** @use HasFactory<\Database\Factories\QuestionOptionFactory> */
     use HasFactory, HasUuid;
 
     protected $fillable = ['question_id', 'text', 'is_correct'];

@@ -66,11 +66,10 @@ use Illuminate\Database\Eloquent\SoftDeletes;
  * @property-read Exam $exam
  * @property-read ExamCategory $section
  * @property-read QuestionGroup|null $questionGroup
- *
- * @uses HasFactory<\Database\Factories\QuestionFactory>
  */
 class Question extends Model
 {
+    /** @use HasFactory<\Database\Factories\QuestionFactory> */
     use HasFactory, SoftDeletes;
 
     protected $fillable = [
@@ -245,6 +244,8 @@ class Question extends Model
 
     /**
      * Scope to only published questions
+     *
+     * @param  \Illuminate\Database\Eloquent\Builder<self>  $query
      */
     public function scopePublished($query): mixed
     {
@@ -253,6 +254,8 @@ class Question extends Model
 
     /**
      * Scope to only draft questions
+     *
+     * @param  \Illuminate\Database\Eloquent\Builder<self>  $query
      */
     public function scopeDraft($query): mixed
     {
@@ -261,6 +264,8 @@ class Question extends Model
 
     /**
      * Scope to only frozen questions
+     *
+     * @param  \Illuminate\Database\Eloquent\Builder<self>  $query
      */
     public function scopeFrozen($query): mixed
     {
@@ -269,6 +274,8 @@ class Question extends Model
 
     /**
      * Scope to questions by type
+     *
+     * @param  \Illuminate\Database\Eloquent\Builder<self>  $query
      */
     public function scopeOfType($query, string $type): mixed
     {

@@ -27,11 +27,10 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  *
  * Virtual properties:
  * @property string|null $filename Alias for original_name
- *
- * @uses HasFactory<\Database\Factories\ExamDocumentFactory>
  */
 class ExamDocument extends Model
 {
+    /** @use HasFactory<\Database\Factories\ExamDocumentFactory> */
     use HasFactory, HasUuid;
 
     protected $table = 'exam_documents';

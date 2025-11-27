@@ -191,8 +191,10 @@ class ExamFullViewRenderer
 
     /**
      * Render assembly mode explanation
+     *
+     * @param  mixed  $questions  Collection of Question or ExamExampleQuestion
      */
-    private function renderAssemblyModeExplanation(string $assemblyMode, array $sectionData, ?string $dataSource, $questions): string
+    private function renderAssemblyModeExplanation(string $assemblyMode, array $sectionData, ?string $dataSource, mixed $questions): string
     {
         $expectedCount = $sectionData['expected_question_count']['target'] ?? null;
         $questionsCount = $questions->count();
@@ -283,8 +285,10 @@ class ExamFullViewRenderer
     /**
      * Render inline questions (all questions from section)
      * Supports both grouped (question_groups) and ungrouped questions
+     *
+     * @param  mixed  $questions  Collection of Question or ExamExampleQuestion
      */
-    private function renderInlineQuestions($questions, ?string $dataSource): string
+    private function renderInlineQuestions(mixed $questions, ?string $dataSource): string
     {
         if ($questions->isEmpty()) {
             return $this->renderEmptyState('Нет вопросов для отображения');
@@ -335,8 +339,10 @@ class ExamFullViewRenderer
 
     /**
      * Render a question group with shared stimulus and playback controls
+     *
+     * @param  mixed  $questions  Collection of Question or ExamExampleQuestion
      */
-    private function renderQuestionGroup(QuestionGroup $questionGroup, $questions, int $startNumber, ?string $dataSource): string
+    private function renderQuestionGroup(QuestionGroup $questionGroup, mixed $questions, int $startNumber, ?string $dataSource): string
     {
         $metadata = $questionGroup->metadata ?? [];
         $isChoiceSet = $metadata['is_choice_set'] ?? false;
@@ -687,8 +693,10 @@ JS;
 
     /**
      * Render blueprint questions (templates with expected count)
+     *
+     * @param  mixed  $questions  Collection of Question or ExamExampleQuestion
      */
-    private function renderBlueprintQuestions(array $sectionData, $questions, ?string $dataSource): string
+    private function renderBlueprintQuestions(array $sectionData, mixed $questions, ?string $dataSource): string
     {
         // Show all available templates/questions
         if ($questions->isEmpty()) {
@@ -708,8 +716,10 @@ JS;
 
     /**
      * Render pool questions (show all from pool with selection indicator)
+     *
+     * @param  mixed  $questions  Collection of Question or ExamExampleQuestion
      */
-    private function renderPoolQuestions(array $sectionData, $questions, ?string $dataSource): string
+    private function renderPoolQuestions(array $sectionData, mixed $questions, ?string $dataSource): string
     {
         // Show all pool questions
         if ($questions->isEmpty()) {
@@ -730,7 +740,7 @@ JS;
     /**
      * Render a single question (Question or ExamExampleQuestion)
      */
-    private function renderQuestion($question, int $number, ?string $dataSource, bool $isTemplate = false): string
+    private function renderQuestion(Question|ExamExampleQuestion $question, int $number, ?string $dataSource, bool $isTemplate = false): string
     {
         // Determine if it's a generated Question or ExamExampleQuestion
         $isGenerated = $question instanceof Question;

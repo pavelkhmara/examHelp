@@ -35,11 +35,10 @@ use Illuminate\Database\Eloquent\Model;
  * @property string|null $difficulty From payload field
  * @property-read Exam $exam
  * @property-read ExamCategory|null $category
- *
- * @uses HasFactory<\Database\Factories\ExamExampleQuestionFactory>
  */
 class ExamExampleQuestion extends Model
 {
+    /** @use HasFactory<\Database\Factories\ExamExampleQuestionFactory> */
     use HasFactory;
 
     protected $table = 'exam_example_questions';

@@ -15,7 +15,7 @@ class RunTextEvaluationJob implements ShouldQueue
 {
     use Dispatchable, Queueable;
 
-    public function __construct(public string $taskId) {}
+    public function __construct(public int $taskId) {}
 
     public function handle(): void
     {

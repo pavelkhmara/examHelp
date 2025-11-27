@@ -30,6 +30,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
  */
 class QuestionGroup extends Model
 {
+    /** @use HasFactory<\Database\Factories\QuestionGroupFactory> */
     use HasFactory;
 
     protected $fillable = [
@@ -181,22 +182,34 @@ class QuestionGroup extends Model
 
     // ========== SCOPES ==========
 
+    /**
+     * @param  \Illuminate\Database\Eloquent\Builder<self>  $query
+     */
     public function scopeForSection($query, int $sectionId): mixed
     {
         return $query->where('section_id', $sectionId);
     }
 
+    /**
+     * @param  \Illuminate\Database\Eloquent\Builder<self>  $query
+     */
     public function scopeForExam($query, string $examId): mixed
     {
         return $query->where('exam_id', $examId);
     }
 
+    /**
+     * @param  \Illuminate\Database\Eloquent\Builder<self>  $query
+     */
     public function scopeOrdered($query): mixed
     {
         return $query->orderBy('order');
     }
 
-    public function scopeWithQuestions($query)
+    /**
+     * @param  \Illuminate\Database\Eloquent\Builder<self>  $query
+     */
+    public function scopeWithQuestions($query): mixed
     {
         return $query->with('questions');
     }

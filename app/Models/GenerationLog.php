@@ -57,7 +57,7 @@ class GenerationLog extends Model
 
     protected static function booted()
     {
-        static::creating(function ($log) {
+        static::creating(function (self $log) {
             if (empty($log->exam_id) && ! empty($log->generation_task_id)) {
                 $task = \App\Models\GenerationTask::find($log->generation_task_id);
                 if ($task && $task->exam_id) {

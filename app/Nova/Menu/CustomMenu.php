@@ -51,7 +51,7 @@ class CustomMenu extends Tool
     /**
      * Создает выпадающее меню со всеми экзаменами и их связанными сущностями
      */
-    private function createExamsSubmenu()
+    private function createExamsSubmenu(): array
     {
         $examItems = [];
 

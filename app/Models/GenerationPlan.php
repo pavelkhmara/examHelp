@@ -30,11 +30,10 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  * @property-read float $progress_percent
  * @property-read bool $is_completed
  * @property-read bool $is_failed
- *
- * @uses HasFactory<\Database\Factories\GenerationPlanFactory>
  */
 class GenerationPlan extends Model
 {
+    /** @use HasFactory<\Database\Factories\GenerationPlanFactory> */
     use HasFactory;
 
     protected $fillable = [
@@ -120,6 +119,8 @@ class GenerationPlan extends Model
 
     /**
      * Scope: Filter by status
+     *
+     * @param  \Illuminate\Database\Eloquent\Builder<self>  $query
      */
     public function scopeStatus($query, string $status): mixed
     {
@@ -128,14 +129,18 @@ class GenerationPlan extends Model
 
     /**
      * Scope: Filter by assembly mode
+     *
+     * @param  \Illuminate\Database\Eloquent\Builder<self>  $query
      */
-    public function scopeAssemblyMode($query, string $mode)
+    public function scopeAssemblyMode($query, string $mode): mixed
     {
         return $query->where('assembly_mode', $mode);
     }
 
     /**
      * Scope: Filter by section
+     *
+     * @param  \Illuminate\Database\Eloquent\Builder<self>  $query
      */
     public function scopeSection($query, string $sectionId): mixed
     {
@@ -144,6 +149,8 @@ class GenerationPlan extends Model
 
     /**
      * Scope: Get pending plans
+     *
+     * @param  \Illuminate\Database\Eloquent\Builder<self>  $query
      */
     public function scopePending($query): mixed
     {
@@ -152,14 +159,18 @@ class GenerationPlan extends Model
 
     /**
      * Scope: Get in-progress plans
+     *
+     * @param  \Illuminate\Database\Eloquent\Builder<self>  $query
      */
-    public function scopeInProgress($query)
+    public function scopeInProgress($query): mixed
     {
         return $query->where('status', 'in_progress');
     }
 
     /**
      * Scope: Get completed plans
+     *
+     * @param  \Illuminate\Database\Eloquent\Builder<self>  $query
      */
     public function scopeCompleted($query): mixed
     {
@@ -168,6 +179,8 @@ class GenerationPlan extends Model
 
     /**
      * Scope: Get failed plans
+     *
+     * @param  \Illuminate\Database\Eloquent\Builder<self>  $query
      */
     public function scopeFailed($query): mixed
     {

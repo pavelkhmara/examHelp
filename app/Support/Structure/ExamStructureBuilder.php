@@ -48,8 +48,9 @@ final class ExamStructureBuilder
         }
 
         // total score
-        $totalMin = array_sum(array_map(fn ($s) => (int) ($s['score_range']['min'] ?? 0), $sections));
-        $totalMax = array_sum(array_map(fn ($s) => (int) ($s['score_range']['max'] ?? 0), $sections));
+        // score_range['min'] and ['max'] always exist because we create them in the loop above
+        $totalMin = array_sum(array_map(fn ($s) => (int) $s['score_range']['min'], $sections));
+        $totalMax = array_sum(array_map(fn ($s) => (int) $s['score_range']['max'], $sections));
 
         // источники: Exam.sources > last completed research-task.result.sources > []
         $task = GenerationTask::query()

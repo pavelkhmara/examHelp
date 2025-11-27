@@ -107,7 +107,8 @@ class RecommendationService
 
         // Calculate accuracy
         foreach ($byCategory as &$cat) {
-            $cat['accuracy'] = $cat['total'] > 0 ? $cat['correct'] / $cat['total'] : 0;
+            // $cat['total'] is always > 0 here because we only create entries when incrementing total
+            $cat['accuracy'] = $cat['correct'] / $cat['total'];
         }
 
         return $byCategory;
@@ -139,7 +140,8 @@ class RecommendationService
         }
 
         foreach ($byType as &$t) {
-            $t['accuracy'] = $t['total'] > 0 ? $t['correct'] / $t['total'] : 0;
+            // $t['total'] is always > 0 here because we only create entries when incrementing total
+            $t['accuracy'] = $t['correct'] / $t['total'];
         }
 
         return $byType;
