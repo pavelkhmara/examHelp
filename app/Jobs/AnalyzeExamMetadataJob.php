@@ -111,12 +111,10 @@ class AnalyzeExamMetadataJob implements ShouldQueue
             ]);
 
             // Update task status
-            if (isset($task)) {
-                $task->update([
-                    'status' => 'failed',
-                    'error' => $e->getMessage(),
-                ]);
-            }
+            $task->update([
+                'status' => 'failed',
+                'error' => $e->getMessage(),
+            ]);
 
             $exam->update([
                 'analysis_status' => 'failed',

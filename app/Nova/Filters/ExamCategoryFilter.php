@@ -11,6 +11,10 @@ class ExamCategoryFilter extends Filter
 {
     public $name = 'Filter by Exam';
 
+    /**
+     * @param  \Illuminate\Database\Eloquent\Builder<\App\Models\ExamCategory>  $query
+     * @return \Illuminate\Database\Eloquent\Builder<\App\Models\ExamCategory>
+     */
     public function apply(Request $request, $query, $value)
     {
         Log::debug('ExamCategoryFilter apply', [

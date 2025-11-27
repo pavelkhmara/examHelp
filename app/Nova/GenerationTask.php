@@ -11,9 +11,12 @@ use Laravel\Nova\Fields\Select;
 use Laravel\Nova\Fields\Text;
 use Laravel\Nova\Http\Requests\NovaRequest;
 
+/**
+ * @extends Resource<\App\Models\GenerationTask>
+ */
 class GenerationTask extends Resource
 {
-    public static $model = \App\Models\GenerationTask::class;
+    public static string $model = \App\Models\GenerationTask::class;
 
     public static $title = 'id';
 

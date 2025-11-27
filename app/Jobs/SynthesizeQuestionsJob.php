@@ -197,7 +197,7 @@ class SynthesizeQuestionsJob implements ShouldQueue
                 'plans_processed' => $plans->count(),
                 'total_generated' => $totalGenerated,
                 'total_attached' => $totalAttached,
-                'audio_generated' => $audioStats['audio_generated'] ?? 0,
+                'audio_generated' => $audioStats['audio_generated'],
             ]);
             $task->updateHeartbeat();
 

@@ -10,6 +10,9 @@ use Laravel\Nova\Fields\Password;
 use Laravel\Nova\Fields\Text;
 use Laravel\Nova\Http\Requests\NovaRequest;
 
+/**
+ * @extends Resource<\App\Models\User>
+ */
 class User extends Resource
 {
     /**
@@ -17,7 +20,7 @@ class User extends Resource
      *
      * @var class-string<\App\Models\User>
      */
-    public static $model = \App\Models\User::class;
+    public static string $model = \App\Models\User::class;
 
     /**
      * The single value that should be used to represent the resource when being displayed.

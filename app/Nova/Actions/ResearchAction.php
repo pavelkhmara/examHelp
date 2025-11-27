@@ -45,17 +45,15 @@ class ResearchAction extends Action
         ];
     }
 
-    /**
-     * Determine if the user is authorized to run the action.
-     *
-     * @return bool
-     */
-    public function authorizedToRun(\Illuminate\Http\Request $request, $model)
+    public function authorizedToRun(\Illuminate\Http\Request $request, $model): bool
     {
         return true;
     }
 
-    public function handle(ActionFields $fields, $models): \Laravel\Nova\Actions\Action
+    /**
+     * @param  \Illuminate\Support\Collection<int, \App\Models\Exam>  $models
+     */
+    public function handle(ActionFields $fields, $models): mixed
     {
         \Illuminate\Support\Facades\Log::info('🔵 [ResearchAction] BUTTON CLICKED - Action started', [
             'timestamp' => now()->toDateTimeString(),

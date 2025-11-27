@@ -98,7 +98,7 @@ class SystemDiagnosticsCard extends Card
             ->limit(10)
             ->get()
             ->map(function ($task) {
-                $stuckDuration = now()->diffForHumans($task->updated_at, true);
+                $stuckDuration = now()->diffForHumans($task->updated_at, ['parts' => 1]);
 
                 return [
                     'id' => $task->id,

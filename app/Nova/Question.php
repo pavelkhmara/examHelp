@@ -14,12 +14,15 @@ use Laravel\Nova\Http\Requests\NovaRequest;
 use Laravel\Nova\Panel;
 use Laravel\Nova\Resource;
 
+/**
+ * @extends resource<\App\Models\Question>
+ */
 class Question extends Resource
 {
     /**
      * @var class-string<\App\Models\Question>
      */
-    public static $model = \App\Models\Question::class;
+    public static string $model = \App\Models\Question::class;
 
     public static $title = 'question_id';
 

@@ -117,29 +117,11 @@ class ExamResearchController extends Controller
             queue: null
         );
 
-        // НОРМАЛИЗУЕМ task_id к int (enqueue может вернуть int|array|Model)
-        $taskId = null;
-        if (is_int($enq)) {
-            $taskId = $enq;
-        } elseif (is_array($enq)) {
-            if (isset($enq['id']) && is_numeric($enq['id'])) {
-                $taskId = (int) $enq['id'];
-            } elseif (isset($enq['task_id']) && is_numeric($enq['task_id'])) {
-                $taskId = (int) $enq['task_id'];
-            } elseif (isset($enq['task']) && is_object($enq['task']) && isset($enq['task']->id)) {
-                $taskId = (int) $enq['task']->id;
-            }
-        } elseif (is_object($enq)) {
-            // Вдруг вернули модель GenerationTask
-            if (isset($enq->id)) {
-                $taskId = (int) $enq->id;
-            } elseif (method_exists($enq, 'getKey')) {
-                $taskId = (int) $enq->getKey();
-            }
-        }
+        // enqueue() returns GenerationTask model
+        $taskId = $enq->id;
 
         if (! is_int($taskId)) {
-            // Последний предсказуемый fallback: бросим валидационную ошибку, чтобы не отдавать мусор
+            // Safety check (should never happen since enqueue returns GenerationTask with int ID)
             throw ValidationException::withMessages([
                 'enqueue' => 'Не удалось определить идентификатор задачи.',
             ]);

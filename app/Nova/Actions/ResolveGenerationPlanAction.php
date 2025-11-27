@@ -58,10 +58,8 @@ class ResolveGenerationPlanAction extends Action
 
     /**
      * Determine if the user is authorized to run the action.
-     *
-     * @return bool
      */
-    public function authorizedToRun(\Illuminate\Http\Request $request, $model)
+    public function authorizedToRun(\Illuminate\Http\Request $request, $model): bool
     {
         \Log::info('[ResolveGenerationPlanAction] authorizedToRun called', [
             'user' => $request->user()->email ?? 'no-user',
@@ -75,7 +73,10 @@ class ResolveGenerationPlanAction extends Action
         return true;
     }
 
-    public function handle(ActionFields $fields, Collection $models)
+    /**
+     * @param  Collection<int, \App\Models\Exam>  $models
+     */
+    public function handle(ActionFields $fields, Collection $models): mixed
     {
         \Log::info('[ResolveGenerationPlanAction] handle() STARTED', [
             'models_count' => $models->count(),

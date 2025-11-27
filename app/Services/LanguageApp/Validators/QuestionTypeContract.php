@@ -161,7 +161,6 @@ final class QuestionTypeContract
     {
         // Поддерживаем два варианта реализации enum-сущности: custom ::all() или native ::cases()
         if (method_exists(\App\Domain\Taxonomy\QuestionType::class, 'all')) {
-            /** @phpstan-ignore-next-line */
             return \App\Domain\Taxonomy\QuestionType::all();
         }
 

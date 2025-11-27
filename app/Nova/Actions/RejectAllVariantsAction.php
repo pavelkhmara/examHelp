@@ -20,15 +20,15 @@ class RejectAllVariantsAction extends Action
 
     public $uriKey = 'reject-all-variants';
 
-    /**
-     * Perform the action on the given models.
-     */
-    public function authorizedToRun(\Illuminate\Http\Request $request, $model)
+    public function authorizedToRun(\Illuminate\Http\Request $request, $model): bool
     {
         return true;
     }
 
-    public function handle(ActionFields $fields, Collection $models)
+    /**
+     * @param  Collection<int, \App\Models\Exam>  $models
+     */
+    public function handle(ActionFields $fields, Collection $models): mixed
     {
         foreach ($models as $exam) {
             /** @var Exam $exam */

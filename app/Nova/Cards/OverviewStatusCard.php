@@ -31,7 +31,7 @@ class OverviewStatusCard extends Card
             'completed' => ! empty($structure['sections'][0]['assembly'] ?? null),
             'assembly_mode' => $structure['sections'][0]['assembly']['mode'] ?? null,
             'questions_count' => collect($structure['sections'] ?? [])
-                ->sum(fn ($s) => count($s['question_archetypes'] ?? $s['questions'] ?? [])),
+                ->sum(fn (array $s) => count($s['question_archetypes'] ?? $s['questions'] ?? [])),
         ];
 
         return array_merge(parent::jsonSerialize(), [

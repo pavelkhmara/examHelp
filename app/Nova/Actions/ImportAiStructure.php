@@ -32,7 +32,10 @@ class ImportAiStructure extends Action
         ];
     }
 
-    public function handle(ActionFields $fields, $models)
+    /**
+     * @param  \Illuminate\Support\Collection<int, \App\Models\Exam>  $models
+     */
+    public function handle(ActionFields $fields, $models): mixed
     {
         /** @var ExamResearchService $svc */
         $svc = app(ExamResearchService::class);

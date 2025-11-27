@@ -2,7 +2,7 @@
 
 namespace App\Services\AI\Providers;
 
-use App\Services\AI\AbstractAiService;
+use App\Services\LanguageApp\AbstractAiService;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\Http;
 

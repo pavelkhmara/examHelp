@@ -45,7 +45,10 @@ class ResetAndRestartResearch extends Action
         ];
     }
 
-    public function handle(ActionFields $fields, $models)
+    /**
+     * @param  \Illuminate\Support\Collection<int, \App\Models\Exam>  $models
+     */
+    public function handle(ActionFields $fields, $models): mixed
     {
         Log::info('🔵 [ResetAndRestartResearch] BUTTON CLICKED - Action started', [
             'timestamp' => now()->toDateTimeString(),
@@ -69,6 +72,7 @@ class ResetAndRestartResearch extends Action
                 try {
                     // Step 1: Cancel active tasks if requested
                     $cancelledCount = 0;
+                    /** @phpstan-ignore-next-line */
                     if ($fields->cancel_active_tasks) {
                         $cancelledCount = $this->cancelActiveTasks($exam);
                         Log::info('[ResetAndRestartResearch] Cancelled active tasks', [
@@ -251,11 +255,9 @@ class ResetAndRestartResearch extends Action
     }
 
     /**
-     * Get the fields available on the action.
-     *
-     * @return array
+     * Get the displayable name of the action.
      */
-    public function name()
+    public function name(): string
     {
         return '🔄 Reset & Restart Research';
     }

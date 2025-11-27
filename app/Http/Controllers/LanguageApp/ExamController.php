@@ -10,15 +10,24 @@ use Illuminate\Http\Request;
 
 class ExamController extends Controller
 {
-    public function research(Request $request, Exam $exam)
+    public function research(Request $request, Exam $exam): \Illuminate\Http\JsonResponse
     {
         // права можно ограничить ролями (spatie/permission) — по необходимости
-        RunExamResearchJob::dispatch($exam->id, (string) $request->input('notes'));
+        // Note: This is legacy code - modern approach uses TaskDispatcher in ExamResearchController
+        // Create task first, then dispatch with task ID
+        $task = GenerationTask::create([
+            'exam_id' => $exam->id,
+            'type' => 'research',
+            'status' => 'queued',
+            'request' => ['notes' => $request->input('notes')],
+        ]);
 
-        return response()->json(['ok' => true, 'queued' => true]);
+        RunExamResearchJob::dispatch($task->id);
+
+        return response()->json(['ok' => true, 'queued' => true, 'task_id' => $task->id]);
     }
 
-    public function task(GenerationTask $task)
+    public function task(GenerationTask $task): \Illuminate\Http\JsonResponse
     {
         return response()->json([
             'id' => $task->id,

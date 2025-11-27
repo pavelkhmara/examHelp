@@ -12,10 +12,12 @@ use Laravel\Nova\Http\Requests\NovaRequest;
  *
  * Displays full exam view with all sections and questions.
  * This is a read-only resource for viewing complete exam structure.
+ *
+ * @extends Resource<\App\Models\Exam>
  */
 class ExamFullView extends Resource
 {
-    public static $model = \App\Models\Exam::class;
+    public static string $model = \App\Models\Exam::class;
 
     public static $title = 'title';
 

@@ -49,7 +49,7 @@ class ExtractExamDocumentTextJob implements ShouldQueue
                 $text = $this->extract($doc->mime, $fullPath);
             }
 
-            $text = trim($text ?? '');
+            $text = trim($text);
 
             if ($text === '') {
                 $ok = false;

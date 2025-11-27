@@ -71,8 +71,8 @@ class AnswerController extends Controller
                 'answer' => $data['answer'],
                 'evaluation' => $evaluation,
                 'is_correct' => $evaluation['is_correct'] ?? null,
-                'points_earned' => $evaluation['points_earned'] ?? null,
-                'points_possible' => $evaluation['points_possible'] ?? null,
+                'points_earned' => $evaluation['points_earned'],
+                'points_possible' => $evaluation['points_possible'],
                 'time_spent_sec' => $data['time_spent_sec'] ?? null,
             ]
         );

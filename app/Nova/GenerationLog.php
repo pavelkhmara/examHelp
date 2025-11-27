@@ -11,9 +11,12 @@ use Laravel\Nova\Fields\Text;
 use Laravel\Nova\Fields\Textarea;
 use Laravel\Nova\Http\Requests\NovaRequest;
 
+/**
+ * @extends Resource<\App\Models\GenerationLog>
+ */
 class GenerationLog extends Resource
 {
-    public static $model = \App\Models\GenerationLog::class;
+    public static string $model = \App\Models\GenerationLog::class;
 
     public static $title = 'id';
 

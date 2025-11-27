@@ -20,7 +20,7 @@ class DiagnosticsDashboardController extends Controller
      * Show diagnostics dashboard
      * GET /diagnostics-dashboard
      */
-    public function index(ExamStructureRecoveryService $recovery)
+    public function index(ExamStructureRecoveryService $recovery): \Illuminate\View\View
     {
         // Get system statistics
         $taskStatusCounts = GenerationTask::query()
@@ -125,7 +125,7 @@ class DiagnosticsDashboardController extends Controller
      * Diagnose a specific exam
      * GET /diagnostics-dashboard/exam/{examId}
      */
-    public function diagnoseExam(string $examId)
+    public function diagnoseExam(string $examId): \Illuminate\Http\JsonResponse
     {
         $exam = Exam::find($examId);
 
@@ -327,7 +327,7 @@ class DiagnosticsDashboardController extends Controller
      * Scan all exams for structure recovery needs
      * GET /api/diagnostics/structure-recovery/scan
      */
-    public function scanStructureRecovery(ExamStructureRecoveryService $recovery)
+    public function scanStructureRecovery(ExamStructureRecoveryService $recovery): \Illuminate\Http\JsonResponse
     {
         $exams = Exam::with('categories')->get();
         $needingRecovery = [];
@@ -356,7 +356,7 @@ class DiagnosticsDashboardController extends Controller
      * Recover structure for a single exam
      * POST /api/diagnostics/structure-recovery/recover/{examId}
      */
-    public function recoverStructure(string $examId, Request $request, ExamStructureRecoveryService $recovery)
+    public function recoverStructure(string $examId, Request $request, ExamStructureRecoveryService $recovery): \Illuminate\Http\JsonResponse
     {
         $exam = Exam::find($examId);
 
@@ -391,7 +391,7 @@ class DiagnosticsDashboardController extends Controller
      * Diagnose structure for a single exam
      * GET /api/diagnostics/structure-recovery/diagnose/{examId}
      */
-    public function diagnoseStructure(string $examId, ExamStructureRecoveryService $recovery)
+    public function diagnoseStructure(string $examId, ExamStructureRecoveryService $recovery): \Illuminate\Http\JsonResponse
     {
         $exam = Exam::find($examId);
 
@@ -424,7 +424,7 @@ class DiagnosticsDashboardController extends Controller
      * Compare generated exam with reference exam
      * GET /diagnostics-dashboard/compare/{genId}/{refId}
      */
-    public function compareExams(string $genId, string $refId)
+    public function compareExams(string $genId, string $refId): \Illuminate\Http\JsonResponse
     {
         $gen = Exam::find($genId);
         $ref = Exam::find($refId);
@@ -588,7 +588,7 @@ class DiagnosticsDashboardController extends Controller
      * Get list of reference exams
      * GET /diagnostics-dashboard/reference-exams
      */
-    public function referenceExams()
+    public function referenceExams(): \Illuminate\Http\JsonResponse
     {
         $refs = Exam::whereJsonContains('meta->is_reference_exam', true)
             ->get()
@@ -611,7 +611,7 @@ class DiagnosticsDashboardController extends Controller
      * Recover all exams that need it
      * POST /api/diagnostics/structure-recovery/recover-all
      */
-    public function recoverAll(Request $request, ExamStructureRecoveryService $recovery)
+    public function recoverAll(Request $request, ExamStructureRecoveryService $recovery): \Illuminate\Http\JsonResponse
     {
         $dryRun = $request->boolean('dry_run', false);
         $exams = Exam::all();
@@ -660,7 +660,7 @@ class DiagnosticsDashboardController extends Controller
      * Get available golden fixtures
      * GET /diagnostics-dashboard/golden-fixtures
      */
-    public function goldenFixtures(GoldenLoader $loader)
+    public function goldenFixtures(GoldenLoader $loader): \Illuminate\Http\JsonResponse
     {
         $fixtures = $loader->listFixtures();
 
@@ -674,7 +674,7 @@ class DiagnosticsDashboardController extends Controller
      * Compare exam with golden fixture (all stages)
      * GET /diagnostics-dashboard/golden-compare/{examId}/{fixtureId}
      */
-    public function goldenCompare(string $examId, string $fixtureId, SnapshotManager $manager, GoldenLoader $loader)
+    public function goldenCompare(string $examId, string $fixtureId, SnapshotManager $manager, GoldenLoader $loader): \Illuminate\Http\JsonResponse
     {
         $exam = Exam::find($examId);
 
@@ -720,7 +720,7 @@ class DiagnosticsDashboardController extends Controller
         }
 
         $overallSimilarity = $stageCount > 0 ? round(($totalSimilarity / $stageCount) * 100) : 0;
-        $passedCount = count(array_filter($results, fn ($r) => $r['passed'] ?? false));
+        $passedCount = count(array_filter($results, fn ($r) => $r['passed']));
 
         // Determine grade
         $grade = match (true) {
@@ -757,7 +757,7 @@ class DiagnosticsDashboardController extends Controller
      * Compare single stage with golden fixture
      * GET /diagnostics-dashboard/golden-compare/{examId}/{fixtureId}/{stage}
      */
-    public function goldenCompareStage(string $examId, string $fixtureId, string $stage, SnapshotManager $manager, GoldenLoader $loader)
+    public function goldenCompareStage(string $examId, string $fixtureId, string $stage, SnapshotManager $manager, GoldenLoader $loader): \Illuminate\Http\JsonResponse
     {
         $exam = Exam::find($examId);
 
@@ -798,7 +798,7 @@ class DiagnosticsDashboardController extends Controller
      * Capture snapshot of exam stage
      * POST /diagnostics-dashboard/snapshot/capture/{examId}
      */
-    public function snapshotCapture(string $examId, Request $request, SnapshotManager $manager)
+    public function snapshotCapture(string $examId, Request $request, SnapshotManager $manager): \Illuminate\Http\JsonResponse
     {
         $exam = Exam::find($examId);
 
@@ -845,7 +845,7 @@ class DiagnosticsDashboardController extends Controller
      * List snapshots for exam
      * GET /diagnostics-dashboard/snapshot/list/{examId?}
      */
-    public function snapshotList(?string $examId, SnapshotManager $manager)
+    public function snapshotList(?string $examId, SnapshotManager $manager): \Illuminate\Http\JsonResponse
     {
         if ($examId) {
             $snapshots = $manager->list($examId);
@@ -869,7 +869,7 @@ class DiagnosticsDashboardController extends Controller
      * Compare exam with its baseline snapshot
      * GET /diagnostics-dashboard/snapshot/compare/{examId}/{stage}
      */
-    public function snapshotCompare(string $examId, string $stage, Request $request, SnapshotManager $manager)
+    public function snapshotCompare(string $examId, string $stage, Request $request, SnapshotManager $manager): \Illuminate\Http\JsonResponse
     {
         $exam = Exam::find($examId);
 

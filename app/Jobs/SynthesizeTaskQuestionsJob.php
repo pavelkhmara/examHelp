@@ -167,7 +167,7 @@ class SynthesizeTaskQuestionsJob implements ShouldQueue
 
                 // Add activity log to parent task
                 $totalFilters = $meta['total_filters'] ?? 0;
-                $completedFilters = $meta['filters_completed'] ?? 0;
+                $completedFilters = $meta['filters_completed'];
                 $task->addActivity('filter_completed', "Filter {$this->filterKey} completed", [
                     'filter_key' => $this->filterKey,
                     'questions_attached' => count($attachedQuestions),
@@ -334,7 +334,7 @@ class SynthesizeTaskQuestionsJob implements ShouldQueue
             Log::info('[Contract:Filter] Built for synthesis', [
                 'filter_index' => $index,
                 'question_id' => $filter['question_id'],
-                'group_id' => $filter['group_id'] ?? 'NULL',
+                'group_id' => $filter['group_id'],
                 'type' => $filter['type'],
             ]);
         }

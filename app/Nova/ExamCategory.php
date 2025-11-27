@@ -20,6 +20,9 @@ use Laravel\Nova\Panel;
  */
 class ExamCategory extends Resource
 {
+    /**
+     * @var class-string<\App\Models\ExamCategory>
+     */
     public static $model = \App\Models\ExamCategory::class;
 
     public static $title = 'name';
@@ -157,7 +160,7 @@ class ExamCategory extends Resource
                         // Собираем детальные данные архетипов для этой секции
                         $archetypeIds = collect($currentSection['steps'])->pluck('archetype_id')->filter()->all();
                         $detailedArchetypes = collect($questionArchetypes)
-                            ->filter(fn ($arc) => in_array($arc['id'] ?? null, $archetypeIds))
+                            ->filter(fn (array $arc) => in_array($arc['id'] ?? null, $archetypeIds))
                             ->values()
                             ->all();
 
