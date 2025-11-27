@@ -76,29 +76,32 @@ final class QuestionGroupValidator
                     ],
                 ],
                 'playback_settings' => [
-                    'type' => 'object',
-                    'properties' => [
-                        'max_plays' => [
-                            'oneOf' => [
-                                ['type' => 'integer', 'minimum' => 1],
-                                ['type' => 'null'],
+                    'oneOf' => [
+                        ['type' => 'object', 'properties' => [
+                            'max_plays' => [
+                                'oneOf' => [
+                                    ['type' => 'integer', 'minimum' => 1],
+                                    ['type' => 'null'],
+                                ],
+                                'description' => 'Max playback count (null = unlimited)',
                             ],
-                            'description' => 'Max playback count (null = unlimited)',
-                        ],
-                        'enforcement' => [
-                            'type' => 'string',
-                            'enum' => ['strict', 'advisory', 'none'],
-                            'description' => 'Enforcement mode',
-                        ],
-                        'reset_on_navigation' => [
-                            'type' => 'boolean',
-                            'description' => 'Reset play counter on navigation',
-                        ],
-                        'show_counter' => [
-                            'type' => 'boolean',
-                            'description' => 'Display remaining plays counter',
-                        ],
+                            'enforcement' => [
+                                'type' => 'string',
+                                'enum' => ['strict', 'advisory', 'none'],
+                                'description' => 'Enforcement mode',
+                            ],
+                            'reset_on_navigation' => [
+                                'type' => 'boolean',
+                                'description' => 'Reset play counter on navigation',
+                            ],
+                            'show_counter' => [
+                                'type' => 'boolean',
+                                'description' => 'Display remaining plays counter',
+                            ],
+                        ]],
+                        ['type' => 'null'],
                     ],
+                    'description' => 'Playback settings (null for non-audio groups like reading)',
                 ],
                 'questions' => [
                     'type' => 'array',

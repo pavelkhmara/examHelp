@@ -191,7 +191,10 @@ class QuestionValidator
     protected function generateUniqueId(array $question, GenerationPlan $plan, array $existingIds, array $finalized): string
     {
         $candidate = $question['id'] ?? null;
-        $candidate = $candidate ? Str::slug($candidate, '_') : null;
+        // Don't slug-ify question ID - AI returns valid IDs with dashes/underscores
+        // Previously: Str::slug($candidate, '_') replaced dashes with underscores
+        // This broke skeleton matching for IDs like "list-q1" → "list_q1"
+        // $candidate = $candidate ? Str::slug($candidate, '_') : null;
 
         if ($candidate && ! in_array($candidate, $existingIds, true) && ! $this->idExistsInFinalized($candidate, $finalized)) {
             return $candidate;

@@ -421,7 +421,31 @@ class QuestionSynthesizer extends AbstractAiService
             throw new \Exception('Failed to generate question - empty result');
         }
 
-        return $questions[0];
+        $question = $questions[0];
+
+        // CRITICAL FIX: Propagate group_id and question_id from filter to generated question
+        // This ensures skeleton questions in DB can be matched and updated
+        if ($filter) {
+            if (isset($filter['group_id'])) {
+                $question['group_id'] = $filter['group_id'];
+            }
+            if (isset($filter['question_id'])) {
+                $question['id'] = $filter['question_id'];
+            }
+        }
+
+        // ✅ CHECKPOINT LOGGING: Log question after AI generation and post-process
+        Log::info('[Contract:AfterAI] Question generated', [
+            'question_id' => $question['id'],
+            'group_id' => $question['group_id'] ?? 'NULL',
+            'type' => $question['type'],
+            'has_interaction' => !empty($question['interaction']),
+            'interaction_keys' => is_array($question['interaction'] ?? null)
+                ? array_keys($question['interaction'])
+                : 'not_array',
+        ]);
+
+        return $question;
     }
 
     /**
@@ -567,40 +591,70 @@ class QuestionSynthesizer extends AbstractAiService
     }
 
     /**
-     * Get section metadata from exam structure
+     * Get section metadata from ExamCategory (PRIMARY source of truth)
+     *
+     * FIX: Changed to read from ExamCategory instead of structure_v2
+     * See: docs/fixes/fix-dual-source-of-truth.md
      */
     protected function getSectionMetadata(Exam $exam, string|int $sectionId): array
     {
-        $structure = $exam->meta['structure_v2'] ?? [];
-        $sections = $structure['sections'] ?? [];
-
-        // If $sectionId is numeric, it's an ExamCategory ID - match by skill
+        // If $sectionId is numeric, it's an ExamCategory ID - load directly
         if (is_numeric($sectionId)) {
             $category = \App\Models\ExamCategory::find($sectionId);
             if (!$category) {
                 throw new \Exception("ExamCategory not found for ID: {$sectionId}");
             }
 
-            // Match by skill (more reliable than key)
-            $skill = $category->skill;
-            foreach ($sections as $section) {
-                if (($section['skill'] ?? null) === $skill) {
-                    return $section;
-                }
-            }
-
-            // Fallback: try matching by key if skill match fails
-            $sectionKey = $category->key ?? $category->name;
-            foreach ($sections as $section) {
-                if ($section['id'] === $sectionKey) {
-                    return $section;
-                }
-            }
-
-            throw new \Exception("Section not found for skill '{$skill}' or key '{$sectionKey}' (ExamCategory ID: {$sectionId})");
+            return $this->buildSectionFromCategory($category);
         }
 
-        // String sectionId - match by section ID
+        // String sectionId - find by key
+        $category = \App\Models\ExamCategory::where('exam_id', $exam->id)
+            ->where('key', $sectionId)
+            ->first();
+
+        if (!$category) {
+            // Fallback: try to find in structure_v2 (legacy support)
+            Log::warning('[QuestionSynthesizer] ExamCategory not found, falling back to structure_v2', [
+                'exam_id' => $exam->id,
+                'section_id' => $sectionId,
+            ]);
+
+            return $this->getSectionMetadataFromStructure($exam, $sectionId);
+        }
+
+        return $this->buildSectionFromCategory($category);
+    }
+
+    /**
+     * Build section metadata array from ExamCategory model
+     */
+    protected function buildSectionFromCategory(\App\Models\ExamCategory $category): array
+    {
+        $meta = $category->meta ?? [];
+
+        return [
+            'id' => $category->key ?? "sec-{$category->id}",
+            'title' => $category->name,
+            'skill' => $category->skill,
+            'duration_min' => $category->duration_min,
+            'max_score' => $category->max_score,
+            'description' => $category->description,
+            'questions' => $meta['questions'] ?? [],
+            'assembly' => $meta['assembly'] ?? [],
+            'question_archetypes' => $meta['question_archetypes'] ?? [],
+        ];
+    }
+
+    /**
+     * Legacy fallback: Get section from structure_v2
+     * @deprecated Use ExamCategory as primary source
+     */
+    protected function getSectionMetadataFromStructure(Exam $exam, string $sectionId): array
+    {
+        $structure = $exam->meta['structure_v2'] ?? [];
+        $sections = $structure['sections'] ?? [];
+
         foreach ($sections as $section) {
             if ($section['id'] === $sectionId) {
                 return $section;

@@ -42,7 +42,7 @@ class Exam extends Resource
 
     public static function indexQuery(NovaRequest $request, $query)
     {
-        return $query->orderBy('created_at', 'desc');
+        return $query->latest('created_at');
     }
 
     /**

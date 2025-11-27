@@ -62,6 +62,9 @@ abstract class AbstractAiService
         $promptClass = $opts['prompt_class'] ?? Prompts\PromptExamOverview::class;
         $promptArgs = $opts['prompt_args'] ?? [];
 
+        // Get confirmed identity from payload (if provided)
+        $confirmedIdentity = $payload['confirmed_identity'] ?? null;
+
         // Build prompt with provided args or default args
         $defaultArgs = [
             $examTitle,
@@ -69,7 +72,8 @@ abstract class AbstractAiService
             $contextNotes,
             $retryHint,
             $userInputParsed,
-            $filesHint
+            $filesHint,
+            $confirmedIdentity,
         ];
 
         $buildArgs = !empty($promptArgs) ? $promptArgs : $defaultArgs;

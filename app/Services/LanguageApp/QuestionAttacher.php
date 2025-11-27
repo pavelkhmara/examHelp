@@ -8,6 +8,7 @@ use App\Models\Exam;
 use App\Models\ExamCategory;
 use App\Models\GenerationPlan;
 use App\Models\Question;
+use App\Services\LanguageApp\Contracts\QuestionGroupContract;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 
@@ -42,19 +43,55 @@ class QuestionAttacher
             $category = ExamCategory::find($plan->section_id);
             $sectionKey = $category ? $category->key : "section_{$plan->section_id}";
 
+            // Build group_id → database ID mapping for this section
+            $groupIdMap = $this->buildQuestionGroupIdMap($exam, $plan->section_id);
+
             foreach ($questions as $qIndex => $questionData) {
                 try {
-                    // Generate unique question_id with section prefix to avoid collisions
-                    // e.g., "sec-listening_q1" instead of just "q1"
+                    // ✅ VALIDATE CONTRACT: Ensure question meets contract requirements before attach
                     $rawQuestionId = $questionData['id'] ?? "q{$qIndex}";
-                    $uniqueQuestionId = "{$sectionKey}_{$rawQuestionId}";
+                    $groupIdString = $questionData['group_id'] ?? null;
+
+                    QuestionGroupContract::validateBeforeAttach($questionData, $groupIdString);
+
+                    // Generate unique question_id
+                    // For grouped questions: use group_id prefix (e.g., "listening-task-1_list-q1")
+                    // For ungrouped: use section prefix (e.g., "sec-listening_q1")
+
+                    // DEBUG: Log full questionData for pipeline troubleshooting
+                    Log::info('[QuestionAttacher] Processing question - FULL DATA', [
+                        'qIndex' => $qIndex,
+                        'rawQuestionId' => $rawQuestionId,
+                        'groupIdString' => $groupIdString,
+                        'type' => $questionData['type'] ?? 'unknown',
+                        'has_interaction' => !empty($questionData['interaction']),
+                        'interaction_keys' => is_array($questionData['interaction'] ?? null) ? array_keys($questionData['interaction']) : 'not_array',
+                        'all_keys' => array_keys($questionData),
+                    ]);
+
+                    if ($groupIdString) {
+                        // Grouped question: use group_id prefix to match skeleton questions
+                        $uniqueQuestionId = "{$groupIdString}_{$rawQuestionId}";
+                    } else {
+                        // Ungrouped question: use section prefix
+                        $uniqueQuestionId = "{$sectionKey}_{$rawQuestionId}";
+                    }
+
+                    Log::debug('[QuestionAttacher] Generated uniqueQuestionId', [
+                        'uniqueQuestionId' => $uniqueQuestionId,
+                    ]);
+
+                    // Resolve question_group_id from group_id string
+                    $questionGroupId = $groupIdString ? ($groupIdMap[$groupIdString] ?? null) : null;
 
                     // CRITICAL: Question::insert() bypasses model casts, so we must manually
                     // json_encode() all JSON fields before inserting into database
                     $questionRecord = [
                         'exam_id' => $exam->id,
                         'section_id' => (int) $plan->section_id, // Cast to integer for database
+                        'question_group_id' => $questionGroupId, // NEW: Link to QuestionGroup
                         'question_id' => $uniqueQuestionId,
+                        'order' => $qIndex, // NEW: Order within section
                         'type' => $questionData['type'] ?? 'single_select',
                         'skills_measured' => json_encode($questionData['skills_measured'] ?? [], JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE),
                         'time_limit_sec' => $questionData['time_limit_sec'] ?? 0,
@@ -83,67 +120,109 @@ class QuestionAttacher
                 }
             }
 
-            // Bulk insert questions (much faster than individual creates)
-            // PRE-CHECK for duplicates to avoid insertOrIgnore returning 0 on first duplicate
+            // Insert new questions OR update existing skeleton questions
             if (!empty($questionRecords)) {
                 try {
-                    // CRITICAL: Check for existing question_ids BEFORE insert
-                    // This prevents insertOrIgnore() from returning 0 when first record is duplicate
+                    // Check for existing question_ids
                     $allQuestionIds = array_map(fn($r) => $r['question_id'], $questionRecords);
 
-                    $existingIds = Question::whereIn('question_id', $allQuestionIds)
-                        ->pluck('question_id')
-                        ->toArray();
+                    $existingQuestions = Question::whereIn('question_id', $allQuestionIds)
+                        ->get()
+                        ->keyBy('question_id');
 
-                    // Filter out duplicates
-                    $newRecords = array_filter(
-                        $questionRecords,
-                        fn($r) => !in_array($r['question_id'], $existingIds)
-                    );
+                    $newRecords = [];
+                    $updatedCount = 0;
 
-                    $duplicatesCount = count($questionRecords) - count($newRecords);
+                    foreach ($questionRecords as $record) {
+                        $questionId = $record['question_id'];
+                        $existingQuestion = $existingQuestions->get($questionId);
 
-                    if ($duplicatesCount > 0) {
-                        Log::warning('[QuestionAttacher] Skipping duplicate question_ids', [
-                            'exam_id' => $exam->id,
-                            'section_id' => $plan->section_id,
-                            'total_records' => count($questionRecords),
-                            'duplicates' => $duplicatesCount,
-                            'new_records' => count($newRecords),
-                            'duplicate_ids' => array_slice($existingIds, 0, 5), // First 5 for logging
-                        ]);
+                        if ($existingQuestion) {
+                            // UPDATE existing skeleton question with synthesized content
+                            // Check if it's a skeleton (empty interaction)
+                            $isSkeleton = empty($existingQuestion->interaction) ||
+                                          (is_array($existingQuestion->interaction) && count($existingQuestion->interaction) === 0);
+
+                            // ✅ CHECKPOINT LOGGING: Log before UPDATE
+                            Log::info('[Contract:BeforeAttach] Question ready to attach', [
+                                'uniqueQuestionId' => $questionId,
+                                'group_id' => $record['question_group_id'] ?? 'NULL',
+                                'section_id' => $record['section_id'],
+                                'action' => $existingQuestion ? 'UPDATE' : 'INSERT',
+                                'is_skeleton' => $isSkeleton,
+                            ]);
+
+                            if ($isSkeleton) {
+                                // Update with new content (excluding exam_id, section_id, question_group_id, question_id)
+                                $updateData = [
+                                    'type' => $record['type'],
+                                    'skills_measured' => $record['skills_measured'],
+                                    'time_limit_sec' => $record['time_limit_sec'],
+                                    'instructions' => $record['instructions'],
+                                    'stimulus' => $record['stimulus'],
+                                    'interaction' => $record['interaction'],
+                                    'response' => $record['response'],
+                                    'scoring' => $record['scoring'],
+                                    'metadata' => $record['metadata'],
+                                    'constraints' => $record['constraints'],
+                                    'randomization' => $record['randomization'],
+                                    'outcome_reporting' => $record['outcome_reporting'],
+                                    'io_signature' => $record['io_signature'],
+                                    'typical_errors' => $record['typical_errors'],
+                                    'ui_hints' => $record['ui_hints'],
+                                    'accessibility' => $record['accessibility'],
+                                ];
+
+                                // Use raw query to bypass model casts (data already JSON-encoded)
+                                Question::where('id', $existingQuestion->id)->update($updateData);
+                                $updatedCount++;
+
+                                Log::debug('[QuestionAttacher] Updated skeleton question with synthesized content', [
+                                    'question_id' => $questionId,
+                                    'db_id' => $existingQuestion->id,
+                                ]);
+                            } else {
+                                Log::debug('[QuestionAttacher] Skipping non-skeleton question (already has content)', [
+                                    'question_id' => $questionId,
+                                ]);
+                            }
+                        } else {
+                            // ✅ CHECKPOINT LOGGING: Log before INSERT
+                            Log::info('[Contract:BeforeAttach] Question ready to attach', [
+                                'uniqueQuestionId' => $questionId,
+                                'group_id' => $record['question_group_id'] ?? 'NULL',
+                                'section_id' => $record['section_id'],
+                                'action' => 'INSERT',
+                                'is_skeleton' => false,
+                            ]);
+
+                            // New question - add to insert batch
+                            $newRecords[] = $record;
+                        }
                     }
 
-                    // Insert only new records
+                    // Insert new records
                     if (!empty($newRecords)) {
                         $inserted = Question::insertOrIgnore($newRecords);
 
-                        Log::info('[QuestionAttacher] Created question records in database', [
+                        Log::info('[QuestionAttacher] Created new question records', [
                             'exam_id' => $exam->id,
                             'section_id' => $plan->section_id,
                             'prepared' => count($newRecords),
                             'inserted' => $inserted,
-                            'skipped_duplicates' => $duplicatesCount,
-                        ]);
-
-                        // Sanity check: inserted should equal newRecords count
-                        if ($inserted !== count($newRecords)) {
-                            Log::warning('[QuestionAttacher] Inserted count mismatch', [
-                                'exam_id' => $exam->id,
-                                'section_id' => $plan->section_id,
-                                'expected' => count($newRecords),
-                                'actual' => $inserted,
-                            ]);
-                        }
-                    } else {
-                        Log::info('[QuestionAttacher] All questions already exist (skipped)', [
-                            'exam_id' => $exam->id,
-                            'section_id' => $plan->section_id,
-                            'total' => count($questionRecords),
                         ]);
                     }
+
+                    // Log summary
+                    Log::info('[QuestionAttacher] Question attach summary', [
+                        'exam_id' => $exam->id,
+                        'section_id' => $plan->section_id,
+                        'total_records' => count($questionRecords),
+                        'new_inserted' => count($newRecords),
+                        'skeletons_updated' => $updatedCount,
+                    ]);
                 } catch (\Throwable $e) {
-                    Log::error('[QuestionAttacher] Bulk insert failed', [
+                    Log::error('[QuestionAttacher] Bulk insert/update failed', [
                         'exam_id' => $exam->id,
                         'section_id' => $plan->section_id,
                         'error' => $e->getMessage(),
@@ -402,6 +481,35 @@ class QuestionAttacher
             default:
                 return $assembly;
         }
+    }
+
+    /**
+     * Build mapping from group_id string to QuestionGroup database ID
+     *
+     * @param Exam $exam
+     * @param int $sectionId ExamCategory ID
+     * @return array<string, int> Map of group_id → QuestionGroup.id
+     */
+    protected function buildQuestionGroupIdMap(Exam $exam, int $sectionId): array
+    {
+        $groups = \App\Models\QuestionGroup::where('exam_id', $exam->id)
+            ->where('section_id', $sectionId)
+            ->get(['id', 'group_id']);
+
+        $map = [];
+        foreach ($groups as $group) {
+            $map[$group->group_id] = $group->id;
+        }
+
+        if (!empty($map)) {
+            Log::debug('[QuestionAttacher] Built group_id map', [
+                'exam_id' => $exam->id,
+                'section_id' => $sectionId,
+                'groups_count' => count($map),
+            ]);
+        }
+
+        return $map;
     }
 }
 

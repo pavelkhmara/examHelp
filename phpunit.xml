@@ -29,6 +29,7 @@
         <server name="APP_SERVICES_CACHE" value="bootstrap/cache/services.testing.php"/>
 
         <server name="QUEUE_CONNECTION" value="sync"/>
+        <server name="AI_PROVIDER" value="mock"/>
 
         <!-- лёгкие драйверы в тестах -->
         <env name="APP_MAINTENANCE_DRIVER" value="file"/>

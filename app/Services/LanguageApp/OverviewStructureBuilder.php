@@ -1027,6 +1027,17 @@ class OverviewStructureBuilder extends AbstractAiService
 
         $task->addActivity('phase_a_started', 'Generating exam skeleton (Phase A - v2 architecture)');
 
+        // Get confirmed identity if available
+        $confirmedIdentity = $exam->confirmedIdentity;
+        $identityCanonical = null;
+        if ($confirmedIdentity && !empty($confirmedIdentity->identity_data['canonical'])) {
+            $identityCanonical = $confirmedIdentity->identity_data['canonical'];
+            Log::debug('OverviewStructureBuilder: Using confirmed identity for Phase A', [
+                'exam_id' => $exam->id,
+                'canonical' => $identityCanonical,
+            ]);
+        }
+
         // Build payload
         $payload = [
             'exam_slug' => $exam->slug,
@@ -1039,6 +1050,11 @@ class OverviewStructureBuilder extends AbstractAiService
                 ? 'Prefer insights derived from provided exam documents over generic web sources.'
                 : 'Use both files and web sources.',
         ];
+
+        // Add confirmed identity to payload if available (CRITICAL for correct exam generation)
+        if ($identityCanonical) {
+            $payload['confirmed_identity'] = $identityCanonical;
+        }
 
         // Use GPT-5 for Phase A (highest quality reasoning)
         $modelAlias = 'thinking'; // Maps to AI_MODEL_THINKING (gpt-5)

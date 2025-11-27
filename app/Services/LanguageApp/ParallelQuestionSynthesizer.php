@@ -4,6 +4,7 @@ namespace App\Services\LanguageApp;
 
 use App\Models\Exam;
 use App\Models\GenerationPlan;
+use App\Models\Question;
 use App\Services\LanguageApp\Prompts\PromptQuestionSynthesis;
 use App\Services\LanguageApp\Schemas\QuestionArraySchema;
 use App\Services\LanguageApp\Validators\JsonSchemaQuestionV2;
@@ -128,8 +129,9 @@ class ParallelQuestionSynthesizer extends AbstractAiService
         }
 
         try {
-            // Create async AI provider
-            $asyncProvider = AiProviderFactory::makeAsync('openai', config('ai'));
+            // Create async AI provider (respect AI_PROVIDER from config)
+            $providerName = config('ai.provider', 'openai');
+            $asyncProvider = AiProviderFactory::makeAsync($providerName, config('ai'));
 
             // Send all requests in parallel
             Log::info('[ParallelQuestionSynthesizer] Sending parallel AI requests', [
@@ -166,8 +168,22 @@ class ParallelQuestionSynthesizer extends AbstractAiService
                     // Extract questions from response (Structured Outputs wraps in {"questions": [...]})
                     $questions = $this->parseAndValidateQuestions($aiResult);
 
+                    // DEBUG: Check parsed questions
+                    dump([
+                        'parseAndValidateQuestions' => 'success',
+                        'questions_count' => count($questions),
+                        'first_question' => $questions[0] ?? null,
+                    ]);
+
                     // Validate and deduplicate
                     $validatedQuestions = $this->questionValidator->validateAndFinalize($questions, $plan, $exam);
+
+                    // DEBUG: Check validated questions
+                    dump([
+                        'validateAndFinalize' => 'done',
+                        'validated_count' => count($validatedQuestions),
+                    ]);
+
                     $dedupedQuestions = $this->deduplicator->detectDuplicates($validatedQuestions, $exam);
 
                     // Check if we should create QuestionGroup (blueprint or inline mode with question_groups)
@@ -529,6 +545,7 @@ class ParallelQuestionSynthesizer extends AbstractAiService
 
             foreach ($groupQuestions as $qIndex => $q) {
                 $allQuestions[] = [
+                    'question_id' => $q['id'] ?? "q{$qIndex}",  // ✅ СОХРАНЯЕМ ID из plan_data
                     'type' => $q['type'] ?? 'single_select',
                     'config' => $q['config'] ?? [],
                     'group_id' => $groupId,
@@ -654,32 +671,40 @@ PROMPT;
     }
 
     /**
-     * Get section metadata from exam structure
+     * Get section metadata from ExamCategory (PRIMARY source of truth)
+     *
+     * FIX: Changed to read from ExamCategory instead of structure_v2
+     * See: docs/fixes/fix-dual-source-of-truth.md
      */
     protected function getSectionMetadata(Exam $exam, int $categoryId): array
     {
-        $structure = $exam->meta['structure_v2'] ?? null;
-
-        if (! $structure) {
-            throw new \Exception('Exam structure_v2 not found');
-        }
-
-        $sections = $structure['sections'] ?? [];
-
-        // Find section by category relationship
         $category = \App\Models\ExamCategory::find($categoryId);
 
         if (! $category) {
             throw new \Exception("ExamCategory not found: {$categoryId}");
         }
 
-        foreach ($sections as $section) {
-            if (($section['skill'] ?? null) === $category->skill) {
-                return $section;
-            }
-        }
+        return $this->buildSectionFromCategory($category);
+    }
 
-        throw new \Exception("Section not found for category {$categoryId} (skill: {$category->skill})");
+    /**
+     * Build section metadata array from ExamCategory model
+     */
+    protected function buildSectionFromCategory(\App\Models\ExamCategory $category): array
+    {
+        $meta = $category->meta ?? [];
+
+        return [
+            'id' => $category->key ?? "sec-{$category->id}",
+            'title' => $category->name,
+            'skill' => $category->skill,
+            'duration_min' => $category->duration_min,
+            'max_score' => $category->max_score,
+            'description' => $category->description,
+            'questions' => $meta['questions'] ?? [],
+            'assembly' => $meta['assembly'] ?? [],
+            'question_archetypes' => $meta['question_archetypes'] ?? [],
+        ];
     }
 
     /**
@@ -932,6 +957,85 @@ PROMPT;
             ]);
         }
 
+        // ✅ SYNC: Update exam.meta.generated_questions_v2 after all groups created
+        $this->syncGeneratedQuestionsToExamMeta($plan, $exam, $questions);
+
         return $totalAttached;
+    }
+
+    /**
+     * Synchronize generated questions to exam.meta.generated_questions_v2
+     * (replicates QuestionAttacher logic for question_groups flow)
+     *
+     * @param GenerationPlan $plan
+     * @param Exam $exam
+     * @param array $questions Generated questions array
+     * @return void
+     */
+    protected function syncGeneratedQuestionsToExamMeta(GenerationPlan $plan, Exam $exam, array $questions): void
+    {
+        if (empty($questions)) {
+            return;
+        }
+
+        // Build map of question_id → group_id from database
+        // (questions are already created with question_group_id)
+        $questionRecords = Question::where('exam_id', $exam->id)
+            ->where('section_id', $plan->section_id)
+            ->whereNotNull('question_group_id')
+            ->with('questionGroup')
+            ->get();
+
+        $groupIdMap = [];
+        foreach ($questionRecords as $record) {
+            // Extract raw question ID (without group prefix)
+            $questionId = $record->question_id;
+            $rawId = $questionId;
+
+            if ($record->questionGroup) {
+                $groupId = $record->questionGroup->group_id;
+                if (str_starts_with($questionId, $groupId . '_')) {
+                    $rawId = substr($questionId, strlen($groupId) + 1);
+                }
+                $groupIdMap[$rawId] = $groupId;
+            }
+        }
+
+        // Add group_id to each question in the array
+        $questionsWithGroupId = [];
+        foreach ($questions as $question) {
+            $questionId = $question['id'] ?? null;
+            $question['group_id'] = $groupIdMap[$questionId] ?? null;
+            $questionsWithGroupId[] = $question;
+        }
+
+        // Update exam meta with generated questions
+        $meta = $exam->meta ?? [];
+        $existingQuestions = $meta['generated_questions_v2'] ?? [];
+
+        // Merge with existing (avoid duplicates by 'id')
+        $merged = collect($existingQuestions);
+        foreach ($questionsWithGroupId as $newQuestion) {
+            $existingIndex = $merged->search(fn($q) => ($q['id'] ?? null) === ($newQuestion['id'] ?? null));
+            if ($existingIndex !== false) {
+                // Replace existing question
+                $merged[$existingIndex] = $newQuestion;
+            } else {
+                // Add new question
+                $merged->push($newQuestion);
+            }
+        }
+
+        $meta['generated_questions_v2'] = $merged->values()->toArray();
+        $exam->meta = $meta;
+        $exam->save();
+
+        Log::info('[ParallelQuestionSynthesizer] Synced generated_questions_v2 to exam.meta', [
+            'exam_id' => $exam->id,
+            'section_id' => $plan->section_id,
+            'questions_synced' => count($questionsWithGroupId),
+            'with_group_id' => count(array_filter($questionsWithGroupId, fn($q) => !empty($q['group_id']))),
+            'total_in_meta' => count($meta['generated_questions_v2']),
+        ]);
     }
 }

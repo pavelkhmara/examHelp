@@ -5,6 +5,7 @@ namespace App\Jobs;
 use App\Models\Exam;
 use App\Models\GenerationPlan;
 use App\Models\GenerationTask;
+use App\Services\LanguageApp\Contracts\QuestionGroupContract;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
@@ -98,11 +99,16 @@ class SynthesizeQuestionsJob implements ShouldQueue
                 ]);
 
                 // Atomic update - claim all pending/failed plans
+                // For plans without started_at, set it manually before update
+                GenerationPlan::where('exam_id', $exam->id)
+                    ->whereIn('status', ['pending', 'failed'])
+                    ->whereNull('started_at')
+                    ->update(['started_at' => now()]);
+
                 $updated = GenerationPlan::where('exam_id', $exam->id)
                     ->whereIn('status', ['pending', 'failed'])
                     ->update([
                         'status' => 'in_progress',
-                        'started_at' => DB::raw('COALESCE(started_at, NOW())'),
                     ]);
 
                 // Load ALL in_progress plans (not just recently claimed)
@@ -379,7 +385,40 @@ class SynthesizeQuestionsJob implements ShouldQueue
         } elseif ($mode === 'blueprint') {
             $filters = $planData['slots'] ?? [];
         } elseif ($mode === 'inline') {
-            $filters = $planData['placeholders'] ?? [];
+            // Check for question_groups first (new format for listening/reading)
+            $questionGroups = $planData['question_groups'] ?? [];
+            if (!empty($questionGroups)) {
+                // For inline + question_groups: each GROUP is a "filter" (task unit)
+                // This preserves group context while allowing parallel processing
+                foreach ($questionGroups as $groupIndex => $group) {
+                    // ✅ VALIDATE CONTRACT: Ensure group spec meets contract requirements
+                    QuestionGroupContract::validateQuestionGroupSpec($group);
+
+                    $groupId = $group['id'] ?? "group_{$groupIndex}";
+                    $groupQuestions = $group['questions'] ?? [];
+
+                    $filters[] = [
+                        'type' => 'question_group',
+                        'group_index' => $groupIndex,
+                        'group_id' => $groupId,
+                        'group_title' => $group['title'] ?? '',
+                        'group_stimulus' => $group['stimulus'] ?? [],
+                        'group_instructions' => $group['instructions'] ?? [],
+                        'group_playback_settings' => $group['playback_settings'] ?? null,
+                        'questions' => $groupQuestions,
+                        'pick' => count($groupQuestions),
+                    ];
+                }
+
+                Log::info("Inline mode with question_groups: " . count($filters) . " groups as tasks", [
+                    'plan_id' => $plan->id,
+                    'groups_count' => count($questionGroups),
+                    'total_questions' => array_sum(array_map(fn($g) => count($g['questions'] ?? []), $questionGroups)),
+                ]);
+            } else {
+                // Fallback to placeholders (legacy format)
+                $filters = $planData['placeholders'] ?? [];
+            }
         } else {
             throw new \RuntimeException("Unknown assembly mode: {$mode}");
         }

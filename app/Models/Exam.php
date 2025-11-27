@@ -96,6 +96,12 @@ class Exam extends Model
 
     /**
      * Get v2 exam structure from meta['structure_v2']
+     *
+     * @deprecated Use ExamCategory as primary source of truth for section data.
+     *             structure_v2 is now a STAGING area used during generation.
+     *             After finalize, read from $exam->categories instead.
+     *             See: docs/fixes/fix-dual-source-of-truth.md
+     *
      * This is the new v2 format with sections[], pass_policy, policies, etc.
      */
     public function getStructureV2Attribute(): ?array
@@ -105,6 +111,9 @@ class Exam extends Model
 
     /**
      * Set v2 exam structure to meta['structure_v2']
+     *
+     * @deprecated For new data, prefer writing to ExamCategory.
+     *             structure_v2 should only be used as staging during generation.
      */
     public function setStructureV2Attribute(array $value): void
     {

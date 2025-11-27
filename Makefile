@@ -71,21 +71,21 @@ logs:
 qs:
 	@echo "=== QUEUE STATUS $$(date '+%Y-%m-%d %H:%M:%S') ==="
 	@echo ""
-	@echo "📌 RUNNING JOBS (reserved):"
-	@$(DC) exec -T redis redis-cli ZRANGE queues:default:reserved 0 -1 2>/dev/null | \
+	@echo "[RUNNING JOBS (reserved)]"
+	@$(DC) exec -T redis redis-cli ZRANGE laravel_database_queues:default:reserved 0 -1 2>/dev/null | \
 		while read -r job; do \
-			class=$$(echo "$$job" | grep -oP '"displayName":"[^"]+' | sed 's/"displayName":"//' | head -1); \
-			task_id=$$(echo "$$job" | grep -oP '"taskId":[0-9]+' | sed 's/"taskId"://' | head -1); \
+			class=$$(echo "$$job" | sed -n 's/.*"displayName":"\([^"]*\)".*/\1/p' | head -1); \
+			task_id=$$(echo "$$job" | sed -n 's/.*"taskId":\([0-9]*\).*/\1/p' | head -1); \
 			if [ -n "$$class" ]; then \
 				if [ -n "$$task_id" ]; then \
-					echo "   • $$class (task: $$task_id)"; \
+					echo "   - $$class (task: $$task_id)"; \
 				else \
-					echo "   • $$class"; \
+					echo "   - $$class"; \
 				fi; \
 			fi; \
 		done || echo "   (none)"
 	@echo ""
-	@echo "⏳ PENDING: $$($(DC) exec -T redis redis-cli LLEN queues:default 2>/dev/null || echo 0)"
+	@echo "[PENDING]: $$($(DC) exec -T redis redis-cli LLEN laravel_database_queues:default 2>/dev/null || echo 0)"
 
 # Queue watch - смотрит логи воркеров в реальном времени
 qw:

@@ -69,8 +69,9 @@ class AssemblyResolver
                 'deleted_plans_count' => $deletedPlansCount,
             ]);
 
-            // Track already processed skills to avoid duplicates
-            $processedSkills = [];
+            // Track already processed sections to avoid duplicates (by section_id, NOT by skill!)
+            // FIX: Changed from $processedSkills to $processedSections - see fix-section-dedup-bug.md
+            $processedSections = [];
 
             foreach ($sections as $section) {
                 $sectionId = $section['id'] ?? null;
@@ -79,6 +80,14 @@ class AssemblyResolver
                 if (!$sectionId) {
                     Log::warning('[AssemblyResolver] Section missing id, skipping', [
                         'section' => $section,
+                    ]);
+                    continue;
+                }
+
+                // Check for duplicate section_id (NOT duplicate skill!)
+                if (isset($processedSections[$sectionId])) {
+                    Log::warning('[AssemblyResolver] Skipping duplicate section with same id', [
+                        'section_id' => $sectionId,
                     ]);
                     continue;
                 }
@@ -94,8 +103,17 @@ class AssemblyResolver
                     'assembly_mode' => $mode,
                 ]);
 
+                // Extract skill early for validation
+                $skill = $section['skill'] ?? null;
+                if (!$skill) {
+                    throw new \Exception("Section {$sectionId} has no 'skill' field. Cannot match to ExamCategory.");
+                }
+
                 // ✅ VALIDATE: Listening sections MUST use inline + question_groups
                 $this->validateListeningMode($section, $sectionId);
+
+                // ✅ VALIDATE: Prefer question_groups over placeholders for inline mode (warning only)
+                $this->validateInlineAssembly($assembly, $skill, $sectionId);
 
                 // Resolve based on mode
                 $planData = match ($mode) {
@@ -105,22 +123,8 @@ class AssemblyResolver
                     default => throw new \Exception("Unknown assembly mode: {$mode}"),
                 };
 
-                // Look up ExamCategory by skill (more reliable than key matching)
-                $skill = $section['skill'] ?? null;
-
-                if (!$skill) {
-                    throw new \Exception("Section {$sectionId} has no 'skill' field. Cannot match to ExamCategory.");
-                }
-
-                // Skip duplicate sections with same skill
-                if (isset($processedSkills[$skill])) {
-                    Log::warning('[AssemblyResolver] Skipping duplicate section with same skill', [
-                        'section_id' => $sectionId,
-                        'skill' => $skill,
-                        'previous_section' => $processedSkills[$skill],
-                    ]);
-                    continue;
-                }
+                // NOTE: Duplicate check by section_id is now done BEFORE mode resolution (see line ~87)
+                // This allows multiple sections with the same skill but different section_ids
 
                 $category = ExamCategory::where('exam_id', $exam->id)
                     ->where('skill', $skill)
@@ -144,8 +148,8 @@ class AssemblyResolver
 
                 $plans[] = $plan;
 
-                // Mark this skill as processed
-                $processedSkills[$skill] = $sectionId;
+                // Mark this section as processed (by section_id)
+                $processedSections[$sectionId] = true;
 
                 Log::info('[AssemblyResolver] Plan created', [
                     'plan_id' => $plan->id,
@@ -658,5 +662,46 @@ class AssemblyResolver
             'mode' => $mode,
             'groups_count' => count($assembly['question_groups']),
         ]);
+    }
+
+    /**
+     * Validate that inline mode with question_groups is preferred over placeholders
+     * for listening/reading sections with shared stimulus.
+     *
+     * FIX: Added per fix-enforce-question-groups.md
+     *
+     * @param array $assembly Assembly configuration
+     * @param string $skill Section skill (listening, reading, etc.)
+     * @param string $sectionId Section ID for logging
+     */
+    protected function validateInlineAssembly(array $assembly, string $skill, string $sectionId): void
+    {
+        if (($assembly['mode'] ?? '') !== 'inline') {
+            return;
+        }
+
+        // For listening/reading, question_groups are strongly preferred
+        if (in_array($skill, ['listening', 'reading'])) {
+            $hasQuestionGroups = !empty($assembly['question_groups']);
+            $hasPlaceholders = !empty($assembly['placeholders']);
+
+            if ($hasPlaceholders && !$hasQuestionGroups) {
+                Log::warning("[AssemblyResolver] Inline {$skill} section uses placeholders instead of question_groups", [
+                    'section_id' => $sectionId,
+                    'skill' => $skill,
+                    'placeholders_count' => count($assembly['placeholders'] ?? []),
+                    'recommendation' => 'Consider using question_groups for shared stimulus (audio/text)',
+                ]);
+                // Note: Not throwing exception - placeholders can work, but question_groups are better
+                // For listening, validateListeningMode() above already enforces question_groups
+            }
+
+            if ($hasQuestionGroups) {
+                Log::info("[AssemblyResolver] ✅ Inline {$skill} section correctly uses question_groups", [
+                    'section_id' => $sectionId,
+                    'groups_count' => count($assembly['question_groups']),
+                ]);
+            }
+        }
     }
 }

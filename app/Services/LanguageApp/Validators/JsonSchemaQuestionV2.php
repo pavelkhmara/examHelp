@@ -26,7 +26,7 @@ final class JsonSchemaQuestionV2
         'matching', 'order_sentences', 'order_words', 'highlight_text',
         'short_answer', 'numeric', 'dictation',
         'writing_prompt', 'speaking_prompt',
-        'listen_mcq',
+        'listen_mcq', 'listen_true_false', 'listen_yes_no_ng', // Listening question types
         'translation', 'roleplay', 'note_completion',
     ];
 
@@ -173,10 +173,12 @@ final class JsonSchemaQuestionV2
 
         return [
             'response_type' => $responseType,
+            'stem' => $interaction['stem'] ?? null,  // ✅ Add stem field
             'options' => $interaction['options'] ?? null,
             'pairs' => $interaction['pairs'] ?? null,
             'bank' => $interaction['bank'] ?? null,
             'spans' => $interaction['spans'] ?? null,
+            'input_type' => $interaction['input_type'] ?? null,  // ✅ Add input_type for text questions
         ];
     }
 

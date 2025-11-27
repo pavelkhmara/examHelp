@@ -65,7 +65,8 @@ final class AiProviderFactory
         Log::debug('AiProviderFactory: creating async provider', ['provider' => $provider]);
 
         if ($provider === 'mock') {
-            throw new \RuntimeException('Async mock provider not implemented yet');
+            // ✅ NEW: MockAiProvider now implements AsyncAiProvider
+            return new Providers\MockAiProvider($cfg);
         }
 
         try {
