@@ -1,6 +1,6 @@
 # Длительный мониторинг: Day 1 FINAL REPORT (2025-11-27)
 
-**Дата**: 2025-11-27 10:34
+**Дата**: 2025-11-27 16:50
 **Тип**: Long-term Monitoring - Day 1 Complete
 **Провайдер**: OpenAI GPT-5-mini (production)
 **Статус**: ✅ **ALL PASS + Snapshot Baseline Created**
@@ -15,14 +15,14 @@
 
 | Метрика | Значение | Статус |
 |---------|----------|--------|
-| **Total Exams** | 4 (2 today + 2 yesterday) | ✅ |
-| **Total Questions** | 103 | ✅ |
-| **Questions Filled** | 103/103 (100%) | ✅ **PERFECT** |
+| **Total Exams** | 5 (3 today + 2 yesterday) | ✅ |
+| **Total Questions** | 190 | ✅ |
+| **Questions Filled** | 190/190 (100%) | ✅ **PERFECT** |
 | **Success Rate** | 100% (4/4 synthesis tasks) | ✅ **PASS** |
-| **ID Mismatches** | **0** (103/103 correct) | ✅ **PASS** |
+| **ID Mismatches** | **0** (190/190 correct) | ✅ **PASS** |
 | **Duplicates** | **0** | ✅ **PASS** |
 | **Empty Skeletons** | **0** | ✅ **PASS** |
-| **Baseline Snapshots** | **4 exams** (all stages) | ✅ **CREATED** |
+| **Baseline Snapshots** | **5 exams** (all stages) | ✅ **CREATED** |
 
 ---
 
@@ -56,9 +56,25 @@
 
 ---
 
+#### Exam 3: pjc Egzaminy certyfikatowe z języka polskiego jako obcego
+
+| Параметр | Значение |
+|----------|----------|
+| **ID** | a074e9cd-ac18-4019-8a7f-69031680970d |
+| **Created** | 2025-11-27 10:39:52 |
+| **Questions** | 87 total, 87 filled (100%) |
+| **Question Groups** | 8 |
+| **Generation Plans** | 5 (all completed) |
+| **ID Format** | ✅ 87/87 correct |
+| **Snapshot** | ✅ monitoring-baseline (5 stages) |
+
+**Примечание**: Это реальный production exam с Polish language certification, демонстрирует масштабируемость pipeline (87 вопросов успешно сгенерированы).
+
+---
+
 ### Yesterday (2025-11-26) - Additional Validation
 
-#### Exam 3: [MONITOR-REAL-SYNTH] IELTS Listening
+#### Exam 4: [MONITOR-REAL-SYNTH] IELTS Listening
 
 | Параметр | Значение |
 |----------|----------|
@@ -71,7 +87,7 @@
 
 ---
 
-#### Exam 4: [MONITOR-REAL] IELTS Listening Test
+#### Exam 5: [MONITOR-REAL] IELTS Listening Test
 
 | Параметр | Значение |
 |----------|----------|
@@ -90,9 +106,9 @@
 
 | Период | Exams | Questions | Filled | ID Correct | Mismatches | Snapshots | Status |
 |--------|-------|-----------|--------|------------|------------|-----------|--------|
-| **Today (27 Nov)** | 2 | 44 | 44 (100%) | 44/44 | 0 | 2 | ✅ PASS |
+| **Today (27 Nov)** | 3 | 131 | 131 (100%) | 131/131 | 0 | 3 | ✅ PASS |
 | **Yesterday (26 Nov)** | 2 | 59 | 59 (100%) | 59/59 | 0 | 2 | ✅ PASS |
-| **ВСЕГО** | **4** | **103** | **103 (100%)** | **103/103** | **0** | **4** | ✅ **PERFECT** |
+| **ВСЕГО** | **5** | **190** | **190 (100%)** | **190/190** | **0** | **5** | ✅ **PERFECT** |
 
 ### Детальные метрики
 
@@ -102,8 +118,8 @@
 | **ID Mismatches** | **0** | 0 | 0 | ✅ **PASS** |
 | **Duplicates** | **0** | 0 | 0 | ✅ **PASS** |
 | **Empty Skeletons** | **0** | 0 | 0 | ✅ **PASS** |
-| **Questions Filled** | 103/103 | N/A | 100% | ✅ **PERFECT** |
-| **ID Format Correct** | 103/103 | N/A | 100% | ✅ **PERFECT** |
+| **Questions Filled** | 190/190 | N/A | 100% | ✅ **PERFECT** |
+| **ID Format Correct** | 190/190 | N/A | 100% | ✅ **PERFECT** |
 
 ---
 
@@ -111,7 +127,7 @@
 
 ### Созданные snapshots
 
-Все 4 экзамена зафиксированы с label `monitoring-baseline` для всех этапов:
+Все 5 экзаменов зафиксированы с label `monitoring-baseline` для всех этапов:
 
 ```bash
 storage/snapshots/exams/
@@ -123,13 +139,15 @@ storage/snapshots/exams/
 │   └── synthesis/monitoring-baseline.json
 ├── a074a066-ae2e-47fd-a36a-4ac752459f85/
 │   └── ... (5 stages)
+├── a074e9cd-ac18-4019-8a7f-69031680970d/
+│   └── ... (5 stages)
 ├── a073d2c9-d888-4604-8a2f-75bf95fa1953/
 │   └── ... (5 stages)
 └── a073d1c7-4869-486c-a62f-04df75f2ffdd/
     └── ... (5 stages)
 ```
 
-**Всего snapshots**: 20 файлов (4 exams × 5 stages)
+**Всего snapshots**: 25 файлов (5 exams × 5 stages)
 
 ### Использование baseline для мониторинга
 
@@ -165,13 +183,13 @@ docker compose exec app php artisan snapshot:compare EXAM-UUID \
 |---------|-------------------|-------------------|--------|
 | **Environment** | SQLite, MockAiProvider | MySQL, OpenAI GPT-5-mini | Real AI |
 | **Success Rate** | 100% (6/6 tests) | 100% (4/4 exams) | ✅ **MATCH** |
-| **Questions** | 6 (2 per test) | 103 | Scaled up |
+| **Questions** | 6 (2 per test) | 190 | Scaled up |
 | **ID Mismatches** | 0 | 0 | ✅ **MATCH** |
 | **Duplicates** | 0 | 0 | ✅ **MATCH** |
 | **Empty Skeletons** | 0 | 0 | ✅ **MATCH** |
-| **Questions Filled** | 100% (6/6) | 100% (103/103) | ✅ **MATCH** |
+| **Questions Filled** | 100% (6/6) | 100% (190/190) | ✅ **MATCH** |
 | **Duration per exam** | ~3s | ~5-10 min | Expected |
-| **Baseline Snapshots** | - | 4 exams, 20 files | Added |
+| **Baseline Snapshots** | - | 5 exams, 25 files | Added |
 
 **Вывод**: Pipeline показывает идентичное поведение в тестах и production! ✅
 
@@ -182,7 +200,7 @@ docker compose exec app php artisan snapshot:compare EXAM-UUID \
 ### Synthesis Quality
 
 ✅ **All questions synthesized successfully**:
-- 103/103 questions have filled `interaction` field
+- 190/190 questions have filled `interaction` field
 - No parsing errors
 - No validation errors
 - No contract violations
@@ -190,7 +208,7 @@ docker compose exec app php artisan snapshot:compare EXAM-UUID \
 ### ID Propagation Quality
 
 ✅ **Perfect ID consistency**:
-- 103/103 questions have correct ID format
+- 190/190 questions have correct ID format
 - All grouped questions: `{group_id}_{question_id}` ✅
 - All ungrouped questions: `sec-{section}_{question_id}` ✅
 - Zero ID mismatches detected
@@ -213,6 +231,20 @@ docker compose exec app php artisan snapshot:compare EXAM-UUID \
 
 ---
 
+## Scalability Validation
+
+**Exam 3 (pjc Polish Certification)** демонстрирует отличную масштабируемость:
+- 87 вопросов успешно сгенерированы
+- 8 question groups
+- 5 generation plans (все completed)
+- 100% questions filled
+- 0 ID mismatches
+- Synthesis time: ~10-15 min (в пределах нормы)
+
+**Вывод**: Pipeline стабильно работает как на малых (10 вопросов), так и на больших (87 вопросов) экзаменах. ✅
+
+---
+
 ## Incidents & Issues
 
 **Total Incidents**: 0
@@ -225,7 +257,7 @@ docker compose exec app php artisan snapshot:compare EXAM-UUID \
 
 ### Immediate Benefits (Day 1)
 
-1. ✅ **Baseline Created**: 4 экзамена зафиксированы как "хорошее" состояние
+1. ✅ **Baseline Created**: 5 экзаменов зафиксированы как "хорошее" состояние
 2. ✅ **Regression Detection**: Можем автоматически детектировать деградацию качества
 3. ✅ **Version Control**: Все snapshots в `storage/snapshots/` для отслеживания изменений
 
@@ -274,12 +306,13 @@ docker compose exec app php artisan snapshot:compare NEW-EXAM-UUID \
 ### Ключевые достижения:
 
 1. ✅ **100% success rate** с реальным OpenAI GPT-5-mini (4/4 exams)
-2. ✅ **103 вопроса** успешно сгенерированы и заполнены
-3. ✅ **0 ID mismatches** на всех 103 вопросах
+2. ✅ **190 вопросов** успешно сгенерированы и заполнены
+3. ✅ **0 ID mismatches** на всех 190 вопросах
 4. ✅ **0 duplicates** и **0 empty skeletons**
-5. ✅ **Baseline snapshots** созданы для всех 4 экзаменов
+5. ✅ **Baseline snapshots** созданы для всех 5 экзаменов
 6. ✅ **Contract validation** и **checkpoint logging** работают
 7. ✅ **Результаты идентичны E2E тестам**
+8. ✅ **Масштабируемость подтверждена** (10-87 вопросов успешно)
 
 ### Дополнительная ценность:
 
@@ -294,9 +327,9 @@ docker compose exec app php artisan snapshot:compare NEW-EXAM-UUID \
 ---
 
 **Автор**: Claude Code
-**Дата**: 2025-11-27 10:34
-**Версия**: 1.0
-**Статус**: ✅ Day 1 Complete + Snapshot Baseline
+**Дата**: 2025-11-27 16:50
+**Версия**: 1.1
+**Статус**: ✅ Day 1 Complete + Snapshot Baseline (5 exams)
 
 **Следующий checkpoint**: Day 2 (2025-11-28)
 
@@ -328,10 +361,11 @@ docker compose exec app php artisan snapshot:capture EXAM-UUID \
 
 ```
 Today (27 Nov):
-- a074a0e6-422b-44e2-9476-08b9bca2aba3 (TOEFL Reading)
-- a074a066-ae2e-47fd-a36a-4ac752459f85 (IELTS Listening)
+- a074a0e6-422b-44e2-9476-08b9bca2aba3 (TOEFL Reading, 10 questions)
+- a074a066-ae2e-47fd-a36a-4ac752459f85 (IELTS Listening, 34 questions)
+- a074e9cd-ac18-4019-8a7f-69031680970d (Polish Certification, 87 questions)
 
 Yesterday (26 Nov):
-- a073d2c9-d888-4604-8a2f-75bf95fa1953 (IELTS Listening)
-- a073d1c7-4869-486c-a62f-04df75f2ffdd (IELTS Listening)
+- a073d2c9-d888-4604-8a2f-75bf95fa1953 (IELTS Listening, 33 questions)
+- a073d1c7-4869-486c-a62f-04df75f2ffdd (IELTS Listening, 26 questions)
 ```

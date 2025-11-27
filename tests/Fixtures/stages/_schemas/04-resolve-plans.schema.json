@@ -1,0 +1,73 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:examhelp:golden-fixtures:resolve-plans:v1",
+  "title": "Golden Fixture - Resolve Plans",
+  "description": "Schema for resolved generation plans",
+  "type": "object",
+  "required": ["version", "stage", "exam_id", "generation_plans", "summary"],
+  "properties": {
+    "$schema": { "type": "string" },
+    "version": { "type": "string", "const": "1.0" },
+    "stage": { "type": "string", "const": "resolve_plans" },
+    "exam_id": { "type": "string" },
+
+    "generation_plans": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["section_id", "questions_count", "question_type", "synthesis_mode"],
+        "properties": {
+          "section_id": { "type": "string" },
+          "group_id": { "type": "string" },
+          "task_id": { "type": "string" },
+          "plan_type": { "type": "string", "enum": ["question_group", "single_task"] },
+          "questions_count": { "type": "integer", "minimum": 1 },
+          "question_type": { "type": "string" },
+          "synthesis_mode": { "type": "string", "enum": ["inline", "placeholder", "hybrid"] },
+          "context": { "type": "object" }
+        }
+      }
+    },
+
+    "summary": {
+      "type": "object",
+      "required": ["total_plans"],
+      "properties": {
+        "total_plans": { "type": "integer", "minimum": 0 },
+        "by_section": {
+          "type": "object",
+          "patternProperties": {
+            "^.*$": {
+              "type": "object",
+              "properties": {
+                "plans": { "type": "integer" },
+                "questions": { "type": "integer" }
+              }
+            }
+          }
+        },
+        "by_type": {
+          "type": "object",
+          "properties": {
+            "question_group": { "type": "integer" },
+            "single_task": { "type": "integer" }
+          }
+        }
+      }
+    },
+
+    "_comparison_hints": { "$ref": "#/$defs/comparison_hints" },
+    "_notes": { "type": "string" }
+  },
+
+  "$defs": {
+    "comparison_hints": {
+      "type": "object",
+      "properties": {
+        "critical_fields": { "type": "array", "items": { "type": "string" } },
+        "flexible_fields": { "type": "array", "items": { "type": "string" } },
+        "ignore_fields": { "type": "array", "items": { "type": "string" } }
+      }
+    }
+  }
+}

@@ -1,0 +1,30 @@
+{
+  "$schema": "../_schemas/00-input.schema.json",
+  "version": "1.0",
+  "exam_id": "pl-b1",
+  "created_at": "2025-01-25",
+
+  "exam": {
+    "title": "Egzamin Certyfikatowy z Języka Polskiego jako Obcego - B1",
+    "language_of_test": "Polish",
+    "level": "B1",
+    "provider": "Państwowa Komisja ds. Poświadczania Znajomości Języka Polskiego jako Obcego",
+    "family": "Polish State Certificate",
+    "description": "Official Polish language certificate exam at B1 (Threshold) level. Tests listening, reading, grammar, writing and speaking skills."
+  },
+
+  "user_input": "Это официальный государственный экзамен по польскому языку уровня B1. Экзамен состоит из 5 частей: rozumienie ze słuchu (аудирование), rozumienie tekstów pisanych (чтение), poprawność gramatyczna (грамматика), pisanie (письмо) и mówienie (говорение). Каждая часть оценивается отдельно, для сдачи нужно набрать минимум 60% в каждой части.",
+
+  "documents": [
+    {
+      "filename": "pl-b1-sample-2023.pdf",
+      "extracted_text_preview": "EGZAMIN CERTYFIKATOWY Z JĘZYKA POLSKIEGO JAKO OBCEGO POZIOM B1 ROZUMIENIE ZE SŁUCHU Czas: 25 minut...",
+      "pages": 12,
+      "type": "sample_exam"
+    }
+  ],
+
+  "notes": null,
+
+  "_source": "Extracted from tests/Fixtures/exams/pl-b1.json exam fields"
+}

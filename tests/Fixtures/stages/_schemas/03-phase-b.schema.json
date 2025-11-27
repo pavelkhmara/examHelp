@@ -1,0 +1,152 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:examhelp:golden-fixtures:phase-b:v1",
+  "title": "Golden Fixture - Phase B (Assembly Plans)",
+  "description": "Schema for exam structure with assembly plans",
+  "type": "object",
+  "required": ["version", "stage", "exam_id", "structure_v2"],
+  "properties": {
+    "$schema": { "type": "string" },
+    "version": { "type": "string", "const": "1.0" },
+    "stage": { "type": "string", "const": "phase_b" },
+    "exam_id": { "type": "string" },
+
+    "structure_v2": {
+      "type": "object",
+      "required": ["meta", "pass_policy", "sections"],
+      "properties": {
+        "id": { "type": "string" },
+        "version": { "type": "string" },
+        "meta": { "$ref": "#/$defs/meta" },
+        "pass_policy": { "$ref": "#/$defs/pass_policy" },
+        "policies": { "type": "object" },
+
+        "sections": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "type": "object",
+            "required": ["id", "skill"],
+            "properties": {
+              "id": { "type": "string" },
+              "skill": { "type": "string", "enum": ["listening", "reading", "writing", "speaking", "grammar", "vocabulary", "use_of_english"] },
+              "name": { "type": "string" },
+              "duration_min": { "type": "integer", "minimum": 1 },
+              "max_score": { "type": "number", "minimum": 1 },
+
+              "assembly": {
+                "type": "object",
+                "required": ["mode"],
+                "properties": {
+                  "mode": { "type": "string", "enum": ["inline", "placeholder", "hybrid"] },
+
+                  "question_groups": {
+                    "type": "array",
+                    "items": { "$ref": "#/$defs/question_group" }
+                  },
+
+                  "tasks": {
+                    "type": "array",
+                    "items": { "$ref": "#/$defs/task" }
+                  }
+                }
+              },
+
+              "question_archetypes": { "type": "array" }
+            }
+          }
+        }
+      }
+    },
+
+    "_comparison_hints": { "$ref": "#/$defs/comparison_hints" },
+    "_notes": { "type": "string" }
+  },
+
+  "$defs": {
+    "meta": {
+      "type": "object",
+      "required": ["name", "language", "level"],
+      "properties": {
+        "name": { "type": "string" },
+        "language": { "type": "string" },
+        "level": { "type": "string" },
+        "provider": { "type": "string" },
+        "tags": { "type": "array", "items": { "type": "string" } }
+      }
+    },
+
+    "pass_policy": {
+      "type": "object",
+      "required": ["mode"],
+      "properties": {
+        "mode": { "type": "string", "enum": ["overall_only", "per_section_only", "mixed"] },
+        "overall_threshold_percent": { "type": "number" },
+        "per_section_threshold_percent": { "type": "number" }
+      }
+    },
+
+    "question_group": {
+      "type": "object",
+      "required": ["id", "questions"],
+      "properties": {
+        "id": { "type": "string" },
+        "title": { "type": "string" },
+        "order": { "type": "integer" },
+        "instructions": { "type": "object" },
+        "stimulus": {
+          "type": "object",
+          "properties": {
+            "audio": { "type": "array", "items": { "type": "string" } },
+            "video": { "type": "array", "items": { "type": "string" } },
+            "images": { "type": "array", "items": { "type": "string" } },
+            "text_html": { "type": "string" }
+          }
+        },
+        "playback_settings": {
+          "type": "object",
+          "properties": {
+            "max_plays": { "type": "integer", "minimum": 0 },
+            "enforcement": { "type": "string", "enum": ["strict", "advisory", "none"] },
+            "show_counter": { "type": "boolean" },
+            "reset_on_navigation": { "type": "boolean" }
+          }
+        },
+        "metadata": { "type": "object" },
+        "questions": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "type": "object",
+            "required": ["id", "type"],
+            "properties": {
+              "id": { "type": "string" },
+              "type": { "type": "string" },
+              "order": { "type": "integer" }
+            }
+          }
+        }
+      }
+    },
+
+    "task": {
+      "type": "object",
+      "required": ["id", "type"],
+      "properties": {
+        "id": { "type": "string" },
+        "type": { "type": "string" },
+        "instructions": { "type": "object" },
+        "constraints": { "type": "object" }
+      }
+    },
+
+    "comparison_hints": {
+      "type": "object",
+      "properties": {
+        "critical_fields": { "type": "array", "items": { "type": "string" } },
+        "flexible_fields": { "type": "array", "items": { "type": "string" } },
+        "ignore_fields": { "type": "array", "items": { "type": "string" } }
+      }
+    }
+  }
+}

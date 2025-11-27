@@ -1,0 +1,1407 @@
+{
+    "exam_id": "a074e9cd-ac18-4019-8a7f-69031680970d",
+    "stage": "synthesis",
+    "label": "monitoring-baseline",
+    "hash": "87dfbd0d0b2548da2374b235ae87f177e8b67852b2407c394c27610377dee271",
+    "data": {
+        "stage": "synthesis",
+        "exam_id": "a074e9cd-ac18-4019-8a7f-69031680970d",
+        "sections": [
+            {
+                "key": 1081,
+                "skill": "grammar_lexis",
+                "name": "Znajomość struktur gramatyczno-leksykalnych",
+                "question_groups": [],
+                "ungrouped_questions": [
+                    {
+                        "question_id": "b1-grammar-lexis_gl_multi_select_01",
+                        "type": "multi_select",
+                        "order": 0
+                    },
+                    {
+                        "question_id": "b1-grammar-lexis_q1",
+                        "type": "short_answer",
+                        "order": 0
+                    },
+                    {
+                        "question_id": "b1-grammar-lexis_gl_single_cloze_01",
+                        "type": "single_select",
+                        "order": 0
+                    },
+                    {
+                        "question_id": "b1-grammar-lexis_1081_single_select_1764262013_t8ps",
+                        "type": "single_select",
+                        "order": 0
+                    },
+                    {
+                        "question_id": "b1-grammar-lexis_1081_single_select_1764261870_czwu",
+                        "type": "single_select",
+                        "order": 0
+                    },
+                    {
+                        "question_id": "b1-grammar-lexis_1081_multi_select_1764261728_5hjk",
+                        "type": "multi_select",
+                        "order": 1
+                    },
+                    {
+                        "question_id": "b1-grammar-lexis_q1_short_01",
+                        "type": "short_answer",
+                        "order": 1
+                    },
+                    {
+                        "question_id": "b1-grammar-lexis_1081_short_answer_1764261767_ic8y",
+                        "type": "short_answer",
+                        "order": 1
+                    },
+                    {
+                        "question_id": "b1-grammar-lexis_1081_single_select_1764262063_qljx",
+                        "type": "single_select",
+                        "order": 1
+                    },
+                    {
+                        "question_id": "b1-grammar-lexis_1081_single_select_1764262013_sipu",
+                        "type": "single_select",
+                        "order": 1
+                    },
+                    {
+                        "question_id": "b1-grammar-lexis_1081_single_select_1764262013_lyun",
+                        "type": "single_select",
+                        "order": 2
+                    },
+                    {
+                        "question_id": "b1-grammar-lexis_1081_single_select_1764262101_q17s",
+                        "type": "single_select",
+                        "order": 2
+                    },
+                    {
+                        "question_id": "b1-grammar-lexis_1081_short_answer_1764261912_1qud",
+                        "type": "short_answer",
+                        "order": 2
+                    },
+                    {
+                        "question_id": "b1-grammar-lexis_gl_q1",
+                        "type": "single_select",
+                        "order": 2
+                    },
+                    {
+                        "question_id": "b1-grammar-lexis_1081_short_answer_1764261767_vlng",
+                        "type": "short_answer",
+                        "order": 2
+                    },
+                    {
+                        "question_id": "b1-grammar-lexis_1081_single_select_1764262063_0e86",
+                        "type": "single_select",
+                        "order": 2
+                    },
+                    {
+                        "question_id": "b1-grammar-lexis_1081_multi_select_1764261728_xeag",
+                        "type": "multi_select",
+                        "order": 2
+                    },
+                    {
+                        "question_id": "b1-grammar-lexis_1081_single_select_1764262063_xdf6",
+                        "type": "single_select",
+                        "order": 3
+                    },
+                    {
+                        "question_id": "b1-grammar-lexis_1081_single_select_1764262013_9yrm",
+                        "type": "single_select",
+                        "order": 3
+                    },
+                    {
+                        "question_id": "b1-grammar-lexis_1081_short_answer_1764261912_2jjj",
+                        "type": "short_answer",
+                        "order": 3
+                    },
+                    {
+                        "question_id": "b1-grammar-lexis_1081_single_select_1764262101_uscg",
+                        "type": "single_select",
+                        "order": 3
+                    },
+                    {
+                        "question_id": "b1-grammar-lexis_1081_multi_select_1764261728_enzp",
+                        "type": "multi_select",
+                        "order": 3
+                    },
+                    {
+                        "question_id": "b1-grammar-lexis_1081_short_answer_1764261767_pr9w",
+                        "type": "short_answer",
+                        "order": 3
+                    },
+                    {
+                        "question_id": "b1-grammar-lexis_1081_single_select_1764261870_e0f2",
+                        "type": "single_select",
+                        "order": 3
+                    },
+                    {
+                        "question_id": "b1-grammar-lexis_1081_short_answer_1764261912_lzjo",
+                        "type": "short_answer",
+                        "order": 4
+                    },
+                    {
+                        "question_id": "b1-grammar-lexis_1081_single_select_1764262063_vwtr",
+                        "type": "single_select",
+                        "order": 4
+                    },
+                    {
+                        "question_id": "b1-grammar-lexis_1081_single_select_1764261870_csql",
+                        "type": "single_select",
+                        "order": 4
+                    },
+                    {
+                        "question_id": "b1-grammar-lexis_1081_short_answer_1764261767_7pl1",
+                        "type": "short_answer",
+                        "order": 4
+                    },
+                    {
+                        "question_id": "b1-grammar-lexis_1081_single_select_1764262101_a7qh",
+                        "type": "single_select",
+                        "order": 5
+                    },
+                    {
+                        "question_id": "b1-grammar-lexis_1081_single_select_1764261870_gxs7",
+                        "type": "single_select",
+                        "order": 5
+                    },
+                    {
+                        "question_id": "b1-grammar-lexis_1081_short_answer_1764261912_jzcp",
+                        "type": "short_answer",
+                        "order": 5
+                    },
+                    {
+                        "question_id": "b1-grammar-lexis_1081_single_select_1764262063_jpfo",
+                        "type": "single_select",
+                        "order": 5
+                    },
+                    {
+                        "question_id": "b1-grammar-lexis_1081_short_answer_1764261767_tqds",
+                        "type": "short_answer",
+                        "order": 5
+                    },
+                    {
+                        "question_id": "b1-grammar-lexis_1081_single_select_1764262013_ydyk",
+                        "type": "single_select",
+                        "order": 5
+                    },
+                    {
+                        "question_id": "b1-grammar-lexis_1081_single_select_1764262101_eaxs",
+                        "type": "single_select",
+                        "order": 6
+                    },
+                    {
+                        "question_id": "b1-grammar-lexis_1081_single_select_1764262064_jfnz",
+                        "type": "single_select",
+                        "order": 6
+                    },
+                    {
+                        "question_id": "b1-grammar-lexis_1081_single_select_1764262013_yg96",
+                        "type": "single_select",
+                        "order": 6
+                    },
+                    {
+                        "question_id": "b1-grammar-lexis_1081_short_answer_1764261767_jxet",
+                        "type": "short_answer",
+                        "order": 6
+                    },
+                    {
+                        "question_id": "b1-grammar-lexis_1081_short_answer_1764261912_yrws",
+                        "type": "short_answer",
+                        "order": 6
+                    },
+                    {
+                        "question_id": "b1-grammar-lexis_1081_single_select_1764261870_xpok",
+                        "type": "single_select",
+                        "order": 6
+                    },
+                    {
+                        "question_id": "b1-grammar-lexis_1081_single_select_1764262064_tgta",
+                        "type": "single_select",
+                        "order": 7
+                    },
+                    {
+                        "question_id": "b1-grammar-lexis_1081_single_select_1764262101_q95g",
+                        "type": "single_select",
+                        "order": 7
+                    },
+                    {
+                        "question_id": "b1-grammar-lexis_1081_short_answer_1764261912_cczh",
+                        "type": "short_answer",
+                        "order": 7
+                    },
+                    {
+                        "question_id": "b1-grammar-lexis_1081_single_select_1764262013_kb3r",
+                        "type": "single_select",
+                        "order": 7
+                    },
+                    {
+                        "question_id": "b1-grammar-lexis_1081_single_select_1764261870_nxek",
+                        "type": "single_select",
+                        "order": 7
+                    },
+                    {
+                        "question_id": "b1-grammar-lexis_1081_single_select_1764262013_rop1",
+                        "type": "single_select",
+                        "order": 8
+                    },
+                    {
+                        "question_id": "b1-grammar-lexis_1081_single_select_1764262064_f7sj",
+                        "type": "single_select",
+                        "order": 8
+                    },
+                    {
+                        "question_id": "b1-grammar-lexis_1081_single_select_1764261870_6pfk",
+                        "type": "single_select",
+                        "order": 8
+                    },
+                    {
+                        "question_id": "b1-grammar-lexis_1081_single_select_1764262101_tzdn",
+                        "type": "single_select",
+                        "order": 8
+                    },
+                    {
+                        "question_id": "b1-grammar-lexis_1081_single_select_1764262013_dotl",
+                        "type": "single_select",
+                        "order": 9
+                    },
+                    {
+                        "question_id": "b1-grammar-lexis_1081_single_select_1764262064_yeqt",
+                        "type": "single_select",
+                        "order": 9
+                    },
+                    {
+                        "question_id": "b1-grammar-lexis_1081_single_select_1764261870_65zh",
+                        "type": "single_select",
+                        "order": 9
+                    },
+                    {
+                        "question_id": "b1-grammar-lexis_1081_single_select_1764262101_circ",
+                        "type": "single_select",
+                        "order": 9
+                    },
+                    {
+                        "question_id": "b1-grammar-lexis_1081_single_select_1764262013_agbp",
+                        "type": "single_select",
+                        "order": 10
+                    },
+                    {
+                        "question_id": "b1-grammar-lexis_1081_single_select_1764262064_vo4z",
+                        "type": "single_select",
+                        "order": 10
+                    },
+                    {
+                        "question_id": "b1-grammar-lexis_1081_single_select_1764261870_cihk",
+                        "type": "single_select",
+                        "order": 10
+                    },
+                    {
+                        "question_id": "b1-grammar-lexis_1081_single_select_1764262101_clyy",
+                        "type": "single_select",
+                        "order": 10
+                    },
+                    {
+                        "question_id": "b1-grammar-lexis_1081_single_select_1764262064_wvbk",
+                        "type": "single_select",
+                        "order": 11
+                    },
+                    {
+                        "question_id": "b1-grammar-lexis_1081_single_select_1764261870_h9ph",
+                        "type": "single_select",
+                        "order": 11
+                    }
+                ]
+            },
+            {
+                "key": 1079,
+                "skill": "listening",
+                "name": "Rozumienie ze słuchu",
+                "question_groups": [
+                    {
+                        "group_id": "listening-task-1",
+                        "title": "Zadanie I – Krótkie dialogi",
+                        "order": 1,
+                        "questions": []
+                    },
+                    {
+                        "group_id": "listening-task-2",
+                        "title": "Zadanie II – Ogłoszenie\/komunikat",
+                        "order": 2,
+                        "questions": []
+                    },
+                    {
+                        "group_id": "listening-task-3",
+                        "title": "Zadanie III – Rozmowa telefoniczna",
+                        "order": 3,
+                        "questions": [
+                            {
+                                "question_id": "listening-task-3_q13",
+                                "type": "single_select",
+                                "order": 0,
+                                "instructions": {
+                                    "full": "Przeczytaj uważnie treść nagrania poniżej (to, co usłyszysz). Następnie wybierz jedną odpowiedź, która najlepiej oddaje główną myśl nagrania.",
+                                    "l10n": null,
+                                    "brief": "Wysłuchaj nagrania i wybierz główną myśl.",
+                                    "audio_url": "http:\/\/localhost:8080\/storage\/audio\/2025\/11\/27\/q_listening-task-3_q13_1764261293.mp3"
+                                },
+                                "interaction": {
+                                    "bank": null,
+                                    "stem": null,
+                                    "pairs": null,
+                                    "spans": null,
+                                    "options": [
+                                        {
+                                            "id": "opt1",
+                                            "text": "Marta chce przeprowadzić się, aby znaleźć tańsze mieszkanie."
+                                        },
+                                        {
+                                            "id": "opt2",
+                                            "text": "Marta rozważa przeprowadzkę, żeby mieć więcej przestrzeni i krótszy dojazd do pracy."
+                                        },
+                                        {
+                                            "id": "opt3",
+                                            "text": "Marta planuje remont obecnego mieszkania, żeby było wygodniejsze dla rodziny."
+                                        }
+                                    ],
+                                    "input_type": null,
+                                    "response_type": "selection"
+                                },
+                                "scoring": {
+                                    "method": "keyed",
+                                    "rubric": null,
+                                    "max_score": 1,
+                                    "answer_key": [
+                                        "opt2"
+                                    ],
+                                    "partial_rules": null
+                                }
+                            },
+                            {
+                                "question_id": "listening-task-3_1079_single_select_1764261445_yqh8",
+                                "type": "single_select",
+                                "order": 0,
+                                "instructions": {
+                                    "full": "Przeczytaj poniższy tekst, wyobraź sobie, że to nagranie. Po wysłuchaniu wybierz jedną odpowiedź, która najlepiej oddaje główną myśl rozmowy.",
+                                    "l10n": null,
+                                    "brief": "Posłuchaj dialogu i wybierz główną myśl.",
+                                    "audio_url": "http:\/\/localhost:8080\/storage\/audio\/2025\/11\/27\/q_listening-task-3_1079_single_select_1764261445_yqh8_1764261445.mp3"
+                                },
+                                "interaction": {
+                                    "bank": null,
+                                    "stem": null,
+                                    "pairs": null,
+                                    "spans": null,
+                                    "options": [
+                                        {
+                                            "id": "opt1",
+                                            "text": "Planują odwołać spotkanie z powodu złej pogody."
+                                        },
+                                        {
+                                            "id": "opt2",
+                                            "text": "Postanowili zamiast pikniku spotkać się w kawiarni z powodu deszczu."
+                                        },
+                                        {
+                                            "id": "opt3",
+                                            "text": "Zdecydowali pojechać gdzie indziej na piknik w innym mieście."
+                                        }
+                                    ],
+                                    "input_type": null,
+                                    "response_type": "selection"
+                                },
+                                "scoring": {
+                                    "method": "keyed",
+                                    "rubric": null,
+                                    "max_score": 1,
+                                    "answer_key": [
+                                        "opt2"
+                                    ],
+                                    "partial_rules": null
+                                }
+                            },
+                            {
+                                "question_id": "listening-task-3_1079_listen_mcq_1764261445_4aom",
+                                "type": "listen_mcq",
+                                "order": 1,
+                                "instructions": {
+                                    "full": "Przeczytaj poniższe opcje, posłuchaj tekstu (tekst poniżej odzwierciedla to, co usłyszysz) i wybierz odpowiedź, która najlepiej oddaje główną myśl rozmowy.",
+                                    "l10n": null,
+                                    "brief": "Usłyszysz krótką rozmowę. Wybierz główną myśl nagrania.",
+                                    "audio_url": "http:\/\/localhost:8080\/storage\/audio\/2025\/11\/27\/q_listening-task-3_1079_listen_mcq_1764261445_4aom_1764261449.mp3"
+                                },
+                                "interaction": {
+                                    "bank": null,
+                                    "stem": null,
+                                    "pairs": null,
+                                    "spans": null,
+                                    "options": [
+                                        {
+                                            "id": "opt1",
+                                            "text": "Paweł zgodził się pomóc Kasi przy przeprowadzce i przywiezie samochód."
+                                        },
+                                        {
+                                            "id": "opt2",
+                                            "text": "Kasia zaprasza Pawła na wspólną wycieczkę w sobotę."
+                                        },
+                                        {
+                                            "id": "opt3",
+                                            "text": "Paweł odmawia pomocy, bo nie ma czasu ani samochodu."
+                                        }
+                                    ],
+                                    "input_type": null,
+                                    "response_type": "selection"
+                                },
+                                "scoring": {
+                                    "method": "keyed",
+                                    "rubric": null,
+                                    "max_score": 1,
+                                    "answer_key": [
+                                        "opt1"
+                                    ],
+                                    "partial_rules": null
+                                }
+                            },
+                            {
+                                "question_id": "listening-task-3_1079_single_select_1764261445_3cp6",
+                                "type": "single_select",
+                                "order": 2,
+                                "instructions": {
+                                    "full": "Usłyszysz krótki monolog. Zdecyduj, która opcja najlepiej oddaje główną myśl nagrania. Wybierz jedną odpowiedź.",
+                                    "l10n": null,
+                                    "brief": "Wysłuchaj nagrania i wybierz najlepszą odpowiedź.",
+                                    "audio_url": "http:\/\/localhost:8080\/storage\/audio\/2025\/11\/27\/q_listening-task-3_1079_single_select_1764261445_3cp6_1764261457.mp3"
+                                },
+                                "interaction": {
+                                    "bank": null,
+                                    "stem": null,
+                                    "pairs": null,
+                                    "spans": null,
+                                    "options": [
+                                        {
+                                            "id": "opt1",
+                                            "text": "Zaproszenie do udziału w biegu charytatywnym organizowanym w najbliższą sobotę."
+                                        },
+                                        {
+                                            "id": "opt2",
+                                            "text": "Ogłoszenie o odwołaniu wszystkich wydarzeń w parku miejskim z powodu złej pogody."
+                                        },
+                                        {
+                                            "id": "opt3",
+                                            "text": "Reklama fundacji zachęcająca do regularnych wpłat na rzecz dzieci."
+                                        }
+                                    ],
+                                    "input_type": null,
+                                    "response_type": "selection"
+                                },
+                                "scoring": {
+                                    "method": "keyed",
+                                    "rubric": null,
+                                    "max_score": 1,
+                                    "answer_key": [
+                                        "opt1"
+                                    ],
+                                    "partial_rules": null
+                                }
+                            },
+                            {
+                                "question_id": "listening-task-3_1079_single_select_1764261445_dmzx",
+                                "type": "single_select",
+                                "order": 3,
+                                "instructions": {
+                                    "full": "Przeczytaj poniższy tekst (to, co usłyszysz) i na jego podstawie wskaż najtrafniejsze streszczenie głównej myśli rozmowy. Wybierz jedną odpowiedź.",
+                                    "l10n": null,
+                                    "brief": "Wysłuchaj dialogu i wybierz główną myśl.",
+                                    "audio_url": "http:\/\/localhost:8080\/storage\/audio\/2025\/11\/27\/q_listening-task-3_1079_single_select_1764261445_dmzx_1764261461.mp3"
+                                },
+                                "interaction": {
+                                    "bank": null,
+                                    "stem": null,
+                                    "pairs": null,
+                                    "spans": null,
+                                    "options": [
+                                        {
+                                            "id": "opt1",
+                                            "text": "Ustalenie planu na sobotę: najpierw krótki spacer rano, potem wizyta na wystawie i wieczorne spotkanie ze znajomymi."
+                                        },
+                                        {
+                                            "id": "opt2",
+                                            "text": "Tomek namawia Annę na całodniowy wyjazd za miasto, ale Anna woli zostać w mieście i iść na wystawę."
+                                        },
+                                        {
+                                            "id": "opt3",
+                                            "text": "Anna rezygnuje z towarzyskich planów i decyduje się spędzić weekend sama w domu, oglądając wystawę online."
+                                        }
+                                    ],
+                                    "input_type": null,
+                                    "response_type": "selection"
+                                },
+                                "scoring": {
+                                    "method": "keyed",
+                                    "rubric": null,
+                                    "max_score": 1,
+                                    "answer_key": [
+                                        "opt1"
+                                    ],
+                                    "partial_rules": null
+                                }
+                            }
+                        ]
+                    },
+                    {
+                        "group_id": "listening-task-4",
+                        "title": "Zadanie IV – Wywiad radiowy",
+                        "order": 4,
+                        "questions": [
+                            {
+                                "question_id": "listening-task-4_q19",
+                                "type": "single_select",
+                                "order": 0,
+                                "instructions": {
+                                    "full": "Przeczytaj poniższy tekst, który odzwierciedla treść nagrania. Wybierz jedną odpowiedź, która najlepiej oddaje główną myśl rozmowy.",
+                                    "l10n": null,
+                                    "brief": "Wysłuchaj dialogu i wybierz najlepszą odpowiedź.",
+                                    "audio_url": "http:\/\/localhost:8080\/storage\/audio\/2025\/11\/27\/q_listening-task-4_q19_1764261285.mp3"
+                                },
+                                "interaction": {
+                                    "bank": null,
+                                    "stem": null,
+                                    "pairs": null,
+                                    "spans": null,
+                                    "options": [
+                                        {
+                                            "id": "opt1",
+                                            "text": "Anna i Piotr rozmawiają o rezerwacji stolika w restauracji."
+                                        },
+                                        {
+                                            "id": "opt2",
+                                            "text": "Rozmówcy potwierdzają szczegóły weekendowego wyjazdu w góry."
+                                        },
+                                        {
+                                            "id": "opt3",
+                                            "text": "Dyskutują o ofercie pracy i godzinach pracy."
+                                        }
+                                    ],
+                                    "input_type": null,
+                                    "response_type": "selection"
+                                },
+                                "scoring": {
+                                    "method": "keyed",
+                                    "rubric": null,
+                                    "max_score": 1,
+                                    "answer_key": [
+                                        "opt2"
+                                    ],
+                                    "partial_rules": null
+                                }
+                            }
+                        ]
+                    },
+                    {
+                        "group_id": "listening-task-5",
+                        "title": "Zadanie V – Dyskusja\/fragment audycji",
+                        "order": 5,
+                        "questions": [
+                            {
+                                "question_id": "listening-task-5_q25",
+                                "type": "listen_true_false",
+                                "order": 0,
+                                "instructions": {
+                                    "full": "Usłyszysz krótkie nagranie raz. Przeczytaj zdanie poniżej, a następnie wybierz, czy jest ono Prawda, czy Fałsz w odniesieniu do informacji zawartych w nagraniu.",
+                                    "l10n": null,
+                                    "brief": "Posłuchaj nagrania i zdecyduj, czy zdanie jest prawdziwe, czy fałszywe.",
+                                    "audio_url": "http:\/\/localhost:8080\/storage\/audio\/2025\/11\/27\/q_listening-task-5_q25_1764261271.mp3"
+                                },
+                                "interaction": {
+                                    "bank": null,
+                                    "stem": null,
+                                    "pairs": null,
+                                    "spans": null,
+                                    "options": [
+                                        {
+                                            "id": "opt_true",
+                                            "text": "Prawda"
+                                        },
+                                        {
+                                            "id": "opt_false",
+                                            "text": "Fałsz"
+                                        }
+                                    ],
+                                    "input_type": null,
+                                    "response_type": "selection"
+                                },
+                                "scoring": {
+                                    "method": "keyed",
+                                    "rubric": null,
+                                    "max_score": 1,
+                                    "answer_key": [
+                                        "opt_false"
+                                    ],
+                                    "partial_rules": null
+                                }
+                            },
+                            {
+                                "question_id": "listening-task-5_q26",
+                                "type": "listen_true_false",
+                                "order": 1,
+                                "instructions": {
+                                    "full": "Najpierw odtwórz nagranie. Następnie przy każdym zdaniu wybierz „Prawda”, jeśli zdanie zgadza się z informacją z nagrania, lub „Fałsz”, jeśli jest niezgodne. Całe zadanie punktowane jest łącznie (1 punkt za wszystkie poprawne odpowiedzi).",
+                                    "l10n": null,
+                                    "brief": "Po wysłuchaniu nagrania zaznacz, czy każde zdanie jest prawdziwe czy fałszywe.",
+                                    "audio_url": "http:\/\/localhost:8080\/storage\/audio\/2025\/11\/27\/q_listening-task-5_q26_1764261278.mp3"
+                                },
+                                "interaction": {
+                                    "bank": null,
+                                    "stem": null,
+                                    "pairs": null,
+                                    "spans": null,
+                                    "options": [
+                                        {
+                                            "id": "s1_prawda",
+                                            "text": "1) Prawda"
+                                        },
+                                        {
+                                            "id": "s1_falsz",
+                                            "text": "1) Fałsz"
+                                        },
+                                        {
+                                            "id": "s2_prawda",
+                                            "text": "2) Prawda"
+                                        },
+                                        {
+                                            "id": "s2_falsz",
+                                            "text": "2) Fałsz"
+                                        },
+                                        {
+                                            "id": "s3_prawda",
+                                            "text": "3) Prawda"
+                                        },
+                                        {
+                                            "id": "s3_falsz",
+                                            "text": "3) Fałsz"
+                                        }
+                                    ],
+                                    "input_type": null,
+                                    "response_type": "selection"
+                                },
+                                "scoring": {
+                                    "method": "keyed",
+                                    "rubric": null,
+                                    "max_score": 1,
+                                    "answer_key": [
+                                        "s1_prawda",
+                                        "s2_falsz",
+                                        "s3_prawda"
+                                    ],
+                                    "partial_rules": null
+                                }
+                            },
+                            {
+                                "question_id": "listening-task-5_q27",
+                                "type": "listen_true_false",
+                                "order": 2,
+                                "instructions": {
+                                    "full": "Usłyszysz krótkie nagranie przewodnika o planie wycieczki po mieście. Dla każdego zdania wybierz 'Prawda' jeśli informacja zgadza się z nagraniem, albo 'Fałsz' jeśli jest niezgodna. Masz 60 sekund na odpowiedzi.",
+                                    "l10n": null,
+                                    "brief": "Posłuchaj nagrania i zdecyduj, czy każde zdanie jest prawdziwe czy fałszywe.",
+                                    "audio_url": "http:\/\/localhost:8080\/storage\/audio\/2025\/11\/27\/q_listening-task-5_q27_1764261281.mp3"
+                                },
+                                "interaction": {
+                                    "bank": null,
+                                    "stem": null,
+                                    "pairs": null,
+                                    "spans": null,
+                                    "options": [
+                                        {
+                                            "id": "s1",
+                                            "text": "Spotkanie przy głównym placu jest o godzinie 10:00."
+                                        },
+                                        {
+                                            "id": "s2",
+                                            "text": "Wycieczka potrwa cztery godziny."
+                                        },
+                                        {
+                                            "id": "s3",
+                                            "text": "Podczas wycieczki uczestnicy odwiedzą muzeum i most."
+                                        },
+                                        {
+                                            "id": "s4",
+                                            "text": "Obiad jest zapewniony dla wszystkich uczestników."
+                                        }
+                                    ],
+                                    "input_type": null,
+                                    "response_type": "selection"
+                                },
+                                "scoring": {
+                                    "method": "keyed",
+                                    "rubric": null,
+                                    "max_score": 1,
+                                    "answer_key": [
+                                        "s1",
+                                        "s1",
+                                        "s2",
+                                        "s1",
+                                        "s3",
+                                        "s1",
+                                        "s4",
+                                        "s1"
+                                    ],
+                                    "partial_rules": null
+                                }
+                            },
+                            {
+                                "question_id": "listening-task-5_q28",
+                                "type": "listen_true_false",
+                                "order": 3,
+                                "instructions": {
+                                    "full": "Usłyszysz krótkie ogłoszenie. Po wysłuchaniu oceń, czy podane zdanie odpowiada informacjom w nagraniu. Wybierz „Prawda”, jeśli zdanie jest zgodne z nagraniem, lub „Fałsz”, jeśli jest niezgodne.",
+                                    "l10n": null,
+                                    "brief": "Posłuchaj nagrania i zdecyduj, czy zdanie jest prawdziwe czy fałszywe.",
+                                    "audio_url": "http:\/\/localhost:8080\/storage\/audio\/2025\/11\/27\/q_listening-task-5_q28_1764261284.mp3"
+                                },
+                                "interaction": {
+                                    "bank": null,
+                                    "stem": null,
+                                    "pairs": null,
+                                    "spans": null,
+                                    "options": [
+                                        {
+                                            "id": "opt_prawda",
+                                            "text": "Prawda"
+                                        },
+                                        {
+                                            "id": "opt_falsz",
+                                            "text": "Fałsz"
+                                        }
+                                    ],
+                                    "input_type": null,
+                                    "response_type": "selection"
+                                },
+                                "scoring": {
+                                    "method": "keyed",
+                                    "rubric": null,
+                                    "max_score": 1,
+                                    "answer_key": [
+                                        "opt_prawda"
+                                    ],
+                                    "partial_rules": null
+                                }
+                            },
+                            {
+                                "question_id": "listening-task-5_q29",
+                                "type": "listen_true_false",
+                                "order": 4,
+                                "instructions": {
+                                    "full": "Usłyszysz krótką rozmowę. Po wysłuchaniu oceń podane zdanie: jeśli zgadza się z informacją w nagraniu, wybierz „Prawda”, jeśli nie – wybierz „Fałsz”. Masz 60 sekund.",
+                                    "l10n": null,
+                                    "brief": "Posłuchaj nagrania i zaznacz, czy zdanie jest prawdziwe czy fałszywe.",
+                                    "audio_url": "https:\/\/example.com\/audio\/instructions_pl_q1.mp3"
+                                },
+                                "interaction": {
+                                    "bank": null,
+                                    "stem": null,
+                                    "pairs": null,
+                                    "spans": null,
+                                    "options": [
+                                        {
+                                            "id": "opt_true",
+                                            "text": "Prawda"
+                                        },
+                                        {
+                                            "id": "opt_false",
+                                            "text": "Fałsz"
+                                        }
+                                    ],
+                                    "input_type": null,
+                                    "response_type": "selection"
+                                },
+                                "scoring": {
+                                    "method": "keyed",
+                                    "rubric": null,
+                                    "max_score": 1,
+                                    "answer_key": [
+                                        "opt_true"
+                                    ],
+                                    "partial_rules": null
+                                }
+                            },
+                            {
+                                "question_id": "listening-task-5_q30",
+                                "type": "listen_true_false",
+                                "order": 5,
+                                "instructions": {
+                                    "full": "Usłyszysz krótkie nagranie. Przeczytaj zdanie i wybierz „Prawda”, jeśli zdanie zgadza się z informacją w nagraniu, lub „Fałsz”, jeśli jest niezgodne. Masz 60 sekund na odpowiedź.",
+                                    "l10n": null,
+                                    "brief": "Po wysłuchaniu nagrania zdecyduj, czy poniższe zdanie jest prawdziwe czy fałszywe.",
+                                    "audio_url": "http:\/\/localhost:8080\/storage\/audio\/2025\/11\/27\/q_listening-task-5_q30_1764261288.mp3"
+                                },
+                                "interaction": {
+                                    "bank": null,
+                                    "stem": null,
+                                    "pairs": null,
+                                    "spans": null,
+                                    "options": [
+                                        {
+                                            "id": "opt_true",
+                                            "text": "Prawda"
+                                        },
+                                        {
+                                            "id": "opt_false",
+                                            "text": "Fałsz"
+                                        }
+                                    ],
+                                    "input_type": null,
+                                    "response_type": "selection"
+                                },
+                                "scoring": {
+                                    "method": "keyed",
+                                    "rubric": null,
+                                    "max_score": 1,
+                                    "answer_key": [
+                                        "opt_false"
+                                    ],
+                                    "partial_rules": null
+                                }
+                            }
+                        ]
+                    }
+                ]
+            },
+            {
+                "key": 1080,
+                "skill": "reading",
+                "name": "Rozumienie tekstów pisanych",
+                "question_groups": [
+                    {
+                        "group_id": "reading-task-1",
+                        "title": "Zadanie 1 — Ogłoszenia i komunikaty",
+                        "order": 1,
+                        "questions": []
+                    },
+                    {
+                        "group_id": "reading-task-2",
+                        "title": "Zadanie 2 — Artykuł na blogu",
+                        "order": 2,
+                        "questions": [
+                            {
+                                "question_id": "reading-task-2_q7",
+                                "type": "single_select",
+                                "order": 0,
+                                "instructions": {
+                                    "full": "Przeczytaj tekst poniżej, a następnie wybierz jedną odpowiedź, która najlepiej oddaje główną myśl tekstu.",
+                                    "l10n": null,
+                                    "brief": "Wybierz poprawną odpowiedź.",
+                                    "audio_url": null
+                                },
+                                "interaction": {
+                                    "bank": null,
+                                    "stem": null,
+                                    "pairs": null,
+                                    "spans": null,
+                                    "options": [
+                                        {
+                                            "id": "opt1",
+                                            "text": "Biblioteka oferuje głównie warsztaty komputerowe dla seniorów."
+                                        },
+                                        {
+                                            "id": "opt2",
+                                            "text": "Biblioteka zmieniła godziny i rozszerzyła usługi, aby lepiej służyć mieszkańcom."
+                                        },
+                                        {
+                                            "id": "opt3",
+                                            "text": "Biblioteka planuje tymczasowe zamknięcie w dni robocze."
+                                        },
+                                        {
+                                            "id": "opt4",
+                                            "text": "Biblioteka przeniosła swoją siedzibę do nowego budynku."
+                                        }
+                                    ],
+                                    "input_type": null,
+                                    "response_type": "selection"
+                                },
+                                "scoring": {
+                                    "method": "keyed",
+                                    "rubric": null,
+                                    "max_score": 1,
+                                    "answer_key": [
+                                        "opt2"
+                                    ],
+                                    "partial_rules": null
+                                }
+                            },
+                            {
+                                "question_id": "reading-task-2_q8",
+                                "type": "single_select",
+                                "order": 1,
+                                "instructions": {
+                                    "full": "Przeczytaj uważnie poniższy tekst. Następnie wybierz jedną odpowiedź, która najlepiej oddaje główną myśl tekstu.",
+                                    "l10n": null,
+                                    "brief": "Przeczytaj tekst i wybierz najlepszą odpowiedź.",
+                                    "audio_url": null
+                                },
+                                "interaction": {
+                                    "bank": null,
+                                    "stem": null,
+                                    "pairs": null,
+                                    "spans": null,
+                                    "options": [
+                                        {
+                                            "id": "opt1",
+                                            "text": "Autorka opisuje, dlaczego Anna zdecydowała się codziennie dojeżdżać rowerem do pracy i jakie daje to korzyści."
+                                        },
+                                        {
+                                            "id": "opt2",
+                                            "text": "Tekst mówi głównie o problemach z pogodą i o tym, jak trudno jest jeździć rowerem w deszczu."
+                                        },
+                                        {
+                                            "id": "opt3",
+                                            "text": "Artykuł zachęca do kupna konkretnego modelu roweru, który jest tani i wygodny."
+                                        },
+                                        {
+                                            "id": "opt4",
+                                            "text": "Tekst przedstawia zmiany w rozkładzie jazdy autobusu w centrum miasta."
+                                        }
+                                    ],
+                                    "input_type": null,
+                                    "response_type": "selection"
+                                },
+                                "scoring": {
+                                    "method": "keyed",
+                                    "rubric": null,
+                                    "max_score": 1,
+                                    "answer_key": [
+                                        "opt1"
+                                    ],
+                                    "partial_rules": null
+                                }
+                            },
+                            {
+                                "question_id": "reading-task-2_q9",
+                                "type": "single_select",
+                                "order": 2,
+                                "instructions": {
+                                    "full": "Przeczytaj poniższy tekst uważnie. Następnie wybierz jedną odpowiedź, która najlepiej odpowiada na pytanie dotyczące głównej myśli tekstu.",
+                                    "l10n": null,
+                                    "brief": "Przeczytaj tekst i wybierz najlepszą odpowiedź.",
+                                    "audio_url": null
+                                },
+                                "interaction": {
+                                    "bank": null,
+                                    "stem": null,
+                                    "pairs": null,
+                                    "spans": null,
+                                    "options": [
+                                        {
+                                            "id": "opt1",
+                                            "text": "Biblioteka wprowadziła nowe kursy przygotowujące do egzaminów."
+                                        },
+                                        {
+                                            "id": "opt2",
+                                            "text": "Godziny otwarcia biblioteki zostały zmienione, aby lepiej wspierać studentów przygotowujących się do egzaminów."
+                                        },
+                                        {
+                                            "id": "opt3",
+                                            "text": "Biblioteka planuje zamknięcie w weekendy z powodu małej liczby odwiedzających."
+                                        },
+                                        {
+                                            "id": "opt4",
+                                            "text": "Biblioteka zwiększyła opłaty za wypożyczanie książek dla studentów."
+                                        }
+                                    ],
+                                    "input_type": null,
+                                    "response_type": "selection"
+                                },
+                                "scoring": {
+                                    "method": "keyed",
+                                    "rubric": null,
+                                    "max_score": 1,
+                                    "answer_key": [
+                                        "opt2"
+                                    ],
+                                    "partial_rules": null
+                                }
+                            },
+                            {
+                                "question_id": "reading-task-2_q10",
+                                "type": "single_select",
+                                "order": 3,
+                                "instructions": {
+                                    "full": "Przeczytaj uważnie poniższy tekst. Następnie wybierz jedną odpowiedź, która najlepiej oddaje główną myśl tekstu.",
+                                    "l10n": null,
+                                    "brief": "Przeczytaj tekst i wybierz najlepszą odpowiedź.",
+                                    "audio_url": null
+                                },
+                                "interaction": {
+                                    "bank": null,
+                                    "stem": null,
+                                    "pairs": null,
+                                    "spans": null,
+                                    "options": [
+                                        {
+                                            "id": "opt1",
+                                            "text": "Biblioteka wydłużyła godziny otwarcia i organizuje warsztaty, dzięki czemu zyskała więcej odwiedzających."
+                                        },
+                                        {
+                                            "id": "opt2",
+                                            "text": "Biblioteka ma zostać zamknięta w weekendy z powodu braku funduszy."
+                                        },
+                                        {
+                                            "id": "opt3",
+                                            "text": "Biblioteka oferuje wyłącznie zajęcia dla dzieci i młodzieży."
+                                        },
+                                        {
+                                            "id": "opt4",
+                                            "text": "Korzystanie z biblioteki stało się płatne i droższe niż wcześniej."
+                                        }
+                                    ],
+                                    "input_type": null,
+                                    "response_type": "selection"
+                                },
+                                "scoring": {
+                                    "method": "keyed",
+                                    "rubric": null,
+                                    "max_score": 1,
+                                    "answer_key": [
+                                        "opt1"
+                                    ],
+                                    "partial_rules": null
+                                }
+                            }
+                        ]
+                    },
+                    {
+                        "group_id": "reading-task-3",
+                        "title": "Zadanie 3 — Regulamin\/Instrukcja",
+                        "order": 3,
+                        "questions": [
+                            {
+                                "question_id": "reading-task-3_q17",
+                                "type": "single_select",
+                                "order": 0,
+                                "instructions": {
+                                    "full": "Przeczytaj uważnie tekst i wybierz najlepszą odpowiedź na pytanie dotyczące głównej myśli tekstu.",
+                                    "l10n": null,
+                                    "brief": "Wybierz poprawną odpowiedź.",
+                                    "audio_url": null
+                                },
+                                "interaction": {
+                                    "bank": null,
+                                    "stem": null,
+                                    "pairs": null,
+                                    "spans": null,
+                                    "options": [
+                                        {
+                                            "id": "opt1",
+                                            "text": "Kawiarnia „Pod Lipą” wprowadziła nowe godziny i atrakcje, żeby przyciągnąć więcej klientów."
+                                        },
+                                        {
+                                            "id": "opt2",
+                                            "text": "Właścicielka zamyka kawiarnię w ciągu tygodnia, by przygotować weekendowe imprezy."
+                                        },
+                                        {
+                                            "id": "opt3",
+                                            "text": "Kawiarnia oferuje tylko napoje bezalkoholowe i nie serwuje jedzenia."
+                                        },
+                                        {
+                                            "id": "opt4",
+                                            "text": "Kawiarnia organizuje wyłącznie targi rękodzieła, bez koncertów i atrakcji dla dzieci."
+                                        }
+                                    ],
+                                    "input_type": null,
+                                    "response_type": "selection"
+                                },
+                                "scoring": {
+                                    "method": "keyed",
+                                    "rubric": null,
+                                    "max_score": 1,
+                                    "answer_key": [
+                                        "opt1"
+                                    ],
+                                    "partial_rules": null
+                                }
+                            },
+                            {
+                                "question_id": "reading-task-3_1080_single_select_1764261676_yarq",
+                                "type": "single_select",
+                                "order": 0,
+                                "instructions": {
+                                    "full": "Przeczytaj uważnie poniższy tekst. Następnie wybierz jedną odpowiedź, która najlepiej oddaje główną myśl tekstu.",
+                                    "l10n": null,
+                                    "brief": "Przeczytaj tekst i wybierz najlepszą odpowiedź.",
+                                    "audio_url": null
+                                },
+                                "interaction": {
+                                    "bank": null,
+                                    "stem": null,
+                                    "pairs": null,
+                                    "spans": null,
+                                    "options": [
+                                        {
+                                            "id": "opt1",
+                                            "text": "Biblioteka zamyka się na czas remontu."
+                                        },
+                                        {
+                                            "id": "opt2",
+                                            "text": "Biblioteka skraca godziny otwarcia w tygodniu."
+                                        },
+                                        {
+                                            "id": "opt3",
+                                            "text": "Biblioteka wydłuża godziny otwarcia i organizuje wieczorne wydarzenia."
+                                        },
+                                        {
+                                            "id": "opt4",
+                                            "text": "Biblioteka zaczyna pobierać opłaty za wypożyczenia."
+                                        }
+                                    ],
+                                    "input_type": null,
+                                    "response_type": "selection"
+                                },
+                                "scoring": {
+                                    "method": "keyed",
+                                    "rubric": null,
+                                    "max_score": 1,
+                                    "answer_key": [
+                                        "opt3"
+                                    ],
+                                    "partial_rules": null
+                                }
+                            },
+                            {
+                                "question_id": "reading-task-3_q18",
+                                "type": "single_select",
+                                "order": 1,
+                                "instructions": {
+                                    "full": "Przeczytaj uważnie poniższy tekst. Następnie wybierz jedną odpowiedź, która najlepiej odpowiada na pytanie dotyczące głównej myśli tekstu.",
+                                    "l10n": null,
+                                    "brief": "Przeczytaj tekst, a następnie wybierz najlepszą odpowiedź.",
+                                    "audio_url": null
+                                },
+                                "interaction": {
+                                    "bank": null,
+                                    "stem": null,
+                                    "pairs": null,
+                                    "spans": null,
+                                    "options": [
+                                        {
+                                            "id": "opt1",
+                                            "text": "Miasto planuje budowę nowych osiedli mieszkaniowych zamiast terenów zielonych."
+                                        },
+                                        {
+                                            "id": "opt2",
+                                            "text": "Miasto i mieszkańcy współpracują, aby zwiększyć tereny zielone i dbać o nie razem."
+                                        },
+                                        {
+                                            "id": "opt3",
+                                            "text": "Warsztaty i dotacje przyciągnęły turystów i zwiększyły ruch w centrum miasta."
+                                        },
+                                        {
+                                            "id": "opt4",
+                                            "text": "Lokalne wspólnoty zrezygnowały z działań na rzecz środowiska z powodu braku funduszy."
+                                        }
+                                    ],
+                                    "input_type": null,
+                                    "response_type": "selection"
+                                },
+                                "scoring": {
+                                    "method": "keyed",
+                                    "rubric": null,
+                                    "max_score": 1,
+                                    "answer_key": [
+                                        "opt2"
+                                    ],
+                                    "partial_rules": null
+                                }
+                            },
+                            {
+                                "question_id": "reading-task-3_1080_single_select_1764261676_5lva",
+                                "type": "single_select",
+                                "order": 1,
+                                "instructions": {
+                                    "full": "Przeczytaj uważnie poniższy tekst. Następnie wybierz jedną opcję, która najlepiej oddaje główną myśl tekstu.",
+                                    "l10n": null,
+                                    "brief": "Przeczytaj tekst i wybierz najlepszą odpowiedź.",
+                                    "audio_url": null
+                                },
+                                "interaction": {
+                                    "bank": null,
+                                    "stem": null,
+                                    "pairs": null,
+                                    "spans": null,
+                                    "options": [
+                                        {
+                                            "id": "opt1",
+                                            "text": "Otwarto ogród społeczny, który ma integrować mieszkańców i zachęcać ich do wspólnego działania."
+                                        },
+                                        {
+                                            "id": "opt2",
+                                            "text": "Tekst szczegółowo opisuje, jakie konkretne warzywa będą uprawiane w ogrodzie."
+                                        },
+                                        {
+                                            "id": "opt3",
+                                            "text": "Artykuł informuje o problemach z hałasem i potrzebie zamknięcia parku."
+                                        },
+                                        {
+                                            "id": "opt4",
+                                            "text": "To ogłoszenie o sprzedaży działek pod zabudowę na przedmieściach."
+                                        }
+                                    ],
+                                    "input_type": null,
+                                    "response_type": "selection"
+                                },
+                                "scoring": {
+                                    "method": "keyed",
+                                    "rubric": null,
+                                    "max_score": 1,
+                                    "answer_key": [
+                                        "opt1"
+                                    ],
+                                    "partial_rules": null
+                                }
+                            },
+                            {
+                                "question_id": "reading-task-3_q19",
+                                "type": "single_select",
+                                "order": 2,
+                                "instructions": {
+                                    "full": "Przeczytaj uważnie poniższy krótki tekst. Następnie wybierz jedną odpowiedź, która najlepiej odpowiada na zadane pytanie dotyczące głównej myśli tekstu.",
+                                    "l10n": null,
+                                    "brief": "Przeczytaj tekst i wybierz poprawną odpowiedź.",
+                                    "audio_url": null
+                                },
+                                "interaction": {
+                                    "bank": null,
+                                    "stem": null,
+                                    "pairs": null,
+                                    "spans": null,
+                                    "options": [
+                                        {
+                                            "id": "opt1",
+                                            "text": "Miasto planuje renowację wszystkich parków w najbliższych latach."
+                                        },
+                                        {
+                                            "id": "opt2",
+                                            "text": "Niewielkie udogodnienia w parku sprawiły, że stał się on ważnym miejscem spotkań dla mieszkańców."
+                                        },
+                                        {
+                                            "id": "opt3",
+                                            "text": "Biblioteczka w parku zastąpiła tradycyjne biblioteki miejskie."
+                                        },
+                                        {
+                                            "id": "opt4",
+                                            "text": "Podczas remontu wszystkie stare drzewa w parku zostały wycięte."
+                                        }
+                                    ],
+                                    "input_type": null,
+                                    "response_type": "selection"
+                                },
+                                "scoring": {
+                                    "method": "keyed",
+                                    "rubric": null,
+                                    "max_score": 1,
+                                    "answer_key": [
+                                        "opt2"
+                                    ],
+                                    "partial_rules": null
+                                }
+                            },
+                            {
+                                "question_id": "reading-task-3_q20",
+                                "type": "single_select",
+                                "order": 3,
+                                "instructions": {
+                                    "full": "Przeczytaj poniższy tekst uważnie, a następnie wybierz najlepszą odpowiedź na pytanie dotyczące głównej myśli tekstu.",
+                                    "l10n": null,
+                                    "brief": "Wybierz poprawną odpowiedź.",
+                                    "audio_url": null
+                                },
+                                "interaction": {
+                                    "bank": null,
+                                    "stem": null,
+                                    "pairs": null,
+                                    "spans": null,
+                                    "options": [
+                                        {
+                                            "id": "opt1",
+                                            "text": "Informuje o bezpłatnym koncercie plenerowym i podaje praktyczne wskazówki dla uczestników."
+                                        },
+                                        {
+                                            "id": "opt2",
+                                            "text": "Reklamuje nowy zespół, który niedawno wydał płytę."
+                                        },
+                                        {
+                                            "id": "opt3",
+                                            "text": "Opowiada o historii parku i jego dawnych wydarzeniach."
+                                        },
+                                        {
+                                            "id": "opt4",
+                                            "text": "Zawiadamia o czasowym zamknięciu parku z powodu remontu."
+                                        }
+                                    ],
+                                    "input_type": null,
+                                    "response_type": "selection"
+                                },
+                                "scoring": {
+                                    "method": "keyed",
+                                    "rubric": null,
+                                    "max_score": 1,
+                                    "answer_key": [
+                                        "opt1"
+                                    ],
+                                    "partial_rules": null
+                                }
+                            }
+                        ]
+                    }
+                ]
+            },
+            {
+                "key": 1083,
+                "skill": "speaking",
+                "name": "Wypowiedź ustna",
+                "question_groups": [],
+                "ungrouped_questions": [
+                    {
+                        "question_id": "b1-speaking_sp_picture_01",
+                        "type": "speaking_prompt",
+                        "order": 0
+                    },
+                    {
+                        "question_id": "b1-speaking_sp_roleplay_01",
+                        "type": "roleplay",
+                        "order": 0
+                    },
+                    {
+                        "question_id": "b1-speaking_q_sp_pic_01_pl_b1",
+                        "type": "speaking_prompt",
+                        "order": 0
+                    }
+                ]
+            },
+            {
+                "key": 1082,
+                "skill": "writing",
+                "name": "Wypowiedź pisemna",
+                "question_groups": [],
+                "ungrouped_questions": [
+                    {
+                        "question_id": "b1-writing_wp_b1_functional_message_01",
+                        "type": "writing_prompt",
+                        "order": 0
+                    },
+                    {
+                        "question_id": "b1-writing_1082_writing_prompt_1764262036_cb8l",
+                        "type": "writing_prompt",
+                        "order": 0
+                    },
+                    {
+                        "question_id": "b1-writing_1082_writing_prompt_1764262040_fjpc",
+                        "type": "writing_prompt",
+                        "order": 0
+                    }
+                ]
+            }
+        ]
+    },
+    "captured_at": "2025-11-27T16:51:48+00:00",
+    "metadata": {
+        "exam_title": "pjc Egzaminy certyfikatowe z języka polskiego jako obcego",
+        "exam_level": "B1",
+        "research_status": "completed"
+    }
+}

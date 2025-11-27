@@ -1,27 +1,2391 @@
 {
-  "$schema": "../_schemas/05-synthesis.schema.json",
-  "version": "1.0",
-  "stage": "synthesis",
-  "exam_id": "pl-b1",
-
-  "_reference": "../../exams/pl-b1.json",
-  "_note": "Финальный эталон находится в tests/Fixtures/exams/pl-b1.json. Этот файл - указатель на него для единообразия структуры stages/.",
-
-  "_comparison_hints": {
-    "critical_fields": [
-      "sections[].question_groups.length",
-      "sections[].question_groups[].questions.length",
-      "sections[].question_groups[].questions[].type"
+    "stage": "synthesis",
+    "exam_id": "pl-b1-extracted",
+    "sections": [
+        {
+            "key": 681,
+            "skill": "grammar_lexis",
+            "name": "sec-grammar",
+            "question_groups": [],
+            "ungrouped_questions": [
+                {
+                    "question_id": "681_single_select_1763751300_frkp",
+                    "type": "single_select",
+                    "order": 0
+                },
+                {
+                    "question_id": "681_single_select_1763751300_b4ex",
+                    "type": "single_select",
+                    "order": 0
+                },
+                {
+                    "question_id": "681_single_select_1763751300_chlz",
+                    "type": "single_select",
+                    "order": 0
+                },
+                {
+                    "question_id": "681_single_select_1763751300_6c6w",
+                    "type": "single_select",
+                    "order": 0
+                },
+                {
+                    "question_id": "681_single_select_1763751300_kkv7",
+                    "type": "single_select",
+                    "order": 0
+                },
+                {
+                    "question_id": "681_single_select_1763751300_8suk",
+                    "type": "single_select",
+                    "order": 0
+                },
+                {
+                    "question_id": "681_single_select_1763751300_kxpm",
+                    "type": "single_select",
+                    "order": 0
+                },
+                {
+                    "question_id": "681_single_select_1763751300_ad7h",
+                    "type": "single_select",
+                    "order": 0
+                },
+                {
+                    "question_id": "681_single_select_1763751300_qjyv",
+                    "type": "single_select",
+                    "order": 0
+                },
+                {
+                    "question_id": "681_single_select_1763751300_mwin",
+                    "type": "single_select",
+                    "order": 0
+                },
+                {
+                    "question_id": "681_single_select_1763751300_p5vo",
+                    "type": "single_select",
+                    "order": 0
+                },
+                {
+                    "question_id": "681_single_select_1763751300_y1nq",
+                    "type": "single_select",
+                    "order": 0
+                },
+                {
+                    "question_id": "681_single_select_1763751300_i39w",
+                    "type": "single_select",
+                    "order": 0
+                },
+                {
+                    "question_id": "681_single_select_1763751300_vul9",
+                    "type": "single_select",
+                    "order": 0
+                },
+                {
+                    "question_id": "681_single_select_1763751300_sepe",
+                    "type": "single_select",
+                    "order": 0
+                },
+                {
+                    "question_id": "681_single_select_1763751300_o3ej",
+                    "type": "single_select",
+                    "order": 0
+                },
+                {
+                    "question_id": "681_single_select_1763751300_hhvn",
+                    "type": "single_select",
+                    "order": 0
+                },
+                {
+                    "question_id": "681_single_select_1763751300_jcb6",
+                    "type": "single_select",
+                    "order": 0
+                },
+                {
+                    "question_id": "681_single_select_1763751300_zlcu",
+                    "type": "single_select",
+                    "order": 0
+                },
+                {
+                    "question_id": "681_single_select_1763751300_iajm",
+                    "type": "single_select",
+                    "order": 0
+                },
+                {
+                    "question_id": "681_single_select_1763751300_nqjo",
+                    "type": "single_select",
+                    "order": 0
+                },
+                {
+                    "question_id": "681_single_select_1763751300_usjz",
+                    "type": "single_select",
+                    "order": 0
+                },
+                {
+                    "question_id": "681_single_select_1763751300_t8db",
+                    "type": "single_select",
+                    "order": 0
+                },
+                {
+                    "question_id": "681_single_select_1763751300_fccg",
+                    "type": "single_select",
+                    "order": 0
+                },
+                {
+                    "question_id": "681_single_select_1763751300_00jh",
+                    "type": "single_select",
+                    "order": 0
+                },
+                {
+                    "question_id": "681_single_select_1763751300_g4pw",
+                    "type": "single_select",
+                    "order": 0
+                },
+                {
+                    "question_id": "681_single_select_1763751300_wyqi",
+                    "type": "single_select",
+                    "order": 0
+                },
+                {
+                    "question_id": "681_single_select_1763751736_a2kb",
+                    "type": "single_select",
+                    "order": 0
+                },
+                {
+                    "question_id": "681_single_select_1763751736_w3km",
+                    "type": "single_select",
+                    "order": 0
+                },
+                {
+                    "question_id": "681_single_select_1763751736_jrwh",
+                    "type": "single_select",
+                    "order": 0
+                },
+                {
+                    "question_id": "681_single_select_1763751736_lm6r",
+                    "type": "single_select",
+                    "order": 0
+                },
+                {
+                    "question_id": "681_single_select_1763751736_4lal",
+                    "type": "single_select",
+                    "order": 0
+                },
+                {
+                    "question_id": "681_single_select_1763751736_pfj0",
+                    "type": "single_select",
+                    "order": 0
+                },
+                {
+                    "question_id": "681_single_select_1763751736_btcq",
+                    "type": "single_select",
+                    "order": 0
+                },
+                {
+                    "question_id": "681_single_select_1763751736_xqzo",
+                    "type": "single_select",
+                    "order": 0
+                },
+                {
+                    "question_id": "681_single_select_1763751736_paf2",
+                    "type": "single_select",
+                    "order": 0
+                },
+                {
+                    "question_id": "681_single_select_1763751736_5tgy",
+                    "type": "single_select",
+                    "order": 0
+                },
+                {
+                    "question_id": "681_single_select_1763751736_xw7x",
+                    "type": "single_select",
+                    "order": 0
+                },
+                {
+                    "question_id": "681_single_select_1763751736_zebq",
+                    "type": "single_select",
+                    "order": 0
+                },
+                {
+                    "question_id": "681_single_select_1763751736_2ast",
+                    "type": "single_select",
+                    "order": 0
+                },
+                {
+                    "question_id": "681_single_select_1763751736_inkl",
+                    "type": "single_select",
+                    "order": 0
+                },
+                {
+                    "question_id": "681_single_select_1763751736_fw32",
+                    "type": "single_select",
+                    "order": 0
+                },
+                {
+                    "question_id": "681_single_select_1763751736_wtj9",
+                    "type": "single_select",
+                    "order": 0
+                },
+                {
+                    "question_id": "681_single_select_1763751736_td3b",
+                    "type": "single_select",
+                    "order": 0
+                },
+                {
+                    "question_id": "681_single_select_1763751736_ztw0",
+                    "type": "single_select",
+                    "order": 0
+                },
+                {
+                    "question_id": "681_single_select_1763751736_cdrb",
+                    "type": "single_select",
+                    "order": 0
+                },
+                {
+                    "question_id": "681_single_select_1763751736_pgt8",
+                    "type": "single_select",
+                    "order": 0
+                },
+                {
+                    "question_id": "681_single_select_1763751736_42i3",
+                    "type": "single_select",
+                    "order": 0
+                },
+                {
+                    "question_id": "681_single_select_1763751736_42xd",
+                    "type": "single_select",
+                    "order": 0
+                },
+                {
+                    "question_id": "681_single_select_1763751736_jb4o",
+                    "type": "single_select",
+                    "order": 0
+                },
+                {
+                    "question_id": "681_single_select_1763751736_rkuy",
+                    "type": "single_select",
+                    "order": 0
+                },
+                {
+                    "question_id": "681_single_select_1763751736_6lwj",
+                    "type": "single_select",
+                    "order": 0
+                },
+                {
+                    "question_id": "681_single_select_1763751736_j12k",
+                    "type": "single_select",
+                    "order": 0
+                },
+                {
+                    "question_id": "681_single_select_1763751736_hlw4",
+                    "type": "single_select",
+                    "order": 0
+                },
+                {
+                    "question_id": "a069581a-5c5e-4bcc-bc51-bafd0ce22330_681_single_select_1763746407_1fmj",
+                    "type": "single_select",
+                    "order": 66
+                },
+                {
+                    "question_id": "a069581a-5c5e-4bcc-bc51-bafd0ce22330_q2",
+                    "type": "single_select",
+                    "order": 67
+                },
+                {
+                    "question_id": "a069581a-5c5e-4bcc-bc51-bafd0ce22330_q3",
+                    "type": "single_select",
+                    "order": 68
+                },
+                {
+                    "question_id": "a069581a-5c5e-4bcc-bc51-bafd0ce22330_q4",
+                    "type": "single_select",
+                    "order": 69
+                },
+                {
+                    "question_id": "a069581a-5c5e-4bcc-bc51-bafd0ce22330_q5",
+                    "type": "single_select",
+                    "order": 70
+                },
+                {
+                    "question_id": "a069581a-5c5e-4bcc-bc51-bafd0ce22330_q6",
+                    "type": "single_select",
+                    "order": 71
+                },
+                {
+                    "question_id": "a069581a-5c5e-4bcc-bc51-bafd0ce22330_q7",
+                    "type": "single_select",
+                    "order": 72
+                },
+                {
+                    "question_id": "a069581a-5c5e-4bcc-bc51-bafd0ce22330_q8",
+                    "type": "single_select",
+                    "order": 73
+                },
+                {
+                    "question_id": "a069581a-5c5e-4bcc-bc51-bafd0ce22330_q9",
+                    "type": "single_select",
+                    "order": 74
+                },
+                {
+                    "question_id": "a069581a-5c5e-4bcc-bc51-bafd0ce22330_q10",
+                    "type": "single_select",
+                    "order": 75
+                },
+                {
+                    "question_id": "a069581a-5c5e-4bcc-bc51-bafd0ce22330_q11",
+                    "type": "single_select",
+                    "order": 76
+                },
+                {
+                    "question_id": "a069581a-5c5e-4bcc-bc51-bafd0ce22330_q12",
+                    "type": "single_select",
+                    "order": 77
+                },
+                {
+                    "question_id": "a069581a-5c5e-4bcc-bc51-bafd0ce22330_q13",
+                    "type": "single_select",
+                    "order": 78
+                },
+                {
+                    "question_id": "a069581a-5c5e-4bcc-bc51-bafd0ce22330_q14",
+                    "type": "single_select",
+                    "order": 79
+                },
+                {
+                    "question_id": "a069581a-5c5e-4bcc-bc51-bafd0ce22330_q15",
+                    "type": "single_select",
+                    "order": 80
+                },
+                {
+                    "question_id": "a069581a-5c5e-4bcc-bc51-bafd0ce22330_q16",
+                    "type": "single_select",
+                    "order": 81
+                },
+                {
+                    "question_id": "a069581a-5c5e-4bcc-bc51-bafd0ce22330_q17",
+                    "type": "single_select",
+                    "order": 82
+                },
+                {
+                    "question_id": "a069581a-5c5e-4bcc-bc51-bafd0ce22330_q18",
+                    "type": "single_select",
+                    "order": 83
+                },
+                {
+                    "question_id": "a069581a-5c5e-4bcc-bc51-bafd0ce22330_q19",
+                    "type": "single_select",
+                    "order": 84
+                },
+                {
+                    "question_id": "a069581a-5c5e-4bcc-bc51-bafd0ce22330_q20",
+                    "type": "single_select",
+                    "order": 85
+                },
+                {
+                    "question_id": "a069581a-5c5e-4bcc-bc51-bafd0ce22330_q21",
+                    "type": "single_select",
+                    "order": 86
+                },
+                {
+                    "question_id": "a069581a-5c5e-4bcc-bc51-bafd0ce22330_q22",
+                    "type": "single_select",
+                    "order": 87
+                },
+                {
+                    "question_id": "a069581a-5c5e-4bcc-bc51-bafd0ce22330_q23",
+                    "type": "single_select",
+                    "order": 88
+                },
+                {
+                    "question_id": "a069581a-5c5e-4bcc-bc51-bafd0ce22330_q24",
+                    "type": "single_select",
+                    "order": 89
+                },
+                {
+                    "question_id": "a069581a-5c5e-4bcc-bc51-bafd0ce22330_q25",
+                    "type": "single_select",
+                    "order": 90
+                },
+                {
+                    "question_id": "a069581a-5c5e-4bcc-bc51-bafd0ce22330_q26",
+                    "type": "single_select",
+                    "order": 91
+                },
+                {
+                    "question_id": "a069581a-5c5e-4bcc-bc51-bafd0ce22330_q27",
+                    "type": "single_select",
+                    "order": 92
+                },
+                {
+                    "question_id": "a069581a-5c5e-4bcc-bc51-bafd0ce22330_681_single_select_1763747136_voq8",
+                    "type": "single_select",
+                    "order": 108
+                },
+                {
+                    "question_id": "a069581a-5c5e-4bcc-bc51-bafd0ce22330_681_single_select_1763747136_sndn",
+                    "type": "single_select",
+                    "order": 109
+                },
+                {
+                    "question_id": "a069581a-5c5e-4bcc-bc51-bafd0ce22330_681_single_select_1763747136_bgw4",
+                    "type": "single_select",
+                    "order": 110
+                },
+                {
+                    "question_id": "a069581a-5c5e-4bcc-bc51-bafd0ce22330_681_single_select_1763747136_mvby",
+                    "type": "single_select",
+                    "order": 111
+                },
+                {
+                    "question_id": "a069581a-5c5e-4bcc-bc51-bafd0ce22330_681_single_select_1763747136_1h88",
+                    "type": "single_select",
+                    "order": 112
+                },
+                {
+                    "question_id": "a069581a-5c5e-4bcc-bc51-bafd0ce22330_681_single_select_1763747136_6eup",
+                    "type": "single_select",
+                    "order": 113
+                },
+                {
+                    "question_id": "a069581a-5c5e-4bcc-bc51-bafd0ce22330_681_single_select_1763747136_ape2",
+                    "type": "single_select",
+                    "order": 114
+                },
+                {
+                    "question_id": "a069581a-5c5e-4bcc-bc51-bafd0ce22330_681_single_select_1763747136_pmfv",
+                    "type": "single_select",
+                    "order": 115
+                },
+                {
+                    "question_id": "a069581a-5c5e-4bcc-bc51-bafd0ce22330_681_single_select_1763747136_c0dh",
+                    "type": "single_select",
+                    "order": 116
+                },
+                {
+                    "question_id": "a069581a-5c5e-4bcc-bc51-bafd0ce22330_681_single_select_1763747136_cjpj",
+                    "type": "single_select",
+                    "order": 117
+                },
+                {
+                    "question_id": "a069581a-5c5e-4bcc-bc51-bafd0ce22330_681_single_select_1763747136_olwr",
+                    "type": "single_select",
+                    "order": 118
+                },
+                {
+                    "question_id": "a069581a-5c5e-4bcc-bc51-bafd0ce22330_681_single_select_1763747136_lqa0",
+                    "type": "single_select",
+                    "order": 119
+                },
+                {
+                    "question_id": "a069581a-5c5e-4bcc-bc51-bafd0ce22330_681_single_select_1763747136_ff9n",
+                    "type": "single_select",
+                    "order": 120
+                },
+                {
+                    "question_id": "a069581a-5c5e-4bcc-bc51-bafd0ce22330_681_single_select_1763747136_f53u",
+                    "type": "single_select",
+                    "order": 121
+                },
+                {
+                    "question_id": "a069581a-5c5e-4bcc-bc51-bafd0ce22330_681_single_select_1763747136_5zir",
+                    "type": "single_select",
+                    "order": 122
+                },
+                {
+                    "question_id": "a069581a-5c5e-4bcc-bc51-bafd0ce22330_681_single_select_1763747136_dgmr",
+                    "type": "single_select",
+                    "order": 123
+                },
+                {
+                    "question_id": "a069581a-5c5e-4bcc-bc51-bafd0ce22330_681_single_select_1763747136_4vif",
+                    "type": "single_select",
+                    "order": 124
+                },
+                {
+                    "question_id": "a069581a-5c5e-4bcc-bc51-bafd0ce22330_681_single_select_1763747136_nzvh",
+                    "type": "single_select",
+                    "order": 125
+                },
+                {
+                    "question_id": "a069581a-5c5e-4bcc-bc51-bafd0ce22330_681_single_select_1763747136_4kbw",
+                    "type": "single_select",
+                    "order": 126
+                },
+                {
+                    "question_id": "a069581a-5c5e-4bcc-bc51-bafd0ce22330_681_single_select_1763747136_vrxh",
+                    "type": "single_select",
+                    "order": 127
+                },
+                {
+                    "question_id": "a069581a-5c5e-4bcc-bc51-bafd0ce22330_681_single_select_1763747136_jtdg",
+                    "type": "single_select",
+                    "order": 128
+                },
+                {
+                    "question_id": "a069581a-5c5e-4bcc-bc51-bafd0ce22330_681_single_select_1763747136_tofd",
+                    "type": "single_select",
+                    "order": 129
+                },
+                {
+                    "question_id": "a069581a-5c5e-4bcc-bc51-bafd0ce22330_681_single_select_1763747136_t1po",
+                    "type": "single_select",
+                    "order": 130
+                },
+                {
+                    "question_id": "a069581a-5c5e-4bcc-bc51-bafd0ce22330_681_single_select_1763747136_lksf",
+                    "type": "single_select",
+                    "order": 131
+                },
+                {
+                    "question_id": "a069581a-5c5e-4bcc-bc51-bafd0ce22330_681_single_select_1763747136_eunw",
+                    "type": "single_select",
+                    "order": 132
+                },
+                {
+                    "question_id": "a069581a-5c5e-4bcc-bc51-bafd0ce22330_681_single_select_1763747136_yzqr",
+                    "type": "single_select",
+                    "order": 133
+                },
+                {
+                    "question_id": "a069581a-5c5e-4bcc-bc51-bafd0ce22330_681_single_select_1763747136_taxk",
+                    "type": "single_select",
+                    "order": 134
+                },
+                {
+                    "question_id": "a069581a-5c5e-4bcc-bc51-bafd0ce22330_681_single_select_1763748048_zpqu",
+                    "type": "single_select",
+                    "order": 148
+                },
+                {
+                    "question_id": "a069581a-5c5e-4bcc-bc51-bafd0ce22330_681_single_select_1763748048_qjvt",
+                    "type": "single_select",
+                    "order": 149
+                },
+                {
+                    "question_id": "a069581a-5c5e-4bcc-bc51-bafd0ce22330_681_single_select_1763748048_0zub",
+                    "type": "single_select",
+                    "order": 150
+                },
+                {
+                    "question_id": "a069581a-5c5e-4bcc-bc51-bafd0ce22330_681_single_select_1763748048_8kyp",
+                    "type": "single_select",
+                    "order": 151
+                },
+                {
+                    "question_id": "a069581a-5c5e-4bcc-bc51-bafd0ce22330_681_single_select_1763748048_pyss",
+                    "type": "single_select",
+                    "order": 152
+                },
+                {
+                    "question_id": "a069581a-5c5e-4bcc-bc51-bafd0ce22330_681_single_select_1763748048_cl1k",
+                    "type": "single_select",
+                    "order": 153
+                },
+                {
+                    "question_id": "a069581a-5c5e-4bcc-bc51-bafd0ce22330_681_single_select_1763748048_xemy",
+                    "type": "single_select",
+                    "order": 154
+                },
+                {
+                    "question_id": "a069581a-5c5e-4bcc-bc51-bafd0ce22330_681_single_select_1763748048_rrgd",
+                    "type": "single_select",
+                    "order": 155
+                },
+                {
+                    "question_id": "a069581a-5c5e-4bcc-bc51-bafd0ce22330_681_single_select_1763748048_uprg",
+                    "type": "single_select",
+                    "order": 156
+                },
+                {
+                    "question_id": "a069581a-5c5e-4bcc-bc51-bafd0ce22330_681_single_select_1763748048_wrgk",
+                    "type": "single_select",
+                    "order": 157
+                },
+                {
+                    "question_id": "a069581a-5c5e-4bcc-bc51-bafd0ce22330_681_single_select_1763748048_qd2b",
+                    "type": "single_select",
+                    "order": 158
+                },
+                {
+                    "question_id": "a069581a-5c5e-4bcc-bc51-bafd0ce22330_681_single_select_1763748048_dksv",
+                    "type": "single_select",
+                    "order": 159
+                },
+                {
+                    "question_id": "a069581a-5c5e-4bcc-bc51-bafd0ce22330_681_single_select_1763748048_0lwe",
+                    "type": "single_select",
+                    "order": 160
+                },
+                {
+                    "question_id": "a069581a-5c5e-4bcc-bc51-bafd0ce22330_681_single_select_1763748048_8xwq",
+                    "type": "single_select",
+                    "order": 161
+                },
+                {
+                    "question_id": "a069581a-5c5e-4bcc-bc51-bafd0ce22330_681_single_select_1763748048_f9cl",
+                    "type": "single_select",
+                    "order": 162
+                },
+                {
+                    "question_id": "a069581a-5c5e-4bcc-bc51-bafd0ce22330_681_single_select_1763748048_tdoz",
+                    "type": "single_select",
+                    "order": 163
+                },
+                {
+                    "question_id": "a069581a-5c5e-4bcc-bc51-bafd0ce22330_681_single_select_1763748048_pz5y",
+                    "type": "single_select",
+                    "order": 164
+                },
+                {
+                    "question_id": "a069581a-5c5e-4bcc-bc51-bafd0ce22330_681_single_select_1763748048_5zpf",
+                    "type": "single_select",
+                    "order": 165
+                },
+                {
+                    "question_id": "a069581a-5c5e-4bcc-bc51-bafd0ce22330_681_single_select_1763748048_tkk4",
+                    "type": "single_select",
+                    "order": 166
+                },
+                {
+                    "question_id": "a069581a-5c5e-4bcc-bc51-bafd0ce22330_681_single_select_1763748048_t0ge",
+                    "type": "single_select",
+                    "order": 167
+                },
+                {
+                    "question_id": "a069581a-5c5e-4bcc-bc51-bafd0ce22330_681_single_select_1763748048_wqvu",
+                    "type": "single_select",
+                    "order": 168
+                },
+                {
+                    "question_id": "a069581a-5c5e-4bcc-bc51-bafd0ce22330_681_single_select_1763748048_nuec",
+                    "type": "single_select",
+                    "order": 169
+                },
+                {
+                    "question_id": "a069581a-5c5e-4bcc-bc51-bafd0ce22330_681_single_select_1763748048_sr7o",
+                    "type": "single_select",
+                    "order": 170
+                },
+                {
+                    "question_id": "a069581a-5c5e-4bcc-bc51-bafd0ce22330_681_single_select_1763748048_cr1n",
+                    "type": "single_select",
+                    "order": 171
+                },
+                {
+                    "question_id": "a069581a-5c5e-4bcc-bc51-bafd0ce22330_681_single_select_1763748048_ihva",
+                    "type": "single_select",
+                    "order": 172
+                },
+                {
+                    "question_id": "a069581a-5c5e-4bcc-bc51-bafd0ce22330_681_single_select_1763748048_grrj",
+                    "type": "single_select",
+                    "order": 173
+                },
+                {
+                    "question_id": "a069581a-5c5e-4bcc-bc51-bafd0ce22330_681_single_select_1763748048_fjxm",
+                    "type": "single_select",
+                    "order": 174
+                },
+                {
+                    "question_id": "a069581a-5c5e-4bcc-bc51-bafd0ce22330_681_single_select_1763751736_a2kb",
+                    "type": "single_select",
+                    "order": 179
+                },
+                {
+                    "question_id": "a069581a-5c5e-4bcc-bc51-bafd0ce22330_681_single_select_1763751736_w3km",
+                    "type": "single_select",
+                    "order": 180
+                },
+                {
+                    "question_id": "a069581a-5c5e-4bcc-bc51-bafd0ce22330_681_single_select_1763751736_jrwh",
+                    "type": "single_select",
+                    "order": 181
+                },
+                {
+                    "question_id": "a069581a-5c5e-4bcc-bc51-bafd0ce22330_681_single_select_1763751736_lm6r",
+                    "type": "single_select",
+                    "order": 182
+                },
+                {
+                    "question_id": "a069581a-5c5e-4bcc-bc51-bafd0ce22330_681_single_select_1763751736_4lal",
+                    "type": "single_select",
+                    "order": 183
+                },
+                {
+                    "question_id": "a069581a-5c5e-4bcc-bc51-bafd0ce22330_681_single_select_1763751736_pfj0",
+                    "type": "single_select",
+                    "order": 184
+                },
+                {
+                    "question_id": "a069581a-5c5e-4bcc-bc51-bafd0ce22330_681_single_select_1763751736_btcq",
+                    "type": "single_select",
+                    "order": 185
+                },
+                {
+                    "question_id": "a069581a-5c5e-4bcc-bc51-bafd0ce22330_681_single_select_1763751736_xqzo",
+                    "type": "single_select",
+                    "order": 186
+                },
+                {
+                    "question_id": "a069581a-5c5e-4bcc-bc51-bafd0ce22330_681_single_select_1763751736_paf2",
+                    "type": "single_select",
+                    "order": 187
+                },
+                {
+                    "question_id": "a069581a-5c5e-4bcc-bc51-bafd0ce22330_681_single_select_1763751736_5tgy",
+                    "type": "single_select",
+                    "order": 188
+                },
+                {
+                    "question_id": "a069581a-5c5e-4bcc-bc51-bafd0ce22330_681_single_select_1763751736_xw7x",
+                    "type": "single_select",
+                    "order": 189
+                },
+                {
+                    "question_id": "a069581a-5c5e-4bcc-bc51-bafd0ce22330_681_single_select_1763751736_zebq",
+                    "type": "single_select",
+                    "order": 190
+                },
+                {
+                    "question_id": "a069581a-5c5e-4bcc-bc51-bafd0ce22330_681_single_select_1763751736_2ast",
+                    "type": "single_select",
+                    "order": 191
+                },
+                {
+                    "question_id": "a069581a-5c5e-4bcc-bc51-bafd0ce22330_681_single_select_1763751736_inkl",
+                    "type": "single_select",
+                    "order": 192
+                },
+                {
+                    "question_id": "a069581a-5c5e-4bcc-bc51-bafd0ce22330_681_single_select_1763751736_fw32",
+                    "type": "single_select",
+                    "order": 193
+                },
+                {
+                    "question_id": "a069581a-5c5e-4bcc-bc51-bafd0ce22330_681_single_select_1763751736_wtj9",
+                    "type": "single_select",
+                    "order": 194
+                },
+                {
+                    "question_id": "a069581a-5c5e-4bcc-bc51-bafd0ce22330_681_single_select_1763751736_td3b",
+                    "type": "single_select",
+                    "order": 195
+                },
+                {
+                    "question_id": "a069581a-5c5e-4bcc-bc51-bafd0ce22330_681_single_select_1763751736_ztw0",
+                    "type": "single_select",
+                    "order": 196
+                },
+                {
+                    "question_id": "a069581a-5c5e-4bcc-bc51-bafd0ce22330_681_single_select_1763751736_cdrb",
+                    "type": "single_select",
+                    "order": 197
+                },
+                {
+                    "question_id": "a069581a-5c5e-4bcc-bc51-bafd0ce22330_681_single_select_1763751736_pgt8",
+                    "type": "single_select",
+                    "order": 198
+                },
+                {
+                    "question_id": "a069581a-5c5e-4bcc-bc51-bafd0ce22330_681_single_select_1763751736_42i3",
+                    "type": "single_select",
+                    "order": 199
+                },
+                {
+                    "question_id": "a069581a-5c5e-4bcc-bc51-bafd0ce22330_681_single_select_1763751736_42xd",
+                    "type": "single_select",
+                    "order": 200
+                },
+                {
+                    "question_id": "a069581a-5c5e-4bcc-bc51-bafd0ce22330_681_single_select_1763751736_jb4o",
+                    "type": "single_select",
+                    "order": 201
+                },
+                {
+                    "question_id": "a069581a-5c5e-4bcc-bc51-bafd0ce22330_681_single_select_1763751736_rkuy",
+                    "type": "single_select",
+                    "order": 202
+                },
+                {
+                    "question_id": "a069581a-5c5e-4bcc-bc51-bafd0ce22330_681_single_select_1763751736_6lwj",
+                    "type": "single_select",
+                    "order": 203
+                },
+                {
+                    "question_id": "a069581a-5c5e-4bcc-bc51-bafd0ce22330_681_single_select_1763751736_j12k",
+                    "type": "single_select",
+                    "order": 204
+                },
+                {
+                    "question_id": "a069581a-5c5e-4bcc-bc51-bafd0ce22330_681_single_select_1763751736_hlw4",
+                    "type": "single_select",
+                    "order": 205
+                }
+            ]
+        },
+        {
+            "key": 679,
+            "skill": "listening",
+            "name": "sec-listening",
+            "question_groups": [
+                {
+                    "group_id": "listening-group-0",
+                    "title": "Task 1",
+                    "order": 0,
+                    "questions": [
+                        {
+                            "question_id": "679_single_select_1763751298_asyf",
+                            "type": "single_select",
+                            "order": 0,
+                            "instructions": {
+                                "full": "Przeczytaj uważnie tekst i wybierz jedną poprawną odpowiedź spośród podanych opcji.",
+                                "l10n": null,
+                                "brief": "Na podstawie podanego tekstu wybierz poprawną odpowiedź.",
+                                "audio_url": null
+                            },
+                            "interaction": {
+                                "bank": null,
+                                "pairs": null,
+                                "spans": null,
+                                "options": [
+                                    {
+                                        "id": "A",
+                                        "text": "O 14:00"
+                                    },
+                                    {
+                                        "id": "B",
+                                        "text": "O 15:00"
+                                    },
+                                    {
+                                        "id": "C",
+                                        "text": "O 16:00"
+                                    },
+                                    {
+                                        "id": "D",
+                                        "text": "O 17:00"
+                                    }
+                                ],
+                                "response_type": "selection"
+                            },
+                            "scoring": {
+                                "method": "keyed",
+                                "rubric": null,
+                                "max_score": 1,
+                                "answer_key": [
+                                    "C"
+                                ],
+                                "partial_rules": null
+                            }
+                        },
+                        {
+                            "question_id": "679_single_select_1763751298_xahn",
+                            "type": "single_select",
+                            "order": 0,
+                            "instructions": {
+                                "full": "Przeczytaj uważnie tekst i wybierz jedną poprawną odpowiedź spośród podanych opcji.",
+                                "l10n": null,
+                                "brief": "Na podstawie podanego tekstu wybierz poprawną odpowiedź.",
+                                "audio_url": null
+                            },
+                            "interaction": {
+                                "bank": null,
+                                "pairs": null,
+                                "spans": null,
+                                "options": [
+                                    {
+                                        "id": "A",
+                                        "text": "Przy zakupie trzech par skarpet jedna jest tańsza"
+                                    },
+                                    {
+                                        "id": "B",
+                                        "text": "Przy zakupie dwóch par trzecia para jest gratis"
+                                    },
+                                    {
+                                        "id": "C",
+                                        "text": "Zniżka tylko na jedną parę skarpet"
+                                    },
+                                    {
+                                        "id": "D",
+                                        "text": "Oferta obowiązuje tylko przez jutro"
+                                    }
+                                ],
+                                "response_type": "selection"
+                            },
+                            "scoring": {
+                                "method": "keyed",
+                                "rubric": null,
+                                "max_score": 1,
+                                "answer_key": [
+                                    "B"
+                                ],
+                                "partial_rules": null
+                            }
+                        },
+                        {
+                            "question_id": "679_single_select_1763751298_c2yc",
+                            "type": "single_select",
+                            "order": 0,
+                            "instructions": {
+                                "full": "Przeczytaj uważnie tekst i wybierz jedną poprawną odpowiedź spośród podanych opcji.",
+                                "l10n": null,
+                                "brief": "Na podstawie podanego tekstu wybierz poprawną odpowiedź.",
+                                "audio_url": null
+                            },
+                            "interaction": {
+                                "bank": null,
+                                "pairs": null,
+                                "spans": null,
+                                "options": [
+                                    {
+                                        "id": "A",
+                                        "text": "Brać dwie łyżeczki dziennie przez siedem dni"
+                                    },
+                                    {
+                                        "id": "B",
+                                        "text": "Brać jedną łyżeczkę trzy razy dziennie przez siedem dni"
+                                    },
+                                    {
+                                        "id": "C",
+                                        "text": "Brać jedną łyżeczkę przez trzy dni"
+                                    },
+                                    {
+                                        "id": "D",
+                                        "text": "Podawać tylko dorosłym"
+                                    }
+                                ],
+                                "response_type": "selection"
+                            },
+                            "scoring": {
+                                "method": "keyed",
+                                "rubric": null,
+                                "max_score": 1,
+                                "answer_key": [
+                                    "B"
+                                ],
+                                "partial_rules": null
+                            }
+                        },
+                        {
+                            "question_id": "679_single_select_1763751298_brc9",
+                            "type": "single_select",
+                            "order": 0,
+                            "instructions": {
+                                "full": "Przeczytaj uważnie tekst i wybierz jedną poprawną odpowiedź spośród podanych opcji.",
+                                "l10n": null,
+                                "brief": "Na podstawie podanego tekstu wybierz poprawną odpowiedź.",
+                                "audio_url": null
+                            },
+                            "interaction": {
+                                "bank": null,
+                                "pairs": null,
+                                "spans": null,
+                                "options": [
+                                    {
+                                        "id": "A",
+                                        "text": "Pociąg odjedzie zgodnie z planem z peronu pierwszego"
+                                    },
+                                    {
+                                        "id": "B",
+                                        "text": "Pociąg jest odwołany"
+                                    },
+                                    {
+                                        "id": "C",
+                                        "text": "Pociąg jest opóźniony o trzydzieści minut i odjedzie z peronu drugiego"
+                                    },
+                                    {
+                                        "id": "D",
+                                        "text": "Pociąg przyjedzie wcześniej"
+                                    }
+                                ],
+                                "response_type": "selection"
+                            },
+                            "scoring": {
+                                "method": "keyed",
+                                "rubric": null,
+                                "max_score": 1,
+                                "answer_key": [
+                                    "C"
+                                ],
+                                "partial_rules": null
+                            }
+                        },
+                        {
+                            "question_id": "679_single_select_1763751298_sorq",
+                            "type": "single_select",
+                            "order": 0,
+                            "instructions": {
+                                "full": "Przeczytaj uważnie tekst i wybierz jedną poprawną odpowiedź spośród podanych opcji.",
+                                "l10n": null,
+                                "brief": "Na podstawie podanego tekstu wybierz poprawną odpowiedź.",
+                                "audio_url": null
+                            },
+                            "interaction": {
+                                "bank": null,
+                                "pairs": null,
+                                "spans": null,
+                                "options": [
+                                    {
+                                        "id": "A",
+                                        "text": "Czynsz wynosi 1200 zł"
+                                    },
+                                    {
+                                        "id": "B",
+                                        "text": "Nie trzeba wpłacać kaucji"
+                                    },
+                                    {
+                                        "id": "C",
+                                        "text": "Kaucja to jedna miesięczna opłata"
+                                    },
+                                    {
+                                        "id": "D",
+                                        "text": "Mieszkanie jest całkowicie puste"
+                                    }
+                                ],
+                                "response_type": "selection"
+                            },
+                            "scoring": {
+                                "method": "keyed",
+                                "rubric": null,
+                                "max_score": 1,
+                                "answer_key": [
+                                    "C"
+                                ],
+                                "partial_rules": null
+                            }
+                        },
+                        {
+                            "question_id": "679_single_select_1763751298_66pb",
+                            "type": "single_select",
+                            "order": 0,
+                            "instructions": {
+                                "full": "Przeczytaj uważnie tekst i wybierz jedną poprawną odpowiedź spośród podanych opcji.",
+                                "l10n": null,
+                                "brief": "Na podstawie podanego tekstu wybierz poprawną odpowiedź.",
+                                "audio_url": null
+                            },
+                            "interaction": {
+                                "bank": null,
+                                "pairs": null,
+                                "spans": null,
+                                "options": [
+                                    {
+                                        "id": "A",
+                                        "text": "Zorganizują grilla w kawiarni"
+                                    },
+                                    {
+                                        "id": "B",
+                                        "text": "Odwołają piknik z powodu deszczu"
+                                    },
+                                    {
+                                        "id": "C",
+                                        "text": "Piknik odbędzie się w innym parku"
+                                    },
+                                    {
+                                        "id": "D",
+                                        "text": "Zmienią termin na niedzielę, która będzie słoneczna"
+                                    }
+                                ],
+                                "response_type": "selection"
+                            },
+                            "scoring": {
+                                "method": "keyed",
+                                "rubric": null,
+                                "max_score": 1,
+                                "answer_key": [
+                                    "B"
+                                ],
+                                "partial_rules": null
+                            }
+                        }
+                    ]
+                },
+                {
+                    "group_id": "listening-group-0",
+                    "title": "Task 1",
+                    "order": 0,
+                    "questions": [
+                        {
+                            "question_id": "pl_b1_lm_001",
+                            "type": "single_select",
+                            "order": 0,
+                            "instructions": {
+                                "full": "Przeczytaj pytanie, wysłuchaj tekstu i wybierz jedną odpowiedź, która najlepiej pasuje do informacji zawartych w nagraniu.",
+                                "l10n": null,
+                                "brief": "Usłyszysz krótką rozmowę. Na podstawie jej treści wybierz poprawną odpowiedź.",
+                                "audio_url": null
+                            },
+                            "interaction": {
+                                "bank": null,
+                                "pairs": null,
+                                "spans": null,
+                                "options": [
+                                    {
+                                        "id": "A",
+                                        "text": "Monika kupuje trzy bułki i płaci gotówką."
+                                    },
+                                    {
+                                        "id": "B",
+                                        "text": "Sprzedawca potwierdza, że pieczywo jest świeże."
+                                    },
+                                    {
+                                        "id": "C",
+                                        "text": "Monika prosi o bułkę bez pokrojenia."
+                                    },
+                                    {
+                                        "id": "D",
+                                        "text": "Sprzedawca nie przyjmuje kart płatniczych."
+                                    }
+                                ],
+                                "response_type": "selection"
+                            },
+                            "scoring": {
+                                "method": "keyed",
+                                "rubric": null,
+                                "max_score": 1,
+                                "answer_key": [
+                                    "B"
+                                ],
+                                "partial_rules": null
+                            }
+                        },
+                        {
+                            "question_id": "pl_b1_lm_002",
+                            "type": "single_select",
+                            "order": 0,
+                            "instructions": {
+                                "full": "Przeczytaj pytanie, wysłuchaj i wybierz jedną odpowiedź, która najlepiej odpowiada zamiarowi mówiącego.",
+                                "l10n": null,
+                                "brief": "Usłyszysz krótką rozmowę. Wybierz odpowiedź najlepiej oddającą intencję mówiącego.",
+                                "audio_url": null
+                            },
+                            "interaction": {
+                                "bank": null,
+                                "pairs": null,
+                                "spans": null,
+                                "options": [
+                                    {
+                                        "id": "A",
+                                        "text": "Agnieszka planuje anulować wizytę."
+                                    },
+                                    {
+                                        "id": "B",
+                                        "text": "Agnieszka zamierza zadzwonić i poprosić o przesunięcie terminu."
+                                    },
+                                    {
+                                        "id": "C",
+                                        "text": "Jan zgadza się, by Agnieszka przeszła na inny dzień."
+                                    },
+                                    {
+                                        "id": "D",
+                                        "text": "Agnieszka potwierdza, że przyjdzie o dziewiątej."
+                                    }
+                                ],
+                                "response_type": "selection"
+                            },
+                            "scoring": {
+                                "method": "keyed",
+                                "rubric": null,
+                                "max_score": 1,
+                                "answer_key": [
+                                    "B"
+                                ],
+                                "partial_rules": null
+                            }
+                        },
+                        {
+                            "question_id": "pl_b1_lm_003",
+                            "type": "single_select",
+                            "order": 0,
+                            "instructions": {
+                                "full": "Przeczytaj pytanie, wysłuchaj tekstu i wybierz jedną odpowiedź, która najlepiej odpowiada informacjom zawartym w nagraniu.",
+                                "l10n": null,
+                                "brief": "Usłyszysz krótką informację. Wybierz poprawną odpowiedź według treści.",
+                                "audio_url": null
+                            },
+                            "interaction": {
+                                "bank": null,
+                                "pairs": null,
+                                "spans": null,
+                                "options": [
+                                    {
+                                        "id": "A",
+                                        "text": "Pociąg został odwołany."
+                                    },
+                                    {
+                                        "id": "B",
+                                        "text": "Pociąg przyjedzie o 16:40."
+                                    },
+                                    {
+                                        "id": "C",
+                                        "text": "Opóźnienie jest spowodowane złymi warunkami pogodowymi."
+                                    },
+                                    {
+                                        "id": "D",
+                                        "text": "Pociąg przyjedzie wcześniej niż planowano."
+                                    }
+                                ],
+                                "response_type": "selection"
+                            },
+                            "scoring": {
+                                "method": "keyed",
+                                "rubric": null,
+                                "max_score": 1,
+                                "answer_key": [
+                                    "B"
+                                ],
+                                "partial_rules": null
+                            }
+                        },
+                        {
+                            "question_id": "pl_b1_lm_004",
+                            "type": "single_select",
+                            "order": 0,
+                            "instructions": {
+                                "full": "Przeczytaj pytanie, wysłuchaj tekstu i wybierz odpowiedź, która najlepiej opisuje emocje wypowiedzi mówcy.",
+                                "l10n": null,
+                                "brief": "Usłyszysz krótki dialog. Wskaż, jakie emocje wyraża mówiący.",
+                                "audio_url": null
+                            },
+                            "interaction": {
+                                "bank": null,
+                                "pairs": null,
+                                "spans": null,
+                                "options": [
+                                    {
+                                        "id": "A",
+                                        "text": "Piotr jest zadowolony."
+                                    },
+                                    {
+                                        "id": "B",
+                                        "text": "Piotr jest zaskoczony."
+                                    },
+                                    {
+                                        "id": "C",
+                                        "text": "Piotr jest zirytowany."
+                                    },
+                                    {
+                                        "id": "D",
+                                        "text": "Piotr jest obojętny."
+                                    }
+                                ],
+                                "response_type": "selection"
+                            },
+                            "scoring": {
+                                "method": "keyed",
+                                "rubric": null,
+                                "max_score": 1,
+                                "answer_key": [
+                                    "C"
+                                ],
+                                "partial_rules": null
+                            }
+                        },
+                        {
+                            "question_id": "pl_b1_lm_005",
+                            "type": "single_select",
+                            "order": 0,
+                            "instructions": {
+                                "full": "Przeczytaj pytanie, wysłuchaj tekstu i wybierz jedną odpowiedź z dokładną informacją liczbową, jaka padła w nagraniu.",
+                                "l10n": null,
+                                "brief": "Usłyszysz krótką informację. Wybierz odpowiedź zawierającą poprawny szczegół liczbowy.",
+                                "audio_url": null
+                            },
+                            "interaction": {
+                                "bank": null,
+                                "pairs": null,
+                                "spans": null,
+                                "options": [
+                                    {
+                                        "id": "A",
+                                        "text": "Muzeum jest otwarte w poniedziałki."
+                                    },
+                                    {
+                                        "id": "B",
+                                        "text": "Muzeum zamyka się o 16:30."
+                                    },
+                                    {
+                                        "id": "C",
+                                        "text": "Muzeum otwiera się o dziewiątej."
+                                    },
+                                    {
+                                        "id": "D",
+                                        "text": "Muzeum jest otwarte codziennie."
+                                    }
+                                ],
+                                "response_type": "selection"
+                            },
+                            "scoring": {
+                                "method": "keyed",
+                                "rubric": null,
+                                "max_score": 1,
+                                "answer_key": [
+                                    "B"
+                                ],
+                                "partial_rules": null
+                            }
+                        },
+                        {
+                            "question_id": "pl_b1_lm_006",
+                            "type": "single_select",
+                            "order": 0,
+                            "instructions": {
+                                "full": "Przeczytaj pytanie, wysłuchaj nagrania i wybierz jedną odpowiedź, która najlepiej oddaje zamiar lub cel wypowiedzi.",
+                                "l10n": null,
+                                "brief": "Usłyszysz fragment rozmowy. Wybierz najlepsze podsumowanie intencji mówiącego.",
+                                "audio_url": null
+                            },
+                            "interaction": {
+                                "bank": null,
+                                "pairs": null,
+                                "spans": null,
+                                "options": [
+                                    {
+                                        "id": "A",
+                                        "text": "Natalia chce odwołać spotkanie na stałe."
+                                    },
+                                    {
+                                        "id": "B",
+                                        "text": "Natalia proponuje zmianę terminu spotkania."
+                                    },
+                                    {
+                                        "id": "C",
+                                        "text": "Tomasz uważa, że spotkanie powinno być wcześniej."
+                                    },
+                                    {
+                                        "id": "D",
+                                        "text": "Marek zaprosił wszystkich na swoje egzaminy."
+                                    }
+                                ],
+                                "response_type": "selection"
+                            },
+                            "scoring": {
+                                "method": "keyed",
+                                "rubric": null,
+                                "max_score": 1,
+                                "answer_key": [
+                                    "B"
+                                ],
+                                "partial_rules": null
+                            }
+                        }
+                    ]
+                },
+                {
+                    "group_id": "listening-group-1",
+                    "title": "Task 2",
+                    "order": 1,
+                    "questions": [
+                        {
+                            "question_id": "679_single_select_1763751298_z6d5",
+                            "type": "single_select",
+                            "order": 0,
+                            "instructions": {
+                                "full": "Przeczytaj uważnie tekst i wybierz jedną poprawną odpowiedź spośród podanych opcji.",
+                                "l10n": null,
+                                "brief": "Na podstawie podanego tekstu wybierz poprawną odpowiedź.",
+                                "audio_url": null
+                            },
+                            "interaction": {
+                                "bank": null,
+                                "pairs": null,
+                                "spans": null,
+                                "options": [
+                                    {
+                                        "id": "A",
+                                        "text": "Piec przez 20 minut"
+                                    },
+                                    {
+                                        "id": "B",
+                                        "text": "Nagrzać piekarnik do 200 stopni"
+                                    },
+                                    {
+                                        "id": "C",
+                                        "text": "Piec przez 40 minut i ostudzić 15 minut"
+                                    },
+                                    {
+                                        "id": "D",
+                                        "text": "Nie trzeba czekać przed pokrojeniem"
+                                    }
+                                ],
+                                "response_type": "selection"
+                            },
+                            "scoring": {
+                                "method": "keyed",
+                                "rubric": null,
+                                "max_score": 1,
+                                "answer_key": [
+                                    "C"
+                                ],
+                                "partial_rules": null
+                            }
+                        },
+                        {
+                            "question_id": "679_single_select_1763751298_yzfp",
+                            "type": "single_select",
+                            "order": 0,
+                            "instructions": {
+                                "full": "Przeczytaj uważnie tekst i wybierz jedną poprawną odpowiedź spośród podanych opcji.",
+                                "l10n": null,
+                                "brief": "Na podstawie podanego tekstu wybierz poprawną odpowiedź.",
+                                "audio_url": null
+                            },
+                            "interaction": {
+                                "bank": null,
+                                "pairs": null,
+                                "spans": null,
+                                "options": [
+                                    {
+                                        "id": "A",
+                                        "text": "Na 4 osoby"
+                                    },
+                                    {
+                                        "id": "B",
+                                        "text": "Na 5 osób"
+                                    },
+                                    {
+                                        "id": "C",
+                                        "text": "Na 6 osób"
+                                    },
+                                    {
+                                        "id": "D",
+                                        "text": "Na 8 osób"
+                                    }
+                                ],
+                                "response_type": "selection"
+                            },
+                            "scoring": {
+                                "method": "keyed",
+                                "rubric": null,
+                                "max_score": 1,
+                                "answer_key": [
+                                    "C"
+                                ],
+                                "partial_rules": null
+                            }
+                        },
+                        {
+                            "question_id": "679_single_select_1763751298_j8i5",
+                            "type": "single_select",
+                            "order": 0,
+                            "instructions": {
+                                "full": "Przeczytaj uważnie tekst i wybierz jedną poprawną odpowiedź spośród podanych opcji.",
+                                "l10n": null,
+                                "brief": "Na podstawie podanego tekstu wybierz poprawną odpowiedź.",
+                                "audio_url": null
+                            },
+                            "interaction": {
+                                "bank": null,
+                                "pairs": null,
+                                "spans": null,
+                                "options": [
+                                    {
+                                        "id": "A",
+                                        "text": "Wysiądzie na przystanku pierwszym"
+                                    },
+                                    {
+                                        "id": "B",
+                                        "text": "Wysiądzie na przystanku drugim"
+                                    },
+                                    {
+                                        "id": "C",
+                                        "text": "Wysiądzie na przystanku trzecim"
+                                    },
+                                    {
+                                        "id": "D",
+                                        "text": "Nie wysiądzie na żadnym przystanku"
+                                    }
+                                ],
+                                "response_type": "selection"
+                            },
+                            "scoring": {
+                                "method": "keyed",
+                                "rubric": null,
+                                "max_score": 1,
+                                "answer_key": [
+                                    "C"
+                                ],
+                                "partial_rules": null
+                            }
+                        },
+                        {
+                            "question_id": "679_single_select_1763751298_nome",
+                            "type": "single_select",
+                            "order": 0,
+                            "instructions": {
+                                "full": "Przeczytaj uważnie tekst i wybierz jedną poprawną odpowiedź spośród podanych opcji.",
+                                "l10n": null,
+                                "brief": "Na podstawie podanego tekstu wybierz poprawną odpowiedź.",
+                                "audio_url": null
+                            },
+                            "interaction": {
+                                "bank": null,
+                                "pairs": null,
+                                "spans": null,
+                                "options": [
+                                    {
+                                        "id": "A",
+                                        "text": "Pacjent ma zjeść lekkie śniadanie przed badaniem"
+                                    },
+                                    {
+                                        "id": "B",
+                                        "text": "Pacjent ma przyjść na czczo i przynieść dokumenty o lekach"
+                                    },
+                                    {
+                                        "id": "C",
+                                        "text": "Pacjent nie musi przynosić żadnych dokumentów"
+                                    },
+                                    {
+                                        "id": "D",
+                                        "text": "Badanie krwi nie wymaga przygotowania"
+                                    }
+                                ],
+                                "response_type": "selection"
+                            },
+                            "scoring": {
+                                "method": "keyed",
+                                "rubric": null,
+                                "max_score": 1,
+                                "answer_key": [
+                                    "B"
+                                ],
+                                "partial_rules": null
+                            }
+                        }
+                    ]
+                },
+                {
+                    "group_id": "listening-group-1",
+                    "title": "Task 2",
+                    "order": 1,
+                    "questions": [
+                        {
+                            "question_id": "pl_b1_lm_007",
+                            "type": "single_select",
+                            "order": 0,
+                            "instructions": {
+                                "full": "Przeczytaj pytanie, wysłuchaj nagrania z instrukcją i wybierz odpowiedź wskazującą pierwszy krok.",
+                                "l10n": null,
+                                "brief": "Usłyszysz krótką instrukcję. Wskaż, co należy zrobić jako pierwsze.",
+                                "audio_url": null
+                            },
+                            "interaction": {
+                                "bank": null,
+                                "pairs": null,
+                                "spans": null,
+                                "options": [
+                                    {
+                                        "id": "A",
+                                        "text": "Zalogować się do platformy."
+                                    },
+                                    {
+                                        "id": "B",
+                                        "text": "Zakończyć test i zapisać wyniki."
+                                    },
+                                    {
+                                        "id": "C",
+                                        "text": "Otworzyć moduł z ćwiczeniami."
+                                    },
+                                    {
+                                        "id": "D",
+                                        "text": "Wyłączyć komputer."
+                                    }
+                                ],
+                                "response_type": "selection"
+                            },
+                            "scoring": {
+                                "method": "keyed",
+                                "rubric": null,
+                                "max_score": 1,
+                                "answer_key": [
+                                    "A"
+                                ],
+                                "partial_rules": null
+                            }
+                        },
+                        {
+                            "question_id": "pl_b1_lm_008",
+                            "type": "single_select",
+                            "order": 0,
+                            "instructions": {
+                                "full": "Przeczytaj pytanie, wysłuchaj tekstu i wybierz jedną odpowiedź, która najlepiej przedstawia opinię jednego z uczestników rozmowy.",
+                                "l10n": null,
+                                "brief": "Usłyszysz fragment rozmowy. Wybierz odpowiedź, która najlepiej oddaje opinię mówiącego.",
+                                "audio_url": null
+                            },
+                            "interaction": {
+                                "bank": null,
+                                "pairs": null,
+                                "spans": null,
+                                "options": [
+                                    {
+                                        "id": "A",
+                                        "text": "Bartek uważa film za znakomity."
+                                    },
+                                    {
+                                        "id": "B",
+                                        "text": "Kasia uważa, że film miał interesujące fragmenty."
+                                    },
+                                    {
+                                        "id": "C",
+                                        "text": "Oboje zgodzili się, że film był za krótki."
+                                    },
+                                    {
+                                        "id": "D",
+                                        "text": "Bartek poleca obejrzeć film każdemu."
+                                    }
+                                ],
+                                "response_type": "selection"
+                            },
+                            "scoring": {
+                                "method": "keyed",
+                                "rubric": null,
+                                "max_score": 1,
+                                "answer_key": [
+                                    "B"
+                                ],
+                                "partial_rules": null
+                            }
+                        },
+                        {
+                            "question_id": "pl_b1_lm_009",
+                            "type": "single_select",
+                            "order": 0,
+                            "instructions": {
+                                "full": "Przeczytaj pytanie, wysłuchaj nagrania i wybierz jedną odpowiedź pasującą do sytuacji opisanej w nagraniu.",
+                                "l10n": null,
+                                "brief": "Usłyszysz krótką rozmowę. Wybierz odpowiedź, która najlepiej pasuje do kontekstu.",
+                                "audio_url": null
+                            },
+                            "interaction": {
+                                "bank": null,
+                                "pairs": null,
+                                "spans": null,
+                                "options": [
+                                    {
+                                        "id": "A",
+                                        "text": "Katarzyna ma przygotować prezentację."
+                                    },
+                                    {
+                                        "id": "B",
+                                        "text": "Szef przygotował slajdy do prezentacji."
+                                    },
+                                    {
+                                        "id": "C",
+                                        "text": "Marek poprosił, by Katarzyna nie przynosiła raportu."
+                                    },
+                                    {
+                                        "id": "D",
+                                        "text": "Spotkanie zostało odwołane."
+                                    }
+                                ],
+                                "response_type": "selection"
+                            },
+                            "scoring": {
+                                "method": "keyed",
+                                "rubric": null,
+                                "max_score": 1,
+                                "answer_key": [
+                                    "B"
+                                ],
+                                "partial_rules": null
+                            }
+                        },
+                        {
+                            "question_id": "pl_b1_lm_010",
+                            "type": "single_select",
+                            "order": 0,
+                            "instructions": {
+                                "full": "Przeczytaj pytanie, wysłuchaj nagrania i wybierz jedną odpowiedź, która odpowiada treści wiadomości.",
+                                "l10n": null,
+                                "brief": "Usłyszysz krótką informację telefoniczną. Wybierz właściwą odpowiedź.",
+                                "audio_url": null
+                            },
+                            "interaction": {
+                                "bank": null,
+                                "pairs": null,
+                                "spans": null,
+                                "options": [
+                                    {
+                                        "id": "A",
+                                        "text": "Spotkanie jest w sobotę o dwunastej."
+                                    },
+                                    {
+                                        "id": "B",
+                                        "text": "Ola prosi o przyniesienie deseru."
+                                    },
+                                    {
+                                        "id": "C",
+                                        "text": "Spotkanie odbędzie się u innej osoby niż Ola."
+                                    },
+                                    {
+                                        "id": "D",
+                                        "text": "Ola odwołuje spotkanie."
+                                    }
+                                ],
+                                "response_type": "selection"
+                            },
+                            "scoring": {
+                                "method": "keyed",
+                                "rubric": null,
+                                "max_score": 1,
+                                "answer_key": [
+                                    "A"
+                                ],
+                                "partial_rules": null
+                            }
+                        }
+                    ]
+                },
+                {
+                    "group_id": "listening-group-2",
+                    "title": "Task 3",
+                    "order": 2,
+                    "questions": [
+                        {
+                            "question_id": "679_single_select_1763751298_fqzq",
+                            "type": "single_select",
+                            "order": 0,
+                            "instructions": {
+                                "full": "Przeczytaj uważnie tekst i wybierz jedną poprawną odpowiedź spośród podanych opcji.",
+                                "l10n": null,
+                                "brief": "Na podstawie podanego tekstu wybierz poprawną odpowiedź.",
+                                "audio_url": null
+                            },
+                            "interaction": {
+                                "bank": null,
+                                "pairs": null,
+                                "spans": null,
+                                "options": [
+                                    {
+                                        "id": "A",
+                                        "text": "Klientka chce zwrot pieniędzy"
+                                    },
+                                    {
+                                        "id": "B",
+                                        "text": "Klientka chce wymienić na większy rozmiar"
+                                    },
+                                    {
+                                        "id": "C",
+                                        "text": "Klientka prosi o naprawę koszuli"
+                                    },
+                                    {
+                                        "id": "D",
+                                        "text": "Klientka chce rabat na nową koszulę"
+                                    }
+                                ],
+                                "response_type": "selection"
+                            },
+                            "scoring": {
+                                "method": "keyed",
+                                "rubric": null,
+                                "max_score": 1,
+                                "answer_key": [
+                                    "B"
+                                ],
+                                "partial_rules": null
+                            }
+                        },
+                        {
+                            "question_id": "679_single_select_1763751298_6a0f",
+                            "type": "single_select",
+                            "order": 0,
+                            "instructions": {
+                                "full": "Przeczytaj uważnie tekst i wybierz jedną poprawną odpowiedź spośród podanych opcji.",
+                                "l10n": null,
+                                "brief": "Na podstawie podanego tekstu wybierz poprawną odpowiedź.",
+                                "audio_url": null
+                            },
+                            "interaction": {
+                                "bank": null,
+                                "pairs": null,
+                                "spans": null,
+                                "options": [
+                                    {
+                                        "id": "A",
+                                        "text": "Muzeum jest otwarte w niedzielę od 10:00 do 16:00"
+                                    },
+                                    {
+                                        "id": "B",
+                                        "text": "W niedzielę muzeum jest zamknięte"
+                                    },
+                                    {
+                                        "id": "C",
+                                        "text": "W niedzielę muzeum otwarte jest od 12:00 do 18:00"
+                                    },
+                                    {
+                                        "id": "D",
+                                        "text": "W poniedziałki muzeum ma dłuższe godziny"
+                                    }
+                                ],
+                                "response_type": "selection"
+                            },
+                            "scoring": {
+                                "method": "keyed",
+                                "rubric": null,
+                                "max_score": 1,
+                                "answer_key": [
+                                    "C"
+                                ],
+                                "partial_rules": null
+                            }
+                        },
+                        {
+                            "question_id": "679_single_select_1763751298_paey",
+                            "type": "single_select",
+                            "order": 0,
+                            "instructions": {
+                                "full": "Przeczytaj uważnie tekst i wybierz jedną poprawną odpowiedź spośród podanych opcji.",
+                                "l10n": null,
+                                "brief": "Na podstawie podanego tekstu wybierz poprawną odpowiedź.",
+                                "audio_url": null
+                            },
+                            "interaction": {
+                                "bank": null,
+                                "pairs": null,
+                                "spans": null,
+                                "options": [
+                                    {
+                                        "id": "A",
+                                        "text": "Bagaże można odebrać bez opłaty do 17:00"
+                                    },
+                                    {
+                                        "id": "B",
+                                        "text": "Bagaże muszą zostać odebrane przed 12:00"
+                                    },
+                                    {
+                                        "id": "C",
+                                        "text": "Odbiór bagaży jest dopiero następnego dnia"
+                                    },
+                                    {
+                                        "id": "D",
+                                        "text": "Nie można zostawić bagaży w hotelu"
+                                    }
+                                ],
+                                "response_type": "selection"
+                            },
+                            "scoring": {
+                                "method": "keyed",
+                                "rubric": null,
+                                "max_score": 1,
+                                "answer_key": [
+                                    "A"
+                                ],
+                                "partial_rules": null
+                            }
+                        },
+                        {
+                            "question_id": "679_single_select_1763751298_o63n",
+                            "type": "single_select",
+                            "order": 0,
+                            "instructions": {
+                                "full": "Przeczytaj uważnie tekst i wybierz jedną poprawną odpowiedź spośród podanych opcji.",
+                                "l10n": null,
+                                "brief": "Na podstawie podanego tekstu wybierz poprawną odpowiedź.",
+                                "audio_url": null
+                            },
+                            "interaction": {
+                                "bank": null,
+                                "pairs": null,
+                                "spans": null,
+                                "options": [
+                                    {
+                                        "id": "A",
+                                        "text": "Film zaczyna się o 18:00"
+                                    },
+                                    {
+                                        "id": "B",
+                                        "text": "Film będzie w sali numer trzy o 20:00"
+                                    },
+                                    {
+                                        "id": "C",
+                                        "text": "Bilety nie są do kupienia online"
+                                    },
+                                    {
+                                        "id": "D",
+                                        "text": "Nie wiadomo, czy sala będzie pełna"
+                                    }
+                                ],
+                                "response_type": "selection"
+                            },
+                            "scoring": {
+                                "method": "keyed",
+                                "rubric": null,
+                                "max_score": 1,
+                                "answer_key": [
+                                    "B"
+                                ],
+                                "partial_rules": null
+                            }
+                        }
+                    ]
+                },
+                {
+                    "group_id": "listening-group-2",
+                    "title": "Task 3",
+                    "order": 2,
+                    "questions": [
+                        {
+                            "question_id": "pl_b1_lm_011",
+                            "type": "single_select",
+                            "order": 0,
+                            "instructions": {
+                                "full": "Przeczytaj pytanie, wysłuchaj nagrania monologu i wybierz jedną odpowiedź, która najlepiej określa główny temat wypowiedzi.",
+                                "l10n": null,
+                                "brief": "Po wysłuchaniu krótkiego monologu wskaż główny temat wypowiedzi.",
+                                "audio_url": null
+                            },
+                            "interaction": {
+                                "bank": null,
+                                "pairs": null,
+                                "spans": null,
+                                "options": [
+                                    {
+                                        "id": "A",
+                                        "text": "Opis pracy zawodowej mówcy."
+                                    },
+                                    {
+                                        "id": "B",
+                                        "text": "Doświadczenia mówcy związane z rozpoczęciem biegania."
+                                    },
+                                    {
+                                        "id": "C",
+                                        "text": "Relacja z wakacji za granicą."
+                                    },
+                                    {
+                                        "id": "D",
+                                        "text": "Omówienie diety wegańskiej."
+                                    }
+                                ],
+                                "response_type": "selection"
+                            },
+                            "scoring": {
+                                "method": "keyed",
+                                "rubric": null,
+                                "max_score": 1,
+                                "answer_key": [
+                                    "B"
+                                ],
+                                "partial_rules": null
+                            }
+                        },
+                        {
+                            "question_id": "pl_b1_lm_012",
+                            "type": "single_select",
+                            "order": 0,
+                            "instructions": {
+                                "full": "Przeczytaj pytanie, wysłuchaj zapowiedzi i wybierz odpowiedź z prawidłową godziną rozpoczęcia wydarzenia.",
+                                "l10n": null,
+                                "brief": "Usłyszysz zapowiedź wydarzenia. Wskaż godzinę rozpoczęcia.",
+                                "audio_url": null
+                            },
+                            "interaction": {
+                                "bank": null,
+                                "pairs": null,
+                                "spans": null,
+                                "options": [
+                                    {
+                                        "id": "A",
+                                        "text": "Koncert rozpoczyna się o 19:45."
+                                    },
+                                    {
+                                        "id": "B",
+                                        "text": "Koncert rozpoczyna się o 20:00."
+                                    },
+                                    {
+                                        "id": "C",
+                                        "text": "Koncert rozpoczyna się o 21:00."
+                                    },
+                                    {
+                                        "id": "D",
+                                        "text": "Koncert rozpoczyna się o 19:00."
+                                    }
+                                ],
+                                "response_type": "selection"
+                            },
+                            "scoring": {
+                                "method": "keyed",
+                                "rubric": null,
+                                "max_score": 1,
+                                "answer_key": [
+                                    "B"
+                                ],
+                                "partial_rules": null
+                            }
+                        },
+                        {
+                            "question_id": "pl_b1_lm_013",
+                            "type": "single_select",
+                            "order": 0,
+                            "instructions": {
+                                "full": "Przeczytaj pytanie, wysłuchaj nagrania i wybierz jedną odpowiedź, która najlepiej opisuje przyczynę problemu wymienioną w rozmowie.",
+                                "l10n": null,
+                                "brief": "Usłyszysz dialog. Wskaż, jaka była przyczyna problemu według rozmówców.",
+                                "audio_url": null
+                            },
+                            "interaction": {
+                                "bank": null,
+                                "pairs": null,
+                                "spans": null,
+                                "options": [
+                                    {
+                                        "id": "A",
+                                        "text": "Problem wynika z uszkodzonego komputera Magdy."
+                                    },
+                                    {
+                                        "id": "B",
+                                        "text": "Problem może być spowodowany przeglądem łączy światłowodowych."
+                                    },
+                                    {
+                                        "id": "C",
+                                        "text": "Magda i Tomek nie mają internetu z powodu braku opłaty."
+                                    },
+                                    {
+                                        "id": "D",
+                                        "text": "Internet działa normalnie."
+                                    }
+                                ],
+                                "response_type": "selection"
+                            },
+                            "scoring": {
+                                "method": "keyed",
+                                "rubric": null,
+                                "max_score": 1,
+                                "answer_key": [
+                                    "B"
+                                ],
+                                "partial_rules": null
+                            }
+                        },
+                        {
+                            "question_id": "pl_b1_lm_014",
+                            "type": "single_select",
+                            "order": 0,
+                            "instructions": {
+                                "full": "Przeczytaj pytanie, wysłuchaj nagrania i wybierz odpowiedź opisującą propozycję zawartą w wypowiedzi.",
+                                "l10n": null,
+                                "brief": "Usłyszysz rozmowę. Wskaż, co ktoś proponuje zrobić.",
+                                "audio_url": null
+                            },
+                            "interaction": {
+                                "bank": null,
+                                "pairs": null,
+                                "spans": null,
+                                "options": [
+                                    {
+                                        "id": "A",
+                                        "text": "Proponuje się anulowanie pikniku."
+                                    },
+                                    {
+                                        "id": "B",
+                                        "text": "Proponuje się przeniesienie pikniku do kawiarni w razie deszczu."
+                                    },
+                                    {
+                                        "id": "C",
+                                        "text": "Proponuje się zmianę daty pikniku na przyszły weekend."
+                                    },
+                                    {
+                                        "id": "D",
+                                        "text": "Proponuje się zorganizowanie pikniku nocą."
+                                    }
+                                ],
+                                "response_type": "selection"
+                            },
+                            "scoring": {
+                                "method": "keyed",
+                                "rubric": null,
+                                "max_score": 1,
+                                "answer_key": [
+                                    "B"
+                                ],
+                                "partial_rules": null
+                            }
+                        }
+                    ]
+                }
+            ],
+            "ungrouped_questions": [
+                {
+                    "question_id": "679_single_select_1763751298_acjo",
+                    "type": "single_select",
+                    "order": 0
+                },
+                {
+                    "question_id": "679_single_select_1763751298_bbvt",
+                    "type": "single_select",
+                    "order": 0
+                },
+                {
+                    "question_id": "pl_b1_lm_015",
+                    "type": "single_select",
+                    "order": 0
+                },
+                {
+                    "question_id": "pl_b1_lm_016",
+                    "type": "single_select",
+                    "order": 0
+                },
+                {
+                    "question_id": "a069581a-5c5e-4bcc-bc51-bafd0ce22330_679_single_select_1763747134_ukxg",
+                    "type": "single_select",
+                    "order": 106
+                },
+                {
+                    "question_id": "a069581a-5c5e-4bcc-bc51-bafd0ce22330_679_single_select_1763747134_okuv",
+                    "type": "single_select",
+                    "order": 107
+                },
+                {
+                    "question_id": "a069581a-5c5e-4bcc-bc51-bafd0ce22330_l15",
+                    "type": "single_select",
+                    "order": 146
+                },
+                {
+                    "question_id": "a069581a-5c5e-4bcc-bc51-bafd0ce22330_l16",
+                    "type": "single_select",
+                    "order": 147
+                },
+                {
+                    "question_id": "a069581a-5c5e-4bcc-bc51-bafd0ce22330_679_single_select_1763748285_ekop",
+                    "type": "single_select",
+                    "order": 175
+                },
+                {
+                    "question_id": "a069581a-5c5e-4bcc-bc51-bafd0ce22330_679_single_select_1763748285_82qx",
+                    "type": "single_select",
+                    "order": 176
+                },
+                {
+                    "question_id": "a069581a-5c5e-4bcc-bc51-bafd0ce22330_pl_b1_lm_015",
+                    "type": "single_select",
+                    "order": 177
+                },
+                {
+                    "question_id": "a069581a-5c5e-4bcc-bc51-bafd0ce22330_pl_b1_lm_016",
+                    "type": "single_select",
+                    "order": 178
+                }
+            ]
+        },
+        {
+            "key": 680,
+            "skill": "reading",
+            "name": "sec-reading",
+            "question_groups": [],
+            "ungrouped_questions": [
+                {
+                    "question_id": "a069581a-5c5e-4bcc-bc51-bafd0ce22330_read_mcq_1",
+                    "type": "single_select",
+                    "order": 53
+                },
+                {
+                    "question_id": "a069581a-5c5e-4bcc-bc51-bafd0ce22330_680_single_select_1763746277_h4pi",
+                    "type": "single_select",
+                    "order": 54
+                },
+                {
+                    "question_id": "a069581a-5c5e-4bcc-bc51-bafd0ce22330_680_single_select_1763746277_tgbi",
+                    "type": "single_select",
+                    "order": 55
+                },
+                {
+                    "question_id": "a069581a-5c5e-4bcc-bc51-bafd0ce22330_680_single_select_1763746277_hrso",
+                    "type": "single_select",
+                    "order": 56
+                },
+                {
+                    "question_id": "a069581a-5c5e-4bcc-bc51-bafd0ce22330_680_single_select_1763746277_dfim",
+                    "type": "single_select",
+                    "order": 57
+                },
+                {
+                    "question_id": "a069581a-5c5e-4bcc-bc51-bafd0ce22330_read_mcq_main_idea_1",
+                    "type": "single_select",
+                    "order": 58
+                },
+                {
+                    "question_id": "a069581a-5c5e-4bcc-bc51-bafd0ce22330_680_single_select_1763746277_kewn",
+                    "type": "single_select",
+                    "order": 59
+                },
+                {
+                    "question_id": "a069581a-5c5e-4bcc-bc51-bafd0ce22330_680_single_select_1763746277_q9el",
+                    "type": "single_select",
+                    "order": 60
+                },
+                {
+                    "question_id": "a069581a-5c5e-4bcc-bc51-bafd0ce22330_680_single_select_1763746277_979y",
+                    "type": "single_select",
+                    "order": 61
+                },
+                {
+                    "question_id": "a069581a-5c5e-4bcc-bc51-bafd0ce22330_read_mcq_main_idea_01",
+                    "type": "single_select",
+                    "order": 62
+                },
+                {
+                    "question_id": "a069581a-5c5e-4bcc-bc51-bafd0ce22330_680_single_select_1763746277_o5wv",
+                    "type": "single_select",
+                    "order": 63
+                },
+                {
+                    "question_id": "a069581a-5c5e-4bcc-bc51-bafd0ce22330_680_single_select_1763746277_vem3",
+                    "type": "single_select",
+                    "order": 64
+                },
+                {
+                    "question_id": "a069581a-5c5e-4bcc-bc51-bafd0ce22330_680_single_select_1763746277_dzsd",
+                    "type": "single_select",
+                    "order": 65
+                },
+                {
+                    "question_id": "a069581a-5c5e-4bcc-bc51-bafd0ce22330_680_single_select_1763747024_rfrx",
+                    "type": "single_select",
+                    "order": 93
+                },
+                {
+                    "question_id": "a069581a-5c5e-4bcc-bc51-bafd0ce22330_680_single_select_1763747024_yvrc",
+                    "type": "single_select",
+                    "order": 94
+                },
+                {
+                    "question_id": "a069581a-5c5e-4bcc-bc51-bafd0ce22330_680_single_select_1763747024_4c1b",
+                    "type": "single_select",
+                    "order": 95
+                },
+                {
+                    "question_id": "a069581a-5c5e-4bcc-bc51-bafd0ce22330_680_single_select_1763747024_josm",
+                    "type": "single_select",
+                    "order": 96
+                },
+                {
+                    "question_id": "a069581a-5c5e-4bcc-bc51-bafd0ce22330_680_single_select_1763747024_zdmi",
+                    "type": "single_select",
+                    "order": 97
+                },
+                {
+                    "question_id": "a069581a-5c5e-4bcc-bc51-bafd0ce22330_680_single_select_1763747024_3dji",
+                    "type": "single_select",
+                    "order": 98
+                },
+                {
+                    "question_id": "a069581a-5c5e-4bcc-bc51-bafd0ce22330_680_single_select_1763747024_mqqd",
+                    "type": "single_select",
+                    "order": 99
+                },
+                {
+                    "question_id": "a069581a-5c5e-4bcc-bc51-bafd0ce22330_680_single_select_1763747024_ztpa",
+                    "type": "single_select",
+                    "order": 100
+                },
+                {
+                    "question_id": "a069581a-5c5e-4bcc-bc51-bafd0ce22330_680_single_select_1763747024_hrss",
+                    "type": "single_select",
+                    "order": 101
+                },
+                {
+                    "question_id": "a069581a-5c5e-4bcc-bc51-bafd0ce22330_680_single_select_1763747024_q5am",
+                    "type": "single_select",
+                    "order": 102
+                },
+                {
+                    "question_id": "a069581a-5c5e-4bcc-bc51-bafd0ce22330_680_single_select_1763747024_xfgu",
+                    "type": "single_select",
+                    "order": 103
+                },
+                {
+                    "question_id": "a069581a-5c5e-4bcc-bc51-bafd0ce22330_680_single_select_1763747024_mivc",
+                    "type": "single_select",
+                    "order": 104
+                },
+                {
+                    "question_id": "a069581a-5c5e-4bcc-bc51-bafd0ce22330_680_single_select_1763747024_mlpn",
+                    "type": "single_select",
+                    "order": 105
+                },
+                {
+                    "question_id": "a069581a-5c5e-4bcc-bc51-bafd0ce22330_680_single_select_1763747890_3p23",
+                    "type": "single_select",
+                    "order": 135
+                },
+                {
+                    "question_id": "a069581a-5c5e-4bcc-bc51-bafd0ce22330_680_single_select_1763747890_q9kx",
+                    "type": "single_select",
+                    "order": 136
+                },
+                {
+                    "question_id": "a069581a-5c5e-4bcc-bc51-bafd0ce22330_680_single_select_1763747890_72yd",
+                    "type": "single_select",
+                    "order": 137
+                },
+                {
+                    "question_id": "a069581a-5c5e-4bcc-bc51-bafd0ce22330_680_single_select_1763747890_kcgs",
+                    "type": "single_select",
+                    "order": 138
+                },
+                {
+                    "question_id": "a069581a-5c5e-4bcc-bc51-bafd0ce22330_680_single_select_1763747890_ax9g",
+                    "type": "single_select",
+                    "order": 139
+                },
+                {
+                    "question_id": "a069581a-5c5e-4bcc-bc51-bafd0ce22330_680_single_select_1763747890_bpes",
+                    "type": "single_select",
+                    "order": 140
+                },
+                {
+                    "question_id": "a069581a-5c5e-4bcc-bc51-bafd0ce22330_680_single_select_1763747890_yxfj",
+                    "type": "single_select",
+                    "order": 141
+                },
+                {
+                    "question_id": "a069581a-5c5e-4bcc-bc51-bafd0ce22330_680_single_select_1763747890_bqbo",
+                    "type": "single_select",
+                    "order": 142
+                },
+                {
+                    "question_id": "a069581a-5c5e-4bcc-bc51-bafd0ce22330_680_single_select_1763747890_hfrn",
+                    "type": "single_select",
+                    "order": 143
+                },
+                {
+                    "question_id": "a069581a-5c5e-4bcc-bc51-bafd0ce22330_680_single_select_1763747890_5tgg",
+                    "type": "single_select",
+                    "order": 144
+                },
+                {
+                    "question_id": "a069581a-5c5e-4bcc-bc51-bafd0ce22330_680_single_select_1763747890_ex2w",
+                    "type": "single_select",
+                    "order": 145
+                }
+            ]
+        },
+        {
+            "key": 683,
+            "skill": "speaking",
+            "name": "sec-speaking",
+            "question_groups": []
+        },
+        {
+            "key": 682,
+            "skill": "writing",
+            "name": "sec-writing",
+            "question_groups": []
+        }
     ],
-    "flexible_fields": [
-      "sections[].question_groups[].questions[].instructions.text_html",
-      "sections[].question_groups[].questions[].interaction.options[].label"
-    ],
-    "ignore_fields": [
-      "sections[].question_groups[].questions[].question_id",
-      "sections[].question_groups[].questions[].scoring.correct_answer"
-    ]
-  },
-
-  "_notes": "Synthesis генерирует конечный контент вопросов: тексты инструкций, варианты ответов, стимулы (аудио скрипты, тексты для чтения). Сравнение должно проверять: 1) структуру (количество групп/вопросов), 2) типы вопросов, 3) качество контента (fuzzy matching)."
+    "$schema": "../_schemas/05-synthesis.json",
+    "version": "1.0",
+    "_comparison_hints": {
+        "critical_fields": [
+            "sections[].skill",
+            "sections[].question_groups[].group_id",
+            "sections[].question_groups[].questions[].type",
+            "sections[].question_groups[].questions[].interaction.response_type"
+        ],
+        "flexible_fields": [
+            "sections[].question_groups[].questions[].interaction.stem",
+            "sections[].question_groups[].questions[].instructions"
+        ],
+        "ignore_fields": [
+            "sections[].question_groups[].questions[].id",
+            "sections[].question_groups[].questions[].created_at"
+        ]
+    },
+    "_notes": "Extracted from exam: a069581a-5c5e-4bcc-bc51-bafd0ce22330 (Test Polish B1 - Pipeline Stabilization)"
 }

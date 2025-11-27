@@ -1,0 +1,131 @@
+{
+  "$schema": "../_schemas/02-phase-a.schema.json",
+  "version": "1.0",
+  "stage": "phase_a",
+  "exam_id": "pl-b1",
+
+  "structure_v2": {
+    "id": "pl-b1-cert",
+    "version": "2.0",
+
+    "meta": {
+      "name": "Egzamin Certyfikatowy z Języka Polskiego jako Obcego",
+      "language": "pl",
+      "level": "B1",
+      "provider": "Państwowa Komisja ds. Poświadczania Znajomości Języka Polskiego jako Obcego",
+      "tags": ["certification", "official", "state-exam", "cefr-b1"]
+    },
+
+    "pass_policy": {
+      "mode": "per_section_only",
+      "per_section_threshold_percent": 60
+    },
+
+    "policies": {
+      "navigation": {
+        "backtracking": false
+      },
+      "answer_transfer_window_sec": 0
+    },
+
+    "sections": [
+      {
+        "id": "listening",
+        "skill": "listening",
+        "name": "Rozumienie ze słuchu",
+        "duration_min": 25,
+        "max_score": 30,
+        "min_pass_percent": 60,
+        "description": "5 zadań testujących rozumienie ze słuchu: krótkie dialogi, dłuższe nagrania, prawda/fałsz",
+        "expected_task_count": {
+          "target": 5,
+          "min": 4,
+          "max": 6
+        }
+      },
+      {
+        "id": "reading",
+        "skill": "reading",
+        "name": "Rozumienie tekstów pisanych",
+        "duration_min": 45,
+        "max_score": 30,
+        "min_pass_percent": 60,
+        "description": "4 zadania testujące rozumienie tekstów: dopasowanie nagłówków, wybór wielokrotny, luki",
+        "expected_task_count": {
+          "target": 4,
+          "min": 3,
+          "max": 5
+        }
+      },
+      {
+        "id": "grammar",
+        "skill": "grammar",
+        "name": "Poprawność gramatyczna",
+        "duration_min": 45,
+        "max_score": 30,
+        "min_pass_percent": 60,
+        "description": "Zadania na gramatykę i słownictwo: uzupełnianie luk, wybór formy, transformacje",
+        "expected_task_count": {
+          "target": 10,
+          "min": 8,
+          "max": 12
+        }
+      },
+      {
+        "id": "writing",
+        "skill": "writing",
+        "name": "Pisanie",
+        "duration_min": 60,
+        "max_score": 40,
+        "min_pass_percent": 60,
+        "description": "2 zadania pisemne: krótki tekst użytkowy (80-100 słów) i dłuższy tekst (150-200 słów)",
+        "expected_task_count": {
+          "target": 2,
+          "min": 2,
+          "max": 2
+        }
+      },
+      {
+        "id": "speaking",
+        "skill": "speaking",
+        "name": "Mówienie",
+        "duration_min": 15,
+        "max_score": 40,
+        "min_pass_percent": 60,
+        "description": "Rozmowa z egzaminatorem: przedstawienie się, opis obrazka, rozmowa na zadany temat",
+        "expected_task_count": {
+          "target": 3,
+          "min": 2,
+          "max": 4
+        }
+      }
+    ]
+  },
+
+  "_comparison_hints": {
+    "critical_fields": [
+      "structure_v2.meta.language",
+      "structure_v2.meta.level",
+      "structure_v2.pass_policy.mode",
+      "structure_v2.pass_policy.per_section_threshold_percent",
+      "structure_v2.sections[].skill",
+      "structure_v2.sections[].duration_min",
+      "structure_v2.sections[].max_score",
+      "structure_v2.sections[].min_pass_percent"
+    ],
+    "flexible_fields": [
+      "structure_v2.meta.name",
+      "structure_v2.meta.provider",
+      "structure_v2.meta.tags",
+      "structure_v2.sections[].name",
+      "structure_v2.sections[].description",
+      "structure_v2.sections[].expected_task_count"
+    ],
+    "ignore_fields": [
+      "structure_v2.id",
+      "structure_v2.version"
+    ]
+  },
+
+  "_notes": "Phase A должен сгенерировать skeleton с 5 секциями: listening (25 min, 30 points), reading (45 min, 30 points), grammar (45 min, 30 points), writing (60 min, 40 points), speaking (15 min, 40 points). Все секции требуют 60% для сдачи. Важно: БЕЗ assembly планов и БЕЗ tasks."
+}

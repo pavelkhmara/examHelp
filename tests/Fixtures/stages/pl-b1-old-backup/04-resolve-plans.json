@@ -1,0 +1,254 @@
+{
+  "$schema": "../_schemas/04-resolve-plans.schema.json",
+  "version": "1.0",
+  "stage": "resolve_plans",
+  "exam_id": "pl-b1",
+
+  "generation_plans": [
+    {
+      "section_id": "listening",
+      "group_id": "listening-task-1",
+      "plan_type": "question_group",
+      "questions_count": 14,
+      "question_type": "single_select",
+      "synthesis_mode": "inline",
+      "context": {
+        "stimulus_type": "audio",
+        "playback_max": 1,
+        "description": "14 коротких диалогов, определить место/ситуацию"
+      }
+    },
+    {
+      "section_id": "listening",
+      "group_id": "listening-task-2",
+      "plan_type": "question_group",
+      "questions_count": 8,
+      "question_type": "true_false",
+      "synthesis_mode": "inline",
+      "context": {
+        "stimulus_type": "audio",
+        "playback_max": 2,
+        "description": "Интервью, определить согласованность утверждений"
+      }
+    },
+    {
+      "section_id": "listening",
+      "group_id": "listening-task-3",
+      "plan_type": "question_group",
+      "questions_count": 5,
+      "question_type": "single_select",
+      "synthesis_mode": "inline",
+      "context": {
+        "stimulus_type": "audio",
+        "playback_max": 2,
+        "description": "Информационное сообщение, выбор ответа"
+      }
+    },
+    {
+      "section_id": "listening",
+      "group_id": "listening-task-4",
+      "plan_type": "question_group",
+      "questions_count": 5,
+      "question_type": "single_select",
+      "synthesis_mode": "inline",
+      "context": {
+        "stimulus_type": "audio",
+        "playback_max": 2,
+        "description": "Сопоставление спикеров с мнениями"
+      }
+    },
+    {
+      "section_id": "listening",
+      "group_id": "listening-task-5",
+      "plan_type": "question_group",
+      "questions_count": 5,
+      "question_type": "single_select",
+      "synthesis_mode": "inline",
+      "context": {
+        "stimulus_type": "audio",
+        "playback_max": 2,
+        "description": "Короткие фрагменты, выбор ответа"
+      }
+    },
+    {
+      "section_id": "reading",
+      "group_id": "reading-task-1",
+      "plan_type": "question_group",
+      "questions_count": 5,
+      "question_type": "matching",
+      "synthesis_mode": "inline",
+      "context": {
+        "stimulus_type": "text",
+        "description": "Сопоставление текстов с заголовками"
+      }
+    },
+    {
+      "section_id": "reading",
+      "group_id": "reading-task-2",
+      "plan_type": "question_group",
+      "questions_count": 5,
+      "question_type": "single_select",
+      "synthesis_mode": "inline",
+      "context": {
+        "stimulus_type": "text",
+        "description": "Текст ~300 слов, множественный выбор"
+      }
+    },
+    {
+      "section_id": "reading",
+      "group_id": "reading-task-3",
+      "plan_type": "question_group",
+      "questions_count": 10,
+      "question_type": "yes_no_ng",
+      "synthesis_mode": "inline",
+      "context": {
+        "stimulus_type": "text",
+        "description": "Публицистический текст, TAK/NIE/BRAK INFORMACJI"
+      }
+    },
+    {
+      "section_id": "reading",
+      "group_id": "reading-task-4",
+      "plan_type": "question_group",
+      "questions_count": 5,
+      "question_type": "fill_gap",
+      "synthesis_mode": "inline",
+      "context": {
+        "stimulus_type": "text",
+        "description": "Текст с пропусками, вставить предложения"
+      }
+    },
+    {
+      "section_id": "grammar",
+      "task_id": "grammar-task-1",
+      "plan_type": "single_task",
+      "questions_count": 10,
+      "question_type": "fill_blank",
+      "synthesis_mode": "inline",
+      "context": {
+        "description": "Заполнение пропусков правильной формой слова"
+      }
+    },
+    {
+      "section_id": "grammar",
+      "task_id": "grammar-task-2",
+      "plan_type": "single_task",
+      "questions_count": 10,
+      "question_type": "single_select",
+      "synthesis_mode": "inline",
+      "context": {
+        "description": "Выбор правильной грамматической формы"
+      }
+    },
+    {
+      "section_id": "grammar",
+      "task_id": "grammar-task-3",
+      "plan_type": "single_task",
+      "questions_count": 10,
+      "question_type": "transformation",
+      "synthesis_mode": "inline",
+      "context": {
+        "description": "Трансформация предложений"
+      }
+    },
+    {
+      "section_id": "writing",
+      "task_id": "writing-task-1",
+      "plan_type": "single_task",
+      "questions_count": 1,
+      "question_type": "writing_prompt",
+      "synthesis_mode": "inline",
+      "context": {
+        "word_limit": { "min": 80, "max": 100 },
+        "format": "email/ogłoszenie",
+        "description": "Короткий текст пользовательского характера"
+      }
+    },
+    {
+      "section_id": "writing",
+      "task_id": "writing-task-2",
+      "plan_type": "single_task",
+      "questions_count": 1,
+      "question_type": "writing_prompt",
+      "synthesis_mode": "inline",
+      "context": {
+        "word_limit": { "min": 150, "max": 200 },
+        "format": "list formalny/rozprawka",
+        "description": "Более длинный текст формального характера"
+      }
+    },
+    {
+      "section_id": "speaking",
+      "task_id": "speaking-task-1",
+      "plan_type": "single_task",
+      "questions_count": 1,
+      "question_type": "speaking_prompt",
+      "synthesis_mode": "inline",
+      "context": {
+        "duration_sec": 180,
+        "description": "Вводная беседа, представление себя"
+      }
+    },
+    {
+      "section_id": "speaking",
+      "task_id": "speaking-task-2",
+      "plan_type": "single_task",
+      "questions_count": 1,
+      "question_type": "speaking_prompt",
+      "synthesis_mode": "inline",
+      "context": {
+        "duration_sec": 240,
+        "has_image": true,
+        "description": "Описание картинки и ответы на вопросы"
+      }
+    },
+    {
+      "section_id": "speaking",
+      "task_id": "speaking-task-3",
+      "plan_type": "single_task",
+      "questions_count": 1,
+      "question_type": "roleplay",
+      "synthesis_mode": "inline",
+      "context": {
+        "duration_sec": 300,
+        "description": "Ролевая игра, ситуативный диалог"
+      }
+    }
+  ],
+
+  "summary": {
+    "total_plans": 17,
+    "total_questions": 97,
+    "by_section": {
+      "listening": { "plans": 5, "questions": 37 },
+      "reading": { "plans": 4, "questions": 25 },
+      "grammar": { "plans": 3, "questions": 30 },
+      "writing": { "plans": 2, "questions": 2 },
+      "speaking": { "plans": 3, "questions": 3 }
+    },
+    "by_type": {
+      "question_group": 9,
+      "single_task": 8
+    }
+  },
+
+  "_comparison_hints": {
+    "critical_fields": [
+      "summary.total_plans",
+      "summary.by_section",
+      "generation_plans[].section_id",
+      "generation_plans[].questions_count",
+      "generation_plans[].question_type"
+    ],
+    "flexible_fields": [
+      "generation_plans[].context.description",
+      "generation_plans[].plan_type"
+    ],
+    "ignore_fields": [
+      "generation_plans[].group_id",
+      "generation_plans[].task_id"
+    ]
+  },
+
+  "_notes": "Resolve Plans создаёт 17 планов генерации: 9 question_groups (listening+reading) и 8 single_tasks (grammar+writing+speaking). Всего ~97 вопросов."
+}
