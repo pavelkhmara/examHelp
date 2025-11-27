@@ -256,9 +256,11 @@ class QuestionGroupAssembler
             $group['questions'] = [];
         }
 
-        // Add question_group_ref to each question for tracking
+        // ✅ FIX: Set group_id for FK relationship (FK Bug Fix #3 2025-11-27)
+        // Add both group_id (for synthesis) and question_group_ref (for tracking)
         foreach ($group['questions'] as $index => &$question) {
-            $question['question_group_ref'] = $group['id'];
+            $question['group_id'] = $group['id']; // ✅ FK field for synthesis
+            $question['question_group_ref'] = $group['id']; // Tracking field
 
             // Ensure each question has an id
             if (empty($question['id'])) {
