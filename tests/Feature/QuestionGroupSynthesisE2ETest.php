@@ -295,4 +295,127 @@ class QuestionGroupSynthesisE2ETest extends TestCase
             'group_id' => 'listening-task-1',
         ]);
     }
+
+    /**
+     * E2E Test: FK Bug Fix Verification
+     *
+     * Verifies that the fix in JsonSchemaQuestionV2 (lines 93-104) correctly
+     * preserves group_id field through the full synthesis pipeline.
+     *
+     * Before fix: group_id was stripped during validation → FK = NULL in DB
+     * After fix: group_id preserved → FK correctly set to question_group_id
+     *
+     * See: docs/bugs/fk-bug-final-resolution-2025-11-27.md
+     */
+    public function test_fk_bug_fix_group_id_survives_validation_and_sets_fk(): void
+    {
+        // 1. Create exam with inline question_groups structure
+        $exam = Exam::factory()->create([
+            'title' => 'FK Bug Fix E2E Test',
+            'research_status' => 'phase_b_completed',
+        ]);
+
+        $category = ExamCategory::factory()->create([
+            'exam_id' => $exam->id,
+            'name' => 'Listening',
+            'key' => 'listening',
+            'skill' => 'listening',
+        ]);
+
+        // 2. Create QuestionGroup
+        $group = QuestionGroup::create([
+            'exam_id' => $exam->id,
+            'section_id' => $category->id,
+            'group_id' => 'listening-part-1',
+            'title' => 'Part 1',
+            'instructions' => ['brief' => 'Listen carefully', 'full' => 'Listen and answer'],
+            'stimulus' => ['audio' => ['https://example.com/audio.mp3']],
+            'playback_settings' => ['max_plays' => 1, 'enforcement' => 'strict'],
+            'order' => 0,
+        ]);
+
+        // 3. Create GenerationPlan with question_groups
+        $plan = GenerationPlan::create([
+            'exam_id' => $exam->id,
+            'section_id' => $category->id,
+            'assembly_mode' => 'inline',
+            'type' => 'synthesis',
+            'status' => 'pending',
+            'total_questions' => 2,
+            'plan_data' => [
+                'mode' => 'inline',
+                'question_groups' => [
+                    [
+                        'id' => 'listening-part-1',
+                        'title' => 'Part 1',
+                        'stimulus' => ['audio' => ['https://example.com/audio.mp3']],
+                        'instructions' => ['brief' => 'Listen carefully', 'full' => 'Listen and answer'],
+                        'questions' => [
+                            ['id' => 'q1', 'type' => 'dictation'],
+                            ['id' => 'q2', 'type' => 'dictation'],
+                        ],
+                    ],
+                ],
+            ],
+        ]);
+
+        // 4. Create GenerationTask and run synthesis
+        $task = GenerationTask::create([
+            'exam_id' => $exam->id,
+            'type' => 'synthesize_questions',
+            'status' => 'queued',
+            'request' => [
+                'plans_count' => 1,
+                'total_questions' => 2,
+            ],
+        ]);
+
+        // Disable task-level parallelization for sync execution
+        config(['ai.use_task_level_parallelization' => false]);
+
+        $job = new SynthesizeQuestionsJob($task->id);
+
+        try {
+            $job->handle();
+        } catch (\Throwable $e) {
+            $this->fail("Synthesis job failed: {$e->getMessage()}");
+        }
+
+        // 5. CRITICAL ASSERTIONS: Verify FK is set correctly
+        $questions = Question::where('exam_id', $exam->id)->get();
+
+        $this->assertGreaterThan(0, $questions->count(), 'Questions should be created');
+
+        foreach ($questions as $question) {
+            // ✅ ASSERT: FK must be set (this was NULL before fix)
+            $this->assertNotNull(
+                $question->question_group_id,
+                "Question {$question->question_id} should have question_group_id FK set"
+            );
+
+            // ✅ ASSERT: FK must reference the correct QuestionGroup
+            $this->assertEquals(
+                $group->id,
+                $question->question_group_id,
+                "Question {$question->question_id} FK should reference listening-part-1 group"
+            );
+
+            // ✅ ASSERT: question_id format should include group_id
+            $this->assertStringContainsString(
+                'listening-part-1',
+                $question->question_id,
+                "Grouped question should have group_id in question_id"
+            );
+        }
+
+        // 6. Verify group_id preserved in generated_questions_v2
+        $exam->refresh();
+        $this->assertArrayHasKey('generated_questions_v2', $exam->meta);
+
+        $generatedQuestions = $exam->meta['generated_questions_v2'];
+        foreach ($generatedQuestions as $gq) {
+            $this->assertArrayHasKey('group_id', $gq, 'Generated question should have group_id field');
+            $this->assertEquals('listening-part-1', $gq['group_id'], 'group_id should match filter group_id');
+        }
+    }
 }
