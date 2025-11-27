@@ -32,7 +32,8 @@ class ExamMetadataAnalysisService extends AbstractAiService
         Log::info("ExamMetadataAnalysisService: Starting analysis for exam {$exam->id}");
 
         // Step 1: Check if user_input is valid JSON and parse it
-        $parsedUserInput = $this->parseUserInput($exam->user_input);
+        $userInputString = is_string($exam->user_input) ? $exam->user_input : null;
+        $parsedUserInput = $this->parseUserInput($userInputString);
 
         // Step 2: Determine if we need AI analysis
         $needsAiAnalysis = $this->needsAiAnalysis($exam, $parsedUserInput);
@@ -393,7 +394,7 @@ class ExamMetadataAnalysisService extends AbstractAiService
     /**
      * Format a value for display in messages
      */
-    private function formatValue($value): string
+    private function formatValue(mixed $value): string
     {
         if (is_bool($value)) {
             return $value ? 'Yes' : 'No';

@@ -12,10 +12,9 @@ use Laravel\Nova\Fields\Select;
 use Laravel\Nova\Fields\Text;
 use Laravel\Nova\Http\Requests\NovaRequest;
 use Laravel\Nova\Panel;
-use Laravel\Nova\Resource;
 
 /**
- * @extends resource<\App\Models\Question>
+ * @extends Resource<\App\Models\Question>
  */
 class Question extends Resource
 {

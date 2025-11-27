@@ -12,7 +12,7 @@ use Laravel\Nova\Fields\Text;
 use Laravel\Nova\Http\Requests\NovaRequest;
 
 /**
- * @extends resource<\App\Models\GenerationTask>
+ * @extends Resource<\App\Models\GenerationTask>
  */
 class GenerationTask extends Resource
 {

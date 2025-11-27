@@ -9,6 +9,7 @@ use GuzzleHttp\Promise\PromiseInterface;
 
 final class MockAiProvider implements AiProvider, AsyncAiProvider
 {
+    /** @phpstan-ignore-next-line (reserved for future use) */
     public function __construct(private readonly array $cfg = []) {}
 
     public static function clip(string $s, int $max = 300): string

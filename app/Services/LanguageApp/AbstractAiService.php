@@ -114,7 +114,10 @@ abstract class AbstractAiService
         return $res;
     }
 
-    private function gatherWebHints($exam_info, int $limit = 5): string
+    /**
+     * @param  array<string, mixed>  $exam_info
+     */
+    private function gatherWebHints(array $exam_info, int $limit = 5): string
     {
         // СТАБ: здесь может быть ваш сервис web-поиска (SerpAPI, proxy и т.д.)
         // Пока просто возвращаем пустышку, чтобы не ломать протокол
@@ -293,8 +296,8 @@ abstract class AbstractAiService
     {
         try {
             // 1) Готовим имя файла
-            $slugRaw = $exam_slug ?? ($exam['slug'] ?? 'exam');   // подстрой под свой контекст
-            $levelRaw = $exam_level ?? ($exam['level'] ?? 'level'); // подстрой под свой контекст
+            $slugRaw = $examSlug;
+            $levelRaw = $examLevel;
 
             $slug = Str::slug((string) $slugRaw, '_');
             $level = Str::slug((string) $levelRaw, '_');

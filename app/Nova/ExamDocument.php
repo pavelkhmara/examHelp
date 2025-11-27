@@ -12,7 +12,7 @@ use Laravel\Nova\Fields\Text;
 use Laravel\Nova\Http\Requests\NovaRequest;
 
 /**
- * @extends resource<\App\Models\ExamDocument>
+ * @extends Resource<\App\Models\ExamDocument>
  */
 class ExamDocument extends Resource
 {

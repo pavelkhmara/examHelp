@@ -15,7 +15,7 @@ final class OpenAiProvider implements AiProvider
     public function __construct(
         private readonly Client $http,
         private readonly string $apiKey,
-        private readonly string $baseUrl,
+        private readonly string $baseUrl, // @phpstan-ignore-line (reserved for future use)
         private readonly string $model
     ) {
         // Initialize rate limiter if enabled

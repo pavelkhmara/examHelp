@@ -17,7 +17,7 @@ use Laravel\Nova\Http\Requests\NovaRequest;
 use Laravel\Nova\Panel;
 
 /**
- * @extends resource<\App\Models\ExamExampleQuestion>
+ * @extends Resource<\App\Models\ExamExampleQuestion>
  */
 class ExamExampleQuestion extends Resource
 {
@@ -471,7 +471,7 @@ class ExamExampleQuestion extends Resource
             }
         }
 
-        return $html ?? $this->toHTML($this->resource->payload) ?: null;
+        return $html !== '' ? $html : ($this->toHTML($this->resource->payload) ?: null);
     }
 
     public function toHTML(mixed $data, string $title = ''): string

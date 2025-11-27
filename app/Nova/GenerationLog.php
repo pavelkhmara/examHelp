@@ -12,7 +12,7 @@ use Laravel\Nova\Fields\Textarea;
 use Laravel\Nova\Http\Requests\NovaRequest;
 
 /**
- * @extends resource<\App\Models\GenerationLog>
+ * @extends Resource<\App\Models\GenerationLog>
  */
 class GenerationLog extends Resource
 {
@@ -88,12 +88,15 @@ class GenerationLog extends Resource
 
     /**
      * Extract and format AI prompt from request data for readable display
+     *
+     * @param  \App\Models\GenerationLog  $resource
      */
     protected function extractPrompt($resource): string
     {
         $request = $resource->request;
 
         // Handle string or array
+        /** @phpstan-ignore-next-line */
         if (is_string($request)) {
             $request = json_decode($request, true);
         }
@@ -103,7 +106,7 @@ class GenerationLog extends Resource
         }
 
         // Extract messages array (could be 'messages' or 'sent_messages')
-        $messages = $request['messages'] ?? $request['sent_messages'] ?? $request['request']['messages'] ?? $request['request']['sent_messages'] ?? $request['request'] ?? $request ?? null;
+        $messages = $request['messages'] ?? $request['sent_messages'] ?? $request['request']['messages'] ?? $request['request']['sent_messages'] ?? $request['request'] ?? null;
 
         if (! is_array($messages) || empty($messages)) {
             return 'No messages found in request';

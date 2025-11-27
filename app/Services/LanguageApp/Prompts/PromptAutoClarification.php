@@ -66,6 +66,9 @@ Make your best inference now:
 PROMPT;
     }
 
+    /**
+     * @phpstan-ignore-next-line (method reserved for future use)
+     */
     private static function formatArray(array $items): string
     {
         if (empty($items)) {

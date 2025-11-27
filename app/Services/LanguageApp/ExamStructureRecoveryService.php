@@ -139,7 +139,7 @@ class ExamStructureRecoveryService
     /**
      * Recover question_archetypes from categories and example questions
      *
-     * @param  \Illuminate\Support\Collection  $categories
+     * @param  \Illuminate\Support\Collection<int, \App\Models\ExamCategory>  $categories
      */
     protected function recoverQuestionArchetypes($categories, Exam $exam): array
     {
@@ -223,7 +223,7 @@ class ExamStructureRecoveryService
     /**
      * Recover section_archetypes from categories
      *
-     * @param  \Illuminate\Support\Collection  $categories
+     * @param  \Illuminate\Support\Collection<int, \App\Models\ExamCategory>  $categories
      */
     protected function recoverSectionArchetypes($categories): array
     {

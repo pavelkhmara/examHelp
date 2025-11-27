@@ -19,9 +19,15 @@ use Laravel\Nova\Fields\Textarea;
 use Laravel\Nova\Http\Requests\NovaRequest;
 use Laravel\Nova\Panel;
 
+/**
+ * @extends Resource<\App\Models\Exam>
+ */
 class Exam extends Resource
 {
-    public static $model = \App\Models\Exam::class;
+    /**
+     * @var class-string<\App\Models\Exam>
+     */
+    public static string $model = \App\Models\Exam::class;
 
     public static $title = 'title';
 
@@ -72,7 +78,7 @@ class Exam extends Resource
 
             // Full Exam View Link
             Text::make('Full Exam View', function () {
-                $url = '/nova/resources/exam-full-view/'.$this->id;
+                $url = '/nova/resources/exam-full-view/'.$this->resource->id;
 
                 return '<a href="'.$url.'" style="
                     display: inline-flex;
@@ -229,11 +235,12 @@ class Exam extends Resource
                     'failed' => 'Failed',
                 ])
                 ->sortable()
+                /** @phpstan-ignore-next-line */
                 ->help(function () {
-                    if ($this->analysis_status === 'running') {
+                    if ($this->resource->analysis_status === 'running') {
                         return '⏳ <strong>Metadata analysis in progress. Please wait before starting research.</strong>';
                     }
-                    if ($this->analysis_status === 'failed') {
+                    if ($this->resource->analysis_status === 'failed') {
                         return '❌ <strong>Metadata analysis failed. Check logs for details.</strong>';
                     }
 
@@ -275,17 +282,18 @@ class Exam extends Resource
                     'pending_clarification' => 'Pending Clarification',
                 ])
                 ->sortable()
+                /** @phpstan-ignore-next-line */
                 ->help(function () {
-                    if (in_array($this->research_status, ['queued', 'running', 'running_overview', 'running_phase_a', 'running_phase_b', 'running_categories', 'running_examples', 'running_rubrics'], true)) {
+                    if (in_array($this->resource->research_status, ['queued', 'running', 'running_overview', 'running_phase_a', 'running_phase_b', 'running_categories', 'running_examples', 'running_rubrics'], true)) {
                         return '🔄 <strong>Task is processing. Refresh this page to see updates.</strong>';
                     }
-                    if (in_array($this->research_status, ['phase_a_completed', 'phase_b_completed'], true)) {
+                    if (in_array($this->resource->research_status, ['phase_a_completed', 'phase_b_completed'], true)) {
                         return '✅ <strong>Phase completed. Run the next action to continue.</strong>';
                     }
-                    if ($this->research_status === 'need_info') {
+                    if ($this->resource->research_status === 'need_info') {
                         return '⚠️ <strong>Additional information required. Please review Quick Check panel.</strong>';
                     }
-                    if ($this->research_status === 'pending_clarification') {
+                    if ($this->resource->research_status === 'pending_clarification') {
                         return '❓ <strong>Awaiting your response to clarification questions. Please answer the questions in the card below.</strong>';
                     }
 
@@ -311,12 +319,12 @@ class Exam extends Resource
     private function getConditionalFields(): array
     {
         $fields = [];
-        $task = $this->generationTasks()->latest()->first();
+        $task = $this->resource->generationTasks()->latest()->first();
         $identity = $task ? ($task->result['identity'] ?? null) : null;
 
         // ============== Quick Check for Identity ==============
         // Показываем, если исследование еще не завершено
-        if ($this->research_status !== 'completed') {
+        if ($this->resource->research_status !== 'completed') {
             // Refresh model to get latest identity data from Identity stage
             $this->resource->refresh();
 
@@ -337,7 +345,7 @@ class Exam extends Resource
         }
 
         // ============== STAGE 0: Initial Metadata Analysis ==============
-        if ($this->analysis_status === 'completed' && (! empty($this->user_meta) || ! empty($this->system_analysis))) {
+        if ($this->resource->analysis_status === 'completed' && (! empty($this->resource->user_meta) || ! empty($this->resource->system_analysis))) {
             $fields[] = CollapsiblePanel::make('🤖 Initial Metadata Analysis', 'metadata_analysis_html')
                 ->heading('🤖 Initial Metadata Analysis')
                 ->content($this->buildMetadataAnalysisHtml())
@@ -377,7 +385,7 @@ class Exam extends Resource
 
             // Показываем вопросы, если они есть И research еще не завершен
             $hasQuestions = ! empty($identity['followups']) || ! empty($identity['need_fields']);
-            $researchNotCompleted = $this->research_status !== 'completed';
+            $researchNotCompleted = $this->resource->research_status !== 'completed';
 
             if ($hasQuestions && $researchNotCompleted) {
                 $fields[] = $this->buildFollowupPanel($identity, $task);
@@ -394,12 +402,12 @@ class Exam extends Resource
         }
 
         // ============== STAGE 2: Overview & Structure ==============
-        if ($this->research_status === 'completed' && ! empty($this->structure_sections)) {
+        if ($this->resource->research_status === 'completed' && ! empty($this->resource->structure_sections)) {
             $structureFields = [
                 Number::make('Categories Count', 'categories_count')->onlyOnDetail(),
                 Number::make('Total Exam Duration (min)', 'total_exam_duration')->onlyOnDetail(),
                 Number::make('Total Tokens Used', function () {
-                    $sum = $this->generationLogs()->sum('total_tokens');
+                    $sum = $this->resource->generationLogs()->sum('total_tokens');
 
                     return $sum ? (int) $sum : 0;
                 })
@@ -666,6 +674,9 @@ class Exam extends Resource
 
     /**
      * Построить поля Identity Verification
+     *
+     * @param  \App\Models\GenerationTask  $task
+     * @param  array<string, mixed>  $identity
      */
     private function buildIdentityFields($task, $identity): array
     {
@@ -851,6 +862,9 @@ class Exam extends Resource
 
     /**
      * Построить панель с вопросами для пользователя
+     *
+     * @param  array<string, mixed>  $identity
+     * @param  \App\Models\GenerationTask  $task
      */
     private function buildFollowupPanel($identity, $task): Panel
     {
@@ -1013,6 +1027,10 @@ class Exam extends Resource
 
     /**
      * Построить текст "Why We Trust"
+     *
+     * @param  array<string, mixed>  $identity
+     *
+     * @phpstan-ignore-next-line
      */
     private function buildTrustReasons($identity): string
     {
@@ -1175,6 +1193,8 @@ class Exam extends Resource
 
     /**
      * Format a value for display in HTML
+     *
+     * @param  mixed  $value
      */
     private function formatValueForDisplay($value): string
     {
@@ -1216,6 +1236,8 @@ class Exam extends Resource
 
     /**
      * Build HTML for System Analysis panel showing PDF facts and enrichments
+     *
+     * @param  \App\Models\GenerationTask  $task
      */
     private function buildSystemAnalysisHtml(array $identity, $task): ?string
     {
@@ -1482,7 +1504,7 @@ class Exam extends Resource
      */
     protected function buildGenerationPlansHtml(): string
     {
-        $plans = \App\Models\GenerationPlan::where('exam_id', $this->id)->get();
+        $plans = \App\Models\GenerationPlan::where('exam_id', $this->resource->id)->get();
 
         if ($plans->isEmpty()) {
             return '<div class="text-sm text-gray-500 dark:text-gray-400">No generation plans yet. Run "Resolve Generation Plans" action first.</div>';
@@ -1624,7 +1646,7 @@ class Exam extends Resource
             return '<div class="text-sm text-gray-500 dark:text-gray-400">No Phase B assembly data yet.</div>';
         }
 
-        $sections = $structure['sections'] ?? [];
+        $sections = $structure['sections'];
         $phaseBSections = array_filter($sections, fn ($section) => isset($section['assembly']));
 
         if (empty($phaseBSections)) {
@@ -1815,6 +1837,8 @@ class Exam extends Resource
 
     /**
      * Handle single document upload after exam creation
+     *
+     * @param  \App\Models\Exam  $model
      */
     public static function afterCreate(NovaRequest $request, $model)
     {
@@ -1823,6 +1847,8 @@ class Exam extends Resource
 
     /**
      * Handle single document upload after exam update
+     *
+     * @param  \App\Models\Exam  $model
      */
     public static function afterUpdate(NovaRequest $request, $model)
     {
@@ -1831,6 +1857,8 @@ class Exam extends Resource
 
     /**
      * Process single uploaded document and create ExamDocument record
+     *
+     * @param  \App\Models\Exam  $model
      */
     protected static function handleSingleDocumentUpload(NovaRequest $request, $model): void
     {

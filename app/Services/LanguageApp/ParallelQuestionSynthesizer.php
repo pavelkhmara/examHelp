@@ -5,6 +5,7 @@ namespace App\Services\LanguageApp;
 use App\Models\Exam;
 use App\Models\GenerationPlan;
 use App\Models\Question;
+use App\Models\QuestionGroup;
 use App\Services\LanguageApp\Prompts\PromptQuestionSynthesis;
 use App\Services\LanguageApp\Schemas\QuestionArraySchema;
 use App\Services\LanguageApp\Validators\JsonSchemaQuestionV2;
@@ -38,7 +39,7 @@ class ParallelQuestionSynthesizer extends AbstractAiService
     /**
      * Synthesize questions for multiple sections in parallel
      *
-     * @param  \Illuminate\Support\Collection  $plans
+     * @param  \Illuminate\Support\Collection<int, \App\Models\GenerationPlan>  $plans
      * @return array Results per section
      */
     public function synthesizeBatch($plans, Exam $exam, ?\App\Models\GenerationTask $task = null): array
@@ -88,6 +89,8 @@ class ParallelQuestionSynthesizer extends AbstractAiService
 
     /**
      * Synthesize multiple sections in parallel using AsyncAiProvider
+     *
+     * @param  \Illuminate\Support\Collection<int, \App\Models\GenerationPlan>  $plans
      */
     protected function synthesizeParallel($plans, Exam $exam, ?\App\Models\GenerationTask $task = null): array
     {
@@ -354,6 +357,8 @@ class ParallelQuestionSynthesizer extends AbstractAiService
 
     /**
      * Fallback: Sequential synthesis (when async is disabled)
+     *
+     * @param  \Illuminate\Support\Collection<int, \App\Models\GenerationPlan>  $plans
      */
     protected function synthesizeSequential($plans, Exam $exam): array
     {
@@ -1048,6 +1053,7 @@ PROMPT;
         $existingQuestions = $meta['generated_questions_v2'] ?? [];
 
         // Merge with existing (avoid duplicates by 'id')
+        /** @var \Illuminate\Support\Collection<int, array<string, mixed>> $merged */
         $merged = collect($existingQuestions);
         foreach ($questionsWithGroupId as $newQuestion) {
             $existingIndex = $merged->search(fn ($q) => ($q['id'] ?? null) === ($newQuestion['id'] ?? null));

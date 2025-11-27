@@ -58,6 +58,8 @@ class OverviewStructureBuilder extends AbstractAiService
         $overview_normalized = null;
         $res1 = null;
         $validationErrors = []; // Track validation errors for retry hints
+        $buckets = []; // Initialize for PHPStan
+        $qualityScore = 0.0; // Initialize for PHPStan
 
         while ($retryAttempt <= $maxRetries) {
             // Log activity for overview stage
@@ -114,7 +116,7 @@ class OverviewStructureBuilder extends AbstractAiService
                 'exam_title' => $exam->title,
                 'exam_level' => $exam->level,
                 'exam_description' => trim($exam->description),
-                'input' => trim($task->notes) ?? null,
+                'input' => isset($task->request['notes']) ? trim($task->request['notes']) : null,
                 'context_policy' => $preferDocs
                     ? 'Prefer insights derived from provided exam documents over generic web sources when there is any conflict.'
                     : 'Use both files and web sources.',

@@ -30,6 +30,8 @@ class QuestionSynthesizer extends AbstractAiService
 
     /**
      * Simple question types suitable for GPT-5 Mini
+     *
+     * @phpstan-ignore-next-line (constant reserved for future use)
      */
     private const SIMPLE_TYPES = [
         'single_select', 'multi_select', 'true_false', 'yes_no_ng',
