@@ -1,0 +1,67 @@
+{
+    "exam_id": "a074a066-ae2e-47fd-a36a-4ac752459f85",
+    "stage": "identity",
+    "label": "monitoring-baseline",
+    "hash": "37046e6a32c7fa9dae4ae31484cbd0152d4897dab2bff6f0bdef463d15111313",
+    "data": {
+        "stage": "identity",
+        "exam_id": "a074a066-ae2e-47fd-a36a-4ac752459f85",
+        "identity_data": {
+            "hold": true,
+            "status": "certain",
+            "anchors": [
+                {
+                    "page": null,
+                    "snippet": "exam_name: \"[LONG-MONITOR-1] IELTS Listening Minimal\""
+                },
+                {
+                    "page": null,
+                    "snippet": "Clarification Q\/A: \"Is this the Academic or General Training variant... A: Academic\""
+                },
+                {
+                    "page": null,
+                    "snippet": "Clarification Q\/A: \"Is this an official British Council-administered IELTS test... A: British Council-administered IELTS\""
+                },
+                {
+                    "page": null,
+                    "snippet": "EXISTING IDENTITY DATA: {\"provider\": \"British Council\", \"exam_name\": \"IELTS Listening\", \"exam_family\": \"IELTS\", \"exam_language\": \"en\"}"
+                }
+            ],
+            "canonical": {
+                "name": "IELTS Academic Listening",
+                "family": "IELTS",
+                "variant": "Academic",
+                "provider": "British Council",
+                "language_of_test": "English"
+            },
+            "followups": [],
+            "candidates": [
+                {
+                    "name": "IELTS Academic Listening",
+                    "score": 0.95,
+                    "family": "IELTS",
+                    "provider": "British Council"
+                }
+            ],
+            "confidence": 0.95,
+            "need_fields": [],
+            "clarification_data": [
+                "Academic",
+                "British Council-administered IELTS",
+                "IELTS listening-only"
+            ],
+            "clarification_notes": null,
+            "clarification_provided_at": "2025-11-27T07:17:40.966994Z",
+            "user_provided_clarification": true
+        },
+        "confidence": {
+            "overall": 0.95
+        }
+    },
+    "captured_at": "2025-11-27T10:33:57+00:00",
+    "metadata": {
+        "exam_title": "[LONG-MONITOR-1] IELTS Listening Minimal",
+        "exam_level": "B1",
+        "research_status": "completed"
+    }
+}

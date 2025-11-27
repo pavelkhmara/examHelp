@@ -1,0 +1,89 @@
+{
+    "exam_id": "a074a0e6-422b-44e2-9476-08b9bca2aba3",
+    "stage": "synthesis",
+    "label": "monitoring-baseline",
+    "hash": "a079bf8b1f6bbc610651aacfd4f9a148c7fb6231b0c2d4d933140ca5bf85820f",
+    "data": {
+        "stage": "synthesis",
+        "exam_id": "a074a0e6-422b-44e2-9476-08b9bca2aba3",
+        "sections": [
+            {
+                "key": 1067,
+                "skill": "reading",
+                "name": "Reading",
+                "question_groups": [
+                    {
+                        "group_id": "reading-task-1",
+                        "title": "Passage 1 - Urban Ecology",
+                        "order": 1,
+                        "questions": []
+                    },
+                    {
+                        "group_id": "reading-task-2",
+                        "title": "Passage 2 - History of Technology",
+                        "order": 2,
+                        "questions": []
+                    }
+                ],
+                "ungrouped_questions": [
+                    {
+                        "question_id": "reading-section-1_q11",
+                        "type": "single_select",
+                        "order": 0
+                    },
+                    {
+                        "question_id": "reading-section-1_q1",
+                        "type": "single_select",
+                        "order": 0
+                    },
+                    {
+                        "question_id": "reading-section-1_q12",
+                        "type": "single_select",
+                        "order": 1
+                    },
+                    {
+                        "question_id": "reading-section-1_q2",
+                        "type": "single_select",
+                        "order": 1
+                    },
+                    {
+                        "question_id": "reading-section-1_q13",
+                        "type": "single_select",
+                        "order": 2
+                    },
+                    {
+                        "question_id": "reading-section-1_q3",
+                        "type": "single_select",
+                        "order": 2
+                    },
+                    {
+                        "question_id": "reading-section-1_q14",
+                        "type": "single_select",
+                        "order": 3
+                    },
+                    {
+                        "question_id": "reading-section-1_q4",
+                        "type": "single_select",
+                        "order": 3
+                    },
+                    {
+                        "question_id": "reading-section-1_q15",
+                        "type": "single_select",
+                        "order": 4
+                    },
+                    {
+                        "question_id": "reading-section-1_q5",
+                        "type": "matching",
+                        "order": 4
+                    }
+                ]
+            }
+        ]
+    },
+    "captured_at": "2025-11-27T10:33:57+00:00",
+    "metadata": {
+        "exam_title": "[LONG-MONITOR-2] TOEFL Reading Standard",
+        "exam_level": "B2",
+        "research_status": "completed"
+    }
+}

@@ -1,0 +1,27 @@
+{
+  "$schema": "../_schemas/05-synthesis.schema.json",
+  "version": "1.0",
+  "stage": "synthesis",
+  "exam_id": "pl-b1",
+
+  "_reference": "../../exams/pl-b1.json",
+  "_note": "Финальный эталон находится в tests/Fixtures/exams/pl-b1.json. Этот файл - указатель на него для единообразия структуры stages/.",
+
+  "_comparison_hints": {
+    "critical_fields": [
+      "sections[].question_groups.length",
+      "sections[].question_groups[].questions.length",
+      "sections[].question_groups[].questions[].type"
+    ],
+    "flexible_fields": [
+      "sections[].question_groups[].questions[].instructions.text_html",
+      "sections[].question_groups[].questions[].interaction.options[].label"
+    ],
+    "ignore_fields": [
+      "sections[].question_groups[].questions[].question_id",
+      "sections[].question_groups[].questions[].scoring.correct_answer"
+    ]
+  },
+
+  "_notes": "Synthesis генерирует конечный контент вопросов: тексты инструкций, варианты ответов, стимулы (аудио скрипты, тексты для чтения). Сравнение должно проверять: 1) структуру (количество групп/вопросов), 2) типы вопросов, 3) качество контента (fuzzy matching)."
+}

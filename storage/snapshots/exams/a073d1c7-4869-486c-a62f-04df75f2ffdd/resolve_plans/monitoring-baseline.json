@@ -1,0 +1,94 @@
+{
+    "exam_id": "a073d1c7-4869-486c-a62f-04df75f2ffdd",
+    "stage": "resolve_plans",
+    "label": "monitoring-baseline",
+    "hash": "135c46479027f7a0078bcac20508e65b6966f9ae44ed895071658037a023cb69",
+    "data": {
+        "stage": "resolve_plans",
+        "exam_id": "a073d1c7-4869-486c-a62f-04df75f2ffdd",
+        "generation_plans": [
+            {
+                "section_id": "sec-listening",
+                "group_id": "listening-part-1",
+                "questions_count": 10,
+                "question_type": "dictation",
+                "synthesis_mode": "inline"
+            },
+            {
+                "section_id": "sec-listening",
+                "group_id": "listening-part-2",
+                "questions_count": 10,
+                "question_type": "listen_mcq",
+                "synthesis_mode": "inline"
+            },
+            {
+                "section_id": "sec-listening",
+                "group_id": "listening-part-3",
+                "questions_count": 10,
+                "question_type": "listen_mcq",
+                "synthesis_mode": "inline"
+            },
+            {
+                "section_id": "sec-listening",
+                "group_id": "listening-part-4",
+                "questions_count": 10,
+                "question_type": "dictation",
+                "synthesis_mode": "inline"
+            },
+            {
+                "section_id": "sec-reading-gt",
+                "group_id": "gt-reading-s1a",
+                "questions_count": 6,
+                "question_type": "matching",
+                "synthesis_mode": "inline"
+            },
+            {
+                "section_id": "sec-reading-gt",
+                "group_id": "gt-reading-s1b",
+                "questions_count": 8,
+                "question_type": "read_true_false",
+                "synthesis_mode": "inline"
+            },
+            {
+                "section_id": "sec-reading-gt",
+                "group_id": "gt-reading-s2a",
+                "questions_count": 7,
+                "question_type": "read_mcq",
+                "synthesis_mode": "inline"
+            },
+            {
+                "section_id": "sec-reading-gt",
+                "group_id": "gt-reading-s2b",
+                "questions_count": 6,
+                "question_type": "sentence_completion",
+                "synthesis_mode": "inline"
+            },
+            {
+                "section_id": "sec-reading-gt",
+                "group_id": "gt-reading-s3",
+                "questions_count": 13,
+                "question_type": "read_mcq",
+                "synthesis_mode": "inline"
+            }
+        ],
+        "summary": {
+            "total_plans": 9,
+            "by_section": {
+                "sec-listening": {
+                    "plans": 4,
+                    "questions": 40
+                },
+                "sec-reading-gt": {
+                    "plans": 5,
+                    "questions": 40
+                }
+            }
+        }
+    },
+    "captured_at": "2025-11-27T10:33:58+00:00",
+    "metadata": {
+        "exam_title": "[MONITOR-REAL] IELTS Listening Test",
+        "exam_level": "B1",
+        "research_status": "completed"
+    }
+}

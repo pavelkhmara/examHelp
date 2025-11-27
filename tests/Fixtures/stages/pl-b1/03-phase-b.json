@@ -1,0 +1,451 @@
+{
+  "$schema": "../_schemas/03-phase-b.schema.json",
+  "version": "1.0",
+  "stage": "phase_b",
+  "exam_id": "pl-b1",
+
+  "structure_v2": {
+    "id": "pl-b1-cert",
+    "version": "2.0",
+
+    "meta": {
+      "name": "Egzamin Certyfikatowy z Języka Polskiego jako Obcego",
+      "language": "pl",
+      "level": "B1",
+      "provider": "Państwowa Komisja ds. Poświadczania Znajomości Języka Polskiego jako Obcego",
+      "tags": ["certification", "official", "state-exam", "cefr-b1"]
+    },
+
+    "pass_policy": {
+      "mode": "per_section_only",
+      "per_section_threshold_percent": 60
+    },
+
+    "policies": {
+      "navigation": { "backtracking": false },
+      "answer_transfer_window_sec": 0
+    },
+
+    "sections": [
+      {
+        "id": "listening",
+        "skill": "listening",
+        "name": "Rozumienie ze słuchu",
+        "duration_min": 25,
+        "max_score": 30,
+        "min_pass_percent": 60,
+
+        "assembly": {
+          "mode": "inline",
+          "question_groups": [
+            {
+              "id": "listening-task-1",
+              "title": "Zadanie I",
+              "order": 1,
+              "instructions": {
+                "text_html": "<p>Proszę uważnie słuchać nagrania i wykonywać zadanie zgodnie z podanym przykładem.</p><p><strong>Uwaga!</strong> Nagranie zostanie odtworzone <u>tylko jeden raz</u>.</p>"
+              },
+              "stimulus": {
+                "audio": ["placeholder_listening_1.mp3"],
+                "text_html": "<p>Proszę zaznaczyć właściwe odpowiedzi.</p>"
+              },
+              "playback_settings": {
+                "max_plays": 1,
+                "enforcement": "strict",
+                "show_counter": true
+              },
+              "metadata": {
+                "total_points": 7,
+                "points_per_item": 0.5
+              },
+              "questions": [
+                { "id": "l1_q1", "type": "single_select", "order": 1 },
+                { "id": "l1_q2", "type": "single_select", "order": 2 },
+                { "id": "l1_q3", "type": "single_select", "order": 3 },
+                { "id": "l1_q4", "type": "single_select", "order": 4 },
+                { "id": "l1_q5", "type": "single_select", "order": 5 },
+                { "id": "l1_q6", "type": "single_select", "order": 6 },
+                { "id": "l1_q7", "type": "single_select", "order": 7 },
+                { "id": "l1_q8", "type": "single_select", "order": 8 },
+                { "id": "l1_q9", "type": "single_select", "order": 9 },
+                { "id": "l1_q10", "type": "single_select", "order": 10 },
+                { "id": "l1_q11", "type": "single_select", "order": 11 },
+                { "id": "l1_q12", "type": "single_select", "order": 12 },
+                { "id": "l1_q13", "type": "single_select", "order": 13 },
+                { "id": "l1_q14", "type": "single_select", "order": 14 }
+              ]
+            },
+            {
+              "id": "listening-task-2",
+              "title": "Zadanie II",
+              "order": 2,
+              "instructions": {
+                "text_html": "<p>Proszę wysłuchać nagrania i zaznaczyć: TAK – gdy zdanie jest zgodne z tekstem; NIE – gdy nie jest zgodne z tekstem.</p>"
+              },
+              "stimulus": {
+                "audio": ["placeholder_listening_2.mp3"]
+              },
+              "playback_settings": {
+                "max_plays": 2,
+                "enforcement": "strict"
+              },
+              "metadata": {
+                "total_points": 8,
+                "points_per_item": 1
+              },
+              "questions": [
+                { "id": "l2_q1", "type": "true_false", "order": 1 },
+                { "id": "l2_q2", "type": "true_false", "order": 2 },
+                { "id": "l2_q3", "type": "true_false", "order": 3 },
+                { "id": "l2_q4", "type": "true_false", "order": 4 },
+                { "id": "l2_q5", "type": "true_false", "order": 5 },
+                { "id": "l2_q6", "type": "true_false", "order": 6 },
+                { "id": "l2_q7", "type": "true_false", "order": 7 },
+                { "id": "l2_q8", "type": "true_false", "order": 8 }
+              ]
+            },
+            {
+              "id": "listening-task-3",
+              "title": "Zadanie III",
+              "order": 3,
+              "instructions": {
+                "text_html": "<p>Proszę wysłuchać informacji i zaznaczyć właściwe odpowiedzi.</p>"
+              },
+              "stimulus": {
+                "audio": ["placeholder_listening_3.mp3"]
+              },
+              "playback_settings": {
+                "max_plays": 2,
+                "enforcement": "strict"
+              },
+              "metadata": {
+                "total_points": 5,
+                "points_per_item": 1
+              },
+              "questions": [
+                { "id": "l3_q1", "type": "single_select", "order": 1 },
+                { "id": "l3_q2", "type": "single_select", "order": 2 },
+                { "id": "l3_q3", "type": "single_select", "order": 3 },
+                { "id": "l3_q4", "type": "single_select", "order": 4 },
+                { "id": "l3_q5", "type": "single_select", "order": 5 }
+              ]
+            },
+            {
+              "id": "listening-task-4",
+              "title": "Zadanie IV",
+              "order": 4,
+              "instructions": {
+                "text_html": "<p>Proszę wysłuchać tekstu i dopasować osoby (1-4) do ich rad (A-E).</p>"
+              },
+              "stimulus": {
+                "audio": ["placeholder_listening_4.mp3"]
+              },
+              "playback_settings": {
+                "max_plays": 2,
+                "enforcement": "strict"
+              },
+              "metadata": {
+                "total_points": 5,
+                "points_per_item": 1
+              },
+              "questions": [
+                { "id": "l4_q1", "type": "single_select", "order": 1 },
+                { "id": "l4_q2", "type": "single_select", "order": 2 },
+                { "id": "l4_q3", "type": "single_select", "order": 3 },
+                { "id": "l4_q4", "type": "single_select", "order": 4 },
+                { "id": "l4_q5", "type": "single_select", "order": 5 }
+              ]
+            },
+            {
+              "id": "listening-task-5",
+              "title": "Zadanie V",
+              "order": 5,
+              "instructions": {
+                "text_html": "<p>Proszę wysłuchać fragmentów i zaznaczyć właściwą odpowiedź.</p>"
+              },
+              "stimulus": {
+                "audio": ["placeholder_listening_5.mp3"]
+              },
+              "playback_settings": {
+                "max_plays": 2,
+                "enforcement": "strict"
+              },
+              "metadata": {
+                "total_points": 5,
+                "points_per_item": 1
+              },
+              "questions": [
+                { "id": "l5_q1", "type": "single_select", "order": 1 },
+                { "id": "l5_q2", "type": "single_select", "order": 2 },
+                { "id": "l5_q3", "type": "single_select", "order": 3 },
+                { "id": "l5_q4", "type": "single_select", "order": 4 },
+                { "id": "l5_q5", "type": "single_select", "order": 5 }
+              ]
+            }
+          ]
+        }
+      },
+
+      {
+        "id": "reading",
+        "skill": "reading",
+        "name": "Rozumienie tekstów pisanych",
+        "duration_min": 45,
+        "max_score": 30,
+        "min_pass_percent": 60,
+
+        "assembly": {
+          "mode": "inline",
+          "question_groups": [
+            {
+              "id": "reading-task-1",
+              "title": "Zadanie I",
+              "order": 1,
+              "instructions": {
+                "text_html": "<p>Proszę przeczytać teksty i dopasować je do nagłówków.</p>"
+              },
+              "stimulus": {
+                "text_html": "<div>[Placeholder: 5 krótkich tekstów informacyjnych]</div>"
+              },
+              "metadata": {
+                "total_points": 5,
+                "points_per_item": 1
+              },
+              "questions": [
+                { "id": "r1_q1", "type": "matching", "order": 1 },
+                { "id": "r1_q2", "type": "matching", "order": 2 },
+                { "id": "r1_q3", "type": "matching", "order": 3 },
+                { "id": "r1_q4", "type": "matching", "order": 4 },
+                { "id": "r1_q5", "type": "matching", "order": 5 }
+              ]
+            },
+            {
+              "id": "reading-task-2",
+              "title": "Zadanie II",
+              "order": 2,
+              "instructions": {
+                "text_html": "<p>Proszę przeczytać tekst i zaznaczyć właściwe odpowiedzi.</p>"
+              },
+              "stimulus": {
+                "text_html": "<article>[Placeholder: tekst ok. 300 słów]</article>"
+              },
+              "metadata": {
+                "total_points": 10,
+                "points_per_item": 2
+              },
+              "questions": [
+                { "id": "r2_q1", "type": "single_select", "order": 1 },
+                { "id": "r2_q2", "type": "single_select", "order": 2 },
+                { "id": "r2_q3", "type": "single_select", "order": 3 },
+                { "id": "r2_q4", "type": "single_select", "order": 4 },
+                { "id": "r2_q5", "type": "single_select", "order": 5 }
+              ]
+            },
+            {
+              "id": "reading-task-3",
+              "title": "Zadanie III",
+              "order": 3,
+              "instructions": {
+                "text_html": "<p>Proszę przeczytać tekst i zaznaczyć: TAK/NIE/BRAK INFORMACJI.</p>"
+              },
+              "stimulus": {
+                "text_html": "<article>[Placeholder: tekst publicystyczny]</article>"
+              },
+              "metadata": {
+                "total_points": 10,
+                "points_per_item": 1
+              },
+              "questions": [
+                { "id": "r3_q1", "type": "yes_no_ng", "order": 1 },
+                { "id": "r3_q2", "type": "yes_no_ng", "order": 2 },
+                { "id": "r3_q3", "type": "yes_no_ng", "order": 3 },
+                { "id": "r3_q4", "type": "yes_no_ng", "order": 4 },
+                { "id": "r3_q5", "type": "yes_no_ng", "order": 5 },
+                { "id": "r3_q6", "type": "yes_no_ng", "order": 6 },
+                { "id": "r3_q7", "type": "yes_no_ng", "order": 7 },
+                { "id": "r3_q8", "type": "yes_no_ng", "order": 8 },
+                { "id": "r3_q9", "type": "yes_no_ng", "order": 9 },
+                { "id": "r3_q10", "type": "yes_no_ng", "order": 10 }
+              ]
+            },
+            {
+              "id": "reading-task-4",
+              "title": "Zadanie IV",
+              "order": 4,
+              "instructions": {
+                "text_html": "<p>Proszę uzupełnić tekst brakującymi zdaniami.</p>"
+              },
+              "stimulus": {
+                "text_html": "<article>[Placeholder: tekst z lukami]</article>"
+              },
+              "metadata": {
+                "total_points": 5,
+                "points_per_item": 1
+              },
+              "questions": [
+                { "id": "r4_q1", "type": "fill_gap", "order": 1 },
+                { "id": "r4_q2", "type": "fill_gap", "order": 2 },
+                { "id": "r4_q3", "type": "fill_gap", "order": 3 },
+                { "id": "r4_q4", "type": "fill_gap", "order": 4 },
+                { "id": "r4_q5", "type": "fill_gap", "order": 5 }
+              ]
+            }
+          ]
+        }
+      },
+
+      {
+        "id": "grammar",
+        "skill": "grammar",
+        "name": "Poprawność gramatyczna",
+        "duration_min": 45,
+        "max_score": 30,
+        "min_pass_percent": 60,
+
+        "assembly": {
+          "mode": "inline",
+          "tasks": [
+            {
+              "id": "grammar-task-1",
+              "type": "fill_blank",
+              "order": 1,
+              "instructions": {
+                "text_html": "<p>Proszę uzupełnić zdania właściwą formą wyrazu.</p>"
+              },
+              "metadata": { "items_count": 10, "points_per_item": 1 }
+            },
+            {
+              "id": "grammar-task-2",
+              "type": "single_select",
+              "order": 2,
+              "instructions": {
+                "text_html": "<p>Proszę wybrać właściwą odpowiedź.</p>"
+              },
+              "metadata": { "items_count": 10, "points_per_item": 1 }
+            },
+            {
+              "id": "grammar-task-3",
+              "type": "transformation",
+              "order": 3,
+              "instructions": {
+                "text_html": "<p>Proszę przekształcić zdania według wzoru.</p>"
+              },
+              "metadata": { "items_count": 10, "points_per_item": 1 }
+            }
+          ]
+        }
+      },
+
+      {
+        "id": "writing",
+        "skill": "writing",
+        "name": "Pisanie",
+        "duration_min": 60,
+        "max_score": 40,
+        "min_pass_percent": 60,
+
+        "assembly": {
+          "mode": "inline",
+          "tasks": [
+            {
+              "id": "writing-task-1",
+              "type": "writing_prompt",
+              "order": 1,
+              "instructions": {
+                "text_html": "<p>Proszę napisać krótki tekst użytkowy (80-100 słów): e-mail, ogłoszenie, itp.</p>"
+              },
+              "constraints": {
+                "min_words": 80,
+                "max_words": 100
+              },
+              "rubric_ref": "writing_b1_short",
+              "metadata": { "max_points": 15 }
+            },
+            {
+              "id": "writing-task-2",
+              "type": "writing_prompt",
+              "order": 2,
+              "instructions": {
+                "text_html": "<p>Proszę napisać dłuższy tekst (150-200 słów): list formalny, rozprawka, itp.</p>"
+              },
+              "constraints": {
+                "min_words": 150,
+                "max_words": 200
+              },
+              "rubric_ref": "writing_b1_long",
+              "metadata": { "max_points": 25 }
+            }
+          ]
+        }
+      },
+
+      {
+        "id": "speaking",
+        "skill": "speaking",
+        "name": "Mówienie",
+        "duration_min": 15,
+        "max_score": 40,
+        "min_pass_percent": 60,
+
+        "assembly": {
+          "mode": "inline",
+          "tasks": [
+            {
+              "id": "speaking-task-1",
+              "type": "speaking_prompt",
+              "order": 1,
+              "instructions": {
+                "text_html": "<p>Rozmowa wstępna: przedstawienie się, odpowiedzi na pytania o sobie.</p>"
+              },
+              "metadata": { "duration_sec": 180, "max_points": 10 }
+            },
+            {
+              "id": "speaking-task-2",
+              "type": "speaking_prompt",
+              "order": 2,
+              "instructions": {
+                "text_html": "<p>Opis obrazka i odpowiedzi na pytania egzaminatora.</p>"
+              },
+              "stimulus": {
+                "images": ["placeholder_speaking_image.jpg"]
+              },
+              "metadata": { "duration_sec": 240, "max_points": 15 }
+            },
+            {
+              "id": "speaking-task-3",
+              "type": "roleplay",
+              "order": 3,
+              "instructions": {
+                "text_html": "<p>Rozmowa sytuacyjna na zadany temat z egzaminatorem.</p>"
+              },
+              "metadata": { "duration_sec": 300, "max_points": 15 }
+            }
+          ]
+        }
+      }
+    ]
+  },
+
+  "_comparison_hints": {
+    "critical_fields": [
+      "structure_v2.sections[].skill",
+      "structure_v2.sections[].assembly.mode",
+      "structure_v2.sections[].assembly.question_groups.length",
+      "structure_v2.sections[].assembly.question_groups[].questions.length",
+      "structure_v2.sections[].assembly.question_groups[].playback_settings.max_plays"
+    ],
+    "flexible_fields": [
+      "structure_v2.sections[].assembly.question_groups[].title",
+      "structure_v2.sections[].assembly.question_groups[].instructions",
+      "structure_v2.sections[].assembly.question_groups[].stimulus.text_html",
+      "structure_v2.sections[].assembly.tasks[].instructions"
+    ],
+    "ignore_fields": [
+      "structure_v2.id",
+      "structure_v2.version",
+      "structure_v2.sections[].assembly.question_groups[].questions[].id"
+    ]
+  },
+
+  "_notes": "Phase B добавляет assembly планы к skeleton. Важно: Listening имеет 5 question_groups (задания I-V) с разным количеством прослушиваний (1 или 2). Reading имеет 4 question_groups. Grammar, Writing, Speaking используют tasks[] вместо question_groups, т.к. у них нет общего стимула на группу."
+}
