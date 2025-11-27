@@ -227,11 +227,13 @@ class SynthesizeQuestionsJob implements ShouldQueue
     /**
      * Synthesize questions in parallel for all sections (plans)
      * Uses ParallelQuestionSynthesizer for parallel AI requests
+     *
+     * @param  \Illuminate\Support\Collection<int, \App\Models\GenerationPlan>  $plans
      */
     private function synthesizeInParallel(
         GenerationTask $task,
         Exam $exam,
-        $plans
+        \Illuminate\Support\Collection $plans
     ): array {
         // Check if task-level parallelization is enabled
         $useTaskLevelParallelization = config('ai.use_task_level_parallelization', false);
@@ -293,12 +295,12 @@ class SynthesizeQuestionsJob implements ShouldQueue
      * NEW: Synthesize questions using task-level parallelization.
      * Dispatches SynthesizeTaskQuestionsJob for each filter/slot.
      *
-     * @param  \Illuminate\Support\Collection  $plans
+     * @param  \Illuminate\Support\Collection<int, \App\Models\GenerationPlan>  $plans
      */
     private function synthesizeWithTaskLevelParallelization(
         GenerationTask $task,
         Exam $exam,
-        $plans
+        \Illuminate\Support\Collection $plans
     ): array {
         $task->addActivity('task_level_synthesis_start', 'Starting task-level parallelization', [
             'plans_count' => $plans->count(),

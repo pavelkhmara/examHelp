@@ -231,14 +231,18 @@ class SnapshotManager
         }
 
         // Группировка по секциям
+        /** @var array<string, array{plans: int, questions: int}> $bySection */
         $bySection = [];
         foreach ($plans as $plan) {
+            /** @var string $sectionId */
             $sectionId = $plan['section_id'];
             if (! isset($bySection[$sectionId])) {
                 $bySection[$sectionId] = ['plans' => 0, 'questions' => 0];
             }
             $bySection[$sectionId]['plans']++;
-            $bySection[$sectionId]['questions'] += $plan['questions_count'] ?? 0;
+            /** @var int $questionsCount */
+            $questionsCount = $plan['questions_count'];
+            $bySection[$sectionId]['questions'] += $questionsCount;
         }
 
         return [

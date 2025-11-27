@@ -117,7 +117,6 @@ class QuestionValidator
 
         // Selection options vs answer_key
         if ($this->isSelectionType($question)) {
-            /** @var \Illuminate\Support\Collection<int, array<string, mixed>> $options */
             $options = collect($question['interaction']['options'] ?? []);
             $optionIds = $options
                 ->pluck('id')
@@ -246,7 +245,6 @@ class QuestionValidator
     {
         $existing = $exam->meta['generated_questions_v2'] ?? [];
 
-        /** @var \Illuminate\Support\Collection<int, array<string, mixed>> $collection */
         $collection = collect($existing);
 
         return $collection
@@ -491,7 +489,6 @@ class QuestionValidator
         }
 
         // Собираем valid IDs из interaction.options[]
-        /** @var \Illuminate\Support\Collection<int, array<string, mixed>> $optionsCollection */
         $optionsCollection = collect($question['interaction']['options'] ?? []);
         $validIds = $optionsCollection
             ->pluck('id')

@@ -50,8 +50,12 @@ class CustomMenu extends Tool
 
     /**
      * Создает выпадающее меню со всеми экзаменами и их связанными сущностями
+     *
+     * Note: Currently unused but kept for potential future use.
+     *
+     * @return array<int, mixed>
      */
-    private function createExamsSubmenu(): array
+    private function createExamsSubmenu(): array // @phpstan-ignore-line
     {
         $examItems = [];
 

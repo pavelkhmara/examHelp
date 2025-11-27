@@ -111,6 +111,10 @@ class ListeningStimulusGenerator
 
     /**
      * Собирает контекст для генерации
+     *
+     * @param  QuestionGroup  $group
+     * @param  \Illuminate\Database\Eloquent\Collection<int, \App\Models\Question>  $questions
+     * @param  string  $stimulusType
      */
     protected function buildContext(QuestionGroup $group, $questions, string $stimulusType): array
     {
@@ -131,7 +135,11 @@ class ListeningStimulusGenerator
             // Добавляем options для MCQ
             $interaction = $q->interaction ?? [];
             if (! empty($interaction['options'])) {
-                $qInfo['options'] = collect($interaction['options'])
+                /** @var array<int|string, mixed> $options */
+                $options = $interaction['options'];
+                /** @var \Illuminate\Support\Collection<int|string, array<string, mixed>> $optionsCollection */
+                $optionsCollection = collect($options);
+                $qInfo['options'] = $optionsCollection
                     ->pluck('text')
                     ->toArray();
             }

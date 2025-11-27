@@ -21,12 +21,10 @@ parameters:
   inferPrivatePropertyTypeFromConstructor: true
 
   ignoreErrors:
-    - '#Call to an undefined static method Laravel\\Nova\\Nova::.*#'
-    - '#Unsafe usage of new static\(\)#'
-    - '#Call to an undefined static method Illuminate\\Support\\Facades\\(.*)::fake#'
-    - '#Property .* does not accept null#'
-    - '#Offset .* does not exist on array#'
     - identifier: missingType.iterableValue
+    -
+      message: '#Unable to resolve the template type T(Key|Value) in call to function collect#'
+      path: app/Services/LanguageApp/QuestionValidator.php
 
   bootstrapFiles:
     - vendor/autoload.php

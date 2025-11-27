@@ -32,6 +32,7 @@ class ExamMetadataAnalysisService extends AbstractAiService
         Log::info("ExamMetadataAnalysisService: Starting analysis for exam {$exam->id}");
 
         // Step 1: Check if user_input is valid JSON and parse it
+        /** @phpstan-ignore-next-line treatPhpDocTypesAsCertain */
         $userInputString = is_string($exam->user_input) ? $exam->user_input : null;
         $parsedUserInput = $this->parseUserInput($userInputString);
 

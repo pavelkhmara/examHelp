@@ -123,7 +123,9 @@ class ExamCategory extends Model
         $overrides = $this->meta['question_overrides'] ?? [];
 
         // Build final templates array with overrides applied
-        return collect($sequence)
+        /** @var \Illuminate\Support\Collection<int, array<string, mixed>> $sequenceCollection */
+        $sequenceCollection = collect($sequence); // @phpstan-ignore-line
+        return $sequenceCollection
             ->map(function ($ref) use ($globalTemplates, $overrides) {
                 $templateId = $ref['template_id'];
                 $template = $globalTemplates[$templateId] ?? [];

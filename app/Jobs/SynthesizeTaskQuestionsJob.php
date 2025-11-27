@@ -93,7 +93,9 @@ class SynthesizeTaskQuestionsJob implements ShouldQueue
             ]);
 
             // Get section from exam structure
-            $section = $this->getSectionMetadata($exam, $plan->section_id);
+            /** @var string|int $sectionId */
+            $sectionId = $plan->section_id;
+            $section = $this->getSectionMetadata($exam, $sectionId);
             $sectionSkill = $section['skill'] ?? 'unknown';
 
             // Check if this is a question_group filter (inline mode)
@@ -248,8 +250,10 @@ class SynthesizeTaskQuestionsJob implements ShouldQueue
      * FIX: Changed to read from ExamCategory instead of structure_v2
      * See: docs/fixes/fix-dual-source-of-truth.md
      */
-    protected function getSectionMetadata(Exam $exam, int $categoryId): array
+    protected function getSectionMetadata(Exam $exam, string|int $categoryId): array
     {
+        // Cast to int if string (GenerationPlan.section_id is string but ExamCategory.id is int)
+        $categoryId = is_string($categoryId) ? (int) $categoryId : $categoryId;
         $category = \App\Models\ExamCategory::find($categoryId);
 
         if (! $category) {

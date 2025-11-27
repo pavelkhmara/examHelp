@@ -33,9 +33,15 @@ class StructureController extends Controller
         $payload = ExamStructureBuilder::build($exam);
 
         // safety: если вдруг в sources окажутся «сырцовые tasks» из LLM — жёстко фильтруем типы
-        $payload['sections'] = collect($payload['sections'])
+        /** @var array<int, array<string, mixed>> $sections */
+        $sections = $payload['sections'];
+        /** @var \Illuminate\Support\Collection<int, array<string, mixed>> $sectionsCollection */
+        $sectionsCollection = collect($sections);
+        $payload['sections'] = $sectionsCollection
             ->map(function ($sec) {
-                $sec['examples'] = collect($sec['examples'] ?? [])->filter(function ($ex) {
+                /** @var \Illuminate\Support\Collection<int, array<string, mixed>> $examplesCollection */
+                $examplesCollection = collect($sec['examples'] ?? []); // @phpstan-ignore-line
+                $sec['examples'] = $examplesCollection->filter(function ($ex) {
                     $type = $ex['type'] ?? null;
                     $type = $type instanceof \BackedEnum ? $type->value : $type;
                     $isKnown = QuestionTypeContract::isKnownType($type);

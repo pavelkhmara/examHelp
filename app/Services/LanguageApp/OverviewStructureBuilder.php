@@ -585,7 +585,11 @@ class OverviewStructureBuilder extends AbstractAiService
         foreach ($categoryOrder as $catKey) {
             $items = $buckets[$catKey] ?? [];
 
-            $steps = collect($items)
+            /** @var array<int|string, mixed> $itemsList */
+            $itemsList = $items;
+            /** @var \Illuminate\Support\Collection<int|string, array<string, mixed>> $stepsCollection */
+            $stepsCollection = collect($itemsList);
+            $steps = $stepsCollection
                 ->map(function (array $arc) {
                     $order = null;
                     if (isset($arc['other']) && is_array($arc['other'])) {
@@ -879,6 +883,7 @@ class OverviewStructureBuilder extends AbstractAiService
             // Calculate how much time is already allocated
             $questionsWithoutDuration = [];
             $allocatedTime = 0;
+            $timePerQuestion = 0.0;
 
             foreach ($questions as $idx => $question) {
                 if (isset($question['step_duration']) && $question['step_duration'] > 0) {
@@ -902,8 +907,8 @@ class OverviewStructureBuilder extends AbstractAiService
                 Log::debug('Filled missing step_duration', [
                     'section' => $section['section_name'] ?? "section_{$sectionIdx}",
                     'section_duration' => $sectionDuration,
-                    'tasks_filled' => count($tasksWithoutDuration),
-                    'time_per_task' => $timePerTask,
+                    'tasks_filled' => count($questionsWithoutDuration),
+                    'time_per_task' => $timePerQuestion,
                 ]);
             }
         }
@@ -1283,8 +1288,8 @@ class OverviewStructureBuilder extends AbstractAiService
         // Validate section structure
         try {
             // For now, just check that we have the required fields
-            if (! isset($decoded['id']) || ! isset($decoded['assembly'])) {
-                throw new \RuntimeException('Section assembly response missing required fields (id, assembly)');
+            if (! isset($decoded['id'])) {
+                throw new \RuntimeException('Section assembly response missing required field: id');
             }
 
             if ($decoded['id'] !== $sectionId) {
@@ -1295,7 +1300,7 @@ class OverviewStructureBuilder extends AbstractAiService
                 'exam_id' => $exam->id,
                 'section_id' => $sectionId,
                 'has_archetypes' => isset($decoded['question_archetypes']),
-                'has_assembly' => isset($decoded['assembly']),
+                'has_assembly' => ! empty($decoded['assembly']),
                 'assembly_mode' => $decoded['assembly']['mode'] ?? null,
             ]);
 
