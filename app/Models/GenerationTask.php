@@ -30,16 +30,25 @@ class GenerationTask extends Model
         'heartbeat_at' => 'datetime',
     ];
 
+    /**
+     * @return BelongsTo<Exam>
+     */
     public function exam(): BelongsTo
     {
         return $this->belongsTo(Exam::class);
     }
 
+    /**
+     * @return MorphTo
+     */
     public function subject(): MorphTo
     {
         return $this->morphTo();
     }
 
+    /**
+     * @return \Illuminate\Database\Eloquent\Relations\HasMany<GenerationLog>
+     */
     public function logs()
     {
         return $this->hasMany(GenerationLog::class);

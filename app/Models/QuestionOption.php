@@ -13,6 +13,9 @@ class QuestionOption extends Model
 
     protected $fillable = ['question_id', 'text', 'is_correct'];
 
+    /**
+     * @return BelongsTo<Question>
+     */
     public function question(): BelongsTo
     {
         return $this->belongsTo(Question::class);

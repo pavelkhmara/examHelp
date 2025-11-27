@@ -6,6 +6,33 @@ use App\Casts\AsArrayWithUnescapedSlashes;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
+/**
+ * @property int $id
+ * @property string $exam_id
+ * @property string|null $key
+ * @property string $name
+ * @property array|null $meta
+ * @property string|null $description
+ * @property int|null $order
+ * @property string|null $skill
+ * @property int|null $duration_min
+ * @property float|null $max_score
+ * @property float|null $min_pass_percent
+ * @property string|null $time_policy
+ * @property \Carbon\Carbon $created_at
+ * @property \Carbon\Carbon $updated_at
+ *
+ * Virtual properties (from meta):
+ * @property array|null $assembly_config
+ * @property array $question_templates
+ * @property string|null $slug Deprecated
+ * @property array|null $question_types Deprecated
+ *
+ * @property-read Exam $exam
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, ExamExampleQuestion> $examples
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, Question> $questions
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, QuestionGroup> $questionGroups
+ */
 class ExamCategory extends Model
 {
     use HasFactory;
@@ -24,21 +51,33 @@ class ExamCategory extends Model
         'min_pass_percent' => 'decimal:2',
     ];
 
+    /**
+     * @return \Illuminate\Database\Eloquent\Relations\BelongsTo<Exam>
+     */
     public function exam()
     {
         return $this->belongsTo(Exam::class, 'exam_id', 'id');
     }
 
+    /**
+     * @return \Illuminate\Database\Eloquent\Relations\HasMany<ExamExampleQuestion>
+     */
     public function examples()
     {
         return $this->hasMany(ExamExampleQuestion::class);
     }
 
+    /**
+     * @return \Illuminate\Database\Eloquent\Relations\HasMany<Question>
+     */
     public function questions()
     {
         return $this->hasMany(Question::class, 'section_id');
     }
 
+    /**
+     * @return \Illuminate\Database\Eloquent\Relations\HasMany<QuestionGroup>
+     */
     public function questionGroups()
     {
         return $this->hasMany(QuestionGroup::class, 'section_id')->orderBy('order');

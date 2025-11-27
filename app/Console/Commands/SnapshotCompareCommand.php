@@ -88,7 +88,7 @@ class SnapshotCompareCommand extends Command
         string $goldenExamId,
         SnapshotManager $manager,
         GoldenLoader $goldenLoader
-    ) {
+    ): \App\Services\Golden\SnapshotComparison {
         $this->info("Comparing with golden fixture: {$goldenExamId}");
 
         if (! $goldenLoader->exists($goldenExamId)) {

@@ -62,6 +62,8 @@ class GenerationPlan extends Model
 
     /**
      * Get the exam that owns this generation plan
+     *
+     * @return BelongsTo<Exam>
      */
     public function exam(): BelongsTo
     {
@@ -70,6 +72,8 @@ class GenerationPlan extends Model
 
     /**
      * Get the exam category (section) that this plan belongs to
+     *
+     * @return BelongsTo<ExamCategory>
      */
     public function section(): BelongsTo
     {

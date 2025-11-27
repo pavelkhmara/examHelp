@@ -36,11 +36,17 @@ class Recommendation extends Model
 
     public const PRIORITY_LOW = 'low';
 
+    /**
+     * @return BelongsTo<ExamSession>
+     */
     public function session(): BelongsTo
     {
         return $this->belongsTo(ExamSession::class, 'session_id');
     }
 
+    /**
+     * @return BelongsTo<ExamCategory>
+     */
     public function examCategory(): BelongsTo
     {
         return $this->belongsTo(ExamCategory::class, 'category_id');

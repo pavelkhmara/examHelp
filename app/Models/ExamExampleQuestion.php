@@ -7,6 +7,36 @@ use App\Domain\Taxonomy\QuestionType;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
+/**
+ * @property int $id
+ * @property string $exam_id
+ * @property int|null $exam_category_id
+ * @property string|null $question
+ * @property string|null $description
+ * @property int|null $duration_minutes
+ * @property string|null $instructions
+ * @property array|null $example_response
+ * @property string|null $assessment_guide
+ * @property array|null $good_answer
+ * @property array|null $average_answer
+ * @property array|null $bad_answer
+ * @property array|null $rubric_breakdown
+ * @property QuestionType|string|null $type
+ * @property array|null $payload
+ * @property string|null $image_url
+ * @property string|null $image_file_path
+ * @property array|null $image_alternatives
+ * @property array|null $image_metadata
+ * @property \Carbon\Carbon $created_at
+ * @property \Carbon\Carbon $updated_at
+ *
+ * Virtual properties:
+ * @property string|null $task_type Deprecated: use $type instead
+ * @property string|null $difficulty From payload field
+ *
+ * @property-read Exam $exam
+ * @property-read ExamCategory|null $category
+ */
 class ExamExampleQuestion extends Model
 {
     use HasFactory;
@@ -33,11 +63,17 @@ class ExamExampleQuestion extends Model
         'type' => QuestionType::class,
     ];
 
+    /**
+     * @return \Illuminate\Database\Eloquent\Relations\BelongsTo<Exam>
+     */
     public function exam()
     {
         return $this->belongsTo(Exam::class, 'exam_id', 'id');
     }
 
+    /**
+     * @return \Illuminate\Database\Eloquent\Relations\BelongsTo<ExamCategory>
+     */
     public function category()
     {
         return $this->belongsTo(ExamCategory::class, 'exam_category_id');

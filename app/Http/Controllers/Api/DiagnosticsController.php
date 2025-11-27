@@ -8,6 +8,7 @@ use App\Models\ExamCategory;
 use App\Models\ExamExampleQuestion;
 use App\Models\GenerationLog;
 use App\Models\GenerationTask;
+use Illuminate\Http\JsonResponse;
 
 /**
  * Diagnostics API endpoints for monitoring and testing
@@ -19,7 +20,7 @@ class DiagnosticsController extends Controller
      * Get list of all exams with basic info
      * GET /api/diagnostics/exams
      */
-    public function exams()
+    public function exams(): JsonResponse
     {
         $exams = Exam::query()
             ->orderBy('created_at', 'desc')
@@ -51,7 +52,7 @@ class DiagnosticsController extends Controller
      * Get detailed exam information
      * GET /api/diagnostics/exams/{examId}
      */
-    public function exam(string $examId)
+    public function exam(string $examId): JsonResponse
     {
         $exam = Exam::query()->findOrFail($examId);
 
@@ -95,7 +96,7 @@ class DiagnosticsController extends Controller
      * Get generation tasks for an exam
      * GET /api/diagnostics/exams/{examId}/tasks
      */
-    public function examTasks(string $examId)
+    public function examTasks(string $examId): JsonResponse
     {
         $exam = Exam::query()->findOrFail($examId);
 
@@ -138,7 +139,7 @@ class DiagnosticsController extends Controller
      * Get detailed task information with activities
      * GET /api/diagnostics/tasks/{taskId}
      */
-    public function task(int $taskId)
+    public function task(int $taskId): JsonResponse
     {
         $task = GenerationTask::query()->findOrFail($taskId);
 
@@ -169,7 +170,7 @@ class DiagnosticsController extends Controller
      * Get generation logs for an exam
      * GET /api/diagnostics/exams/{examId}/logs
      */
-    public function examLogs(string $examId)
+    public function examLogs(string $examId): JsonResponse
     {
         $exam = Exam::query()->findOrFail($examId);
 
@@ -208,7 +209,7 @@ class DiagnosticsController extends Controller
      * Get categories for an exam
      * GET /api/diagnostics/exams/{examId}/categories
      */
-    public function examCategories(string $examId)
+    public function examCategories(string $examId): JsonResponse
     {
         $exam = Exam::query()->findOrFail($examId);
 
@@ -240,7 +241,7 @@ class DiagnosticsController extends Controller
      * Get example questions for an exam
      * GET /api/diagnostics/exams/{examId}/examples
      */
-    public function examExamples(string $examId)
+    public function examExamples(string $examId): JsonResponse
     {
         $exam = Exam::query()->findOrFail($examId);
 
@@ -272,7 +273,7 @@ class DiagnosticsController extends Controller
      * Get system statistics
      * GET /api/diagnostics/stats
      */
-    public function stats()
+    public function stats(): JsonResponse
     {
         return response()->json([
             'success' => true,
@@ -309,7 +310,7 @@ class DiagnosticsController extends Controller
      * Get recent activity (last 20 tasks)
      * GET /api/diagnostics/activity
      */
-    public function activity()
+    public function activity(): JsonResponse
     {
         $recentTasks = GenerationTask::query()
             ->with('exam:id,title')
@@ -340,7 +341,7 @@ class DiagnosticsController extends Controller
      * Check if Nova actions are registered
      * GET /api/diagnostics/actions
      */
-    public function actions()
+    public function actions(): JsonResponse
     {
         try {
             $exam = Exam::first();
@@ -380,7 +381,7 @@ class DiagnosticsController extends Controller
      * Health check endpoint
      * GET /api/diagnostics/health
      */
-    public function health()
+    public function health(): JsonResponse
     {
         return response()->json([
             'status' => 'ok',
@@ -393,7 +394,7 @@ class DiagnosticsController extends Controller
      * Get queue information
      * GET /api/diagnostics/queue
      */
-    public function queueInfo()
+    public function queueInfo(): JsonResponse
     {
         $queueDriver = config('queue.default');
         $queueInfo = [

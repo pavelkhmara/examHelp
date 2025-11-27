@@ -27,11 +27,17 @@ class Answer extends Model
         'points_possible' => 'decimal:2',
     ];
 
+    /**
+     * @return BelongsTo<ExamSession>
+     */
     public function session(): BelongsTo
     {
         return $this->belongsTo(ExamSession::class, 'session_id');
     }
 
+    /**
+     * @return BelongsTo<Question>
+     */
     public function question(): BelongsTo
     {
         return $this->belongsTo(Question::class);

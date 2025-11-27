@@ -52,16 +52,25 @@ class QuestionGroup extends Model
 
     // ========== RELATIONSHIPS ==========
 
+    /**
+     * @return BelongsTo<Exam>
+     */
     public function exam(): BelongsTo
     {
         return $this->belongsTo(Exam::class, 'exam_id', 'id');
     }
 
+    /**
+     * @return BelongsTo<ExamCategory>
+     */
     public function section(): BelongsTo
     {
         return $this->belongsTo(ExamCategory::class, 'section_id');
     }
 
+    /**
+     * @return HasMany<Question>
+     */
     public function questions(): HasMany
     {
         return $this->hasMany(Question::class, 'question_group_id');

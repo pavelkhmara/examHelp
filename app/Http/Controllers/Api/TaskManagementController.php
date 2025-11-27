@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use App\Models\GenerationTask;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 
@@ -16,7 +17,7 @@ class TaskManagementController extends Controller
      * Cancel a specific task
      * POST /api/tasks/{taskId}/cancel
      */
-    public function cancelTask(int $taskId, Request $request)
+    public function cancelTask(int $taskId, Request $request): JsonResponse
     {
         $task = GenerationTask::query()->findOrFail($taskId);
 
@@ -68,7 +69,7 @@ class TaskManagementController extends Controller
      * Cancel all active tasks for an exam
      * POST /api/exams/{examId}/tasks/cancel-all
      */
-    public function cancelAllExamTasks(string $examId, Request $request)
+    public function cancelAllExamTasks(string $examId, Request $request): JsonResponse
     {
         $exam = \App\Models\Exam::query()->findOrFail($examId);
 
@@ -122,7 +123,7 @@ class TaskManagementController extends Controller
      * Retry a failed task
      * POST /api/tasks/{taskId}/retry
      */
-    public function retryTask(int $taskId)
+    public function retryTask(int $taskId): JsonResponse
     {
         $task = GenerationTask::query()->findOrFail($taskId);
 
@@ -180,7 +181,7 @@ class TaskManagementController extends Controller
      * Force complete a stuck task (dangerous!)
      * POST /api/tasks/{taskId}/force-complete
      */
-    public function forceCompleteTask(int $taskId, Request $request)
+    public function forceCompleteTask(int $taskId, Request $request): JsonResponse
     {
         $task = GenerationTask::query()->findOrFail($taskId);
 
@@ -220,7 +221,7 @@ class TaskManagementController extends Controller
      * Get stuck tasks (running for more than 1 hour)
      * GET /api/tasks/stuck
      */
-    public function getStuckTasks()
+    public function getStuckTasks(): JsonResponse
     {
         $stuckTasks = GenerationTask::query()
             ->whereIn('status', ['running', 'queued'])
@@ -254,7 +255,7 @@ class TaskManagementController extends Controller
      * Force start research for an exam (bypasses all checks)
      * POST /api/exams/{examId}/research/force-start
      */
-    public function forceStartResearch(string $examId, Request $request)
+    public function forceStartResearch(string $examId, Request $request): JsonResponse
     {
         try {
             Log::info('[TaskManagement] forceStartResearch called', [
@@ -441,7 +442,7 @@ class TaskManagementController extends Controller
      * Get system configuration for diagnostics
      * GET /api/diagnostics/system-config
      */
-    public function getSystemConfig()
+    public function getSystemConfig(): JsonResponse
     {
         return response()->json([
             'success' => true,

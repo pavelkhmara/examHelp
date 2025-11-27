@@ -24,6 +24,49 @@ use Illuminate\Database\Eloquent\SoftDeletes;
  * - response: {mode, max_words?, recording_limit_sec?, attempts?, validation?}
  * - scoring: {method, answer_key?, partial_rules[]?, rubric?, max_score?}
  * - metadata: {cefr[], difficulty, topic, language, sources[]?, tags[]?}
+ *
+ * @property int $id
+ * @property string $exam_id
+ * @property int $section_id
+ * @property int|null $question_group_id
+ * @property int|null $order
+ * @property string|null $question_id
+ * @property string $type
+ * @property array|null $skills_measured
+ * @property int|null $time_limit_sec
+ * @property array|null $instructions
+ * @property array|null $stimulus
+ * @property array|null $interaction
+ * @property array|null $response
+ * @property array|null $scoring
+ * @property array|null $metadata
+ * @property array|null $constraints
+ * @property array|null $randomization
+ * @property array|null $outcome_reporting
+ * @property array|null $io_signature
+ * @property array|null $typical_errors
+ * @property array|null $ui_hints
+ * @property array|null $accessibility
+ * @property string|null $status
+ * @property string|null $audio_file_path
+ * @property bool|null $requires_audio
+ * @property string|null $image_url
+ * @property string|null $image_file_path
+ * @property array|null $image_alternatives
+ * @property array|null $image_metadata
+ * @property \Carbon\Carbon|null $frozen_at
+ * @property \Carbon\Carbon $created_at
+ * @property \Carbon\Carbon $updated_at
+ * @property \Carbon\Carbon|null $deleted_at
+ *
+ * Virtual properties (from JSON fields):
+ * @property mixed $options Deprecated: from interaction field
+ * @property string|null $prompt Deprecated: from instructions field
+ * @property int|null $position Deprecated: from order field
+ *
+ * @property-read Exam $exam
+ * @property-read ExamCategory $section
+ * @property-read QuestionGroup|null $questionGroup
  */
 class Question extends Model
 {
@@ -89,16 +132,25 @@ class Question extends Model
 
     // ========== RELATIONSHIPS ==========
 
+    /**
+     * @return BelongsTo<Exam>
+     */
     public function exam(): BelongsTo
     {
         return $this->belongsTo(Exam::class, 'exam_id', 'id');
     }
 
+    /**
+     * @return BelongsTo<ExamCategory>
+     */
     public function section(): BelongsTo
     {
         return $this->belongsTo(ExamCategory::class, 'section_id');
     }
 
+    /**
+     * @return BelongsTo<QuestionGroup>
+     */
     public function questionGroup(): BelongsTo
     {
         return $this->belongsTo(QuestionGroup::class, 'question_group_id');

@@ -11,7 +11,7 @@ class ListRoles extends Command
 
     protected $description = 'List all roles';
 
-    public function handle()
+    public function handle(): int
     {
         $roles = Role::pluck('name')->toArray();
         $this->info('Roles: '.implode(', ', $roles));

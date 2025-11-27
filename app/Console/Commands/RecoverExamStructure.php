@@ -40,7 +40,7 @@ class RecoverExamStructure extends Command
     /**
      * Execute the console command.
      */
-    public function handle(ExamStructureRecoveryService $recovery)
+    public function handle(ExamStructureRecoveryService $recovery): int
     {
         // Scan mode - check all exams
         if ($this->option('scan')) {

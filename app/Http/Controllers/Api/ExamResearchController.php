@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Exam;
 use App\Models\ExamDocument;
 use App\Support\Queue\TaskDispatcher;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
@@ -15,7 +16,7 @@ use Illuminate\Validation\ValidationException;
 class ExamResearchController extends Controller
 {
     // Внедряем TaskDispatcher через DI, чтобы не дергать enqueue статически
-    public function research(Request $request, string $examId, TaskDispatcher $tasks)
+    public function research(Request $request, string $examId, TaskDispatcher $tasks): JsonResponse
     {
         /** @var Exam $exam */
         $exam = Exam::query()->findOrFail($examId);
@@ -152,7 +153,7 @@ class ExamResearchController extends Controller
      *
      * POST /api/exams/{examId}/research/{taskId}/confirm-identity
      */
-    public function confirmIdentity(Request $request, string $examId, int $taskId)
+    public function confirmIdentity(Request $request, string $examId, int $taskId): JsonResponse
     {
         /** @var Exam $exam */
         $exam = Exam::query()->findOrFail($examId);
@@ -312,7 +313,7 @@ class ExamResearchController extends Controller
      *
      * POST /api/exams/{examId}/research/{taskId}/clarify
      */
-    public function clarify(Request $request, string $examId, int $taskId)
+    public function clarify(Request $request, string $examId, int $taskId): JsonResponse
     {
         \Illuminate\Support\Facades\Log::info('🔍 [CLARIFY STEP 1] Endpoint called', [
             'exam_id' => $examId,
@@ -524,7 +525,7 @@ class ExamResearchController extends Controller
      *
      * GET /api/exams/{examId}/pending-task
      */
-    public function getPendingTask(string $examId)
+    public function getPendingTask(string $examId): JsonResponse
     {
         \Illuminate\Support\Facades\Log::info('getPendingTask called', [
             'examId' => $examId,
