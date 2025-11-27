@@ -20,7 +20,7 @@ class QuickCheckServiceTest extends TestCase
     protected function setUp(): void
     {
         parent::setUp();
-        $this->service = new QuickCheckService();
+        $this->service = new QuickCheckService;
     }
 
     /**

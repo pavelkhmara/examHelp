@@ -33,19 +33,21 @@ use Illuminate\Support\Facades\Log;
  */
 class SynthesizeTaskQuestionsJob implements ShouldQueue
 {
-    use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
     use \App\Jobs\Concerns\EnsuresConnectionStability;
+    use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
 
     public int $timeout = 1800; // 30 min per filter
+
     public int $tries = 3; // Allow retries with backoff for transient failures
+
     public int $backoff = 60; // Wait 60 seconds between retries
 
     /**
-     * @param int $taskId - Parent GenerationTask ID (for logging)
-     * @param string $examId - Exam UUID
-     * @param int $planId - GenerationPlan ID
-     * @param string $filterKey - Unique filter identifier (e.g., "section_listening_filter_0")
-     * @param array $filterData - Filter configuration (type, quantity, constraints)
+     * @param  int  $taskId  - Parent GenerationTask ID (for logging)
+     * @param  string  $examId  - Exam UUID
+     * @param  int  $planId  - GenerationPlan ID
+     * @param  string  $filterKey  - Unique filter identifier (e.g., "section_listening_filter_0")
+     * @param  array  $filterData  - Filter configuration (type, quantity, constraints)
      */
     public function __construct(
         public int $taskId,
@@ -78,6 +80,7 @@ class SynthesizeTaskQuestionsJob implements ShouldQueue
                 'plan_id' => $this->planId,
                 'filter_key' => $this->filterKey,
             ]);
+
             return;
         }
 
@@ -123,7 +126,7 @@ class SynthesizeTaskQuestionsJob implements ShouldQueue
             Log::info('[SynthesizeTaskQuestionsJob] Questions after generation', [
                 'filter_key' => $this->filterKey,
                 'filter_type' => $filterType,
-                'questions' => array_map(function($q) {
+                'questions' => array_map(function ($q) {
                     return [
                         'id' => $q['id'] ?? 'no-id',
                         'group_id' => $q['group_id'] ?? 'NO-GROUP-ID',
@@ -133,7 +136,7 @@ class SynthesizeTaskQuestionsJob implements ShouldQueue
             ]);
 
             $expectedCount = $this->filterData['pick'] ?? $this->filterData['quantity'] ?? count($this->filterData['questions'] ?? []) ?: 1;
-            Log::info("Generated " . count($questions) . " questions for filter {$this->filterKey}", [
+            Log::info('Generated '.count($questions)." questions for filter {$this->filterKey}", [
                 'count' => count($questions),
                 'expected' => $expectedCount,
             ]);
@@ -145,7 +148,7 @@ class SynthesizeTaskQuestionsJob implements ShouldQueue
             // Attach to exam
             $attachedQuestions = $attacher->attachToExam($dedupedQuestions, $plan, $exam);
 
-            Log::info("Attached " . count($attachedQuestions) . " questions for filter {$this->filterKey}", [
+            Log::info('Attached '.count($attachedQuestions)." questions for filter {$this->filterKey}", [
                 'generated' => count($questions),
                 'validated' => count($validatedQuestions),
                 'deduped' => count($dedupedQuestions),
@@ -216,7 +219,7 @@ class SynthesizeTaskQuestionsJob implements ShouldQueue
                 ];
                 $plan->meta = $meta;
                 $plan->status = 'failed';
-                $plan->error = "Filter {$this->filterKey} failed: " . $e->getMessage();
+                $plan->error = "Filter {$this->filterKey} failed: ".$e->getMessage();
                 $plan->save();
 
                 $task->addActivity('filter_failed', "Filter {$this->filterKey} failed", [
@@ -274,11 +277,6 @@ class SynthesizeTaskQuestionsJob implements ShouldQueue
      * Each question_group contains multiple question specs that share a stimulus.
      * We generate all questions in the group in one AI request to maintain context.
      *
-     * @param Exam $exam
-     * @param array $section
-     * @param string $sectionSkill
-     * @param GenerationPlan $plan
-     * @param QuestionSynthesizer $synthesizer
      * @return array Generated questions
      */
     protected function synthesizeQuestionGroup(
@@ -304,6 +302,7 @@ class SynthesizeTaskQuestionsJob implements ShouldQueue
 
         if ($quantity === 0) {
             Log::warning("Empty question group: {$groupId}");
+
             return [];
         }
 
@@ -361,11 +360,11 @@ class SynthesizeTaskQuestionsJob implements ShouldQueue
             }
 
             // Ensure group_id is set for proper association
-            if (!isset($question['group_id'])) {
+            if (! isset($question['group_id'])) {
                 $question['group_id'] = $groupId;
             }
             // Add stimulus from group if not set on question
-            if (empty($question['stimulus']) && !empty($groupStimulus)) {
+            if (empty($question['stimulus']) && ! empty($groupStimulus)) {
                 $question['stimulus'] = $groupStimulus;
             }
         }

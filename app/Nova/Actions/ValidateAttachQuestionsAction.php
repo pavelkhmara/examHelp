@@ -22,7 +22,6 @@ class ValidateAttachQuestionsAction extends Action implements ShouldQueue
     /**
      * Determine if the user is authorized to run the action.
      *
-     * @param  \Illuminate\Http\Request  $request
      * @return bool
      */
     public function authorizedToRun(\Illuminate\Http\Request $request, $model)
@@ -58,5 +57,3 @@ class ValidateAttachQuestionsAction extends Action implements ShouldQueue
         return Action::message('No exams selected.');
     }
 }
-
-

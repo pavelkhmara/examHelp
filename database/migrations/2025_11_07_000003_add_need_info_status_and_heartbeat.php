@@ -33,7 +33,7 @@ return new class extends Migration
 
         // Add heartbeat_at to GenerationTask
         Schema::table('generation_tasks', function (Blueprint $table) {
-            if (!Schema::hasColumn('generation_tasks', 'heartbeat_at')) {
+            if (! Schema::hasColumn('generation_tasks', 'heartbeat_at')) {
                 $table->timestamp('heartbeat_at')->nullable()->after('attempts');
             }
         });

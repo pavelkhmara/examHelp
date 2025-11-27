@@ -76,7 +76,7 @@ abstract class AbstractAiService
             $confirmedIdentity,
         ];
 
-        $buildArgs = !empty($promptArgs) ? $promptArgs : $defaultArgs;
+        $buildArgs = ! empty($promptArgs) ? $promptArgs : $defaultArgs;
         $prompt = $promptClass::build(...$buildArgs);
 
         // 3) Messages

@@ -23,6 +23,7 @@ class GenerateExamplesJob implements ShouldQueue
     use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
 
     public int $tries = 3;
+
     public int $timeout = 900; // 15 minutes
 
     public function __construct(public int $taskId) {}
@@ -78,10 +79,10 @@ class GenerateExamplesJob implements ShouldQueue
                 'trace' => $e->getTraceAsString(),
             ]);
 
-            $task->addActivity('examples_failed', 'Example generation failed: ' . $e->getMessage());
+            $task->addActivity('examples_failed', 'Example generation failed: '.$e->getMessage());
 
             $task->status = 'failed';
-            $task->error = 'Example generation failed: ' . $e->getMessage();
+            $task->error = 'Example generation failed: '.$e->getMessage();
             $task->save();
 
             throw $e;

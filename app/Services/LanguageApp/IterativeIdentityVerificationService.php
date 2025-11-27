@@ -20,7 +20,9 @@ use Illuminate\Support\Facades\Log;
 class IterativeIdentityVerificationService extends AbstractAiService
 {
     const MAX_ATTEMPTS = 3;
+
     const MAX_DURATION_SECONDS = 360; // 6 minutes
+
     const MIN_CONFIDENCE_THRESHOLD = 0.80; // Lowered from 0.94 to 0.90 - with documents, 90%+ is reliable enough
 
     public function __construct(
@@ -34,8 +36,6 @@ class IterativeIdentityVerificationService extends AbstractAiService
     /**
      * Run iterative identity verification
      *
-     * @param Exam $exam
-     * @param GenerationTask $task
      * @return array Identity result with final verdict
      */
     public function runIterativeVerification(Exam $exam, GenerationTask $task): array
@@ -58,7 +58,7 @@ class IterativeIdentityVerificationService extends AbstractAiService
                 return $this->handleTimeout($exam, $task, $history, $webSearchData, $elapsed);
             }
 
-            $task->addActivity("verification_attempt_{$attempt}", "Starting verification attempt {$attempt}/{" . self::MAX_ATTEMPTS . "}", [
+            $task->addActivity("verification_attempt_{$attempt}", "Starting verification attempt {$attempt}/{".self::MAX_ATTEMPTS.'}', [
                 'attempt' => $attempt,
                 'elapsed_seconds' => $elapsed,
             ]);
@@ -89,7 +89,7 @@ class IterativeIdentityVerificationService extends AbstractAiService
 
             // Check if confidence is sufficient
             if ($confidence >= self::MIN_CONFIDENCE_THRESHOLD) {
-                $task->addActivity('decision_point_iterative_verification', "Условие: confidence >= ".self::MIN_CONFIDENCE_THRESHOLD." (текущий: {$confidence}, попытка {$attempt}). Решение: верификация успешна, продолжить к ConfidenceBoost", [
+                $task->addActivity('decision_point_iterative_verification', 'Условие: confidence >= '.self::MIN_CONFIDENCE_THRESHOLD." (текущий: {$confidence}, попытка {$attempt}). Решение: верификация успешна, продолжить к ConfidenceBoost", [
                     'condition' => 'confidence >= '.self::MIN_CONFIDENCE_THRESHOLD,
                     'confidence' => $confidence,
                     'attempt' => $attempt,
@@ -107,7 +107,7 @@ class IterativeIdentityVerificationService extends AbstractAiService
 
             // If this was the last attempt, fail
             if ($attempt >= self::MAX_ATTEMPTS) {
-                $task->addActivity('decision_point_iterative_verification', "Условие: confidence < ".self::MIN_CONFIDENCE_THRESHOLD." И attempt >= ".self::MAX_ATTEMPTS." (текущий: {$confidence}, попытка {$attempt}). Решение: ОШИБКА - max_attempts_reached", [
+                $task->addActivity('decision_point_iterative_verification', 'Условие: confidence < '.self::MIN_CONFIDENCE_THRESHOLD.' И attempt >= '.self::MAX_ATTEMPTS." (текущий: {$confidence}, попытка {$attempt}). Решение: ОШИБКА - max_attempts_reached", [
                     'condition' => 'confidence < '.self::MIN_CONFIDENCE_THRESHOLD.' AND attempt >= '.self::MAX_ATTEMPTS,
                     'confidence' => $confidence,
                     'attempt' => $attempt,
@@ -132,29 +132,29 @@ class IterativeIdentityVerificationService extends AbstractAiService
             // (unless this attempt already has user clarification from previous pause)
             // IMPORTANT: Check for clarification in both old ('clarification_answers') and new ('clarification') format
             // Also check the saved flag from task.result['identity']['user_provided_clarification']
-            $hasUserClarification = !empty($task->request['user_input']['clarification_answers'] ?? [])
-                || !empty($task->request['user_input']['clarification'] ?? '')
-                || !empty($task->result['identity']['user_provided_clarification'] ?? false);
+            $hasUserClarification = ! empty($task->request['user_input']['clarification_answers'] ?? [])
+                || ! empty($task->request['user_input']['clarification'] ?? '')
+                || ! empty($task->result['identity']['user_provided_clarification'] ?? false);
 
             \Illuminate\Support\Facades\Log::info('🔍 [ITERATIVE] Checking user clarification', [
                 'attempt' => $attempt,
                 'hasUserClarification' => $hasUserClarification,
-                'has_clarification_answers' => !empty($task->request['user_input']['clarification_answers'] ?? []),
-                'has_clarification' => !empty($task->request['user_input']['clarification'] ?? ''),
-                'has_flag' => !empty($task->result['identity']['user_provided_clarification'] ?? false),
+                'has_clarification_answers' => ! empty($task->request['user_input']['clarification_answers'] ?? []),
+                'has_clarification' => ! empty($task->request['user_input']['clarification'] ?? ''),
+                'has_flag' => ! empty($task->result['identity']['user_provided_clarification'] ?? false),
             ]);
 
-            if ($attempt === 1 && !$hasUserClarification) {
+            if ($attempt === 1 && ! $hasUserClarification) {
                 // First attempt with low confidence and no user clarification yet
                 // Save followup questions and pause for user input
-                $task->addActivity('decision_point_iterative_verification', "Условие: confidence < ".self::MIN_CONFIDENCE_THRESHOLD." И attempt = 1 И НЕТ user_clarification (текущий: {$confidence}, попытка {$attempt}). Решение: PAUSE - ожидание ответов на вопросы от пользователя", [
+                $task->addActivity('decision_point_iterative_verification', 'Условие: confidence < '.self::MIN_CONFIDENCE_THRESHOLD." И attempt = 1 И НЕТ user_clarification (текущий: {$confidence}, попытка {$attempt}). Решение: PAUSE - ожидание ответов на вопросы от пользователя", [
                     'condition' => 'confidence < '.self::MIN_CONFIDENCE_THRESHOLD.' AND attempt = 1 AND NO user_clarification',
                     'confidence' => $confidence,
                     'attempt' => $attempt,
                     'decision' => 'pause_pending_clarification',
                 ]);
 
-                $task->addActivity("verification_attempt_{$attempt}_followups", "Generated " . count($followups) . " followup questions - waiting for user", [
+                $task->addActivity("verification_attempt_{$attempt}_followups", 'Generated '.count($followups).' followup questions - waiting for user', [
                     'followups' => $followups,
                 ]);
 
@@ -163,7 +163,7 @@ class IterativeIdentityVerificationService extends AbstractAiService
 
                 // Save followup questions in identity result for card display
                 // ProvideAnswersAction expects them at task->result['identity']['followups']
-                $result = (array)($task->result ?? []);
+                $result = (array) ($task->result ?? []);
                 $result['identity'] = array_merge($identityResult, [
                     'followups' => $followups,
                     'status' => 'needs_clarification',
@@ -182,21 +182,21 @@ class IterativeIdentityVerificationService extends AbstractAiService
             }
 
             // Decision: confidence < threshold, attempt < max, have followups -> run WebSearch and retry
-            $task->addActivity('decision_point_iterative_verification', "Условие: confidence < ".self::MIN_CONFIDENCE_THRESHOLD." И attempt < ".self::MAX_ATTEMPTS." (текущий: {$confidence}, попытка {$attempt}). Решение: запустить WebSearch и повторить IdentityGuard (попытка ".($attempt + 1).")", [
+            $task->addActivity('decision_point_iterative_verification', 'Условие: confidence < '.self::MIN_CONFIDENCE_THRESHOLD.' И attempt < '.self::MAX_ATTEMPTS." (текущий: {$confidence}, попытка {$attempt}). Решение: запустить WebSearch и повторить IdentityGuard (попытка ".($attempt + 1).')', [
                 'condition' => 'confidence < '.self::MIN_CONFIDENCE_THRESHOLD.' AND attempt < '.self::MAX_ATTEMPTS,
                 'confidence' => $confidence,
                 'attempt' => $attempt,
                 'decision' => 'run_web_search_retry',
             ]);
 
-            $task->addActivity("verification_attempt_{$attempt}_followups", "Generated " . count($followups) . " followup questions", [
+            $task->addActivity("verification_attempt_{$attempt}_followups", 'Generated '.count($followups).' followup questions', [
                 'followups' => $followups,
             ]);
 
             // Use web search to find answers
             $webSearchResults = $this->searchForAnswers($exam, $task, $identityResult, $followups);
 
-            $task->addActivity("verification_attempt_{$attempt}_web_search", "Completed web search for answers", [
+            $task->addActivity("verification_attempt_{$attempt}_web_search", 'Completed web search for answers', [
                 'results_count' => count($webSearchResults),
             ]);
 
@@ -233,7 +233,7 @@ class IterativeIdentityVerificationService extends AbstractAiService
             ];
         }
 
-        if (empty($canonical['variant']) && !empty($canonical['family'])) {
+        if (empty($canonical['variant']) && ! empty($canonical['family'])) {
             $family = $canonical['family'];
             if (str_contains($family, 'IELTS')) {
                 $followups[] = [
@@ -278,10 +278,10 @@ class IterativeIdentityVerificationService extends AbstractAiService
         // Build search queries based on what we know
         $queries = [];
 
-        if (!empty($family)) {
+        if (! empty($family)) {
             $queries[] = "{$family} exam structure format sections";
 
-            if (!empty($variant)) {
+            if (! empty($variant)) {
                 $queries[] = "{$family} {$variant} official guide";
             } else {
                 $queries[] = "{$family} variants types differences";
@@ -350,11 +350,11 @@ class IterativeIdentityVerificationService extends AbstractAiService
      */
     protected function prepareEnhancedUserInput(GenerationTask $task, array $history, array $webSearchData): array
     {
-        $req = (array)($task->request ?? []);
-        $userInput = (array)($req['user_input'] ?? []);
+        $req = (array) ($task->request ?? []);
+        $userInput = (array) ($req['user_input'] ?? []);
 
         // Build iteration context
-        if (!empty($history)) {
+        if (! empty($history)) {
             $previousAttempts = [];
             foreach ($history as $item) {
                 $previousAttempts[] = [
@@ -373,7 +373,7 @@ class IterativeIdentityVerificationService extends AbstractAiService
         }
 
         // Add web search data
-        if (!empty($webSearchData)) {
+        if (! empty($webSearchData)) {
             $userInput['web_search_data'] = $webSearchData;
         }
 
@@ -388,7 +388,7 @@ class IterativeIdentityVerificationService extends AbstractAiService
     {
         // Create a temporary task with enhanced input
         $tempTask = clone $task;
-        $req = (array)($task->request ?? []);
+        $req = (array) ($task->request ?? []);
         $req['user_input'] = $enhancedUserInput;
         $tempTask->request = $req;
 
@@ -401,10 +401,10 @@ class IterativeIdentityVerificationService extends AbstractAiService
      */
     protected function saveVerificationHistory(GenerationTask $task, array $history, array $webSearchData): void
     {
-        $result = (array)($task->result ?? []);
+        $result = (array) ($task->result ?? []);
         $result['verification_attempts'] = $history;
 
-        if (!empty($webSearchData)) {
+        if (! empty($webSearchData)) {
             $result['web_search_data'] = $webSearchData;
         }
 
@@ -423,7 +423,7 @@ class IterativeIdentityVerificationService extends AbstractAiService
             'total_attempts' => count($history),
         ]);
 
-        $lastResult = !empty($history) ? $history[count($history) - 1]['identity_result'] : [];
+        $lastResult = ! empty($history) ? $history[count($history) - 1]['identity_result'] : [];
 
         // Save final history
         $this->saveVerificationHistory($task, $history, $webSearchData);
@@ -500,19 +500,20 @@ class IterativeIdentityVerificationService extends AbstractAiService
         }
 
         if ($confidence < 0.5) {
-            return "We found some information about {$family}, but couldn't verify it with sufficient confidence. This may be because:\n" .
-                   "- The exam variant is unclear (e.g., Academic vs General, iBT vs Paper)\n" .
-                   "- There is limited information available online\n" .
-                   "- The exam name or code is not specific enough\n\n" .
-                   "Please provide more details or contact support.";
+            return "We found some information about {$family}, but couldn't verify it with sufficient confidence. This may be because:\n".
+                   "- The exam variant is unclear (e.g., Academic vs General, iBT vs Paper)\n".
+                   "- There is limited information available online\n".
+                   "- The exam name or code is not specific enough\n\n".
+                   'Please provide more details or contact support.';
         }
 
-        if (!empty($needFields)) {
+        if (! empty($needFields)) {
             $missingFields = implode(', ', $needFields);
+
             return "We identified the exam as {$family}, but need more information: {$missingFields}. Please provide these details to continue.";
         }
 
-        return "We were unable to verify your exam with sufficient confidence (current: " . round($confidence * 100) . "%, required: 94%). " .
-               "This may be because the exam information is ambiguous or not available online. Please provide more specific details.";
+        return 'We were unable to verify your exam with sufficient confidence (current: '.round($confidence * 100).'%, required: 94%). '.
+               'This may be because the exam information is ambiguous or not available online. Please provide more specific details.';
     }
 }

@@ -67,11 +67,11 @@ class PhaseBGoldenTest extends TestCase
                     ),
                     'blueprint' => $this->assertTrue(
                         isset($assembly['slots']),
-                        "Mode blueprint should have slots"
+                        'Mode blueprint should have slots'
                     ),
                     'pool' => $this->assertTrue(
                         isset($assembly['filters']),
-                        "Mode pool should have filters"
+                        'Mode pool should have filters'
                     ),
                 };
             }
@@ -92,7 +92,7 @@ class PhaseBGoldenTest extends TestCase
         $foundQuestionGroups = false;
 
         foreach ($sections as $section) {
-            if (!isset($section['assembly']['question_groups'])) {
+            if (! isset($section['assembly']['question_groups'])) {
                 continue;
             }
 
@@ -112,7 +112,7 @@ class PhaseBGoldenTest extends TestCase
             }
         }
 
-        if (!$foundQuestionGroups) {
+        if (! $foundQuestionGroups) {
             $this->markTestSkipped('No question_groups found in Phase B (only blueprint/pool modes)');
         }
     }
@@ -132,7 +132,7 @@ class PhaseBGoldenTest extends TestCase
                 continue;
             }
 
-            if (!isset($section['assembly']['question_groups'])) {
+            if (! isset($section['assembly']['question_groups'])) {
                 continue;
             }
 

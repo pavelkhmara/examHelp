@@ -2,8 +2,8 @@
 
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
-use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
 {
@@ -22,19 +22,19 @@ return new class extends Migration
         // 2. Update exam_categories table - add v2 section fields
         Schema::table('exam_categories', function (Blueprint $table) {
             // Check if columns don't exist before adding
-            if (!Schema::hasColumn('exam_categories', 'skill')) {
+            if (! Schema::hasColumn('exam_categories', 'skill')) {
                 $table->string('skill')->nullable()->after('name');
             }
-            if (!Schema::hasColumn('exam_categories', 'duration_min')) {
+            if (! Schema::hasColumn('exam_categories', 'duration_min')) {
                 $table->integer('duration_min')->nullable()->after('skill');
             }
-            if (!Schema::hasColumn('exam_categories', 'max_score')) {
+            if (! Schema::hasColumn('exam_categories', 'max_score')) {
                 $table->decimal('max_score', 8, 2)->nullable()->after('duration_min');
             }
-            if (!Schema::hasColumn('exam_categories', 'min_pass_percent')) {
+            if (! Schema::hasColumn('exam_categories', 'min_pass_percent')) {
                 $table->decimal('min_pass_percent', 5, 2)->nullable()->after('max_score');
             }
-            if (!Schema::hasColumn('exam_categories', 'time_policy')) {
+            if (! Schema::hasColumn('exam_categories', 'time_policy')) {
                 $table->string('time_policy')->nullable()->after('min_pass_percent');
             }
             // order already exists

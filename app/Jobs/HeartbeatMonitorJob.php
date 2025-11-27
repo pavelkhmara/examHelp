@@ -57,6 +57,7 @@ class HeartbeatMonitorJob implements ShouldQueue
             Log::debug('HeartbeatMonitor: No stalled tasks found', [
                 'threshold_minutes' => self::STALL_THRESHOLD_MINUTES,
             ]);
+
             return;
         }
 
@@ -87,7 +88,7 @@ class HeartbeatMonitorJob implements ShouldQueue
             $activities[] = [
                 'timestamp' => now()->toIso8601String(),
                 'event' => 'stall_detected',
-                'message' => "Task stalled - no heartbeat for " . self::STALL_THRESHOLD_MINUTES . " minutes",
+                'message' => 'Task stalled - no heartbeat for '.self::STALL_THRESHOLD_MINUTES.' minutes',
                 'context' => [
                     'last_heartbeat' => $task->heartbeat_at?->toDateTimeString(),
                     'detection_time' => now()->toDateTimeString(),

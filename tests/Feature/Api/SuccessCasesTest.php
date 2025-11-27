@@ -7,7 +7,6 @@ use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Log;
-use Illuminate\Support\Facades\Storage;
 use Tests\TestCase;
 
 /**
@@ -72,7 +71,7 @@ class SuccessCasesTest extends TestCase
         $response->assertCreated();
         $examId = $response->json('data.id');
 
-        Log::info("Exam created", ['exam_id' => $examId]);
+        Log::info('Exam created', ['exam_id' => $examId]);
 
         // Upload PDF document
         $pdfPath = base_path('files/pdf/ielts-life-skills-sample-paper-a-level-b1.pdf');
@@ -101,7 +100,7 @@ class SuccessCasesTest extends TestCase
         $researchResponse->assertAccepted();
         $taskId = $researchResponse->json('task_id');
 
-        Log::info("Research started", ['task_id' => $taskId]);
+        Log::info('Research started', ['task_id' => $taskId]);
 
         // Wait for task completion (max 2 minutes for testing)
         $completed = $this->waitForTaskCompletion($taskId, 120);
@@ -128,7 +127,7 @@ class SuccessCasesTest extends TestCase
 
         $this->testResults[] = $result;
 
-        Log::info("Test completed", $result);
+        Log::info('Test completed', $result);
 
         // Assertions
         $this->assertTrue($completed, "Task did not complete within timeout. Final status: {$task->status}, Error: {$task->error}, Research status: {$exam->research_status}");
@@ -159,7 +158,7 @@ class SuccessCasesTest extends TestCase
         $response->assertCreated();
         $examId = $response->json('data.id');
 
-        Log::info("Exam created", ['exam_id' => $examId]);
+        Log::info('Exam created', ['exam_id' => $examId]);
 
         // Upload PDF document
         $pdfPath = base_path('files/pdf/CCE-B1_modelova_varianta.pdf');
@@ -188,7 +187,7 @@ class SuccessCasesTest extends TestCase
         $researchResponse->assertAccepted();
         $taskId = $researchResponse->json('task_id');
 
-        Log::info("Research started", ['task_id' => $taskId]);
+        Log::info('Research started', ['task_id' => $taskId]);
 
         // Wait for completion
         $completed = $this->waitForTaskCompletion($taskId, 120);
@@ -215,7 +214,7 @@ class SuccessCasesTest extends TestCase
 
         $this->testResults[] = $result;
 
-        Log::info("Test completed", $result);
+        Log::info('Test completed', $result);
 
         // Assertions
         $this->assertTrue($completed, "Task did not complete within timeout. Final status: {$task->status}, Error: {$task->error}");
@@ -246,7 +245,7 @@ class SuccessCasesTest extends TestCase
         $response->assertCreated();
         $examId = $response->json('data.id');
 
-        Log::info("Exam created", ['exam_id' => $examId]);
+        Log::info('Exam created', ['exam_id' => $examId]);
 
         // Upload PDF document
         $pdfPath = base_path('files/pdf/b1_modellsatz_erwachsene.pdf');
@@ -275,7 +274,7 @@ class SuccessCasesTest extends TestCase
         $researchResponse->assertAccepted();
         $taskId = $researchResponse->json('task_id');
 
-        Log::info("Research started", ['task_id' => $taskId]);
+        Log::info('Research started', ['task_id' => $taskId]);
 
         // Wait for completion
         $completed = $this->waitForTaskCompletion($taskId, 120);
@@ -302,7 +301,7 @@ class SuccessCasesTest extends TestCase
 
         $this->testResults[] = $result;
 
-        Log::info("Test completed", $result);
+        Log::info('Test completed', $result);
 
         // Assertions
         $this->assertTrue($completed, "Task did not complete within timeout. Final status: {$task->status}, Error: {$task->error}");
@@ -333,7 +332,7 @@ class SuccessCasesTest extends TestCase
         $response->assertCreated();
         $examId = $response->json('data.id');
 
-        Log::info("Exam created", ['exam_id' => $examId]);
+        Log::info('Exam created', ['exam_id' => $examId]);
 
         // Start research without file
         $researchResponse = $this->postJson("/api/exams/{$examId}/research", [
@@ -350,7 +349,7 @@ class SuccessCasesTest extends TestCase
         $researchResponse->assertAccepted();
         $taskId = $researchResponse->json('task_id');
 
-        Log::info("Research started", ['task_id' => $taskId]);
+        Log::info('Research started', ['task_id' => $taskId]);
 
         // Wait for completion
         $completed = $this->waitForTaskCompletion($taskId, 120);
@@ -377,7 +376,7 @@ class SuccessCasesTest extends TestCase
 
         $this->testResults[] = $result;
 
-        Log::info("Test completed", $result);
+        Log::info('Test completed', $result);
 
         // Assertions
         $this->assertTrue($completed, "Task did not complete within timeout. Final status: {$task->status}, Error: {$task->error}");
@@ -389,8 +388,6 @@ class SuccessCasesTest extends TestCase
     /**
      * Wait for task completion with polling
      *
-     * @param int $taskId
-     * @param int $timeoutSeconds
      * @return bool True if completed, false if timeout
      */
     protected function waitForTaskCompletion(int $taskId, int $timeoutSeconds = 600): bool
@@ -402,7 +399,7 @@ class SuccessCasesTest extends TestCase
             $task = \App\Models\GenerationTask::find($taskId);
 
             if ($task->status !== $lastStatus) {
-                Log::info("Task status changed", [
+                Log::info('Task status changed', [
                     'task_id' => $taskId,
                     'status' => $task->status,
                     'elapsed' => time() - $startTime,
@@ -415,11 +412,12 @@ class SuccessCasesTest extends TestCase
             }
 
             if (time() - $startTime > $timeoutSeconds) {
-                Log::error("Task timeout", [
+                Log::error('Task timeout', [
                     'task_id' => $taskId,
                     'status' => $task->status,
                     'timeout_seconds' => $timeoutSeconds,
                 ]);
+
                 return false;
             }
 

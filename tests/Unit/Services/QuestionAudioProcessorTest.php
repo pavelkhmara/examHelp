@@ -17,6 +17,7 @@ class QuestionAudioProcessorTest extends TestCase
     use RefreshDatabase;
 
     protected QuestionAudioProcessor $processor;
+
     protected TtsService $ttsService;
 
     protected function setUp(): void
@@ -115,7 +116,7 @@ class QuestionAudioProcessorTest extends TestCase
     {
         // Arrange
         $expectedPath = 'audio/2025/01/19/q_123_1234567890.mp3';
-        $expectedUrl = 'http://localhost/storage/' . $expectedPath;
+        $expectedUrl = 'http://localhost/storage/'.$expectedPath;
 
         $mockTts = $this->createMock(TtsService::class);
         $mockTts->expects($this->once())

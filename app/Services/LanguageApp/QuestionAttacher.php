@@ -18,8 +18,9 @@ class QuestionAttacher
         private readonly QuestionAudioProcessor $audioProcessor,
         private readonly QuestionImageProcessor $imageProcessor
     ) {}
+
     /**
-     * @param array<int, array<string, mixed>> $questions
+     * @param  array<int, array<string, mixed>>  $questions
      */
     public function attachToExam(array $questions, GenerationPlan $plan, Exam $exam): array
     {
@@ -64,7 +65,7 @@ class QuestionAttacher
                         'rawQuestionId' => $rawQuestionId,
                         'groupIdString' => $groupIdString,
                         'type' => $questionData['type'] ?? 'unknown',
-                        'has_interaction' => !empty($questionData['interaction']),
+                        'has_interaction' => ! empty($questionData['interaction']),
                         'interaction_keys' => is_array($questionData['interaction'] ?? null) ? array_keys($questionData['interaction']) : 'not_array',
                         'all_keys' => array_keys($questionData),
                     ]);
@@ -121,10 +122,10 @@ class QuestionAttacher
             }
 
             // Insert new questions OR update existing skeleton questions
-            if (!empty($questionRecords)) {
+            if (! empty($questionRecords)) {
                 try {
                     // Check for existing question_ids
-                    $allQuestionIds = array_map(fn($r) => $r['question_id'], $questionRecords);
+                    $allQuestionIds = array_map(fn ($r) => $r['question_id'], $questionRecords);
 
                     $existingQuestions = Question::whereIn('question_id', $allQuestionIds)
                         ->get()
@@ -202,7 +203,7 @@ class QuestionAttacher
                     }
 
                     // Insert new records
-                    if (!empty($newRecords)) {
+                    if (! empty($newRecords)) {
                         $inserted = Question::insertOrIgnore($newRecords);
 
                         Log::info('[QuestionAttacher] Created new question records', [
@@ -278,7 +279,7 @@ class QuestionAttacher
     protected function generateAudioForQuestions(Exam $exam, GenerationPlan $plan): void
     {
         // Пропускаем если TTS отключен
-        if (!config('ai.tts.enabled', false)) {
+        if (! config('ai.tts.enabled', false)) {
             return;
         }
 
@@ -352,8 +353,8 @@ class QuestionAttacher
     }
 
     /**
-     * @param array<int, array<string, mixed>> $sections
-     * @param array<int, string> $questionIds
+     * @param  array<int, array<string, mixed>>  $sections
+     * @param  array<int, string>  $questionIds
      * @return array<int, array<string, mixed>>
      */
     protected function updateSectionStructure(array $sections, GenerationPlan $plan, array $questionIds): array
@@ -388,8 +389,8 @@ class QuestionAttacher
     }
 
     /**
-     * @param array<string, mixed> $assembly
-     * @param array<int, string> $questionIds
+     * @param  array<string, mixed>  $assembly
+     * @param  array<int, string>  $questionIds
      * @return array<string, mixed>
      */
     protected function attachInlinePlaceholders(array $assembly, array $questionIds): array
@@ -406,9 +407,9 @@ class QuestionAttacher
     }
 
     /**
-     * @param array<string, mixed> $assembly
-     * @param array<int, array<string, mixed>> $slotsPlan
-     * @param array<int, string> $questionIds
+     * @param  array<string, mixed>  $assembly
+     * @param  array<int, array<string, mixed>>  $slotsPlan
+     * @param  array<int, string>  $questionIds
      * @return array<string, mixed>
      */
     protected function attachBlueprintSlots(array $assembly, array $slotsPlan, array $questionIds): array
@@ -422,6 +423,7 @@ class QuestionAttacher
 
             if ($pick <= 0) {
                 $slot['question_ids'] = [];
+
                 continue;
             }
 
@@ -435,7 +437,7 @@ class QuestionAttacher
     }
 
     /**
-     * @param array<int, string> $questionIds
+     * @param  array<int, string>  $questionIds
      */
     protected function updateExamCategory(Exam $exam, GenerationPlan $plan, array $questionIds): void
     {
@@ -461,8 +463,8 @@ class QuestionAttacher
     }
 
     /**
-     * @param array<string, mixed> $assembly
-     * @param array<int, string> $questionIds
+     * @param  array<string, mixed>  $assembly
+     * @param  array<int, string>  $questionIds
      * @return array<string, mixed>
      */
     protected function syncCategoryAssembly(array $assembly, GenerationPlan $plan, array $questionIds): array
@@ -476,6 +478,7 @@ class QuestionAttacher
 
             case 'pool':
                 $assembly['question_ids'] = $questionIds;
+
                 return $assembly;
 
             default:
@@ -486,8 +489,7 @@ class QuestionAttacher
     /**
      * Build mapping from group_id string to QuestionGroup database ID
      *
-     * @param Exam $exam
-     * @param int $sectionId ExamCategory ID
+     * @param  int  $sectionId  ExamCategory ID
      * @return array<string, int> Map of group_id → QuestionGroup.id
      */
     protected function buildQuestionGroupIdMap(Exam $exam, int $sectionId): array
@@ -501,7 +503,7 @@ class QuestionAttacher
             $map[$group->group_id] = $group->id;
         }
 
-        if (!empty($map)) {
+        if (! empty($map)) {
             Log::debug('[QuestionAttacher] Built group_id map', [
                 'exam_id' => $exam->id,
                 'section_id' => $sectionId,
@@ -512,4 +514,3 @@ class QuestionAttacher
         return $map;
     }
 }
-

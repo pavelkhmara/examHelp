@@ -29,9 +29,6 @@ class ParallelExampleGenerator extends AbstractAiService
     /**
      * Generate examples for all question archetypes in parallel
      *
-     * @param  Exam  $exam
-     * @param  GenerationTask|null  $task
-     * @param  int  $examplesPerArchetype
      * @return array Results summary
      */
     public function generateBatch(Exam $exam, ?GenerationTask $task = null, int $examplesPerArchetype = 1): array
@@ -45,7 +42,7 @@ class ParallelExampleGenerator extends AbstractAiService
         // Get question_archetypes from structure_v2
         $structure = $exam->meta['structure_v2'] ?? null;
 
-        if (!$structure) {
+        if (! $structure) {
             throw new \RuntimeException('No structure_v2 found in exam meta. Run research pipeline first.');
         }
 
@@ -93,7 +90,7 @@ class ParallelExampleGenerator extends AbstractAiService
         // Check if async is enabled
         $asyncEnabled = config('ai.async_enabled', false);
 
-        if (!$asyncEnabled) {
+        if (! $asyncEnabled) {
             Log::warning('[ParallelExampleGenerator] Async disabled, falling back to sequential');
 
             return $this->generateSequential($exam, $task, $archetypesWithContext, $examplesPerArchetype);
@@ -116,7 +113,7 @@ class ParallelExampleGenerator extends AbstractAiService
                     ->get()
                     ->all();
 
-                if (!empty($recentQuestions)) {
+                if (! empty($recentQuestions)) {
                     $imageStats = $this->imageProcessor->processQuestions($recentQuestions);
                     Log::info('[ParallelExampleGenerator] Image processing completed', $imageStats);
                 }
@@ -419,7 +416,7 @@ class ParallelExampleGenerator extends AbstractAiService
                     ->get()
                     ->all();
 
-                if (!empty($recentQuestions)) {
+                if (! empty($recentQuestions)) {
                     $imageStats = $this->imageProcessor->processQuestions($recentQuestions);
                     Log::info('[ParallelExampleGenerator] Image processing completed (sequential)', $imageStats);
                 }

@@ -21,7 +21,7 @@ class GoldenValidateCommand extends Command
         $goldenExamId = $this->argument('golden');
         $validateAll = $this->option('all');
 
-        if (!$goldenExamId && !$validateAll) {
+        if (! $goldenExamId && ! $validateAll) {
             $this->error('Please specify a golden exam ID or use --all flag');
 
             return 1;
@@ -39,7 +39,7 @@ class GoldenValidateCommand extends Command
         $totalValidated = 0;
 
         foreach ($examsToValidate as $examId) {
-            if (!$goldenLoader->exists($examId)) {
+            if (! $goldenLoader->exists($examId)) {
                 $this->warn("Skipping {$examId}: not found");
 
                 continue;
@@ -103,7 +103,7 @@ class GoldenValidateCommand extends Command
             // Загрузить schema
             $schemaFilename = str_replace('.json', '.schema.json', $stageInfo['filename']);
             $schemaPath = base_path("tests/Fixtures/stages/_schemas/{$schemaFilename}");
-            if (!file_exists($schemaPath)) {
+            if (! file_exists($schemaPath)) {
                 return ["Schema file not found: {$schemaPath}"];
             }
 

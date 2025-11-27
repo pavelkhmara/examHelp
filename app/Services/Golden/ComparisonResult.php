@@ -40,8 +40,8 @@ class ComparisonResult
         $lines[] = '';
 
         // Critical mismatches
-        $criticalFails = array_filter($this->criticalMatches, fn($m) => !$m['match']);
-        if (!empty($criticalFails)) {
+        $criticalFails = array_filter($this->criticalMatches, fn ($m) => ! $m['match']);
+        if (! empty($criticalFails)) {
             $lines[] = 'Critical field mismatches:';
             foreach ($criticalFails as $field => $match) {
                 $lines[] = "  ✗ {$field}";
@@ -52,7 +52,7 @@ class ComparisonResult
         }
 
         // Top differences
-        if (!empty($this->diffs)) {
+        if (! empty($this->diffs)) {
             $lines[] = 'Differences ('.count($this->diffs).' total):';
             foreach (array_slice($this->diffs, 0, 10) as $diff) {
                 $lines[] = "  - [{$diff['type']}] {$diff['path']}";
@@ -72,7 +72,7 @@ class ComparisonResult
             return 1.0;
         }
 
-        $passed = count(array_filter($this->criticalMatches, fn($m) => $m['match']));
+        $passed = count(array_filter($this->criticalMatches, fn ($m) => $m['match']));
 
         return $passed / count($this->criticalMatches);
     }

@@ -101,7 +101,7 @@ class QuestionGroupAssembler
                 ]);
 
                 throw new \Exception(
-                    "Question group '{$groupId}' validation failed for section {$sectionId}: " . $e->getMessage()
+                    "Question group '{$groupId}' validation failed for section {$sectionId}: ".$e->getMessage()
                 );
             }
         }
@@ -141,11 +141,11 @@ class QuestionGroupAssembler
             throw new \Exception("Group '{$groupId}' missing required field 'title' in section {$sectionId}");
         }
 
-        if (!isset($group['stimulus'])) {
+        if (! isset($group['stimulus'])) {
             throw new \Exception("Group '{$groupId}' missing required field 'stimulus' in section {$sectionId}");
         }
 
-        if (!isset($group['questions']) || !is_array($group['questions'])) {
+        if (! isset($group['questions']) || ! is_array($group['questions'])) {
             throw new \Exception("Group '{$groupId}' missing 'questions' array in section {$sectionId}");
         }
 
@@ -168,13 +168,13 @@ class QuestionGroupAssembler
         if (is_array($stimulus)) {
             $hasContent = false;
             foreach (['text_html', 'images', 'audio', 'video'] as $key) {
-                if (!empty($stimulus[$key])) {
+                if (! empty($stimulus[$key])) {
                     $hasContent = true;
                     break;
                 }
             }
 
-            if (!$hasContent) {
+            if (! $hasContent) {
                 // AUTO-FIX: Add placeholder text instead of throwing error
                 $group['stimulus']['text_html'] = '<p>[Stimulus content will be provided]</p>';
 
@@ -207,10 +207,10 @@ class QuestionGroupAssembler
         // Validate max_plays
         if (array_key_exists('max_plays', $settings)) {
             $maxPlays = $settings['max_plays'];
-            if (!is_null($maxPlays) && (!is_int($maxPlays) || $maxPlays < 1)) {
+            if (! is_null($maxPlays) && (! is_int($maxPlays) || $maxPlays < 1)) {
                 throw new \Exception(
-                    "Group '{$groupId}' playback_settings.max_plays must be a positive integer or null, " .
-                    "got: " . var_export($maxPlays, true) . " in section {$sectionId}"
+                    "Group '{$groupId}' playback_settings.max_plays must be a positive integer or null, ".
+                    'got: '.var_export($maxPlays, true)." in section {$sectionId}"
                 );
             }
         }
@@ -219,9 +219,9 @@ class QuestionGroupAssembler
         if (isset($settings['enforcement'])) {
             $enforcement = $settings['enforcement'];
             $validModes = ['strict', 'advisory', 'none'];
-            if (!in_array($enforcement, $validModes, true)) {
+            if (! in_array($enforcement, $validModes, true)) {
                 throw new \Exception(
-                    "Group '{$groupId}' playback_settings.enforcement must be one of: " . implode(', ', $validModes) .
+                    "Group '{$groupId}' playback_settings.enforcement must be one of: ".implode(', ', $validModes).
                     ", got: '{$enforcement}' in section {$sectionId}"
                 );
             }
@@ -247,12 +247,12 @@ class QuestionGroupAssembler
         }
 
         // Set default order if not present
-        if (!isset($group['order'])) {
+        if (! isset($group['order'])) {
             $group['order'] = 0;
         }
 
         // Ensure questions is array
-        if (!isset($group['questions'])) {
+        if (! isset($group['questions'])) {
             $group['questions'] = [];
         }
 
@@ -264,7 +264,7 @@ class QuestionGroupAssembler
 
             // Ensure each question has an id
             if (empty($question['id'])) {
-                $question['id'] = $group['id'] . '_q' . ($index + 1);
+                $question['id'] = $group['id'].'_q'.($index + 1);
             }
         }
 

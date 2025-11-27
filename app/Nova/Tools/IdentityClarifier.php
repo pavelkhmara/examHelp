@@ -28,8 +28,6 @@ class IdentityClarifier extends ResourceTool
 
     /**
      * Prepare the tool for JSON serialization.
-     *
-     * @return array
      */
     public function jsonSerialize(): array
     {

@@ -16,7 +16,9 @@ use Illuminate\Support\Facades\Log;
 class UnsplashImageSearchProvider implements ImageSearchProvider
 {
     private string $apiKey;
+
     private string $baseUrl;
+
     private int $timeout;
 
     public function __construct()
@@ -38,9 +40,9 @@ class UnsplashImageSearchProvider implements ImageSearchProvider
     /**
      * Search for images on Unsplash
      *
-     * @param string $query Search query
-     * @param int $count Number of results (max 30 per page)
-     * @return array
+     * @param  string  $query  Search query
+     * @param  int  $count  Number of results (max 30 per page)
+     *
      * @throws \Exception
      */
     public function search(string $query, int $count = 15): array
@@ -56,17 +58,17 @@ class UnsplashImageSearchProvider implements ImageSearchProvider
 
         try {
             $response = Http::withHeaders([
-                'Authorization' => 'Client-ID ' . $this->apiKey,
+                'Authorization' => 'Client-ID '.$this->apiKey,
                 'Accept-Version' => 'v1',
             ])
-            ->timeout($this->timeout)
-            ->get($this->baseUrl . '/search/photos', [
-                'query' => $query,
-                'per_page' => min($count, 30), // Unsplash max is 30 per page
-                'orientation' => 'landscape', // Prefer landscape for exam materials
-            ]);
+                ->timeout($this->timeout)
+                ->get($this->baseUrl.'/search/photos', [
+                    'query' => $query,
+                    'per_page' => min($count, 30), // Unsplash max is 30 per page
+                    'orientation' => 'landscape', // Prefer landscape for exam materials
+                ]);
 
-            if (!$response->successful()) {
+            if (! $response->successful()) {
                 $error = $response->json('errors.0') ?? $response->body();
                 Log::error('[UnsplashImageSearch] API error', [
                     'status' => $response->status(),
@@ -80,6 +82,7 @@ class UnsplashImageSearchProvider implements ImageSearchProvider
 
             if (empty($results)) {
                 Log::warning('[UnsplashImageSearch] No results found', ['query' => $query]);
+
                 return [];
             }
 

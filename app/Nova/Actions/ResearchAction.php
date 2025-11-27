@@ -48,7 +48,6 @@ class ResearchAction extends Action
     /**
      * Determine if the user is authorized to run the action.
      *
-     * @param  \Illuminate\Http\Request  $request
      * @return bool
      */
     public function authorizedToRun(\Illuminate\Http\Request $request, $model)
@@ -100,6 +99,7 @@ class ResearchAction extends Action
         // Final check
         if ($models->isEmpty()) {
             \Illuminate\Support\Facades\Log::warning('🔵 [ResearchAction] Still no exams after trying request');
+
             return Action::danger('❌ No exam selected. Please open an exam detail page and run this action from there.');
         }
 
@@ -133,7 +133,7 @@ class ResearchAction extends Action
                 dispatch(new \App\Jobs\AnalyzeExamMetadataJob($exam->id));
 
                 return Action::message(
-                    '🚀 Metadata analysis started (usually takes 10-30 seconds). ' .
+                    '🚀 Metadata analysis started (usually takes 10-30 seconds). '.
                     'Please wait for it to complete, then click "Run Exam Research" again to start the research phase.'
                 );
             }
@@ -146,7 +146,7 @@ class ResearchAction extends Action
                 ]);
 
                 return Action::danger(
-                    '⏳ Please wait: Metadata analysis is in progress. ' .
+                    '⏳ Please wait: Metadata analysis is in progress. '.
                     'This usually takes 10-30 seconds. Please try again in a moment.'
                 );
             }
@@ -164,7 +164,7 @@ class ResearchAction extends Action
             $quickCheckService = app(\App\Services\LanguageApp\QuickCheckService::class);
             $checkResult = $quickCheckService->check($exam);
 
-            if (!$checkResult['ready']) {
+            if (! $checkResult['ready']) {
                 \Illuminate\Support\Facades\Log::info('🔵 [ResearchAction] Exam has missing fields but continuing', [
                     'exam_id' => $exam->id,
                     'missing_critical' => $checkResult['missing_critical'],
@@ -178,7 +178,7 @@ class ResearchAction extends Action
 
             // Parse user_input from exam
             $userInput = [];
-            if (!empty($exam->user_input)) {
+            if (! empty($exam->user_input)) {
                 if (is_array($exam->user_input)) {
                     $userInput = $exam->user_input;
                 } elseif (is_string($exam->user_input)) {
@@ -228,7 +228,7 @@ class ResearchAction extends Action
             ];
 
             // Generate unique idempotency key for this request
-            $requestIdempotencyKey = "exam:{$exam->id}:research:nova:" . time() . ':' . uniqid();
+            $requestIdempotencyKey = "exam:{$exam->id}:research:nova:".time().':'.uniqid();
 
             // Enqueue research task
             \Illuminate\Support\Facades\Log::info('🔵 [ResearchAction] Before TaskDispatcher->enqueue()', [

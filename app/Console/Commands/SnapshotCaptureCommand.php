@@ -21,7 +21,7 @@ class SnapshotCaptureCommand extends Command
         $examId = $this->argument('exam');
         $exam = Exam::find($examId);
 
-        if (!$exam) {
+        if (! $exam) {
             $this->error("Exam not found: {$examId}");
 
             return 1;

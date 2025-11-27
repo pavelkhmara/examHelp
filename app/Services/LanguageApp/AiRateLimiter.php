@@ -18,8 +18,7 @@ class AiRateLimiter
         private readonly int $maxRequestsPerMinute = 60,
         private readonly int $maxRetries = 3,
         private readonly int $retryDelayMs = 1000
-    ) {
-    }
+    ) {}
 
     /**
      * Attempt to acquire rate limit permit

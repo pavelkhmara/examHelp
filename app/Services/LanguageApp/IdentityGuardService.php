@@ -73,7 +73,7 @@ class IdentityGuardService extends AbstractAiService
             $res = $this->setConfidenceFlags($res);
 
             // Log with tokens
-            $this->logIdentityResult($exam, $task, $user, $docId, $extracted, $res, $aiPayload,$aiResponse);
+            $this->logIdentityResult($exam, $task, $user, $docId, $extracted, $res, $aiPayload, $aiResponse);
         } catch (\Throwable $e) {
             // Fallback to heuristic method if AI fails
             Log::warning('Identity Guard AI failed, using fallback heuristics', [
@@ -161,7 +161,7 @@ class IdentityGuardService extends AbstractAiService
         // Try to extract country from multiple sources
         // Priority: identity (from AI analysis) → user input
         $country = $exam->identity['country'] ?? null;
-        if (!$country) {
+        if (! $country) {
             $where = (array) ($user['where'] ?? []);
             $country = $where['country'] ?? null;
         }
@@ -169,7 +169,7 @@ class IdentityGuardService extends AbstractAiService
         // Try to extract modality from user_meta (AI should determine this)
         // Priority: user_meta (from AI analysis) → user input
         $modality = $exam->user_meta['exam_modality'] ?? null;
-        if (!$modality) {
+        if (! $modality) {
             $where = (array) ($user['where'] ?? []);
             $modality = $where['mode'] ?? $where['modality'] ?? null;
         }
@@ -182,13 +182,13 @@ class IdentityGuardService extends AbstractAiService
         $score = $target['score'] ?? null;
 
         // We DON'T block if these fields are missing - just log it
-        if (!$lang) {
+        if (! $lang) {
             Log::info('[IdentityGuardFallback] Language not found, will continue anyway');
         }
-        if (!$country) {
+        if (! $country) {
             Log::info('[IdentityGuardFallback] Country not found, will continue anyway');
         }
-        if (!$modality) {
+        if (! $modality) {
             Log::info('[IdentityGuardFallback] Modality not found, will continue anyway');
         }
 

@@ -24,6 +24,7 @@ class GenerateSectionAssemblyJob implements ShouldQueue
     use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
 
     public int $tries = 3;
+
     public int $timeout = 600; // 10 minutes for AI-heavy task
 
     public function __construct(
@@ -76,7 +77,7 @@ class GenerateSectionAssemblyJob implements ShouldQueue
                     }
                 }
 
-                if (!$updated) {
+                if (! $updated) {
                     // Only add section if it's in the expected sections list
                     // This prevents orphaned sections from failed job retries
                     if (in_array($this->sectionId, $expectedSections, true)) {

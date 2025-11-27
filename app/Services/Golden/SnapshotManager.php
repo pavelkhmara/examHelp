@@ -65,7 +65,7 @@ class SnapshotManager
             ? $this->load($exam->id, $stage, $snapshotLabel)
             : $this->loadLatest($exam->id, $stage);
 
-        if (!$snapshot) {
+        if (! $snapshot) {
             return new SnapshotComparison(
                 hasBaseline: false,
                 current: $current,
@@ -234,7 +234,7 @@ class SnapshotManager
         $bySection = [];
         foreach ($plans as $plan) {
             $sectionId = $plan['section_id'];
-            if (!isset($bySection[$sectionId])) {
+            if (! isset($bySection[$sectionId])) {
                 $bySection[$sectionId] = ['plans' => 0, 'questions' => 0];
             }
             $bySection[$sectionId]['plans']++;
@@ -340,7 +340,7 @@ class SnapshotManager
         $path = $this->getSnapshotPath($snapshot->examId, $snapshot->stage, $snapshot->label);
         $dir = dirname($path);
 
-        if (!is_dir($dir)) {
+        if (! is_dir($dir)) {
             mkdir($dir, 0755, true);
         }
 
@@ -351,7 +351,7 @@ class SnapshotManager
     {
         $path = $this->getSnapshotPath($examId, $stage, $label);
 
-        if (!file_exists($path)) {
+        if (! file_exists($path)) {
             return null;
         }
 
@@ -370,7 +370,7 @@ class SnapshotManager
 
         // Иначе ищем последний по дате
         $dir = "{$this->basePath}/{$examId}/{$stage}";
-        if (!is_dir($dir)) {
+        if (! is_dir($dir)) {
             return null;
         }
 
@@ -409,7 +409,7 @@ class SnapshotManager
 
         foreach ($files as $file) {
             $data = json_decode(file_get_contents($file), true);
-            if (!$data) {
+            if (! $data) {
                 continue;
             }
 

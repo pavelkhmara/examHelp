@@ -109,7 +109,7 @@ class ExamController extends Controller
         }
 
         // Update user_input fields
-        if (!empty($validated['user_input_updates'])) {
+        if (! empty($validated['user_input_updates'])) {
             $userInput = is_array($exam->user_input) ? $exam->user_input : [];
             $userInput = array_merge($userInput, $validated['user_input_updates']);
             $exam->user_input = $userInput;

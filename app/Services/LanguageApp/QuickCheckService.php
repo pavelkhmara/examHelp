@@ -50,15 +50,14 @@ class QuickCheckService
     /**
      * Проверить готовность экзамена к исследованию
      *
-     * @param  Exam  $exam
      * @return array
-     * [
-     *   'ready' => bool,
-     *   'checks' => ['field' => ['status' => 'ok|missing|empty', 'label' => '...']],
-     *   'missing_critical' => ['field1', 'field2'],
-     *   'missing_recommended' => ['field1', 'field2'],
-     *   'completion_percentage' => 85,
-     * ]
+     *               [
+     *               'ready' => bool,
+     *               'checks' => ['field' => ['status' => 'ok|missing|empty', 'label' => '...']],
+     *               'missing_critical' => ['field1', 'field2'],
+     *               'missing_recommended' => ['field1', 'field2'],
+     *               'completion_percentage' => 85,
+     *               ]
      */
     public function check(Exam $exam): array
     {
@@ -106,15 +105,13 @@ class QuickCheckService
     /**
      * Проверить конкретное поле
      *
-     * @param  Exam  $exam
-     * @param  string  $field
      * @return string 'ok' | 'missing' | 'empty'
      */
     protected function checkField(Exam $exam, string $field): string
     {
         switch ($field) {
             case 'title':
-                return !empty($exam->title) ? 'ok' : 'empty';
+                return ! empty($exam->title) ? 'ok' : 'empty';
 
             case 'language_of_test':
                 // Check in exam model field first, then identity, then user_meta
@@ -124,15 +121,17 @@ class QuickCheckService
                     ?? $exam->identity['language_of_test']
                     ?? $exam->user_meta['language_of_test']
                     ?? null;
-                return !empty($lang) ? 'ok' : 'missing';
+
+                return ! empty($lang) ? 'ok' : 'missing';
 
             case 'level':
-                return !empty($exam->level) ? 'ok' : 'empty';
+                return ! empty($exam->level) ? 'ok' : 'empty';
 
             case 'has_document_or_input':
                 // Есть документ ИЛИ user_input
                 $hasDocument = $exam->documents()->exists();
-                $hasUserInput = !empty($exam->user_input);
+                $hasUserInput = ! empty($exam->user_input);
+
                 return ($hasDocument || $hasUserInput) ? 'ok' : 'missing';
 
             case 'exam_family':
@@ -141,7 +140,8 @@ class QuickCheckService
                     ?? $exam->identity['exam_family']
                     ?? $exam->user_meta['exam_family']
                     ?? null;
-                return !empty($family) ? 'ok' : 'missing';
+
+                return ! empty($family) ? 'ok' : 'missing';
 
             case 'exam_provider':
                 // Check in identity (canonical first, then flat structure, then user_meta)
@@ -149,10 +149,11 @@ class QuickCheckService
                     ?? $exam->identity['provider']
                     ?? $exam->user_meta['exam_provider']
                     ?? null;
-                return !empty($provider) ? 'ok' : 'missing';
+
+                return ! empty($provider) ? 'ok' : 'missing';
 
             case 'description':
-                return !empty($exam->description) ? 'ok' : 'empty';
+                return ! empty($exam->description) ? 'ok' : 'empty';
 
             default:
                 return 'missing';
@@ -163,36 +164,34 @@ class QuickCheckService
      * Получить список недостающих полей в человекочитаемом формате
      *
      * @param  array  $checkResult  Результат check()
-     * @return string
      */
     public function getMissingFieldsMessage(array $checkResult): string
     {
         $messages = [];
 
-        if (!empty($checkResult['missing_critical'])) {
+        if (! empty($checkResult['missing_critical'])) {
             $criticalLabels = array_map(
                 fn ($field) => self::REQUIRED_FIELDS[$field] ?? $field,
                 $checkResult['missing_critical']
             );
-            $messages[] = 'Critical fields: ' . implode(', ', $criticalLabels);
+            $messages[] = 'Critical fields: '.implode(', ', $criticalLabels);
         }
 
-        if (!empty($checkResult['missing_recommended'])) {
+        if (! empty($checkResult['missing_recommended'])) {
             $recommendedLabels = array_map(
                 fn ($field) => self::REQUIRED_FIELDS[$field] ?? $field,
                 $checkResult['missing_recommended']
             );
-            $messages[] = 'Recommended fields: ' . implode(', ', $recommendedLabels);
+            $messages[] = 'Recommended fields: '.implode(', ', $recommendedLabels);
         }
 
-        return !empty($messages) ? implode('. ', $messages) : 'All fields completed.';
+        return ! empty($messages) ? implode('. ', $messages) : 'All fields completed.';
     }
 
     /**
      * Получить HTML для отображения чек-листа в Nova
      *
      * @param  array  $checkResult  Результат check()
-     * @return string
      */
     public function getChecklistHtml(array $checkResult): string
     {

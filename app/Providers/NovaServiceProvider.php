@@ -90,10 +90,10 @@ class NovaServiceProvider extends NovaApplicationServiceProvider
             $cssFile = $manifest['resources/js/app.js']['css'][0] ?? null;
 
             if ($jsFile) {
-                Nova::script('identity-clarifier-app', asset('build/' . $jsFile));
+                Nova::script('identity-clarifier-app', asset('build/'.$jsFile));
             }
             if ($cssFile) {
-                Nova::style('identity-clarifier-css', asset('build/' . $cssFile));
+                Nova::style('identity-clarifier-css', asset('build/'.$cssFile));
             }
         });
     }

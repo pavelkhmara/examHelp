@@ -2,8 +2,6 @@
 
 namespace Tests\Unit;
 
-use App\Models\Exam;
-use App\Models\ExamCategory;
 use App\Models\Question;
 use App\Models\QuestionGroup;
 use Illuminate\Foundation\Testing\RefreshDatabase;

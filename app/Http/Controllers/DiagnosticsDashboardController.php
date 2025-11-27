@@ -129,7 +129,7 @@ class DiagnosticsDashboardController extends Controller
     {
         $exam = Exam::find($examId);
 
-        if (!$exam) {
+        if (! $exam) {
             return response()->json([
                 'success' => false,
                 'error' => 'Exam not found',
@@ -156,6 +156,7 @@ class DiagnosticsDashboardController extends Controller
         $activeTasks = $researchTasks->whereIn('status', ['queued', 'running'])
             ->map(function ($task) {
                 $stuckMinutes = now()->diffInMinutes($task->updated_at);
+
                 return [
                     'id' => $task->id,
                     'status' => $task->status,
@@ -173,6 +174,7 @@ class DiagnosticsDashboardController extends Controller
         // Get recent tasks (last 5)
         $recentTasks = $tasks->take(5)->map(function ($task) {
             $duration = $task->updated_at->diffInMinutes($task->created_at);
+
             return [
                 'id' => $task->id,
                 'type' => $task->type,
@@ -358,7 +360,7 @@ class DiagnosticsDashboardController extends Controller
     {
         $exam = Exam::find($examId);
 
-        if (!$exam) {
+        if (! $exam) {
             return response()->json([
                 'success' => false,
                 'error' => 'Exam not found',
@@ -393,7 +395,7 @@ class DiagnosticsDashboardController extends Controller
     {
         $exam = Exam::find($examId);
 
-        if (!$exam) {
+        if (! $exam) {
             return response()->json([
                 'success' => false,
                 'error' => 'Exam not found',
@@ -427,10 +429,10 @@ class DiagnosticsDashboardController extends Controller
         $gen = Exam::find($genId);
         $ref = Exam::find($refId);
 
-        if (!$gen) {
+        if (! $gen) {
             return response()->json(['success' => false, 'error' => "Generated exam not found: $genId"], 404);
         }
-        if (!$ref) {
+        if (! $ref) {
             return response()->json(['success' => false, 'error' => "Reference exam not found: $refId"], 404);
         }
 
@@ -497,13 +499,13 @@ class DiagnosticsDashboardController extends Controller
         }
 
         // Question types
-        $genTypes = Question::whereHas('section', fn($q) => $q->where('exam_id', $genId))
+        $genTypes = Question::whereHas('section', fn ($q) => $q->where('exam_id', $genId))
             ->selectRaw('type, COUNT(*) as count')
             ->groupBy('type')
             ->pluck('count', 'type')
             ->toArray();
 
-        $refTypes = Question::whereHas('section', fn($q) => $q->where('exam_id', $refId))
+        $refTypes = Question::whereHas('section', fn ($q) => $q->where('exam_id', $refId))
             ->selectRaw('type, COUNT(*) as count')
             ->groupBy('type')
             ->pluck('count', 'type')
@@ -533,7 +535,7 @@ class DiagnosticsDashboardController extends Controller
         // Recommendations
         $recommendations = [];
         if ($genGroups == 0 && $refGroups > 0) {
-            $recommendations[] = "Question groups are missing - need to implement group generation";
+            $recommendations[] = 'Question groups are missing - need to implement group generation';
         }
         if ($genQuestions < $refQuestions * 0.7) {
             $missing = $refQuestions - $genQuestions;
@@ -544,9 +546,9 @@ class DiagnosticsDashboardController extends Controller
                 $recommendations[] = "Section '{$key}' needs more content (target: {$data['ref_questions']} questions)";
             }
         }
-        $missingTypes = array_keys(array_filter($typeComparison, fn($t) => $t['status'] === 'missing'));
-        if (!empty($missingTypes)) {
-            $recommendations[] = "Missing question types: " . implode(', ', $missingTypes);
+        $missingTypes = array_keys(array_filter($typeComparison, fn ($t) => $t['status'] === 'missing'));
+        if (! empty($missingTypes)) {
+            $recommendations[] = 'Missing question types: '.implode(', ', $missingTypes);
         }
 
         return response()->json([
@@ -590,7 +592,7 @@ class DiagnosticsDashboardController extends Controller
     {
         $refs = Exam::whereJsonContains('meta->is_reference_exam', true)
             ->get()
-            ->map(fn($exam) => [
+            ->map(fn ($exam) => [
                 'id' => $exam->id,
                 'title' => $exam->title,
                 'level' => $exam->level,
@@ -676,7 +678,7 @@ class DiagnosticsDashboardController extends Controller
     {
         $exam = Exam::find($examId);
 
-        if (!$exam) {
+        if (! $exam) {
             return response()->json(['success' => false, 'error' => "Exam not found: $examId"], 404);
         }
 
@@ -692,7 +694,7 @@ class DiagnosticsDashboardController extends Controller
         foreach ($availableStages as $stage) {
             try {
                 $golden = $loader->loadStage($fixtureId, $stage);
-                if (!$golden) {
+                if (! $golden) {
                     continue;
                 }
 
@@ -718,7 +720,7 @@ class DiagnosticsDashboardController extends Controller
         }
 
         $overallSimilarity = $stageCount > 0 ? round(($totalSimilarity / $stageCount) * 100) : 0;
-        $passedCount = count(array_filter($results, fn($r) => $r['passed'] ?? false));
+        $passedCount = count(array_filter($results, fn ($r) => $r['passed'] ?? false));
 
         // Determine grade
         $grade = match (true) {
@@ -759,12 +761,12 @@ class DiagnosticsDashboardController extends Controller
     {
         $exam = Exam::find($examId);
 
-        if (!$exam) {
+        if (! $exam) {
             return response()->json(['success' => false, 'error' => "Exam not found: $examId"], 404);
         }
 
         $golden = $loader->loadStage($fixtureId, $stage);
-        if (!$golden) {
+        if (! $golden) {
             return response()->json(['success' => false, 'error' => "Golden stage not found: {$fixtureId}/{$stage}"], 404);
         }
 
@@ -800,7 +802,7 @@ class DiagnosticsDashboardController extends Controller
     {
         $exam = Exam::find($examId);
 
-        if (!$exam) {
+        if (! $exam) {
             return response()->json(['success' => false, 'error' => "Exam not found: $examId"], 404);
         }
 
@@ -808,7 +810,7 @@ class DiagnosticsDashboardController extends Controller
         $label = $request->input('label', 'baseline');
         $captureAll = $request->boolean('all', false);
 
-        if (!$captureAll && !$stage) {
+        if (! $captureAll && ! $stage) {
             return response()->json(['success' => false, 'error' => 'Either stage or all=true is required'], 400);
         }
 
@@ -843,7 +845,7 @@ class DiagnosticsDashboardController extends Controller
      * List snapshots for exam
      * GET /diagnostics-dashboard/snapshot/list/{examId?}
      */
-    public function snapshotList(?string $examId = null, SnapshotManager $manager)
+    public function snapshotList(?string $examId, SnapshotManager $manager)
     {
         if ($examId) {
             $snapshots = $manager->list($examId);
@@ -871,7 +873,7 @@ class DiagnosticsDashboardController extends Controller
     {
         $exam = Exam::find($examId);
 
-        if (!$exam) {
+        if (! $exam) {
             return response()->json(['success' => false, 'error' => "Exam not found: $examId"], 404);
         }
 

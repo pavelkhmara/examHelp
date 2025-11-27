@@ -343,6 +343,7 @@ SCHEMA;
     private static function getChecklist(string $type, int $quantity, string $examLanguage): string
     {
         $plural = $quantity > 1 ? 's' : '';
+
         return <<<EOT
 # Self-Verification Checklist (Review before submitting)
 Before returning your response, verify:

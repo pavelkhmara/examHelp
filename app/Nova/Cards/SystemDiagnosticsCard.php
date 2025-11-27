@@ -2,13 +2,13 @@
 
 namespace App\Nova\Cards;
 
+use App\Models\Exam;
 use App\Models\ExamCategory;
 use App\Models\ExamExampleQuestion;
 use App\Models\GenerationLog;
 use App\Models\GenerationTask;
 use Illuminate\Support\Facades\DB;
 use Laravel\Nova\Card;
-use App\Models\Exam;
 
 class SystemDiagnosticsCard extends Card
 {
@@ -41,8 +41,6 @@ class SystemDiagnosticsCard extends Card
 
     /**
      * Prepare the card for JSON serialization.
-     *
-     * @return array
      */
     public function jsonSerialize(): array
     {
@@ -134,7 +132,7 @@ class SystemDiagnosticsCard extends Card
                     'exam_id' => $task->exam_id,
                     'exam_title' => $task->exam->title ?? 'Unknown',
                     'type' => $task->type,
-                    'error' => substr($task->error ?? '', 0, 150) . (strlen($task->error ?? '') > 150 ? '...' : ''),
+                    'error' => substr($task->error ?? '', 0, 150).(strlen($task->error ?? '') > 150 ? '...' : ''),
                     'failed_at' => $task->updated_at?->format('Y-m-d H:i:s'),
                 ];
             })

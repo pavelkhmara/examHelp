@@ -22,7 +22,7 @@ class ExamObserverTest extends TestCase
     protected function setUp(): void
     {
         parent::setUp();
-        $this->confirmedIdentityService = new ConfirmedIdentityService();
+        $this->confirmedIdentityService = new ConfirmedIdentityService;
     }
 
     /**

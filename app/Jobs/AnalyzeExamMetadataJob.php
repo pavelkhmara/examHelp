@@ -35,8 +35,9 @@ class AnalyzeExamMetadataJob implements ShouldQueue
 
         $exam = Exam::find($this->examId);
 
-        if (!$exam) {
-            Log::error("AnalyzeExamMetadataJob: Exam not found", ['exam_id' => $this->examId]);
+        if (! $exam) {
+            Log::error('AnalyzeExamMetadataJob: Exam not found', ['exam_id' => $this->examId]);
+
             return;
         }
 
@@ -74,9 +75,9 @@ class AnalyzeExamMetadataJob implements ShouldQueue
             ];
 
             // Sync language_of_test from identity (if available)
-            if (!empty($result['identity']['exam_language'])) {
+            if (! empty($result['identity']['exam_language'])) {
                 $updateData['language_of_test'] = $result['identity']['exam_language'];
-                Log::info("AnalyzeExamMetadataJob: Setting language_of_test from identity", [
+                Log::info('AnalyzeExamMetadataJob: Setting language_of_test from identity', [
                     'exam_id' => $this->examId,
                     'language' => $result['identity']['exam_language'],
                 ]);
@@ -94,7 +95,7 @@ class AnalyzeExamMetadataJob implements ShouldQueue
                 $originalSlug = $slug;
                 $counter = 1;
                 while (Exam::where('slug', $slug)->where('id', '!=', $exam->id)->exists()) {
-                    $slug = substr($originalSlug, 0, 17) . '-' . $counter;
+                    $slug = substr($originalSlug, 0, 17).'-'.$counter;
                     $counter++;
                 }
 
@@ -103,7 +104,7 @@ class AnalyzeExamMetadataJob implements ShouldQueue
 
             Log::info("AnalyzeExamMetadataJob: Completed successfully for exam {$this->examId}");
         } catch (\Exception $e) {
-            Log::error("AnalyzeExamMetadataJob: Failed", [
+            Log::error('AnalyzeExamMetadataJob: Failed', [
                 'exam_id' => $this->examId,
                 'error' => $e->getMessage(),
                 'trace' => $e->getTraceAsString(),
@@ -120,7 +121,7 @@ class AnalyzeExamMetadataJob implements ShouldQueue
             $exam->update([
                 'analysis_status' => 'failed',
                 'system_analysis' => [
-                    'critical' => ['Analysis failed: ' . $e->getMessage()],
+                    'critical' => ['Analysis failed: '.$e->getMessage()],
                 ],
             ]);
         }

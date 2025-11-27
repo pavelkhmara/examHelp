@@ -150,7 +150,7 @@ class RunExamResearchJob implements ShouldQueue
                 $task->updateHeartbeat(); // Heartbeat after identity verification
 
                 // IMPORTANT: Restore clarification flags after AI call
-                if (!empty($savedClarificationFlags['user_provided_clarification'])) {
+                if (! empty($savedClarificationFlags['user_provided_clarification'])) {
                     $identityResult = array_merge($identityResult, $savedClarificationFlags);
                     \Illuminate\Support\Facades\Log::info('Restored clarification flags after AI call', [
                         'task_id' => $task->id,
@@ -227,7 +227,7 @@ class RunExamResearchJob implements ShouldQueue
                 $task->refresh();
 
                 // IMPORTANT: Restore clarification flags after AI call (same as iterative method)
-                if (!empty($savedClarificationFlags['user_provided_clarification'])) {
+                if (! empty($savedClarificationFlags['user_provided_clarification'])) {
                     $identityResult = array_merge($identityResult, $savedClarificationFlags);
                     \Illuminate\Support\Facades\Log::info('Restored clarification flags after AI call (legacy method)', [
                         'task_id' => $task->id,
@@ -622,7 +622,7 @@ class RunExamResearchJob implements ShouldQueue
                     $task->request = $request;
                     $task->save();
 
-                    $task->addActivity('dispatching_sections', "Dispatching " . count($sections) . " section assembly jobs", [
+                    $task->addActivity('dispatching_sections', 'Dispatching '.count($sections).' section assembly jobs', [
                         'sections' => $sectionIds,
                         'mode' => 'parallel',
                     ]);
@@ -800,55 +800,55 @@ class RunExamResearchJob implements ShouldQueue
                 'reason' => 'skip_examples flag set',
             ]);
         } else {
-        try {
-            \Illuminate\Support\Facades\Log::info('Starting example generation', [
-                'exam_id' => $exam->id,
-                'task_id' => $task->id,
-                'architecture' => $useTwoPhaseGeneration ? 'v2' : 'v1',
-            ]);
+            try {
+                \Illuminate\Support\Facades\Log::info('Starting example generation', [
+                    'exam_id' => $exam->id,
+                    'task_id' => $task->id,
+                    'architecture' => $useTwoPhaseGeneration ? 'v2' : 'v1',
+                ]);
 
-            $task->addActivity('example_generation_started', 'Generating example questions for archetypes');
-            $task->updateHeartbeat(); // Heartbeat before example generation
+                $task->addActivity('example_generation_started', 'Generating example questions for archetypes');
+                $task->updateHeartbeat(); // Heartbeat before example generation
 
-            $exampleResult = $svc->generateExamples($exam, $task, 1); // 1 example per archetype
+                $exampleResult = $svc->generateExamples($exam, $task, 1); // 1 example per archetype
 
-            $task->updateHeartbeat(); // Heartbeat after example generation
+                $task->updateHeartbeat(); // Heartbeat after example generation
 
-            \Illuminate\Support\Facades\Log::info('Example generation completed', [
-                'exam_id' => $exam->id,
-                'task_id' => $task->id,
-                'examples_created' => $exampleResult['examples_created'] ?? 0,
-                'architecture' => $useTwoPhaseGeneration ? 'v2' : 'v1',
-            ]);
+                \Illuminate\Support\Facades\Log::info('Example generation completed', [
+                    'exam_id' => $exam->id,
+                    'task_id' => $task->id,
+                    'examples_created' => $exampleResult['examples_created'] ?? 0,
+                    'architecture' => $useTwoPhaseGeneration ? 'v2' : 'v1',
+                ]);
 
-            $examplesCount = $exampleResult['examples_created'] ?? 0;
-            $task->addActivity('example_generation_completed', "Generated {$examplesCount} example questions", [
-                'examples_count' => $examplesCount,
-                'architecture' => $useTwoPhaseGeneration ? 'v2' : 'v1',
-            ]);
+                $examplesCount = $exampleResult['examples_created'] ?? 0;
+                $task->addActivity('example_generation_completed', "Generated {$examplesCount} example questions", [
+                    'examples_count' => $examplesCount,
+                    'architecture' => $useTwoPhaseGeneration ? 'v2' : 'v1',
+                ]);
 
-            // Update task result with example generation info
-            $result = (array) ($task->result ?? []);
-            $result['examples'] = $exampleResult;
-            $task->result = $result;
-            $task->save();
-        } catch (\Throwable $e) {
-            \Illuminate\Support\Facades\Log::error('Example generation failed', [
-                'exam_id' => $exam->id,
-                'task_id' => $task->id,
-                'error' => $e->getMessage(),
-                'trace' => $e->getTraceAsString(),
-                'architecture' => $useTwoPhaseGeneration ? 'v2' : 'v1',
-            ]);
+                // Update task result with example generation info
+                $result = (array) ($task->result ?? []);
+                $result['examples'] = $exampleResult;
+                $task->result = $result;
+                $task->save();
+            } catch (\Throwable $e) {
+                \Illuminate\Support\Facades\Log::error('Example generation failed', [
+                    'exam_id' => $exam->id,
+                    'task_id' => $task->id,
+                    'error' => $e->getMessage(),
+                    'trace' => $e->getTraceAsString(),
+                    'architecture' => $useTwoPhaseGeneration ? 'v2' : 'v1',
+                ]);
 
-            $task->addActivity('example_generation_failed', 'Example generation failed: '.$e->getMessage());
+                $task->addActivity('example_generation_failed', 'Example generation failed: '.$e->getMessage());
 
-            // Don't fail the whole job - examples are nice-to-have
-            $result = (array) ($task->result ?? []);
-            $result['examples_error'] = $e->getMessage();
-            $task->result = $result;
-            $task->save();
-        }
+                // Don't fail the whole job - examples are nice-to-have
+                $result = (array) ($task->result ?? []);
+                $result['examples_error'] = $e->getMessage();
+                $task->result = $result;
+                $task->save();
+            }
         } // end else (skip_examples)
 
         // ========================================
@@ -858,10 +858,10 @@ class RunExamResearchJob implements ShouldQueue
         $task->addActivity('finalization_started', 'Starting research finalization');
 
         // Materialize structure_v2 into database tables (v2 only)
-        if ($useTwoPhaseGeneration && !empty($exam->meta['structure_v2']['sections'])) {
+        if ($useTwoPhaseGeneration && ! empty($exam->meta['structure_v2']['sections'])) {
             $task->addActivity('materializing_structure', 'Materializing structure_v2 into database tables');
 
-            $materializer = new \App\Services\LanguageApp\StructureMaterializer();
+            $materializer = new \App\Services\LanguageApp\StructureMaterializer;
             $stats = $materializer->materialize($exam, $exam->meta['structure_v2']['sections']);
 
             $task->addActivity('structure_materialized', sprintf(

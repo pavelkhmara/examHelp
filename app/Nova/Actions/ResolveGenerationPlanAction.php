@@ -5,7 +5,6 @@ namespace App\Nova\Actions;
 use App\Jobs\ResolveGenerationPlansJob;
 use App\Models\GenerationTask;
 use Illuminate\Bus\Queueable;
-use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Support\Collection;
 use Laravel\Nova\Actions\Action;
@@ -20,12 +19,12 @@ class ResolveGenerationPlanAction extends Action
     public $uriKey = 'resolve-generation-plans-v2';
 
     public $standalone = false;
+
     public $showOnDetail = true;
 
     /**
      * Determine if the action should be available for the given request.
      *
-     * @param  \Illuminate\Http\Request  $request
      * @return bool
      */
     public function authorizedToSee(\Illuminate\Http\Request $request)
@@ -41,6 +40,7 @@ class ResolveGenerationPlanAction extends Action
         // Реальная валидация происходит в handle()
         if (! $request->resourceId) {
             \Log::info('[ResolveGenerationPlanAction] authorizedToSee: NO resourceId, returning TRUE (Nova initial check)');
+
             return true; // CHANGED: было false
         }
 
@@ -59,7 +59,6 @@ class ResolveGenerationPlanAction extends Action
     /**
      * Determine if the user is authorized to run the action.
      *
-     * @param  \Illuminate\Http\Request  $request
      * @return bool
      */
     public function authorizedToRun(\Illuminate\Http\Request $request, $model)
@@ -72,6 +71,7 @@ class ResolveGenerationPlanAction extends Action
             'method' => $request->method(),
             'result' => true,
         ]);
+
         return true;
     }
 
@@ -92,7 +92,7 @@ class ResolveGenerationPlanAction extends Action
 
             // Validate that structure_v2 exists (from Phase A)
             $structure = $exam->structure_v2 ?? null;
-            if (!$structure) {
+            if (! $structure) {
                 return Action::danger('❌ Phase A not completed. Run "1️⃣ Phase A: Skeleton" first.');
             }
 
@@ -100,13 +100,13 @@ class ResolveGenerationPlanAction extends Action
             $sections = $structure['sections'] ?? [];
             $hasAssembly = false;
             foreach ($sections as $section) {
-                if (!empty($section['assembly'])) {
+                if (! empty($section['assembly'])) {
                     $hasAssembly = true;
                     break;
                 }
             }
 
-            if (!$hasAssembly) {
+            if (! $hasAssembly) {
                 return Action::danger('❌ Phase B not completed. Run "2️⃣ Phase B: Assembly" first.');
             }
 
@@ -129,5 +129,3 @@ class ResolveGenerationPlanAction extends Action
         return Action::message('Plan resolution queued.');
     }
 }
-
-

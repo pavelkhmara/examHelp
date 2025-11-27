@@ -17,6 +17,7 @@ class DocumentStructureExtractorTest extends TestCase
     use RefreshDatabase;
 
     protected DocumentStructureExtractor $extractor;
+
     protected AiProvider $mockAi;
 
     protected function setUp(): void

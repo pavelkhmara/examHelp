@@ -25,7 +25,7 @@ class GoldenReportCommand extends Command
     ): int {
         $goldenExamId = $this->argument('golden');
 
-        if (!$goldenLoader->exists($goldenExamId)) {
+        if (! $goldenLoader->exists($goldenExamId)) {
             $this->error("Golden fixtures not found for: {$goldenExamId}");
             $this->line('');
             $this->line('Available golden fixtures:');
@@ -66,7 +66,7 @@ class GoldenReportCommand extends Command
         StageComparator $comparator
     ): void {
         $exam = Exam::find($examUuid);
-        if (!$exam) {
+        if (! $exam) {
             $this->error("Exam not found: {$examUuid}");
 
             return;
@@ -85,7 +85,7 @@ class GoldenReportCommand extends Command
         $results = [];
 
         foreach ($stages as $stageName) {
-            if (!$goldenLoader->stageExists($goldenExamId, $stageName)) {
+            if (! $goldenLoader->stageExists($goldenExamId, $stageName)) {
                 $this->line("  - {$stageName}: No golden fixture");
 
                 continue;
@@ -108,7 +108,7 @@ class GoldenReportCommand extends Command
                 ];
 
                 // Показать топ различий если не проходит
-                if (!$comparison->isPassing() && $diffsCount > 0) {
+                if (! $comparison->isPassing() && $diffsCount > 0) {
                     foreach (array_slice($comparison->diffs, 0, 3) as $diff) {
                         $this->line("      - [{$diff['type']}] {$diff['path']}");
                     }

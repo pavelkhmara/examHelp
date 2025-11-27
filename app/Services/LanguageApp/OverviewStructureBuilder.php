@@ -6,11 +6,11 @@ use App\Models\Exam;
 use App\Models\ExamCategory;
 use App\Models\ExamDocument;
 use App\Models\GenerationTask;
+use App\Services\LanguageApp\Prompts\PromptOverviewPhaseA;
+use App\Services\LanguageApp\Prompts\PromptOverviewPhaseB;
 use App\Services\LanguageApp\Validators\JsonSchemaExamOverview;
 use App\Services\LanguageApp\Validators\JsonSchemaExamV2;
 use App\Services\LanguageApp\Validators\QuestionTypeContract;
-use App\Services\LanguageApp\Prompts\PromptOverviewPhaseA;
-use App\Services\LanguageApp\Prompts\PromptOverviewPhaseB;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
@@ -28,7 +28,7 @@ use Illuminate\Support\Str;
 class OverviewStructureBuilder extends AbstractAiService
 {
     /**
-     * @param DocumentStructureExtractor|null $documentExtractor Injected for structured document extraction (Task #1 from task_prompt_2_25_10_25.md)
+     * @param  DocumentStructureExtractor|null  $documentExtractor  Injected for structured document extraction (Task #1 from task_prompt_2_25_10_25.md)
      */
     public function __construct(
         AiProvider $ai,
@@ -76,7 +76,7 @@ class OverviewStructureBuilder extends AbstractAiService
                 $hints[] = 'IMPORTANT: Previous attempt had poor category distribution. Please ensure EACH question_archetype has category_weights field with appropriate categories (e.g., listening, reading, writing, speaking). Do NOT put all question_archetypes in "unknown" category.';
 
                 // Add validation error hints with specific instructions
-                if (!empty($validationErrors)) {
+                if (! empty($validationErrors)) {
                     $hints[] = 'VALIDATION ERRORS from previous attempt:';
                     foreach ($validationErrors as $error) {
                         $hints[] = "  - {$error}";
@@ -309,7 +309,7 @@ class OverviewStructureBuilder extends AbstractAiService
         $structure['question_archetypes'] = $overview_normalized['question_archetypes'] ?? [];
 
         // Add section_archetypes if present
-        if (!empty($overview_normalized['section_archetypes'])) {
+        if (! empty($overview_normalized['section_archetypes'])) {
             $structure['section_archetypes'] = $overview_normalized['section_archetypes'];
         }
 
@@ -838,7 +838,7 @@ class OverviewStructureBuilder extends AbstractAiService
         $structure = [];
         $structure['question_archetypes'] = $overview_normalized['question_archetypes'] ?? [];
 
-        if (!empty($overview_normalized['section_archetypes'])) {
+        if (! empty($overview_normalized['section_archetypes'])) {
             $structure['section_archetypes'] = $overview_normalized['section_archetypes'];
         }
 
@@ -870,7 +870,7 @@ class OverviewStructureBuilder extends AbstractAiService
             $questions = $section['questions'] ?? [];
             $questionCount = count($questions);
 
-            if (!$sectionDuration || $questionCount === 0) {
+            if (! $sectionDuration || $questionCount === 0) {
                 continue;
             }
 
@@ -887,7 +887,7 @@ class OverviewStructureBuilder extends AbstractAiService
             }
 
             // Distribute remaining time among questions without duration
-            if (!empty($questionsWithoutDuration)) {
+            if (! empty($questionsWithoutDuration)) {
                 $remainingTime = $sectionDuration - $allocatedTime;
                 $timePerQuestion = $remainingTime > 0
                     ? round($remainingTime / count($questionsWithoutDuration), 1)
@@ -911,7 +911,7 @@ class OverviewStructureBuilder extends AbstractAiService
         // Also handle question_archetypes if present (fallback structure)
         if (isset($overview['question_archetypes'])) {
             foreach ($overview['question_archetypes'] as &$archetype) {
-                if (!isset($archetype['step_duration']) || $archetype['step_duration'] <= 0) {
+                if (! isset($archetype['step_duration']) || $archetype['step_duration'] <= 0) {
                     // Estimate based on task type or use default
                     $archetype['step_duration'] = $this->estimateTaskDuration($archetype);
                 }
@@ -932,16 +932,18 @@ class OverviewStructureBuilder extends AbstractAiService
         // Heuristics based on task type
         if (str_contains($taskType, 'multiple_choice') || str_contains($taskType, 'true_false')) {
             $questionCount = $task['question_count'] ?? 10;
-            return max(5, (int)($questionCount * 1.0)); // 1 min per question
+
+            return max(5, (int) ($questionCount * 1.0)); // 1 min per question
         }
 
         if (str_contains($taskType, 'writing') || str_contains($taskName, 'writing') || str_contains($taskName, 'essay')) {
             $wordCount = $task['word_count_target'] ?? 100;
             if (is_string($wordCount)) {
                 preg_match('/\d+/', $wordCount, $matches);
-                $wordCount = (int)($matches[0] ?? 100);
+                $wordCount = (int) ($matches[0] ?? 100);
             }
-            return max(20, (int)($wordCount / 3)); // ~3 words per minute
+
+            return max(20, (int) ($wordCount / 3)); // ~3 words per minute
         }
 
         if (str_contains($taskName, 'listening') || str_contains($taskType, 'listening')) {
@@ -965,13 +967,12 @@ class OverviewStructureBuilder extends AbstractAiService
      * This implements Task #1 from task_prompt_2_25_10_25.md
      * FEATURE: Easy to disable by removing this method call or setting $documentExtractor to null
      *
-     * @param Exam $exam
      * @return array|null Structured data or null if extraction fails/disabled
      */
     protected function extractDocumentStructure(Exam $exam): ?array
     {
         // Feature flag: if no extractor injected, feature is disabled
-        if (!$this->documentExtractor) {
+        if (! $this->documentExtractor) {
             return null;
         }
 
@@ -982,14 +983,14 @@ class OverviewStructureBuilder extends AbstractAiService
             ->orderByDesc('updated_at')
             ->first();
 
-        if (!$document) {
+        if (! $document) {
             return null;
         }
 
         try {
             $structured = $this->documentExtractor->extract($document);
 
-            if (!$structured) {
+            if (! $structured) {
                 return null;
             }
 
@@ -1001,6 +1002,7 @@ class OverviewStructureBuilder extends AbstractAiService
                 'document_id' => $document->id,
                 'error' => $e->getMessage(),
             ]);
+
             return null;
         }
     }
@@ -1011,15 +1013,13 @@ class OverviewStructureBuilder extends AbstractAiService
      * This is the first phase of v2 two-phase generation.
      * Output: exam structure with sections[] but NO tasks[] or assembly{}
      *
-     * @param Exam $exam
-     * @param GenerationTask $task
      * @return array Validated exam skeleton structure
      */
     public function runPhaseA(Exam $exam, GenerationTask $task): array
     {
         Log::debug('OverviewStructureBuilder: starting Phase A (skeleton generation)', [
             'exam_id' => $exam->id,
-            'task_id' => $task->id
+            'task_id' => $task->id,
         ]);
 
         $files = $this->buildFilesForExam($exam);
@@ -1030,7 +1030,7 @@ class OverviewStructureBuilder extends AbstractAiService
         // Get confirmed identity if available
         $confirmedIdentity = $exam->confirmedIdentity;
         $identityCanonical = null;
-        if ($confirmedIdentity && !empty($confirmedIdentity->identity_data['canonical'])) {
+        if ($confirmedIdentity && ! empty($confirmedIdentity->identity_data['canonical'])) {
             $identityCanonical = $confirmedIdentity->identity_data['canonical'];
             Log::debug('OverviewStructureBuilder: Using confirmed identity for Phase A', [
                 'exam_id' => $exam->id,
@@ -1079,7 +1079,7 @@ class OverviewStructureBuilder extends AbstractAiService
         $decoded = $this->decodeOverview($res1);
 
         try {
-            $validator = new JsonSchemaExamV2();
+            $validator = new JsonSchemaExamV2;
             $skeleton_normalized = $validator->validate($decoded);
             $this->log($task, 'phase_a_validated', $payload, ['result' => $skeleton_normalized]);
 
@@ -1092,9 +1092,9 @@ class OverviewStructureBuilder extends AbstractAiService
                 'decoded' => $decoded,
             ]);
 
-            $task->addActivity('phase_a_validation_failed', 'Phase A validation error: ' . $ve->getMessage());
+            $task->addActivity('phase_a_validation_failed', 'Phase A validation error: '.$ve->getMessage());
 
-            throw new \RuntimeException('Phase A validation failed: ' . $ve->getMessage(), 0, $ve);
+            throw new \RuntimeException('Phase A validation failed: '.$ve->getMessage(), 0, $ve);
         }
 
         // Store skeleton in exam.meta.structure_v2
@@ -1117,16 +1117,14 @@ class OverviewStructureBuilder extends AbstractAiService
      * This is the second phase of v2 two-phase generation.
      * Takes skeleton from Phase A and adds assembly{} configuration to sections.
      *
-     * @param Exam $exam
-     * @param GenerationTask $task
-     * @param array $phaseASkeleton Validated skeleton from Phase A
+     * @param  array  $phaseASkeleton  Validated skeleton from Phase A
      * @return array Complete exam structure with assembly configuration
      */
     public function runPhaseB(Exam $exam, GenerationTask $task, array $phaseASkeleton): array
     {
         Log::debug('OverviewStructureBuilder: starting Phase B (assembly plan)', [
             'exam_id' => $exam->id,
-            'task_id' => $task->id
+            'task_id' => $task->id,
         ]);
 
         $files = $this->buildFilesForExam($exam);
@@ -1179,7 +1177,7 @@ class OverviewStructureBuilder extends AbstractAiService
         $decoded = $this->decodeOverview($res2);
 
         try {
-            $validator = new JsonSchemaExamV2();
+            $validator = new JsonSchemaExamV2;
             $structure_normalized = $validator->validate($decoded);
             $this->log($task, 'phase_b_validated', $payload, ['result' => $structure_normalized]);
 
@@ -1192,9 +1190,9 @@ class OverviewStructureBuilder extends AbstractAiService
                 'decoded' => $decoded,
             ]);
 
-            $task->addActivity('phase_b_validation_failed', 'Phase B validation error: ' . $ve->getMessage());
+            $task->addActivity('phase_b_validation_failed', 'Phase B validation error: '.$ve->getMessage());
 
-            throw new \RuntimeException('Phase B validation failed: ' . $ve->getMessage(), 0, $ve);
+            throw new \RuntimeException('Phase B validation failed: '.$ve->getMessage(), 0, $ve);
         }
 
         // Update structure_v2 with complete assembly plan
@@ -1217,9 +1215,7 @@ class OverviewStructureBuilder extends AbstractAiService
      * This method is used by GenerateSectionAssemblyJob to generate assembly configuration
      * for one section in parallel with other sections.
      *
-     * @param Exam $exam
-     * @param GenerationTask $task
-     * @param array $sectionSkeleton Section skeleton from Phase A
+     * @param  array  $sectionSkeleton  Section skeleton from Phase A
      * @return array Complete section with assembly configuration
      */
     public function generateSectionAssembly(Exam $exam, GenerationTask $task, array $sectionSkeleton): array
@@ -1272,7 +1268,7 @@ class OverviewStructureBuilder extends AbstractAiService
 
         // Call AI
         $res = $this->callAi($payload, $opts);
-        $this->log($task, 'section_assembly_' . $sectionId, $payload, $res);
+        $this->log($task, 'section_assembly_'.$sectionId, $payload, $res);
 
         Log::debug('OverviewStructureBuilder section assembly result', [
             'section_id' => $sectionId,
@@ -1285,7 +1281,7 @@ class OverviewStructureBuilder extends AbstractAiService
         // Validate section structure
         try {
             // For now, just check that we have the required fields
-            if (!isset($decoded['id']) || !isset($decoded['assembly'])) {
+            if (! isset($decoded['id']) || ! isset($decoded['assembly'])) {
                 throw new \RuntimeException('Section assembly response missing required fields (id, assembly)');
             }
 
@@ -1311,7 +1307,7 @@ class OverviewStructureBuilder extends AbstractAiService
                 'decoded' => $decoded,
             ]);
 
-            throw new \RuntimeException('Section assembly validation failed: ' . $ve->getMessage(), 0, $ve);
+            throw new \RuntimeException('Section assembly validation failed: '.$ve->getMessage(), 0, $ve);
         }
     }
 }

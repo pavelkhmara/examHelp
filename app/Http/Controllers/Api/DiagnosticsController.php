@@ -6,9 +6,8 @@ use App\Http\Controllers\Controller;
 use App\Models\Exam;
 use App\Models\ExamCategory;
 use App\Models\ExamExampleQuestion;
-use App\Models\GenerationTask;
 use App\Models\GenerationLog;
-use Illuminate\Http\Request;
+use App\Models\GenerationTask;
 
 /**
  * Diagnostics API endpoints for monitoring and testing
@@ -346,7 +345,7 @@ class DiagnosticsController extends Controller
         try {
             $exam = Exam::first();
 
-            if (!$exam) {
+            if (! $exam) {
                 return response()->json([
                     'success' => false,
                     'message' => 'No exams found in database',
@@ -441,12 +440,12 @@ class DiagnosticsController extends Controller
                                     'created_at' => \Carbon\Carbon::createFromTimestamp($job->created_at)->toISOString(),
                                     'job_class' => $payload['displayName'] ?? 'Unknown',
                                     'task_id' => $taskId,
-                                    'waiting_time' => now()->diffInSeconds(\Carbon\Carbon::createFromTimestamp($job->created_at)) . 's',
+                                    'waiting_time' => now()->diffInSeconds(\Carbon\Carbon::createFromTimestamp($job->created_at)).'s',
                                 ];
                             } catch (\Exception $e) {
                                 return [
                                     'id' => $job->id ?? null,
-                                    'error' => 'Failed to parse job: ' . $e->getMessage(),
+                                    'error' => 'Failed to parse job: '.$e->getMessage(),
                                 ];
                             }
                         })
@@ -478,7 +477,7 @@ class DiagnosticsController extends Controller
                             } catch (\Exception $e) {
                                 return [
                                     'id' => $job->id ?? null,
-                                    'error' => 'Failed to parse failed job: ' . $e->getMessage(),
+                                    'error' => 'Failed to parse failed job: '.$e->getMessage(),
                                 ];
                             }
                         })

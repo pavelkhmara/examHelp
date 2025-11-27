@@ -13,8 +13,7 @@ class ExamTestHelper
     /**
      * Создать exam со всеми обязательными полями (QuickCheck ready)
      *
-     * @param array $overrides
-     * @param bool $withEvents Если false, создает exam без триггеринга events/observers (default: false)
+     * @param  bool  $withEvents  Если false, создает exam без триггеринга events/observers (default: false)
      */
     public static function createExamWithAllFields(array $overrides = [], bool $withEvents = false): Exam
     {
@@ -42,14 +41,13 @@ class ExamTestHelper
         }
 
         // Создать без событий (не триггерит ExamObserver)
-        return Exam::withoutEvents(fn() => $factory->create($data));
+        return Exam::withoutEvents(fn () => $factory->create($data));
     }
 
     /**
      * Создать exam с минимальными данными (только title)
      *
-     * @param array $overrides
-     * @param bool $withEvents Если false, создает exam без триггеринга events/observers (default: false)
+     * @param  bool  $withEvents  Если false, создает exam без триггеринга events/observers (default: false)
      */
     public static function createExamWithMinimalData(array $overrides = [], bool $withEvents = false): Exam
     {
@@ -57,7 +55,7 @@ class ExamTestHelper
 
         $data = array_merge([
             'title' => 'Test Exam',
-            'slug' => 'test-exam-' . uniqid(),
+            'slug' => 'test-exam-'.uniqid(),
             // Остальные поля NULL или default
         ], $overrides);
 
@@ -66,7 +64,7 @@ class ExamTestHelper
         }
 
         // Создать без событий (не триггерит ExamObserver)
-        return Exam::withoutEvents(fn() => $factory->create($data));
+        return Exam::withoutEvents(fn () => $factory->create($data));
     }
 
     /**

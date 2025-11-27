@@ -17,6 +17,7 @@ class RunPhaseAJob implements ShouldQueue
     use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
 
     public int $tries = 3;
+
     public int $timeout = 600; // 10 minutes for complex AI reasoning
 
     public function __construct(public int $taskId) {}

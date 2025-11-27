@@ -24,7 +24,7 @@ class SnapshotCompareCommand extends Command
         $examId = $this->argument('exam');
         $exam = Exam::find($examId);
 
-        if (!$exam) {
+        if (! $exam) {
             $this->error("Exam not found: {$examId}");
 
             return 1;
@@ -49,7 +49,7 @@ class SnapshotCompareCommand extends Command
         $this->line($comparison->getReport());
         $this->line('');
 
-        if (!$comparison->hasBaseline) {
+        if (! $comparison->hasBaseline) {
             if ($this->confirm('No baseline found. Create one from current state?')) {
                 $snapshot = $manager->accept($exam, $stage, 'baseline');
                 $this->info("✓ Created baseline: {$snapshot->label}");
@@ -64,7 +64,7 @@ class SnapshotCompareCommand extends Command
             if ($this->option('accept')) {
                 $snapshot = $manager->accept($exam, $stage, 'baseline');
                 $this->info("✓ Updated baseline: {$snapshot->label}");
-            } elseif (!$goldenExamId && $this->confirm('Update baseline with current state?', false)) {
+            } elseif (! $goldenExamId && $this->confirm('Update baseline with current state?', false)) {
                 $snapshot = $manager->accept($exam, $stage, 'baseline');
                 $this->info("✓ Updated baseline: {$snapshot->label}");
             }
@@ -74,7 +74,7 @@ class SnapshotCompareCommand extends Command
 
         $this->warn("✗ Comparison failed (similarity {$comparison->similarity} below threshold {$threshold})");
 
-        if (!$goldenExamId && $this->confirm('Accept current state as new baseline anyway?', false)) {
+        if (! $goldenExamId && $this->confirm('Accept current state as new baseline anyway?', false)) {
             $snapshot = $manager->accept($exam, $stage, 'baseline');
             $this->info("✓ Force-updated baseline: {$snapshot->label}");
         }
@@ -91,7 +91,7 @@ class SnapshotCompareCommand extends Command
     ) {
         $this->info("Comparing with golden fixture: {$goldenExamId}");
 
-        if (!$goldenLoader->exists($goldenExamId)) {
+        if (! $goldenLoader->exists($goldenExamId)) {
             $this->error("Golden fixture not found: {$goldenExamId}");
             exit(1);
         }

@@ -62,7 +62,6 @@ class ConfirmedIdentity extends Model
      * Проверить, изменились ли влияющие поля экзамена
      *
      * @param  array  $currentFields  Текущие значения полей экзамена
-     * @return bool
      */
     public function hasSourceFieldsChanged(array $currentFields): bool
     {
@@ -71,7 +70,7 @@ class ConfirmedIdentity extends Model
         foreach ($sourceFields as $field => $value) {
             // FIX: Use array_key_exists instead of isset to handle NULL values correctly
             // isset() returns false for NULL values, causing false positives
-            if (!array_key_exists($field, $currentFields) || $currentFields[$field] !== $value) {
+            if (! array_key_exists($field, $currentFields) || $currentFields[$field] !== $value) {
                 return true;
             }
         }

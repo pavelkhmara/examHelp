@@ -169,7 +169,7 @@ class ExamResearchController extends Controller
         $result = $task->result ?? [];
         $identity = null;
 
-        if (isset($result['verification_attempts']) && !empty($result['verification_attempts'])) {
+        if (isset($result['verification_attempts']) && ! empty($result['verification_attempts'])) {
             $latestAttempt = end($result['verification_attempts']);
             $identity = $latestAttempt['identity_result'] ?? null;
         } else {
@@ -219,7 +219,7 @@ class ExamResearchController extends Controller
 
             // Update identity in verification_attempts structure
             $result = (array) ($task->result ?? []);
-            if (isset($result['verification_attempts']) && !empty($result['verification_attempts'])) {
+            if (isset($result['verification_attempts']) && ! empty($result['verification_attempts'])) {
                 $attemptIndex = count($result['verification_attempts']) - 1;
                 $result['verification_attempts'][$attemptIndex]['identity_result'] = $identity;
             } else {
@@ -278,7 +278,7 @@ class ExamResearchController extends Controller
 
             // Update identity in verification_attempts structure
             $result = (array) ($task->result ?? []);
-            if (isset($result['verification_attempts']) && !empty($result['verification_attempts'])) {
+            if (isset($result['verification_attempts']) && ! empty($result['verification_attempts'])) {
                 $attemptIndex = count($result['verification_attempts']) - 1;
                 $result['verification_attempts'][$attemptIndex]['identity_result'] = $identity;
             } else {
@@ -395,9 +395,9 @@ class ExamResearchController extends Controller
                 $clarificationText = "=== Additional Information (User Answers) ===\n\n";
 
                 foreach ($validated['answers'] as $index => $answer) {
-                    if (isset($followups[$index]) && !empty(trim($answer))) {
+                    if (isset($followups[$index]) && ! empty(trim($answer))) {
                         $question = $followups[$index];
-                        $questionText = is_string($question) ? $question : ($question['q'] ?? 'Question ' . ($index + 1));
+                        $questionText = is_string($question) ? $question : ($question['q'] ?? 'Question '.($index + 1));
                         $clarificationText .= "Q: {$questionText}\n";
                         $clarificationText .= "A: {$answer}\n\n";
                     }
@@ -491,7 +491,7 @@ class ExamResearchController extends Controller
                 $identity['user_rejected_all'] = true;
                 $identity['rejected_at'] = now()->toISOString();
 
-                if (!empty($validated['notes'])) {
+                if (! empty($validated['notes'])) {
                     $identity['rejection_notes'] = $validated['notes'];
                 }
 
@@ -499,7 +499,7 @@ class ExamResearchController extends Controller
                 $result['identity'] = $identity;
                 $task->result = $result;
                 $task->status = 'failed';
-                $task->error = 'User rejected all exam variants - none match their exam. ' . ($validated['notes'] ?? '');
+                $task->error = 'User rejected all exam variants - none match their exam. '.($validated['notes'] ?? '');
                 $task->save();
 
                 // Add activity log
@@ -545,6 +545,7 @@ class ExamResearchController extends Controller
 
             if (! $task) {
                 \Illuminate\Support\Facades\Log::info('No pending task found');
+
                 return response()->json([
                     'task' => null,
                     'needs_clarification' => false,
@@ -559,7 +560,7 @@ class ExamResearchController extends Controller
             // Normalize result structure for frontend compatibility
             // Frontend expects result.identity, but backend stores result.verification_attempts[0].identity_result
             $result = $task->result;
-            if (is_array($result) && isset($result['verification_attempts']) && is_array($result['verification_attempts']) && !empty($result['verification_attempts'])) {
+            if (is_array($result) && isset($result['verification_attempts']) && is_array($result['verification_attempts']) && ! empty($result['verification_attempts'])) {
                 // Extract identity from latest verification attempt
                 $latestAttempt = end($result['verification_attempts']);
                 if (isset($latestAttempt['identity_result'])) {

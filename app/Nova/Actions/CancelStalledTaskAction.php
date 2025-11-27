@@ -2,7 +2,6 @@
 
 namespace App\Nova\Actions;
 
-use App\Models\GenerationTask;
 use Illuminate\Bus\Queueable;
 use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Support\Collection;
@@ -51,7 +50,7 @@ class CancelStalledTaskAction extends Action
                 ->latest()
                 ->first();
 
-            if (!$stalledTask) {
+            if (! $stalledTask) {
                 return Action::danger('No stalled task found for this exam.');
             }
 
@@ -119,7 +118,6 @@ class CancelStalledTaskAction extends Action
     /**
      * Get the fields available on the action.
      *
-     * @param  \Laravel\Nova\Http\Requests\NovaRequest  $request
      * @return array
      */
     public function fields(NovaRequest $request)

@@ -12,7 +12,7 @@ class JsonSchemaQuestionV2Test extends TestCase
 
     public function test_valid_question_passes_validation(): void
     {
-        $validator = new JsonSchemaQuestionV2();
+        $validator = new JsonSchemaQuestionV2;
 
         $q = [
             'id' => 'q1',
@@ -47,7 +47,7 @@ class JsonSchemaQuestionV2Test extends TestCase
      */
     public function test_preserves_group_id_field(): void
     {
-        $validator = new JsonSchemaQuestionV2();
+        $validator = new JsonSchemaQuestionV2;
 
         $q = [
             'id' => 'q1',
@@ -79,7 +79,7 @@ class JsonSchemaQuestionV2Test extends TestCase
      */
     public function test_preserves_all_pipeline_metadata_fields(): void
     {
-        $validator = new JsonSchemaQuestionV2();
+        $validator = new JsonSchemaQuestionV2;
 
         $q = [
             'id' => 'q1',
@@ -121,7 +121,7 @@ class JsonSchemaQuestionV2Test extends TestCase
      */
     public function test_uses_defaults_for_missing_pipeline_metadata(): void
     {
-        $validator = new JsonSchemaQuestionV2();
+        $validator = new JsonSchemaQuestionV2;
 
         $q = [
             'id' => 'q1',
@@ -154,5 +154,3 @@ class JsonSchemaQuestionV2Test extends TestCase
         $this->assertSame(0.0, $validated['similarity_score'], 'similarity_score should default to 0.0');
     }
 }
-
-

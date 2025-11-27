@@ -38,8 +38,7 @@ trait EnsuresConnectionStability
      * Ensure database connection is active.
      * Reconnects if connection is lost or stale.
      *
-     * @param string $connection Connection name (default: null = default connection)
-     * @return void
+     * @param  string  $connection  Connection name (default: null = default connection)
      */
     protected function ensureConnection(?string $connection = null): void
     {
@@ -65,8 +64,7 @@ trait EnsuresConnectionStability
      * Keep connection alive by sending a ping query.
      * Call this periodically in long-running operations (every 5-10 minutes).
      *
-     * @param string $connection Connection name (default: null = default connection)
-     * @return void
+     * @param  string  $connection  Connection name (default: null = default connection)
      */
     protected function keepConnectionAlive(?string $connection = null): void
     {
@@ -85,11 +83,12 @@ trait EnsuresConnectionStability
     /**
      * Execute a database operation with automatic retry on connection failure.
      *
-     * @param callable $callback The operation to execute
-     * @param int $maxRetries Maximum number of retries (default: 3)
-     * @param int $retryDelay Delay between retries in milliseconds (default: 1000)
-     * @param string|null $connection Connection name
+     * @param  callable  $callback  The operation to execute
+     * @param  int  $maxRetries  Maximum number of retries (default: 3)
+     * @param  int  $retryDelay  Delay between retries in milliseconds (default: 1000)
+     * @param  string|null  $connection  Connection name
      * @return mixed The result of the callback
+     *
      * @throws \Throwable If all retries fail
      */
     protected function retryOnConnectionFailure(
@@ -115,7 +114,7 @@ trait EnsuresConnectionStability
                 // Check if this is a connection-related error
                 $isConnectionError = $this->isConnectionError($e);
 
-                if (!$isConnectionError || $attempt >= $maxRetries) {
+                if (! $isConnectionError || $attempt >= $maxRetries) {
                     throw $e;
                 }
 
@@ -139,9 +138,6 @@ trait EnsuresConnectionStability
 
     /**
      * Check if an exception is related to connection issues.
-     *
-     * @param \Throwable $e
-     * @return bool
      */
     protected function isConnectionError(\Throwable $e): bool
     {

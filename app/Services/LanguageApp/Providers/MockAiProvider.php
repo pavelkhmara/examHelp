@@ -4,8 +4,8 @@ namespace App\Services\LanguageApp\Providers;
 
 use App\Services\LanguageApp\AiProvider;
 use App\Services\LanguageApp\AsyncAiProvider;
-use GuzzleHttp\Promise\PromiseInterface;
 use GuzzleHttp\Promise\Create;
+use GuzzleHttp\Promise\PromiseInterface;
 
 final class MockAiProvider implements AiProvider, AsyncAiProvider
 {
@@ -596,11 +596,11 @@ final class MockAiProvider implements AiProvider, AsyncAiProvider
         $questionsByGroup = $opts['_questions_by_group'] ?? [];
 
         // DEBUG: Check what IDs we're receiving
-        if (!empty($questionsByGroup)) {
+        if (! empty($questionsByGroup)) {
             \Log::debug('[MockAiProvider] Received _questions_by_group', [
                 'count' => count($questionsByGroup),
                 'first_question_id' => $questionsByGroup[0]['question_id'] ?? 'N/A',
-                'all_ids' => array_map(fn($q) => $q['question_id'] ?? 'N/A', $questionsByGroup),
+                'all_ids' => array_map(fn ($q) => $q['question_id'] ?? 'N/A', $questionsByGroup),
             ]);
         }
 
@@ -654,9 +654,9 @@ final class MockAiProvider implements AiProvider, AsyncAiProvider
     /**
      * Generate mock question based on type
      *
-     * @param string $questionId Question ID
-     * @param string $type Question type
-     * @param array|null $meta Optional metadata
+     * @param  string  $questionId  Question ID
+     * @param  string  $type  Question type
+     * @param  array|null  $meta  Optional metadata
      * @return array Question data
      */
     private function generateMockQuestionByType(string $questionId, string $type, ?array $meta = null): array
@@ -822,6 +822,7 @@ final class MockAiProvider implements AiProvider, AsyncAiProvider
     public function generateAsync(array $payload, array $opts = []): PromiseInterface
     {
         $result = $this->generate($payload, $opts);
+
         return Create::promiseFor($result);
     }
 
@@ -837,6 +838,7 @@ final class MockAiProvider implements AiProvider, AsyncAiProvider
             $opts = $request['opts'] ?? [];
             $results[$key] = $this->generate($payload, $opts);
         }
+
         return Create::promiseFor($results);
     }
 }

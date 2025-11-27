@@ -7,7 +7,7 @@ class PromptMetadataAnalysis
     /**
      * Build prompt for metadata analysis
      *
-     * @param array $sources Available information sources
+     * @param  array  $sources  Available information sources
      * @return string The prompt
      */
     public static function build(array $sources): string

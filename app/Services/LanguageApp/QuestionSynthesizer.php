@@ -341,7 +341,7 @@ class QuestionSynthesizer extends AbstractAiService
         Log::info('[QuestionSynthesizer] Batch generation completed', [
             'expected' => $quantity,
             'actual' => count($allQuestions),
-            'filters_used' => !empty($filters),
+            'filters_used' => ! empty($filters),
         ]);
 
         return $allQuestions;
@@ -350,11 +350,9 @@ class QuestionSynthesizer extends AbstractAiService
     /**
      * Generate a single question (for inline mode)
      *
-     * @param  Exam  $exam
      * @param  string  $questionType  Type of question to generate
      * @param  array  $config  Archetype configuration
      * @param  string  $sectionSkill  Section skill (reading, listening, etc.)
-     * @param  GenerationPlan  $plan
      * @param  array|null  $filter  Optional filter specification (type, difficulty, tags, etc.)
      */
     protected function generateSingleQuestion(
@@ -439,7 +437,7 @@ class QuestionSynthesizer extends AbstractAiService
             'question_id' => $question['id'],
             'group_id' => $question['group_id'] ?? 'NULL',
             'type' => $question['type'],
-            'has_interaction' => !empty($question['interaction']),
+            'has_interaction' => ! empty($question['interaction']),
             'interaction_keys' => is_array($question['interaction'] ?? null)
                 ? array_keys($question['interaction'])
                 : 'not_array',
@@ -505,18 +503,19 @@ class QuestionSynthesizer extends AbstractAiService
         }
 
         // ✅ FIX 5: Final validation - must be array of objects
-        if (!is_array($decoded) || empty($decoded)) {
+        if (! is_array($decoded) || empty($decoded)) {
             throw new \Exception('Failed to extract questions array from AI response');
         }
 
         // Validate each question
         $validatedQuestions = [];
         foreach ($decoded as $index => $question) {
-            if (!is_array($question)) {
+            if (! is_array($question)) {
                 Log::warning('[QuestionSynthesizer] Skipping non-array item', [
                     'index' => $index,
                     'type' => gettype($question),
                 ]);
+
                 continue;
             }
 
@@ -601,7 +600,7 @@ class QuestionSynthesizer extends AbstractAiService
         // If $sectionId is numeric, it's an ExamCategory ID - load directly
         if (is_numeric($sectionId)) {
             $category = \App\Models\ExamCategory::find($sectionId);
-            if (!$category) {
+            if (! $category) {
                 throw new \Exception("ExamCategory not found for ID: {$sectionId}");
             }
 
@@ -613,7 +612,7 @@ class QuestionSynthesizer extends AbstractAiService
             ->where('key', $sectionId)
             ->first();
 
-        if (!$category) {
+        if (! $category) {
             // Fallback: try to find in structure_v2 (legacy support)
             Log::warning('[QuestionSynthesizer] ExamCategory not found, falling back to structure_v2', [
                 'exam_id' => $exam->id,
@@ -648,6 +647,7 @@ class QuestionSynthesizer extends AbstractAiService
 
     /**
      * Legacy fallback: Get section from structure_v2
+     *
      * @deprecated Use ExamCategory as primary source
      */
     protected function getSectionMetadataFromStructure(Exam $exam, string $sectionId): array
@@ -667,9 +667,10 @@ class QuestionSynthesizer extends AbstractAiService
     /**
      * Get archetype matching specific question type
      *
-     * @param array $section Section metadata with question_archetypes
-     * @param string $questionType Question type (single_select, multi_select, etc.)
+     * @param  array  $section  Section metadata with question_archetypes
+     * @param  string  $questionType  Question type (single_select, multi_select, etc.)
      * @return array Archetype configuration
+     *
      * @throws \Exception If no matching archetype found
      */
     protected function getArchetypeByType(array $section, string $questionType): array
@@ -687,6 +688,7 @@ class QuestionSynthesizer extends AbstractAiService
                     'question_type' => $questionType,
                     'archetype_id' => $archetype['id'] ?? 'unknown',
                 ]);
+
                 return $archetype;
             }
         }

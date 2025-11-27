@@ -36,7 +36,7 @@ class AppServiceProvider extends ServiceProvider
         $this->app->singleton(FileAttachmentService::class, function ($app) {
             $cfg = config('ai.openai', []);
             $http = new \GuzzleHttp\Client([
-                'base_uri' => rtrim($cfg['base_url'] ?? 'https://api.openai.com/v1', '/') . '/',
+                'base_uri' => rtrim($cfg['base_url'] ?? 'https://api.openai.com/v1', '/').'/',
                 'timeout' => $cfg['timeout'] ?? 180,
             ]);
             $provider = new OpenAiProvider(
@@ -45,6 +45,7 @@ class AppServiceProvider extends ServiceProvider
                 $cfg['base_url'] ?? 'https://api.openai.com/v1',
                 $cfg['model'] ?? 'gpt-5-mini'
             );
+
             return new FileAttachmentService($provider);
         });
     }

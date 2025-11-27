@@ -46,7 +46,7 @@ class SynthesisGoldenTest extends TestCase
             // Check question_groups
             if (isset($section['question_groups'])) {
                 foreach ($section['question_groups'] as $group) {
-                    if (isset($group['questions']) && !empty($group['questions'])) {
+                    if (isset($group['questions']) && ! empty($group['questions'])) {
                         $foundQuestions = true;
                         break 2;
                     }
@@ -54,7 +54,7 @@ class SynthesisGoldenTest extends TestCase
             }
 
             // Check ungrouped_questions
-            if (isset($section['ungrouped_questions']) && !empty($section['ungrouped_questions'])) {
+            if (isset($section['ungrouped_questions']) && ! empty($section['ungrouped_questions'])) {
                 $foundQuestions = true;
                 break;
             }
@@ -115,7 +115,7 @@ class SynthesisGoldenTest extends TestCase
         $sections = $golden['sections'] ?? [];
 
         foreach ($sections as $section) {
-            if (!isset($section['question_groups'])) {
+            if (! isset($section['question_groups'])) {
                 continue;
             }
 

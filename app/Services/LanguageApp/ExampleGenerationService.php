@@ -35,7 +35,7 @@ class ExampleGenerationService extends AbstractAiService
     {
         // Check if V2 architecture (structure_v2 exists with question_archetypes)
         $structureV2 = $exam->meta['structure_v2'] ?? null;
-        $isV2 = !empty($structureV2);
+        $isV2 = ! empty($structureV2);
 
         if ($isV2) {
             // V2 architecture: use ParallelExampleGenerator with question_archetypes
@@ -114,7 +114,7 @@ class ExampleGenerationService extends AbstractAiService
 
         // Process images for questions (if enabled)
         $imageStats = ['processed' => 0, 'images_generated' => 0, 'errors' => 0];
-        if (config('ai.images.enabled', false) && !empty($createdQuestions)) {
+        if (config('ai.images.enabled', false) && ! empty($createdQuestions)) {
             try {
                 $imageStats = $this->imageProcessor->processQuestions($createdQuestions);
                 Log::info('[ExampleGenerationService] Image processing completed', $imageStats);

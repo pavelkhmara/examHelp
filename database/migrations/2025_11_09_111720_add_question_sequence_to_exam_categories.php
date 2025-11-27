@@ -1,10 +1,9 @@
 <?php
 
-use Illuminate\Database\Migrations\Migration;
-use Illuminate\Database\Schema\Blueprint;
-use Illuminate\Support\Facades\Schema;
-use Illuminate\Support\Facades\DB;
 use App\Models\ExamCategory;
+use Illuminate\Database\Migrations\Migration;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
 {
@@ -19,7 +18,7 @@ return new class extends Migration
         // No schema changes - everything is in JSON meta
         // Just data migration to add question_sequence
 
-        DB::transaction(function() {
+        DB::transaction(function () {
             $categories = ExamCategory::all();
 
             foreach ($categories as $category) {
@@ -47,7 +46,7 @@ return new class extends Migration
             }
         });
 
-        \Log::info('Migration: Added question_sequence to ' . ExamCategory::count() . ' categories');
+        \Log::info('Migration: Added question_sequence to '.ExamCategory::count().' categories');
     }
 
     /**
@@ -56,7 +55,7 @@ return new class extends Migration
     public function down(): void
     {
         // Remove question_sequence from meta
-        DB::transaction(function() {
+        DB::transaction(function () {
             $categories = ExamCategory::all();
 
             foreach ($categories as $category) {

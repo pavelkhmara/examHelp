@@ -22,7 +22,8 @@ class QuestionGroupContract
      *
      * Called in: SynthesizeTaskQuestionsJob::synthesizeQuestionGroup()
      *
-     * @param array<string, mixed> $filter Filter array for single question synthesis
+     * @param  array<string, mixed>  $filter  Filter array for single question synthesis
+     *
      * @throws \InvalidArgumentException if contract violated
      */
     public static function validateFilter(array $filter): void
@@ -55,8 +56,9 @@ class QuestionGroupContract
      *
      * Called in: QuestionAttacher::attachToExam()
      *
-     * @param array<string, mixed> $question Question data from AI (post-processed)
-     * @param string|null $expectedGroupId Expected group_id (if grouped)
+     * @param  array<string, mixed>  $question  Question data from AI (post-processed)
+     * @param  string|null  $expectedGroupId  Expected group_id (if grouped)
+     *
      * @throws \InvalidArgumentException if contract violated
      */
     public static function validateBeforeAttach(
@@ -83,7 +85,7 @@ class QuestionGroupContract
 
             if ($question['group_id'] !== $expectedGroupId) {
                 throw new \InvalidArgumentException(
-                    "Question {$question['id']} group_id mismatch: " .
+                    "Question {$question['id']} group_id mismatch: ".
                     "expected {$expectedGroupId}, got {$question['group_id']}"
                 );
             }
@@ -95,8 +97,9 @@ class QuestionGroupContract
      *
      * Called in: QuestionAttacher, StructureMaterializer
      *
-     * @param string $questionId Full question_id for DB
-     * @param bool $isGrouped Whether this is a grouped question
+     * @param  string  $questionId  Full question_id for DB
+     * @param  bool  $isGrouped  Whether this is a grouped question
+     *
      * @throws \InvalidArgumentException if format invalid
      */
     public static function validateQuestionIdFormat(
@@ -127,7 +130,8 @@ class QuestionGroupContract
      *
      * Called in: SynthesizeQuestionsJob::dispatchTaskLevelJobs()
      *
-     * @param array<string, mixed> $questionGroup Question group from plan_data
+     * @param  array<string, mixed>  $questionGroup  Question group from plan_data
+     *
      * @throws \InvalidArgumentException if structure invalid
      */
     public static function validateQuestionGroupSpec(array $questionGroup): void

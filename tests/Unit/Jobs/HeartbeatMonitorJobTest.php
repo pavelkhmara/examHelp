@@ -36,7 +36,7 @@ class HeartbeatMonitorJobTest extends TestCase
         ]);
 
         // Act
-        $job = new HeartbeatMonitorJob();
+        $job = new HeartbeatMonitorJob;
         $job->handle();
 
         // Assert: stalled task should have activity log entry
@@ -70,7 +70,7 @@ class HeartbeatMonitorJobTest extends TestCase
         ]);
 
         // Act
-        $job = new HeartbeatMonitorJob();
+        $job = new HeartbeatMonitorJob;
         $job->handle();
 
         // Assert
@@ -102,7 +102,7 @@ class HeartbeatMonitorJobTest extends TestCase
         ]);
 
         // Act
-        $job = new HeartbeatMonitorJob();
+        $job = new HeartbeatMonitorJob;
         $job->handle();
 
         // Assert: no activities added
@@ -136,7 +136,7 @@ class HeartbeatMonitorJobTest extends TestCase
         ]);
 
         // Act
-        $job = new HeartbeatMonitorJob();
+        $job = new HeartbeatMonitorJob;
         $job->handle();
 
         // Assert: activity log appended (not replaced)

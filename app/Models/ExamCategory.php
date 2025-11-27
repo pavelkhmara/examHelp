@@ -71,8 +71,6 @@ class ExamCategory extends Model
      * Get question templates for this category with overrides applied
      * Implements Variant A (Global templates + references)
      * NOTE: This is v1 compatibility accessor
-     *
-     * @return array
      */
     public function getQuestionTemplatesAttribute(): array
     {

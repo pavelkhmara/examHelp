@@ -3,9 +3,9 @@
 namespace App\Nova;
 
 use App\Nova\Actions\ConfirmIdentityAction;
-use App\Nova\Actions\ProvideAnswersAction;
 use App\Nova\Actions\ResearchAction;
 use App\Nova\Fields\CollapsiblePanel;
+use Illuminate\Support\Facades\Log;
 use Laravel\Nova\Fields\Badge;
 use Laravel\Nova\Fields\Boolean;
 use Laravel\Nova\Fields\Code;
@@ -18,7 +18,6 @@ use Laravel\Nova\Fields\Text;
 use Laravel\Nova\Fields\Textarea;
 use Laravel\Nova\Http\Requests\NovaRequest;
 use Laravel\Nova\Panel;
-use Illuminate\Support\Facades\Log;
 
 class Exam extends Resource
 {
@@ -55,6 +54,7 @@ class Exam extends Resource
             'exam' => $this->resource->id ?? 'no-exam',
             'result' => true,
         ]);
+
         return true;
     }
 
@@ -72,8 +72,9 @@ class Exam extends Resource
 
             // Full Exam View Link
             Text::make('Full Exam View', function () {
-                $url = '/nova/resources/exam-full-view/' . $this->id;
-                return '<a href="' . $url . '" style="
+                $url = '/nova/resources/exam-full-view/'.$this->id;
+
+                return '<a href="'.$url.'" style="
                     display: inline-flex;
                     align-items: center;
                     padding: 0.5rem 1rem;
@@ -94,7 +95,6 @@ class Exam extends Resource
                 ->asHtml()
                 ->onlyOnDetail()
                 ->help('View complete exam with all sections and questions'),
-
 
             // Phase B Assembly Config (читабельное отображение)
             CollapsiblePanel::make('🔧 Phase B: Assembly Config', 'phase_b_assembly_html')
@@ -302,7 +302,6 @@ class Exam extends Resource
             Number::make('Examples', 'examples_count')->default(0)->onlyOnIndex(),
         ];
 
-
         return array_merge($fields, $this->getConditionalFields());
     }
 
@@ -327,18 +326,18 @@ class Exam extends Resource
             $fields[] = new Panel('✅ Quick Check for Identity', [
                 \Laravel\Nova\Fields\Text::make('Readiness Check', 'quick_check_html')
                     ->asHtml()
-                    ->resolveUsing(fn() => $quickCheckService->getChecklistHtml($checkResult))
+                    ->resolveUsing(fn () => $quickCheckService->getChecklistHtml($checkResult))
                     ->onlyOnDetail()
                     ->help(
                         $checkResult['ready']
                             ? '✅ Ready to run research'
-                            : '⚠️ ' . $quickCheckService->getMissingFieldsMessage($checkResult)
+                            : '⚠️ '.$quickCheckService->getMissingFieldsMessage($checkResult)
                     ),
             ]);
         }
 
         // ============== STAGE 0: Initial Metadata Analysis ==============
-        if ($this->analysis_status === 'completed' && (!empty($this->user_meta) || !empty($this->system_analysis))) {
+        if ($this->analysis_status === 'completed' && (! empty($this->user_meta) || ! empty($this->system_analysis))) {
             $fields[] = CollapsiblePanel::make('🤖 Initial Metadata Analysis', 'metadata_analysis_html')
                 ->heading('🤖 Initial Metadata Analysis')
                 ->content($this->buildMetadataAnalysisHtml())
@@ -369,7 +368,7 @@ class Exam extends Resource
                 array_unshift($identityFields,
                     \Laravel\Nova\Fields\Text::make('Issues & Warnings', 'identity_issues')
                         ->asHtml()
-                        ->resolveUsing(fn() => $issuesHtml)
+                        ->resolveUsing(fn () => $issuesHtml)
                         ->onlyOnDetail()
                 );
             }
@@ -414,14 +413,14 @@ class Exam extends Resource
                     ->rows(15)
                     ->onlyOnDetail()
                     ->help('Human-readable summary of exam structure'),
-                    
+
                 Code::make('Structure V2', function () {
                     return json_encode($this->structure_v2 ?? [], JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
                 })
                     ->language('json')
                     ->onlyOnDetail()
                     ->help('Exam skeleton/assembly (v2)'),
-                    
+
                 Code::make('Sections (compact)')
                     ->resolveUsing(function () {
                         $sections = $this->structure_sections ?? [];
@@ -459,7 +458,7 @@ class Exam extends Resource
                 array_unshift($structureFields,
                     \Laravel\Nova\Fields\Text::make('Issues & Notes', 'structure_issues')
                         ->asHtml()
-                        ->resolveUsing(fn() => $structureIssuesHtml)
+                        ->resolveUsing(fn () => $structureIssuesHtml)
                         ->onlyOnDetail()
                 );
             }
@@ -497,18 +496,19 @@ class Exam extends Resource
                         foreach ($runningTasks as $task) {
                             $progress = $task->getCurrentProgress();
                             if ($progress) {
-                                $html .= '<div style="font-weight: bold; margin-bottom: 10px;">' . htmlspecialchars($progress) . '</div>';
+                                $html .= '<div style="font-weight: bold; margin-bottom: 10px;">'.htmlspecialchars($progress).'</div>';
                             }
 
                             $formatted = $task->getFormattedActivities();
-                            if (!empty($formatted)) {
+                            if (! empty($formatted)) {
                                 $html .= '<div style="font-family: monospace; line-height: 1.6;">';
                                 foreach ($formatted as $activity) {
-                                    $html .= '<div>' . htmlspecialchars($activity['timestamp'] . ' ' . $activity['message']) . '</div>';
+                                    $html .= '<div>'.htmlspecialchars($activity['timestamp'].' '.$activity['message']).'</div>';
                                 }
                                 $html .= '</div>';
                             }
                         }
+
                         return $html ?: '<em>No activities yet</em>';
                     })
                     ->onlyOnDetail()
@@ -533,7 +533,7 @@ class Exam extends Resource
         $html = '<div class="space-y-4">';
 
         // Changes section (if any)
-        if (!empty($this->system_analysis['changes'])) {
+        if (! empty($this->system_analysis['changes'])) {
             $changes = $this->system_analysis['changes'];
             $html .= '<div class="mb-4 p-3 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded">';
             $html .= '<h4 class="text-lg font-semibold text-blue-900 dark:text-blue-100 mb-3">🔄 Changes Detected</h4>';
@@ -548,19 +548,19 @@ class Exam extends Resource
 
                 if ($type === 'added') {
                     $html .= '<div class="text-sm text-blue-700 dark:text-blue-300">';
-                    $html .= '<span class="font-semibold">➕ ' . htmlspecialchars($label) . ':</span> ';
-                    $html .= 'set to <span class="font-mono bg-blue-100 dark:bg-blue-900 px-1 rounded">' . htmlspecialchars($this->formatValueForDisplay($newValue)) . '</span>';
+                    $html .= '<span class="font-semibold">➕ '.htmlspecialchars($label).':</span> ';
+                    $html .= 'set to <span class="font-mono bg-blue-100 dark:bg-blue-900 px-1 rounded">'.htmlspecialchars($this->formatValueForDisplay($newValue)).'</span>';
                     $html .= '</div>';
                 } elseif ($type === 'changed') {
                     $html .= '<div class="text-sm text-blue-700 dark:text-blue-300">';
-                    $html .= '<span class="font-semibold">🔄 ' . htmlspecialchars($label) . ':</span> ';
-                    $html .= 'changed from <span class="font-mono bg-gray-100 dark:bg-gray-800 px-1 rounded line-through">' . htmlspecialchars($this->formatValueForDisplay($oldValue)) . '</span> ';
-                    $html .= 'to <span class="font-mono bg-blue-100 dark:bg-blue-900 px-1 rounded">' . htmlspecialchars($this->formatValueForDisplay($newValue)) . '</span>';
+                    $html .= '<span class="font-semibold">🔄 '.htmlspecialchars($label).':</span> ';
+                    $html .= 'changed from <span class="font-mono bg-gray-100 dark:bg-gray-800 px-1 rounded line-through">'.htmlspecialchars($this->formatValueForDisplay($oldValue)).'</span> ';
+                    $html .= 'to <span class="font-mono bg-blue-100 dark:bg-blue-900 px-1 rounded">'.htmlspecialchars($this->formatValueForDisplay($newValue)).'</span>';
                     $html .= '</div>';
                 } elseif ($type === 'removed') {
                     $html .= '<div class="text-sm text-yellow-700 dark:text-yellow-300">';
-                    $html .= '<span class="font-semibold">➖ ' . htmlspecialchars($label) . ':</span> ';
-                    $html .= 'removed (was: <span class="font-mono bg-gray-100 dark:bg-gray-800 px-1 rounded">' . htmlspecialchars($this->formatValueForDisplay($oldValue)) . '</span>)';
+                    $html .= '<span class="font-semibold">➖ '.htmlspecialchars($label).':</span> ';
+                    $html .= 'removed (was: <span class="font-mono bg-gray-100 dark:bg-gray-800 px-1 rounded">'.htmlspecialchars($this->formatValueForDisplay($oldValue)).'</span>)';
                     $html .= '</div>';
                 }
             }
@@ -569,7 +569,7 @@ class Exam extends Resource
         }
 
         // User Meta
-        if (!empty($this->user_meta)) {
+        if (! empty($this->user_meta)) {
             $userMeta = $this->user_meta;
             $html .= '<div class="border-b border-gray-200 dark:border-gray-700 pb-4">';
             $html .= '<h4 class="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-3">User Information</h4>';
@@ -577,92 +577,92 @@ class Exam extends Resource
 
             if (isset($userMeta['user_language'])) {
                 $html .= '<div><dt class="text-sm font-medium text-gray-500 dark:text-gray-400">User Language:</dt>';
-                $html .= '<dd class="text-sm text-gray-900 dark:text-gray-100">' . htmlspecialchars($userMeta['user_language']) . '</dd></div>';
+                $html .= '<dd class="text-sm text-gray-900 dark:text-gray-100">'.htmlspecialchars($userMeta['user_language']).'</dd></div>';
             }
 
             if (isset($userMeta['user_gender'])) {
                 $html .= '<div><dt class="text-sm font-medium text-gray-500 dark:text-gray-400">User Gender:</dt>';
-                $html .= '<dd class="text-sm text-gray-900 dark:text-gray-100">' . htmlspecialchars($userMeta['user_gender']) . '</dd></div>';
+                $html .= '<dd class="text-sm text-gray-900 dark:text-gray-100">'.htmlspecialchars($userMeta['user_gender']).'</dd></div>';
             }
 
             if (isset($userMeta['exam_language'])) {
                 $html .= '<div><dt class="text-sm font-medium text-gray-500 dark:text-gray-400">Exam Language:</dt>';
-                $html .= '<dd class="text-sm text-gray-900 dark:text-gray-100">' . htmlspecialchars($userMeta['exam_language']) . '</dd></div>';
+                $html .= '<dd class="text-sm text-gray-900 dark:text-gray-100">'.htmlspecialchars($userMeta['exam_language']).'</dd></div>';
             }
 
             if (isset($userMeta['target_score'])) {
                 $html .= '<div><dt class="text-sm font-medium text-gray-500 dark:text-gray-400">Target Score:</dt>';
-                $html .= '<dd class="text-sm text-gray-900 dark:text-gray-100">' . htmlspecialchars($userMeta['target_score']) . '</dd></div>';
+                $html .= '<dd class="text-sm text-gray-900 dark:text-gray-100">'.htmlspecialchars($userMeta['target_score']).'</dd></div>';
             }
 
             if (isset($userMeta['exam_purpose'])) {
                 $html .= '<div><dt class="text-sm font-medium text-gray-500 dark:text-gray-400">Exam Purpose:</dt>';
-                $html .= '<dd class="text-sm text-gray-900 dark:text-gray-100">' . htmlspecialchars($userMeta['exam_purpose']) . '</dd></div>';
+                $html .= '<dd class="text-sm text-gray-900 dark:text-gray-100">'.htmlspecialchars($userMeta['exam_purpose']).'</dd></div>';
             }
 
             if (isset($userMeta['needs_certificate'])) {
                 $needs = $userMeta['needs_certificate'] ? 'Yes' : 'No';
                 $html .= '<div><dt class="text-sm font-medium text-gray-500 dark:text-gray-400">Needs Certificate:</dt>';
-                $html .= '<dd class="text-sm text-gray-900 dark:text-gray-100">' . $needs . '</dd></div>';
+                $html .= '<dd class="text-sm text-gray-900 dark:text-gray-100">'.$needs.'</dd></div>';
             }
 
             $html .= '</dl>';
             $html .= '<details class="mt-3"><summary class="text-sm text-gray-600 dark:text-gray-400 cursor-pointer hover:text-gray-900 dark:hover:text-gray-200">View Full JSON</summary>';
-            $html .= '<pre class="mt-2 text-xs bg-gray-500 dark:bg-gray-900 text-white p-3 rounded overflow-auto">' . htmlspecialchars(json_encode($this->user_meta, JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES)) . '</pre>';
+            $html .= '<pre class="mt-2 text-xs bg-gray-500 dark:bg-gray-900 text-white p-3 rounded overflow-auto">'.htmlspecialchars(json_encode($this->user_meta, JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES)).'</pre>';
             $html .= '</details></div>';
         }
 
         // System Analysis
-        if (!empty($this->system_analysis)) {
+        if (! empty($this->system_analysis)) {
             $analysis = $this->system_analysis;
             $html .= '<div class="pt-2">';
             $html .= '<h4 class="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-3">System Analysis</h4>';
 
             // Warnings
-            if (!empty($analysis['warning'])) {
+            if (! empty($analysis['warning'])) {
                 $html .= '<div class="mb-3 p-3 bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded">';
-                $html .= '<p class="text-sm font-semibold text-yellow-800 dark:text-yellow-200 mb-2">⚠ Warnings (' . count($analysis['warning']) . '):</p>';
+                $html .= '<p class="text-sm font-semibold text-yellow-800 dark:text-yellow-200 mb-2">⚠ Warnings ('.count($analysis['warning']).'):</p>';
                 $html .= '<ul class="list-disc list-inside text-sm text-yellow-700 dark:text-yellow-300 space-y-1">';
                 foreach ($analysis['warning'] as $warning) {
-                    $html .= '<li>' . htmlspecialchars($warning) . '</li>';
+                    $html .= '<li>'.htmlspecialchars($warning).'</li>';
                 }
                 $html .= '</ul></div>';
             }
 
             // Critical issues
-            if (!empty($analysis['critical'])) {
+            if (! empty($analysis['critical'])) {
                 $html .= '<div class="mb-3 p-3 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded">';
-                $html .= '<p class="text-sm font-semibold text-red-800 dark:text-red-200 mb-2">❌ Critical Issues (' . count($analysis['critical']) . '):</p>';
+                $html .= '<p class="text-sm font-semibold text-red-800 dark:text-red-200 mb-2">❌ Critical Issues ('.count($analysis['critical']).'):</p>';
                 $html .= '<ul class="list-disc list-inside text-sm text-red-700 dark:text-red-300 space-y-1">';
                 foreach ($analysis['critical'] as $critical) {
-                    $html .= '<li>' . htmlspecialchars($critical) . '</li>';
+                    $html .= '<li>'.htmlspecialchars($critical).'</li>';
                 }
                 $html .= '</ul></div>';
             }
 
             // Info
-            if (!empty($analysis['info'])) {
+            if (! empty($analysis['info'])) {
                 $html .= '<div class="mb-3 p-3 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded">';
                 $html .= '<p class="text-sm font-semibold text-blue-800 dark:text-blue-200 mb-2">ℹ Information:</p>';
                 $html .= '<ul class="list-disc list-inside text-sm text-blue-700 dark:text-blue-300 space-y-1">';
                 foreach (array_slice($analysis['info'], 0, 5) as $info) {
-                    $html .= '<li>' . htmlspecialchars($info) . '</li>';
+                    $html .= '<li>'.htmlspecialchars($info).'</li>';
                 }
                 if (count($analysis['info']) > 5) {
-                    $html .= '<li class="text-xs italic">... and ' . (count($analysis['info']) - 5) . ' more</li>';
+                    $html .= '<li class="text-xs italic">... and '.(count($analysis['info']) - 5).' more</li>';
                 }
                 $html .= '</ul></div>';
             }
 
             $html .= '<details class="mt-3"><summary class="text-sm text-gray-600 dark:text-gray-400 cursor-pointer hover:text-gray-900 dark:hover:text-gray-200">View Full JSON</summary>';
-            $html .= '<pre class="mt-2 text-xs bg-gray-500 dark:bg-gray-900 text-white p-3 rounded overflow-auto">' . htmlspecialchars(json_encode($this->system_analysis, JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES)) . '</pre>';
+            $html .= '<pre class="mt-2 text-xs bg-gray-500 dark:bg-gray-900 text-white p-3 rounded overflow-auto">'.htmlspecialchars(json_encode($this->system_analysis, JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES)).'</pre>';
             $html .= '</details></div>';
         }
 
         $html .= '</div>';
+
         return $html;
     }
-
 
     /**
      * Построить поля Identity Verification
@@ -879,8 +879,10 @@ class Exam extends Resource
                             // Format: ['q' => 'Question?', 'why' => 'Reason']
                             $question = $q['q'] ?? $q['question'] ?? 'Unknown question';
                             $reason = isset($q['why']) ? " (Reason: {$q['why']})" : '';
+
                             return ($i + 1).". {$question}{$reason}";
                         }
+
                         // Simple string format
                         return ($i + 1).". {$q}";
                     }, $followups, array_keys($followups));
@@ -932,7 +934,7 @@ class Exam extends Resource
         }
 
         // Scoring scale (if available)
-        if (!empty($examStructure['scoring_scale'])) {
+        if (! empty($examStructure['scoring_scale'])) {
             $lines[] = "📊 Scoring: {$examStructure['scoring_scale']}";
             $lines[] = '';
         }
@@ -965,7 +967,7 @@ class Exam extends Resource
             $lines[] = "   Tasks: {$stepCount}";
 
             // List each step/archetype
-            if (!empty($steps)) {
+            if (! empty($steps)) {
                 $lines[] = '';
                 foreach ($steps as $stepIdx => $step) {
                     $stepNum = $stepIdx + 1;
@@ -983,18 +985,18 @@ class Exam extends Resource
                         $details[] = "type: {$taskType}";
                     }
 
-                    if (!empty($details)) {
-                        $stepLine .= ' [' . implode(', ', $details) . ']';
+                    if (! empty($details)) {
+                        $stepLine .= ' ['.implode(', ', $details).']';
                     }
 
                     $lines[] = $stepLine;
 
                     // Add description if available
-                    if (!empty($step['description'])) {
+                    if (! empty($step['description'])) {
                         $desc = $step['description'];
                         // Truncate long descriptions
                         if (strlen($desc) > 100) {
-                            $desc = substr($desc, 0, 97) . '...';
+                            $desc = substr($desc, 0, 97).'...';
                         }
                         $lines[] = "      → {$desc}";
                     }
@@ -1004,7 +1006,7 @@ class Exam extends Resource
 
         $lines[] = '';
         $lines[] = str_repeat('=', 60);
-        $lines[] = "✓ Structure extracted successfully";
+        $lines[] = '✓ Structure extracted successfully';
 
         return implode("\n", $lines);
     }
@@ -1102,67 +1104,67 @@ class Exam extends Resource
         $html = '<div class="space-y-2">';
 
         // Red flags (critical issues)
-        if (!empty($data['red_flags']) && is_array($data['red_flags'])) {
+        if (! empty($data['red_flags']) && is_array($data['red_flags'])) {
             $hasContent = true;
             $html .= '<div class="p-3 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded">';
             $html .= '<p class="text-sm font-semibold text-red-800 dark:text-red-200 mb-2">🚩 Red Flags:</p>';
             $html .= '<ul class="list-disc list-inside text-sm text-red-700 dark:text-red-300 space-y-1">';
             foreach ($data['red_flags'] as $flag) {
-                $html .= '<li>' . htmlspecialchars(is_string($flag) ? $flag : json_encode($flag)) . '</li>';
+                $html .= '<li>'.htmlspecialchars(is_string($flag) ? $flag : json_encode($flag)).'</li>';
             }
             $html .= '</ul></div>';
         }
 
         // Issues
-        if (!empty($data['issues']) && is_array($data['issues'])) {
+        if (! empty($data['issues']) && is_array($data['issues'])) {
             $hasContent = true;
             $html .= '<div class="p-3 bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded">';
             $html .= '<p class="text-sm font-semibold text-yellow-800 dark:text-yellow-200 mb-2">⚠ Issues:</p>';
             $html .= '<ul class="list-disc list-inside text-sm text-yellow-700 dark:text-yellow-300 space-y-1">';
             foreach ($data['issues'] as $issue) {
-                $html .= '<li>' . htmlspecialchars(is_string($issue) ? $issue : json_encode($issue)) . '</li>';
+                $html .= '<li>'.htmlspecialchars(is_string($issue) ? $issue : json_encode($issue)).'</li>';
             }
             $html .= '</ul></div>';
         }
 
         // Warnings
-        if (!empty($data['warnings']) && is_array($data['warnings'])) {
+        if (! empty($data['warnings']) && is_array($data['warnings'])) {
             $hasContent = true;
             $html .= '<div class="p-3 bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded">';
             $html .= '<p class="text-sm font-semibold text-yellow-800 dark:text-yellow-200 mb-2">⚠ Warnings:</p>';
             $html .= '<ul class="list-disc list-inside text-sm text-yellow-700 dark:text-yellow-300 space-y-1">';
             foreach ($data['warnings'] as $warning) {
-                $html .= '<li>' . htmlspecialchars(is_string($warning) ? $warning : json_encode($warning)) . '</li>';
+                $html .= '<li>'.htmlspecialchars(is_string($warning) ? $warning : json_encode($warning)).'</li>';
             }
             $html .= '</ul></div>';
         }
 
         // Notes
-        if (!empty($data['notes']) && is_array($data['notes'])) {
+        if (! empty($data['notes']) && is_array($data['notes'])) {
             $hasContent = true;
             $html .= '<div class="p-3 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded">';
             $html .= '<p class="text-sm font-semibold text-blue-800 dark:text-blue-200 mb-2">📝 Notes:</p>';
             $html .= '<ul class="list-disc list-inside text-sm text-blue-700 dark:text-blue-300 space-y-1">';
             foreach ($data['notes'] as $note) {
-                $html .= '<li>' . htmlspecialchars(is_string($note) ? $note : json_encode($note)) . '</li>';
+                $html .= '<li>'.htmlspecialchars(is_string($note) ? $note : json_encode($note)).'</li>';
             }
             $html .= '</ul></div>';
         }
 
         // Single note (string)
-        if (!empty($data['note']) && is_string($data['note'])) {
+        if (! empty($data['note']) && is_string($data['note'])) {
             $hasContent = true;
             $html .= '<div class="p-3 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded">';
-            $html .= '<p class="text-sm text-blue-700 dark:text-blue-300">' . htmlspecialchars($data['note']) . '</p>';
+            $html .= '<p class="text-sm text-blue-700 dark:text-blue-300">'.htmlspecialchars($data['note']).'</p>';
             $html .= '</div>';
         }
 
         // Rationale (for structure)
-        if ($context === 'structure' && !empty($data['rationale']) && is_string($data['rationale'])) {
+        if ($context === 'structure' && ! empty($data['rationale']) && is_string($data['rationale'])) {
             $hasContent = true;
             $html .= '<div class="p-3 bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded">';
             $html .= '<p class="text-sm font-semibold text-gray-800 dark:text-gray-200 mb-2">📋 Rationale:</p>';
-            $html .= '<p class="text-sm text-gray-700 dark:text-gray-300">' . nl2br(htmlspecialchars($data['rationale'])) . '</p>';
+            $html .= '<p class="text-sm text-gray-700 dark:text-gray-300">'.nl2br(htmlspecialchars($data['rationale'])).'</p>';
             $html .= '</div>';
         }
 
@@ -1194,14 +1196,14 @@ class Exam extends Resource
     {
         $rulesetPath = config_path('family_ruleset.json');
 
-        if (!file_exists($rulesetPath)) {
+        if (! file_exists($rulesetPath)) {
             return ['Unknown' => 'Unknown'];
         }
 
         $json = file_get_contents($rulesetPath);
         $data = json_decode($json, true);
 
-        if (!isset($data['families'])) {
+        if (! isset($data['families'])) {
             return ['Unknown' => 'Unknown'];
         }
 
@@ -1228,7 +1230,7 @@ class Exam extends Resource
         $html = '<div class="space-y-4">';
 
         // Section 1: Facts from PDF (Anchors)
-        if (!empty($anchors)) {
+        if (! empty($anchors)) {
             $html .= '<div class="border-b border-gray-200 dark:border-gray-700 pb-4">';
             $html .= '<h4 class="text-base font-semibold text-gray-900 dark:text-gray-100 mb-3">📄 Facts from Documents</h4>';
             $html .= '<div class="space-y-2">';
@@ -1248,13 +1250,13 @@ class Exam extends Resource
                     if (is_numeric($confidence)) {
                         if ($confidence >= 0.9) {
                             $confClass = 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300';
-                            $confLabel = number_format($confidence * 100, 0) . '%';
+                            $confLabel = number_format($confidence * 100, 0).'%';
                         } elseif ($confidence >= 0.7) {
                             $confClass = 'bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300';
-                            $confLabel = number_format($confidence * 100, 0) . '%';
+                            $confLabel = number_format($confidence * 100, 0).'%';
                         } else {
                             $confClass = 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-300';
-                            $confLabel = number_format($confidence * 100, 0) . '%';
+                            $confLabel = number_format($confidence * 100, 0).'%';
                         }
                     }
 
@@ -1271,13 +1273,13 @@ class Exam extends Resource
                     $html .= $source ? ' · ' : '';
                     $html .= "Page {$page}";
                 }
-                if (!$source && !$page) {
+                if (! $source && ! $page) {
                     $html .= 'Document';
                 }
                 $html .= '</span>';
                 $html .= $confidenceBadge;
                 $html .= '</div>';
-                $html .= '<p class="text-sm text-gray-800 dark:text-gray-200">"' . htmlspecialchars($phrase) . '"</p>';
+                $html .= '<p class="text-sm text-gray-800 dark:text-gray-200">"'.htmlspecialchars($phrase).'"</p>';
                 $html .= '</div>';
             }
 
@@ -1296,7 +1298,7 @@ class Exam extends Resource
         }
 
         // Section 3: Document Hints Summary
-        if (!empty($documentHints)) {
+        if (! empty($documentHints)) {
             $html .= '<div>';
             $html .= '<h4 class="text-base font-semibold text-gray-900 dark:text-gray-100 mb-3">📚 Document Hints</h4>';
             $html .= '<div class="space-y-2">';
@@ -1306,8 +1308,8 @@ class Exam extends Resource
                 $charCount = isset($hint['text']) ? mb_strlen($hint['text']) : 0;
 
                 $html .= '<div class="flex items-center justify-between p-2 bg-gray-50 dark:bg-gray-800 rounded border border-gray-200 dark:border-gray-700">';
-                $html .= '<span class="text-sm text-gray-800 dark:text-gray-200">' . htmlspecialchars($docName) . '</span>';
-                $html .= '<span class="text-xs text-gray-500 dark:text-gray-400">' . number_format($charCount) . ' chars</span>';
+                $html .= '<span class="text-sm text-gray-800 dark:text-gray-200">'.htmlspecialchars($docName).'</span>';
+                $html .= '<span class="text-xs text-gray-500 dark:text-gray-400">'.number_format($charCount).' chars</span>';
                 $html .= '</div>';
             }
 
@@ -1414,7 +1416,7 @@ class Exam extends Resource
             // Title with link
             if ($url) {
                 $html .= '<div class="mb-2">';
-                $html .= '<a href="' . htmlspecialchars($url) . '" target="_blank" rel="noopener noreferrer" ';
+                $html .= '<a href="'.htmlspecialchars($url).'" target="_blank" rel="noopener noreferrer" ';
                 $html .= 'class="text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300 hover:underline text-sm font-medium">';
                 $html .= htmlspecialchars($title);
                 $html .= ' <span class="text-xs">↗</span></a>';
@@ -1428,21 +1430,21 @@ class Exam extends Resource
             // Publisher
             if ($publisher) {
                 $html .= '<div class="mb-2 text-xs text-gray-600 dark:text-gray-400">';
-                $html .= '<span class="font-semibold">Publisher:</span> ' . htmlspecialchars($publisher);
+                $html .= '<span class="font-semibold">Publisher:</span> '.htmlspecialchars($publisher);
                 $html .= '</div>';
             }
 
             // Contribution (what was taken from this source)
             if ($contribution) {
                 $html .= '<div class="mb-2 text-sm text-gray-700 dark:text-gray-300">';
-                $html .= '<span class="font-semibold">Contribution:</span> ' . htmlspecialchars($contribution);
+                $html .= '<span class="font-semibold">Contribution:</span> '.htmlspecialchars($contribution);
                 $html .= '</div>';
             }
 
             // Rationale (legacy field, similar to contribution)
             if ($rationale) {
                 $html .= '<div class="mb-2 text-sm text-gray-700 dark:text-gray-300 italic">';
-                $html .= '"' . htmlspecialchars($rationale) . '"';
+                $html .= '"'.htmlspecialchars($rationale).'"';
                 $html .= '</div>';
             }
 
@@ -1451,7 +1453,7 @@ class Exam extends Resource
                 $html .= '<details class="text-xs text-gray-600 dark:text-gray-400">';
                 $html .= '<summary class="cursor-pointer hover:text-gray-900 dark:hover:text-gray-200">View excerpt</summary>';
                 $html .= '<div class="mt-2 p-2 bg-gray-50 dark:bg-gray-800 rounded border border-gray-200 dark:border-gray-700">';
-                $html .= '<pre class="whitespace-pre-wrap font-mono">' . htmlspecialchars(mb_substr($fragment, 0, 300)) . '</pre>';
+                $html .= '<pre class="whitespace-pre-wrap font-mono">'.htmlspecialchars(mb_substr($fragment, 0, 300)).'</pre>';
                 if (mb_strlen($fragment) > 300) {
                     $html .= '<p class="text-xs italic mt-1">... (excerpt truncated)</p>';
                 }
@@ -1489,7 +1491,7 @@ class Exam extends Resource
         $html = '<div class="space-y-4">';
 
         foreach ($plans as $plan) {
-            $statusColor = match($plan->status) {
+            $statusColor = match ($plan->status) {
                 'pending' => 'bg-gray-100 text-gray-800 dark:bg-gray-900/30 dark:text-gray-300',
                 'in_progress' => 'bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300',
                 'completed' => 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300',
@@ -1498,7 +1500,7 @@ class Exam extends Resource
                 default => 'bg-gray-100 text-gray-800',
             };
 
-            $modeColor = match($plan->assembly_mode) {
+            $modeColor = match ($plan->assembly_mode) {
                 'pool' => 'bg-indigo-100 text-indigo-800 dark:bg-indigo-900/30 dark:text-indigo-300',
                 'blueprint' => 'bg-teal-100 text-teal-800 dark:bg-teal-900/30 dark:text-teal-300',
                 'inline' => 'bg-cyan-100 text-cyan-800 dark:bg-cyan-900/30 dark:text-cyan-300',
@@ -1513,11 +1515,11 @@ class Exam extends Resource
             $html .= '<h4 class="text-base font-semibold text-gray-900 dark:text-gray-100">';
             $html .= htmlspecialchars($plan->section_id);
             $html .= '</h4>';
-            $html .= '<div class="text-xs text-gray-500 dark:text-gray-400 mt-1">Plan ID: ' . $plan->id . '</div>';
+            $html .= '<div class="text-xs text-gray-500 dark:text-gray-400 mt-1">Plan ID: '.$plan->id.'</div>';
             $html .= '</div>';
             $html .= '<div class="flex gap-2">';
-            $html .= "<span class=\"{$modeColor} text-xs font-medium px-2.5 py-0.5 rounded\">" . strtoupper($plan->assembly_mode) . "</span>";
-            $html .= "<span class=\"{$statusColor} text-xs font-medium px-2.5 py-0.5 rounded\">" . strtoupper($plan->status) . "</span>";
+            $html .= "<span class=\"{$modeColor} text-xs font-medium px-2.5 py-0.5 rounded\">".strtoupper($plan->assembly_mode).'</span>';
+            $html .= "<span class=\"{$statusColor} text-xs font-medium px-2.5 py-0.5 rounded\">".strtoupper($plan->status).'</span>';
             $html .= '</div>';
             $html .= '</div>';
 
@@ -1525,7 +1527,7 @@ class Exam extends Resource
             $html .= '<div class="mb-3">';
             $html .= '<span class="text-sm font-semibold text-gray-700 dark:text-gray-300">Questions: </span>';
             $html .= '<span class="text-sm text-gray-900 dark:text-gray-100">';
-            $html .= $plan->generated_questions . ' / ' . $plan->total_questions;
+            $html .= $plan->generated_questions.' / '.$plan->total_questions;
 
             if ($plan->total_questions > 0) {
                 $percentage = round(($plan->generated_questions / $plan->total_questions) * 100);
@@ -1550,13 +1552,13 @@ class Exam extends Resource
             if ($plan->started_at || $plan->completed_at || $plan->attached_at) {
                 $html .= '<div class="mt-3 pt-3 border-t border-gray-200 dark:border-gray-700 text-xs text-gray-500 dark:text-gray-400">';
                 if ($plan->started_at) {
-                    $html .= '<div>Started: ' . $plan->started_at->format('d.m.Y H:i') . '</div>';
+                    $html .= '<div>Started: '.$plan->started_at->format('d.m.Y H:i').'</div>';
                 }
                 if ($plan->completed_at) {
-                    $html .= '<div>Completed: ' . $plan->completed_at->format('d.m.Y H:i') . '</div>';
+                    $html .= '<div>Completed: '.$plan->completed_at->format('d.m.Y H:i').'</div>';
                 }
                 if ($plan->attached_at) {
-                    $html .= '<div>Attached: ' . $plan->attached_at->format('d.m.Y H:i') . '</div>';
+                    $html .= '<div>Attached: '.$plan->attached_at->format('d.m.Y H:i').'</div>';
                 }
                 $html .= '</div>';
             }
@@ -1564,7 +1566,7 @@ class Exam extends Resource
             // Error if any
             if ($plan->error) {
                 $html .= '<div class="mt-3 p-2 bg-red-50 dark:bg-red-900/20 text-red-800 dark:text-red-300 text-sm rounded">';
-                $html .= '<strong>Error:</strong> ' . htmlspecialchars($plan->error);
+                $html .= '<strong>Error:</strong> '.htmlspecialchars($plan->error);
                 $html .= '</div>';
             }
 
@@ -1587,21 +1589,24 @@ class Exam extends Resource
                 $pick = $planData['pick'] ?? 0;
                 $filters = $planData['filters'] ?? [];
                 $summary = "Pool: {$poolId}, Pick: {$pick}";
-                if (!empty($filters)) {
+                if (! empty($filters)) {
                     $filterKeys = implode(', ', array_keys($filters));
                     $summary .= ", Filters: {$filterKeys}";
                 }
+
                 return $summary;
 
             case 'blueprint':
                 $slots = $planData['slots'] ?? [];
                 $slotCount = count($slots);
-                $totalPick = array_sum(array_map(fn($slot) => $slot['pick'] ?? 0, $slots));
+                $totalPick = array_sum(array_map(fn ($slot) => $slot['pick'] ?? 0, $slots));
+
                 return "Blueprint: {$slotCount} slots, Total pick: {$totalPick}";
 
             case 'inline':
                 $placeholders = $planData['placeholders'] ?? [];
                 $count = count($placeholders);
+
                 return "Inline: {$count} placeholders";
 
             default:
@@ -1615,12 +1620,12 @@ class Exam extends Resource
     protected function buildPhaseBAssemblyHtml(): string
     {
         $structure = $this->structure_v2;
-        if (!$structure || empty($structure['sections'])) {
+        if (! $structure || empty($structure['sections'])) {
             return '<div class="text-sm text-gray-500 dark:text-gray-400">No Phase B assembly data yet.</div>';
         }
 
         $sections = $structure['sections'] ?? [];
-        $phaseBSections = array_filter($sections, fn($section) => isset($section['assembly']));
+        $phaseBSections = array_filter($sections, fn ($section) => isset($section['assembly']));
 
         if (empty($phaseBSections)) {
             return '<div class="text-sm text-gray-500 dark:text-gray-400">Run Phase B to generate assembly configs.</div>';
@@ -1632,7 +1637,7 @@ class Exam extends Resource
             $assembly = $section['assembly'] ?? [];
             $mode = $assembly['mode'] ?? 'unknown';
 
-            $modeColor = match($mode) {
+            $modeColor = match ($mode) {
                 'pool' => 'bg-indigo-100 text-indigo-800 dark:bg-indigo-900/30 dark:text-indigo-300',
                 'blueprint' => 'bg-teal-100 text-teal-800 dark:bg-teal-900/30 dark:text-teal-300',
                 'inline' => 'bg-cyan-100 text-cyan-800 dark:bg-cyan-900/30 dark:text-cyan-300',
@@ -1645,9 +1650,9 @@ class Exam extends Resource
             $html .= '<div class="flex items-start justify-between mb-3">';
             $html .= '<h4 class="text-base font-semibold text-gray-900 dark:text-gray-100">';
             $html .= htmlspecialchars($section['id'] ?? 'Unknown Section');
-            $html .= ' <span class="text-sm font-normal text-gray-500">(' . ($section['skill'] ?? '') . ')</span>';
+            $html .= ' <span class="text-sm font-normal text-gray-500">('.($section['skill'] ?? '').')</span>';
             $html .= '</h4>';
-            $html .= "<span class=\"{$modeColor} text-xs font-medium px-2.5 py-0.5 rounded\">" . strtoupper($mode) . "</span>";
+            $html .= "<span class=\"{$modeColor} text-xs font-medium px-2.5 py-0.5 rounded\">".strtoupper($mode).'</span>';
             $html .= '</div>';
 
             // Assembly details
@@ -1676,15 +1681,15 @@ class Exam extends Resource
                 $pick = $assembly['pick'] ?? 0;
                 $filters = $assembly['filters'] ?? [];
 
-                $html .= '<div><strong>Pool ID:</strong> ' . htmlspecialchars($poolId) . '</div>';
-                $html .= '<div><strong>Pick:</strong> ' . $pick . ' questions</div>';
+                $html .= '<div><strong>Pool ID:</strong> '.htmlspecialchars($poolId).'</div>';
+                $html .= '<div><strong>Pick:</strong> '.$pick.' questions</div>';
 
-                if (!empty($filters)) {
+                if (! empty($filters)) {
                     $html .= '<div><strong>Filters:</strong></div>';
                     $html .= '<ul class="list-disc list-inside ml-4">';
                     foreach ($filters as $key => $value) {
                         $valueStr = is_array($value) ? json_encode($value, JSON_UNESCAPED_UNICODE) : $value;
-                        $html .= '<li>' . htmlspecialchars($key) . ': ' . htmlspecialchars($valueStr) . '</li>';
+                        $html .= '<li>'.htmlspecialchars($key).': '.htmlspecialchars($valueStr).'</li>';
                     }
                     $html .= '</ul>';
                 }
@@ -1692,9 +1697,9 @@ class Exam extends Resource
 
             case 'blueprint':
                 $slots = $assembly['blueprint'] ?? [];
-                $html .= '<div><strong>Slots:</strong> ' . count($slots) . '</div>';
+                $html .= '<div><strong>Slots:</strong> '.count($slots).'</div>';
 
-                if (!empty($slots)) {
+                if (! empty($slots)) {
                     $html .= '<div class="mt-2"><strong>Slot Details:</strong></div>';
                     $html .= '<ul class="list-disc list-inside ml-4">';
                     foreach ($slots as $idx => $slot) {
@@ -1709,9 +1714,9 @@ class Exam extends Resource
 
             case 'inline':
                 $placeholders = $assembly['placeholders'] ?? [];
-                $html .= '<div><strong>Placeholders:</strong> ' . count($placeholders) . '</div>';
+                $html .= '<div><strong>Placeholders:</strong> '.count($placeholders).'</div>';
 
-                if (!empty($placeholders)) {
+                if (! empty($placeholders)) {
                     $html .= '<div class="mt-2"><strong>Placeholder Details:</strong></div>';
                     $html .= '<ul class="list-disc list-inside ml-4">';
                     foreach ($placeholders as $idx => $placeholder) {
@@ -1721,7 +1726,7 @@ class Exam extends Resource
                         $promptShort = mb_substr($promptHint, 0, 60);
                         $html .= "<li>#{$phNum}: Type {$type}";
                         if ($promptShort) {
-                            $html .= " - " . htmlspecialchars($promptShort) . (mb_strlen($promptHint) > 60 ? '...' : '');
+                            $html .= ' - '.htmlspecialchars($promptShort).(mb_strlen($promptHint) > 60 ? '...' : '');
                         }
                         $html .= '</li>';
                     }
@@ -1742,13 +1747,13 @@ class Exam extends Resource
     {
         // In Nova, cards() is called before model is loaded to this resource instance
         // So we need to get the model from the request
-        if (!$request->resourceId) {
+        if (! $request->resourceId) {
             return [];
         }
 
         $exam = \App\Models\Exam::find($request->resourceId);
 
-        if (!$exam) {
+        if (! $exam) {
             return [];
         }
 
@@ -1765,7 +1770,7 @@ class Exam extends Resource
             ->onlyOnDetail();
 
         // Add v2 cards if structure_v2 exists (ниже ExamWorkflowHub)
-        if (!empty($exam->meta['structure_v2'])) {
+        if (! empty($exam->meta['structure_v2'])) {
             $cards[] = (new \App\Nova\Cards\OverviewStatusCard($exam))->width('1/2');
             $cards[] = (new \App\Nova\Cards\GenerationProgressCard($exam))->width('1/2');
         }
@@ -1785,16 +1790,16 @@ class Exam extends Resource
             new \App\Nova\Actions\RejectAllVariantsAction,
 
             // Structure generation (Phase A & B)
-            (new \App\Nova\Actions\RunOverviewPhaseAAction())->onlyOnDetail(),
-            (new \App\Nova\Actions\RunOverviewPhaseBAction())->onlyOnDetail(),
+            (new \App\Nova\Actions\RunOverviewPhaseAAction)->onlyOnDetail(),
+            (new \App\Nova\Actions\RunOverviewPhaseBAction)->onlyOnDetail(),
 
             // Examples generation
-            (new \App\Nova\Actions\GenerateExamplesAction())->onlyOnDetail(),
+            (new \App\Nova\Actions\GenerateExamplesAction)->onlyOnDetail(),
 
             // Question synthesis pipeline
-            (new \App\Nova\Actions\ResolveGenerationPlanAction())->onlyOnDetail(),
-            (new \App\Nova\Actions\SynthesizeQuestionsAction())->onlyOnDetail(),
-            (new \App\Nova\Actions\ValidateAttachQuestionsAction())->onlyOnDetail(),
+            (new \App\Nova\Actions\ResolveGenerationPlanAction)->onlyOnDetail(),
+            (new \App\Nova\Actions\SynthesizeQuestionsAction)->onlyOnDetail(),
+            (new \App\Nova\Actions\ValidateAttachQuestionsAction)->onlyOnDetail(),
 
             // Utility actions
             new \App\Nova\Actions\CancelStalledTaskAction,
@@ -1829,7 +1834,7 @@ class Exam extends Resource
      */
     protected static function handleSingleDocumentUpload(NovaRequest $request, $model)
     {
-        if (!$request->hasFile('document_upload')) {
+        if (! $request->hasFile('document_upload')) {
             return;
         }
 
@@ -1837,10 +1842,11 @@ class Exam extends Resource
 
         // Validate file size (10MB)
         if ($file->getSize() > 10 * 1024 * 1024) {
-            \Illuminate\Support\Facades\Log::warning("File exceeds 10MB limit, skipping", [
+            \Illuminate\Support\Facades\Log::warning('File exceeds 10MB limit, skipping', [
                 'filename' => $file->getClientOriginalName(),
                 'size' => $file->getSize(),
             ]);
+
             return;
         }
 
@@ -1856,7 +1862,7 @@ class Exam extends Resource
             // Dispatch ZIP extraction job
             \App\Jobs\UnzipAndAttachDocumentsJob::dispatch($model->id, $path, 'local');
 
-            \Illuminate\Support\Facades\Log::info("ZIP file uploaded, dispatched extraction job", [
+            \Illuminate\Support\Facades\Log::info('ZIP file uploaded, dispatched extraction job', [
                 'exam_id' => $model->id,
                 'original_name' => $file->getClientOriginalName(),
                 'path' => $path,
@@ -1873,7 +1879,7 @@ class Exam extends Resource
                 'status' => 'uploaded',
             ]);
 
-            \Illuminate\Support\Facades\Log::info("ExamDocument created via Nova", [
+            \Illuminate\Support\Facades\Log::info('ExamDocument created via Nova', [
                 'exam_id' => $model->id,
                 'document_id' => $document->id,
                 'original_name' => $document->original_name,
@@ -1881,7 +1887,7 @@ class Exam extends Resource
             ]);
 
             // Dispatch extraction job (always enabled unless explicitly faked)
-            if (!config('doc.extractor.fake', false)) {
+            if (! config('doc.extractor.fake', false)) {
                 \App\Jobs\ExtractExamDocumentTextJob::dispatch($document->id);
             }
         }

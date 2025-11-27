@@ -2,8 +2,8 @@
 
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
-use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
 {
@@ -50,9 +50,9 @@ return new class extends Migration
         Schema::table('generation_plans', function (Blueprint $table) {
             // Add foreign key with CASCADE
             $table->foreign('section_id')
-                  ->references('id')
-                  ->on('exam_categories')
-                  ->onDelete('cascade');
+                ->references('id')
+                ->on('exam_categories')
+                ->onDelete('cascade');
 
             // Re-add indexes
             $table->index('section_id');

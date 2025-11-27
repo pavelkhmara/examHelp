@@ -74,8 +74,9 @@ PROMPT;
 
         return implode("\n- ", array_map(function ($item) {
             if (is_array($item)) {
-                return "- " . json_encode($item, JSON_UNESCAPED_UNICODE);
+                return '- '.json_encode($item, JSON_UNESCAPED_UNICODE);
             }
+
             return "- $item";
         }, $items));
     }

@@ -166,7 +166,7 @@ class Exam extends Model
 
         // REFERENCE EXAMS: Load from database tables (ExamCategory, QuestionGroup, Question)
         $categories = $this->categories()
-            ->with(['questionGroups' => fn($q) => $q->orderBy('order'), 'questionGroups.questions' => fn($q) => $q->orderBy('order')])
+            ->with(['questionGroups' => fn ($q) => $q->orderBy('order'), 'questionGroups.questions' => fn ($q) => $q->orderBy('order')])
             ->orderBy('order')
             ->get();
         if ($categories->isNotEmpty()) {

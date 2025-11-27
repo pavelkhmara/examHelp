@@ -23,7 +23,7 @@ class QuestionFactory extends Factory
             // Use lazy evaluation to avoid creating unnecessary records when overriding
             'exam_id' => fn () => Exam::factory()->create()->id,
             'section_id' => fn () => ExamCategory::factory()->create()->id,
-            'question_id' => 'q-' . Str::random(10),  // unique question identifier
+            'question_id' => 'q-'.Str::random(10),  // unique question identifier
             'type' => $type,
             'skills_measured' => ['reading'],
             'time_limit_sec' => 300,
@@ -32,7 +32,7 @@ class QuestionFactory extends Factory
                 'full' => $this->faker->paragraph(),
             ],
             'stimulus' => [
-                'text_html' => '<p>' . $this->faker->paragraph() . '</p>',
+                'text_html' => '<p>'.$this->faker->paragraph().'</p>',
                 'images' => [],
                 'audio' => [],
                 'media_metadata' => [

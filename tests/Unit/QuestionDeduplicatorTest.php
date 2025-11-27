@@ -41,7 +41,7 @@ class QuestionDeduplicatorTest extends TestCase
             'metadata' => ['language' => 'en'],
         ]];
 
-        $deduplicator = new QuestionDeduplicator();
+        $deduplicator = new QuestionDeduplicator;
         $result = $deduplicator->detectDuplicates($new, $exam);
 
         $this->assertCount(1, $result);
@@ -50,5 +50,3 @@ class QuestionDeduplicatorTest extends TestCase
         $this->assertGreaterThan(0.85, $result[0]['similarity_score']);
     }
 }
-
-

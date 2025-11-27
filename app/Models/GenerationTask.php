@@ -14,6 +14,7 @@ use Illuminate\Database\Eloquent\Relations\MorphTo;
 class GenerationTask extends Model
 {
     use HasFactory;
+
     protected $fillable = [
         'exam_id', 'type', 'status',
         'request', 'response', 'result',
@@ -69,6 +70,7 @@ class GenerationTask extends Model
                             'task_id' => $this->id,
                             'time_diff_seconds' => $diffSeconds,
                         ]);
+
                         return;
                     }
                 } catch (\Exception $e) {

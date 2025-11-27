@@ -14,8 +14,7 @@ class GenerationOrchestrator
         private readonly QuestionValidator $validator,
         private readonly QuestionDeduplicator $deduplicator,
         private readonly QuestionAttacher $attacher,
-    ) {
-    }
+    ) {}
 
     /**
      * @return array<int, array<string, mixed>>
@@ -46,4 +45,3 @@ class GenerationOrchestrator
         return $deduped;
     }
 }
-

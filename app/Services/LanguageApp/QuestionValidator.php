@@ -34,11 +34,10 @@ class QuestionValidator
 
     public function __construct(
         private readonly JsonSchemaQuestionV2 $schemaValidator,
-    ) {
-    }
+    ) {}
 
     /**
-     * @param array<int, array<string, mixed>> $questions
+     * @param  array<int, array<string, mixed>>  $questions
      * @return array<int, array<string, mixed>>
      *
      * @throws LiteValidationException
@@ -66,6 +65,7 @@ class QuestionValidator
                 $validated = $this->schemaValidator->validate($question);
             } catch (\Throwable $e) {
                 $errors["question_{$index}"][] = 'Schema validation failed: '.$e->getMessage();
+
                 continue;
             }
 
@@ -74,6 +74,7 @@ class QuestionValidator
                 foreach ($logicErrors as $logicError) {
                     $errors["question_{$index}"][] = $logicError;
                 }
+
                 continue;
             }
 
@@ -107,7 +108,7 @@ class QuestionValidator
     }
 
     /**
-     * @param array<string, mixed> $question
+     * @param  array<string, mixed>  $question
      * @return array<int, string>
      */
     protected function validateLogicalConsistency(array $question): array
@@ -184,9 +185,9 @@ class QuestionValidator
     }
 
     /**
-     * @param array<string, mixed> $question
-     * @param array<int, string> $existingIds
-     * @param array<int, array<string, mixed>> $finalized
+     * @param  array<string, mixed>  $question
+     * @param  array<int, string>  $existingIds
+     * @param  array<int, array<string, mixed>>  $finalized
      */
     protected function generateUniqueId(array $question, GenerationPlan $plan, array $existingIds, array $finalized): string
     {
@@ -218,7 +219,7 @@ class QuestionValidator
     }
 
     /**
-     * @param array<string, mixed> $question
+     * @param  array<string, mixed>  $question
      * @return array<string, mixed>
      */
     protected function enrichMetadata(array $question, string $questionId, GenerationPlan $plan, string $generatedAt): array
@@ -251,7 +252,7 @@ class QuestionValidator
     }
 
     /**
-     * @param array<int|string, mixed> $answerKey
+     * @param  array<int|string, mixed>  $answerKey
      * @return array<int, string|null>
      */
     protected function extractAnswerKeyValues(array $answerKey): array
@@ -271,7 +272,7 @@ class QuestionValidator
     }
 
     /**
-     * @param array<string, mixed> $question
+     * @param  array<string, mixed>  $question
      */
     protected function isSelectionType(array $question): bool
     {
@@ -337,7 +338,7 @@ class QuestionValidator
     }
 
     /**
-     * @param array<int, array<string, mixed>> $finalized
+     * @param  array<int, array<string, mixed>>  $finalized
      */
     protected function idExistsInFinalized(string $candidate, array $finalized): bool
     {
@@ -363,7 +364,7 @@ class QuestionValidator
     /**
      * AUTO-FIX: Apply automatic corrections to question before validation
      *
-     * @param array<string, mixed> $question
+     * @param  array<string, mixed>  $question
      * @return array<string, mixed>
      */
     protected function autoFixQuestion(array $question, Exam $exam): array
@@ -425,7 +426,7 @@ class QuestionValidator
      * JSON Schema требует обязательное поле instructions.brief.
      * Если отсутствует - генерируем из instructions.text_html или типа вопроса.
      *
-     * @param array<string, mixed> $question
+     * @param  array<string, mixed>  $question
      * @return array{array<string, mixed>, string|null}
      */
     protected function autoFixInstructionsBrief(array $question): array
@@ -433,12 +434,12 @@ class QuestionValidator
         $instructions = $question['instructions'] ?? [];
 
         // Если brief уже есть - ничего не делаем
-        if (!empty($instructions['brief']) && is_string($instructions['brief'])) {
+        if (! empty($instructions['brief']) && is_string($instructions['brief'])) {
             return [$question, null];
         }
 
         // Генерируем brief из text_html (первые 100 символов без HTML тегов)
-        if (!empty($instructions['text_html'])) {
+        if (! empty($instructions['text_html'])) {
             $textHtml = $instructions['text_html'];
             $plainText = strip_tags($textHtml);
             $brief = mb_substr($plainText, 0, 100);
@@ -448,12 +449,13 @@ class QuestionValidator
             }
 
             $question['instructions']['brief'] = $brief;
-            return [$question, "instructions.brief: generated from text_html"];
+
+            return [$question, 'instructions.brief: generated from text_html'];
         }
 
         // Fallback: генерируем из типа вопроса
         $type = $question['type'] ?? 'unknown';
-        $defaultBrief = match($type) {
+        $defaultBrief = match ($type) {
             'single_select', 'multi_select' => 'Choose the correct answer(s)',
             'true_false' => 'Mark as True or False',
             'writing_prompt' => 'Write your answer',
@@ -464,6 +466,7 @@ class QuestionValidator
         };
 
         $question['instructions']['brief'] = $defaultBrief;
+
         return [$question, "instructions.brief: generated default for type '{$type}'"];
     }
 
@@ -473,7 +476,7 @@ class QuestionValidator
      * Для selection типов собирает valid IDs из interaction.options[].
      * Для matching типа собирает IDs из interaction.matches[] (источники и цели).
      *
-     * @param array<string, mixed> $question
+     * @param  array<string, mixed>  $question
      * @return array{array<string, mixed>, string|null}
      */
     protected function autoFixAnswerKey(array $question): array
@@ -533,7 +536,7 @@ class QuestionValidator
         if ($fixed) {
             $question['scoring']['answer_key'] = $newAnswerKey;
 
-            return [$question, "answer_key: remapped invalid IDs to first valid ID"];
+            return [$question, 'answer_key: remapped invalid IDs to first valid ID'];
         }
 
         return [$question, null];
@@ -542,7 +545,7 @@ class QuestionValidator
     /**
      * AUTO-FIX Rules #2 & #3: Fix time_limit_sec
      *
-     * @param array<string, mixed> $question
+     * @param  array<string, mixed>  $question
      * @return array{array<string, mixed>, string|null}
      */
     protected function autoFixTimeLimit(array $question): array
@@ -585,7 +588,7 @@ class QuestionValidator
     /**
      * AUTO-FIX Rule #4: Fix missing recording_limit_sec for speaking prompts
      *
-     * @param array<string, mixed> $question
+     * @param  array<string, mixed>  $question
      * @return array{array<string, mixed>, string|null}
      */
     protected function autoFixRecordingLimit(array $question): array
@@ -611,7 +614,7 @@ class QuestionValidator
     /**
      * AUTO-FIX Rule #5: Fix response type alignment
      *
-     * @param array<string, mixed> $question
+     * @param  array<string, mixed>  $question
      * @return array{array<string, mixed>, string|null}
      */
     protected function autoFixResponseAlignment(array $question): array
@@ -708,7 +711,7 @@ class QuestionValidator
     /**
      * AUTO-FIX Rule #6: Create minimal rubric if missing
      *
-     * @param array<string, mixed> $question
+     * @param  array<string, mixed>  $question
      * @return array{array<string, mixed>, string|null}
      */
     protected function autoFixRubric(array $question): array
@@ -744,7 +747,7 @@ class QuestionValidator
         $fixed = [];
         foreach ($criteria as $idx => &$criterion) {
             if (empty($criterion['name'])) {
-                $criterion['name'] = "Criterion " . ($idx + 1);
+                $criterion['name'] = 'Criterion '.($idx + 1);
                 $fixed[] = "criterion[{$idx}].name";
             }
 
@@ -760,10 +763,9 @@ class QuestionValidator
         if (! empty($fixed)) {
             $question['scoring']['rubric']['criteria'] = $criteria;
 
-            return [$question, 'rubric: fixed ' . implode(', ', $fixed)];
+            return [$question, 'rubric: fixed '.implode(', ', $fixed)];
         }
 
         return [$question, null];
     }
 }
-

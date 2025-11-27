@@ -367,7 +367,7 @@ EOT;
 
     private static function getQuestionTypesEnum(): string
     {
-        return <<<EOT
+        return <<<'EOT'
 **Допустимые типы вопросов** (используй ТОЛЬКО эти):
 
 **Listening:**
@@ -402,7 +402,7 @@ EOT;
 
     private static function getAssemblyModesDescription(): string
     {
-        return <<<EOT
+        return <<<'EOT'
 1. **pool** — Pull questions from a database pool by filters (type, difficulty, tags)
    - Use case: MCQ sections with many similar questions
    - Example: "Pick 10 listening MCQs, difficulty = easy/medium"

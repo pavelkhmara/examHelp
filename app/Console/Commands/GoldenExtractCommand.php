@@ -21,7 +21,7 @@ class GoldenExtractCommand extends Command
         $examUuid = $this->argument('exam');
 
         $exam = Exam::find($examUuid);
-        if (!$exam) {
+        if (! $exam) {
             $this->error("Exam not found: {$examUuid}");
 
             return 1;
@@ -38,9 +38,9 @@ class GoldenExtractCommand extends Command
         // Определить output директорию
         $outputDir = $this->option('output') ?? base_path("tests/Fixtures/stages/{$examId}");
 
-        if (file_exists($outputDir) && !$this->option('force')) {
+        if (file_exists($outputDir) && ! $this->option('force')) {
             $this->warn("Output directory already exists: {$outputDir}");
-            if (!$this->confirm('Overwrite existing files?')) {
+            if (! $this->confirm('Overwrite existing files?')) {
                 $this->line('Cancelled.');
 
                 return 0;
@@ -48,7 +48,7 @@ class GoldenExtractCommand extends Command
         }
 
         // Создать директорию
-        if (!is_dir($outputDir)) {
+        if (! is_dir($outputDir)) {
             mkdir($outputDir, 0755, true);
         }
 

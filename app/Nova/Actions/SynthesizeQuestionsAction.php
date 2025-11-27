@@ -6,7 +6,6 @@ use App\Jobs\SynthesizeQuestionsJob;
 use App\Models\GenerationPlan;
 use App\Models\GenerationTask;
 use Illuminate\Bus\Queueable;
-use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Support\Collection;
 use Laravel\Nova\Actions\Action;
@@ -23,7 +22,6 @@ class SynthesizeQuestionsAction extends Action
     /**
      * Determine if the action should be available for the given request.
      *
-     * @param  \Illuminate\Http\Request  $request
      * @return bool
      */
     public function authorizedToSee(\Illuminate\Http\Request $request)
@@ -37,13 +35,13 @@ class SynthesizeQuestionsAction extends Action
 
         // Если есть resourceId - проверяем, что экзамен существует
         $exam = \App\Models\Exam::find($request->resourceId);
+
         return (bool) $exam;
     }
 
     /**
      * Determine if the user is authorized to run the action.
      *
-     * @param  \Illuminate\Http\Request  $request
      * @return bool
      */
     public function authorizedToRun(\Illuminate\Http\Request $request, $model)
@@ -86,5 +84,3 @@ class SynthesizeQuestionsAction extends Action
         return Action::message('Question synthesis queued.');
     }
 }
-
-

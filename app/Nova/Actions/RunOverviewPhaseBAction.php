@@ -3,9 +3,7 @@
 namespace App\Nova\Actions;
 
 use App\Models\GenerationTask;
-use App\Services\LanguageApp\ExamResearchService;
 use Illuminate\Bus\Queueable;
-use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Support\Collection;
 use Laravel\Nova\Actions\Action;
@@ -22,7 +20,6 @@ class RunOverviewPhaseBAction extends Action
     /**
      * Determine if the action should be available for the given request.
      *
-     * @param  \Illuminate\Http\Request  $request
      * @return bool
      */
     public function authorizedToSee(\Illuminate\Http\Request $request)
@@ -36,13 +33,13 @@ class RunOverviewPhaseBAction extends Action
 
         // Если есть resourceId - проверяем, что экзамен существует
         $exam = \App\Models\Exam::find($request->resourceId);
+
         return (bool) $exam;
     }
 
     /**
      * Determine if the user is authorized to run the action.
      *
-     * @param  \Illuminate\Http\Request  $request
      * @return bool
      */
     public function authorizedToRun(\Illuminate\Http\Request $request, $model)
@@ -57,7 +54,7 @@ class RunOverviewPhaseBAction extends Action
             // Check research_status for Phase A completion
             $status = $exam->research_status;
             $validStatuses = ['phase_a_completed', 'phase_b_completed', 'running_phase_b', 'completed'];
-            if (!in_array($status, $validStatuses)) {
+            if (! in_array($status, $validStatuses)) {
                 return Action::danger("❌ Phase A not completed (status: {$status}). Run \"1️⃣ Phase A: Skeleton\" first.");
             }
 
@@ -105,5 +102,3 @@ class RunOverviewPhaseBAction extends Action
         return Action::message('Phase B queued.');
     }
 }
-
-

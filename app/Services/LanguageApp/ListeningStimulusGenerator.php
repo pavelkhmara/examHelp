@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace App\Services\LanguageApp;
 
 use App\Models\QuestionGroup;
-use App\Models\Question;
 use Illuminate\Support\Facades\Log;
 
 /**
@@ -31,8 +30,8 @@ class ListeningStimulusGenerator
     /**
      * Генерирует скрипт для listening группы
      *
-     * @param QuestionGroup $group Группа вопросов
-     * @param string $stimulusType 'unified'|'fragmented'
+     * @param  QuestionGroup  $group  Группа вопросов
+     * @param  string  $stimulusType  'unified'|'fragmented'
      * @return string|null Текст скрипта или null если не удалось сгенерировать
      */
     public function generateScript(QuestionGroup $group, string $stimulusType): ?string
@@ -45,6 +44,7 @@ class ListeningStimulusGenerator
             Log::warning('[ListeningStimulusGenerator] No questions in group', [
                 'group_id' => $group->id,
             ]);
+
             return null;
         }
 
@@ -70,11 +70,12 @@ class ListeningStimulusGenerator
                 'model' => 'default', // Используем основную модель
             ]);
 
-            if (!($response['ok'] ?? false)) {
+            if (! ($response['ok'] ?? false)) {
                 Log::error('[ListeningStimulusGenerator] AI generation failed', [
                     'group_id' => $group->id,
                     'error' => $response['error'] ?? 'Unknown error',
                 ]);
+
                 return null;
             }
 
@@ -87,6 +88,7 @@ class ListeningStimulusGenerator
                 Log::warning('[ListeningStimulusGenerator] Empty script generated', [
                     'group_id' => $group->id,
                 ]);
+
                 return null;
             }
 
@@ -102,6 +104,7 @@ class ListeningStimulusGenerator
                 'group_id' => $group->id,
                 'error' => $e->getMessage(),
             ]);
+
             return null;
         }
     }
@@ -127,7 +130,7 @@ class ListeningStimulusGenerator
 
             // Добавляем options для MCQ
             $interaction = $q->interaction ?? [];
-            if (!empty($interaction['options'])) {
+            if (! empty($interaction['options'])) {
                 $qInfo['options'] = collect($interaction['options'])
                     ->pluck('text')
                     ->toArray();
@@ -135,7 +138,7 @@ class ListeningStimulusGenerator
 
             // Добавляем правильный ответ если есть
             $response = $q->response ?? [];
-            if (!empty($response['correct_answer'])) {
+            if (! empty($response['correct_answer'])) {
                 $qInfo['correct_answer'] = $response['correct_answer'];
             }
 
@@ -211,25 +214,25 @@ class ListeningStimulusGenerator
         }
 
         $contentTypeInstructions = match ($contentType) {
-            'dialogue' => <<<EOT
+            'dialogue' => <<<'EOT'
 Write a natural dialogue between 2 speakers (A and B).
 - Include speaker markers: "A:" and "B:" at the beginning of each turn
 - Make the conversation flow naturally with reactions and follow-up questions
 - Each speaker should have 4-8 turns
 EOT,
-            'lecture' => <<<EOT
+            'lecture' => <<<'EOT'
 Write an academic lecture or presentation.
 - Use clear, educational language appropriate for the level
 - Include topic introduction, main points, and brief conclusion
 - Use transitional phrases ("First...", "Now let's look at...", "In conclusion...")
 EOT,
-            'news' => <<<EOT
+            'news' => <<<'EOT'
 Write a news report or broadcast.
 - Use journalistic style with clear, factual language
 - Include the main story and relevant details
 - Keep the tone professional and informative
 EOT,
-            default => <<<EOT
+            default => <<<'EOT'
 Write a clear monologue or presentation.
 - Use natural spoken language
 - Include clear structure with introduction and main points

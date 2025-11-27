@@ -72,7 +72,7 @@ final class OpenAiProvider implements AiProvider
 
         // Support file attachments via opts['file_ids']
         $fileIds = $opts['file_ids'] ?? [];
-        if (!empty($fileIds) && !empty($baseMessages)) {
+        if (! empty($fileIds) && ! empty($baseMessages)) {
             // Transform last user message to include file attachments
             $lastIdx = count($baseMessages) - 1;
             $lastMsg = $baseMessages[$lastIdx];
@@ -130,19 +130,18 @@ final class OpenAiProvider implements AiProvider
             $body['response_format'] = ['type' => 'json_object'];
         }
 
-        if ($responseJsonSchema && !$jsonSchema) {
+        if ($responseJsonSchema && ! $jsonSchema) {
             $body['response_format'] = $body['response_format'] ?? ['type' => 'json_object'];
             $body['response_format']['response_json_schema'] = $responseJsonSchema;
         }
 
         Log::debug('OpenAiProvider: final request body', ['body' => $body]);
 
-        
         // Retry logic for 5xx errors, timeouts, and connection issues
         $maxRetries = 3;
         $attempt = 0;
         $lastException = null;
-        
+
         // Check rate limit before sending
         if ($this->rateLimiter && ! $this->rateLimiter->attemptWithRetry('openai')) {
             throw new \RuntimeException('OpenAI rate limit exceeded. Please try again later.');
@@ -193,7 +192,7 @@ final class OpenAiProvider implements AiProvider
                 }
 
                 // If not retryable or last attempt, throw exception
-                if (!$shouldRetry || $attempt >= $maxRetries) {
+                if (! $shouldRetry || $attempt >= $maxRetries) {
                     Log::error('OpenAiProvider: request failed', [
                         'attempt' => $attempt,
                         'max_retries' => $maxRetries,
@@ -222,7 +221,7 @@ final class OpenAiProvider implements AiProvider
         }
 
         // If we exited the loop without a response, throw the last exception
-        if (!isset($res)) {
+        if (! isset($res)) {
             throw new \RuntimeException('AI HTTP error after '.$maxRetries.' retries: '.($lastException ? $lastException->getMessage() : 'unknown error'));
         }
 
@@ -272,9 +271,9 @@ final class OpenAiProvider implements AiProvider
     /**
      * Upload a file to OpenAI Files API for use with chat completions.
      *
-     * @param string $filePath Local file path
-     * @param string $filename Original filename
-     * @param string $purpose Purpose: 'assistants' for file attachments
+     * @param  string  $filePath  Local file path
+     * @param  string  $filename  Original filename
+     * @param  string  $purpose  Purpose: 'assistants' for file attachments
      * @return array{ok: bool, file_id?: string, error?: string}
      */
     public function uploadFile(string $filePath, string $filename, string $purpose = 'assistants'): array
@@ -301,7 +300,7 @@ final class OpenAiProvider implements AiProvider
 
             $body = json_decode((string) $res->getBody(), true);
 
-            if (!isset($body['id'])) {
+            if (! isset($body['id'])) {
                 return ['ok' => false, 'error' => 'No file_id in response'];
             }
 
@@ -311,6 +310,7 @@ final class OpenAiProvider implements AiProvider
 
         } catch (GuzzleException $e) {
             Log::error('OpenAiProvider: uploadFile failed', ['error' => $e->getMessage()]);
+
             return ['ok' => false, 'error' => $e->getMessage()];
         }
     }
@@ -318,7 +318,7 @@ final class OpenAiProvider implements AiProvider
     /**
      * Delete a file from OpenAI Files API.
      *
-     * @param string $fileId OpenAI file ID
+     * @param  string  $fileId  OpenAI file ID
      * @return array{ok: bool, error?: string}
      */
     public function deleteFile(string $fileId): array
@@ -336,6 +336,7 @@ final class OpenAiProvider implements AiProvider
 
             if (($body['deleted'] ?? false) === true) {
                 Log::info('OpenAiProvider: file deleted', ['file_id' => $fileId]);
+
                 return ['ok' => true];
             }
 
@@ -343,6 +344,7 @@ final class OpenAiProvider implements AiProvider
 
         } catch (GuzzleException $e) {
             Log::error('OpenAiProvider: deleteFile failed', ['file_id' => $fileId, 'error' => $e->getMessage()]);
+
             return ['ok' => false, 'error' => $e->getMessage()];
         }
     }

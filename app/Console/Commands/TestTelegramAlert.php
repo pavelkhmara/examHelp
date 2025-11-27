@@ -29,9 +29,10 @@ class TestTelegramAlert extends Command
         $this->info('Testing Telegram notifications...');
 
         // Check configuration
-        if (!config('monitoring.telegram.enabled')) {
+        if (! config('monitoring.telegram.enabled')) {
             $this->error('Telegram notifications are disabled.');
             $this->info('Set TELEGRAM_NOTIFICATIONS_ENABLED=true in .env');
+
             return self::FAILURE;
         }
 
@@ -39,6 +40,7 @@ class TestTelegramAlert extends Command
             $this->error('Telegram bot token is not configured.');
             $this->info('Set TELEGRAM_BOT_TOKEN in .env');
             $this->info('To create a bot: message @BotFather on Telegram and use /newbot command');
+
             return self::FAILURE;
         }
 
@@ -46,12 +48,13 @@ class TestTelegramAlert extends Command
             $this->error('Telegram chat ID is not configured.');
             $this->info('Set TELEGRAM_CHAT_ID in .env');
             $this->info('To get your chat ID: message @userinfobot on Telegram');
+
             return self::FAILURE;
         }
 
         $this->info('Configuration OK');
-        $this->info('Bot Token: ' . substr(config('monitoring.telegram.bot_token'), 0, 10) . '...');
-        $this->info('Chat ID: ' . config('monitoring.telegram.chat_id'));
+        $this->info('Bot Token: '.substr(config('monitoring.telegram.bot_token'), 0, 10).'...');
+        $this->info('Chat ID: '.config('monitoring.telegram.chat_id'));
 
         // Send test message
         if ($this->option('error')) {
@@ -70,11 +73,13 @@ class TestTelegramAlert extends Command
         if ($success) {
             $this->info('✅ Telegram notification sent successfully!');
             $this->info('Check your Telegram messages.');
+
             return self::SUCCESS;
         }
 
         $this->error('❌ Failed to send Telegram notification.');
         $this->info('Check logs for details: storage/logs/laravel.log');
+
         return self::FAILURE;
     }
 }

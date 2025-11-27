@@ -101,7 +101,7 @@ class TtsServiceTest extends TestCase
                 'error' => [
                     'message' => 'Invalid API key',
                     'type' => 'invalid_request_error',
-                ]
+                ],
             ], 401),
         ]);
 

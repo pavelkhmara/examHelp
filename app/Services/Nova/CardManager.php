@@ -32,14 +32,13 @@ class CardManager
     /**
      * Получить все активные карточки для экзамена
      *
-     * @param  Exam  $exam
      * @return array
-     * [
-     *   ['type' => 'fields_changed', 'priority' => 1, 'data' => [...]],
-     *   ['type' => 'stalled_task', 'priority' => 2, 'data' => [...]],
-     *   ['type' => 'candidates', 'priority' => 3, 'data' => [...]],
-     *   ['type' => 'followup_questions', 'priority' => 4, 'data' => [...]],
-     * ]
+     *               [
+     *               ['type' => 'fields_changed', 'priority' => 1, 'data' => [...]],
+     *               ['type' => 'stalled_task', 'priority' => 2, 'data' => [...]],
+     *               ['type' => 'candidates', 'priority' => 3, 'data' => [...]],
+     *               ['type' => 'followup_questions', 'priority' => 4, 'data' => [...]],
+     *               ]
      */
     public function getActiveCards(Exam $exam): array
     {
@@ -49,7 +48,7 @@ class CardManager
         $dismissedCards = $exam->meta['dismissed_cards'] ?? [];
 
         // 1. FieldsChangedCard - если поля изменились после подтверждения
-        if (!in_array('fields_changed', $dismissedCards)) {
+        if (! in_array('fields_changed', $dismissedCards)) {
             if ($this->hasFieldsChanged($exam)) {
                 $cards[] = [
                     'type' => 'fields_changed',
@@ -60,7 +59,7 @@ class CardManager
         }
 
         // 2. StalledTaskCard - если есть зависшая задача
-        if (!in_array('stalled_task', $dismissedCards)) {
+        if (! in_array('stalled_task', $dismissedCards)) {
             $stalledTask = $this->getStalledTask($exam);
             if ($stalledTask) {
                 $cards[] = [
@@ -72,7 +71,7 @@ class CardManager
         }
 
         // 3. CandidatesCard - если есть несколько вариантов экзамена для выбора
-        if (!in_array('candidates', $dismissedCards)) {
+        if (! in_array('candidates', $dismissedCards)) {
             $candidatesData = $this->getCandidatesData($exam);
             if ($candidatesData) {
                 $cards[] = [
@@ -84,7 +83,7 @@ class CardManager
         }
 
         // 4. FollowupQuestionsCard - если есть уточняющие вопросы
-        if (!in_array('followup_questions', $dismissedCards)) {
+        if (! in_array('followup_questions', $dismissedCards)) {
             $followupsData = $this->getFollowupsData($exam);
             if ($followupsData) {
                 $cards[] = [
@@ -103,15 +102,11 @@ class CardManager
 
     /**
      * Закрыть (dismiss) карточку
-     *
-     * @param  Exam  $exam
-     * @param  string  $cardType
-     * @return void
      */
     public function dismissCard(Exam $exam, string $cardType): void
     {
         $dismissedCards = $exam->meta['dismissed_cards'] ?? [];
-        if (!in_array($cardType, $dismissedCards)) {
+        if (! in_array($cardType, $dismissedCards)) {
             $dismissedCards[] = $cardType;
             $meta = $exam->meta ?? [];
             $meta['dismissed_cards'] = $dismissedCards;
@@ -122,9 +117,6 @@ class CardManager
 
     /**
      * Сбросить все закрытые карточки
-     *
-     * @param  Exam  $exam
-     * @return void
      */
     public function resetDismissedCards(Exam $exam): void
     {
@@ -136,9 +128,6 @@ class CardManager
 
     /**
      * Проверить, изменились ли влияющие поля после подтверждения
-     *
-     * @param  Exam  $exam
-     * @return bool
      */
     protected function hasFieldsChanged(Exam $exam): bool
     {
@@ -146,7 +135,7 @@ class CardManager
             ->where('is_valid', true)
             ->first();
 
-        if (!$confirmedIdentity) {
+        if (! $confirmedIdentity) {
             return false;
         }
 
@@ -163,9 +152,6 @@ class CardManager
 
     /**
      * Получить список изменившихся полей
-     *
-     * @param  Exam  $exam
-     * @return array
      */
     protected function getChangedFields(Exam $exam): array
     {
@@ -173,7 +159,7 @@ class CardManager
             ->where('is_valid', true)
             ->first();
 
-        if (!$confirmedIdentity) {
+        if (! $confirmedIdentity) {
             return [];
         }
 
@@ -199,7 +185,7 @@ class CardManager
                 continue;
             }
 
-            if (!isset($currentFields[$field]) || $currentFields[$field] !== $oldValue) {
+            if (! isset($currentFields[$field]) || $currentFields[$field] !== $oldValue) {
                 $changedFields[] = $field;
             }
         }
@@ -212,9 +198,6 @@ class CardManager
 
     /**
      * Получить зависшую задачу (если есть)
-     *
-     * @param  Exam  $exam
-     * @return GenerationTask|null
      */
     protected function getStalledTask(Exam $exam): ?GenerationTask
     {
@@ -235,9 +218,6 @@ class CardManager
 
     /**
      * Get formatted data for stalled task card
-     *
-     * @param  GenerationTask  $task
-     * @return array
      */
     protected function getStalledTaskData(GenerationTask $task): array
     {
@@ -261,9 +241,6 @@ class CardManager
      * - Есть task со статусом pending_confirmation
      * - В result есть identity.candidates.length > 0
      * - ИЛИ в логах (generation_logs) есть кандидаты
-     *
-     * @param  Exam  $exam
-     * @return array|null
      */
     protected function getCandidatesData(Exam $exam): ?array
     {
@@ -273,7 +250,7 @@ class CardManager
             ->latest()
             ->first();
 
-        if (!$task) {
+        if (! $task) {
             return null;
         }
 
@@ -318,9 +295,6 @@ class CardManager
      * - Есть task со статусом pending_clarification
      * - В result есть identity.followups.length > 0 ИЛИ identity.need_fields.length > 0
      * - ИЛИ в логах (generation_logs) есть followups/need_fields
-     *
-     * @param  Exam  $exam
-     * @return array|null
      */
     protected function getFollowupsData(Exam $exam): ?array
     {
@@ -330,7 +304,7 @@ class CardManager
             ->latest()
             ->first();
 
-        if (!$task) {
+        if (! $task) {
             return null;
         }
 

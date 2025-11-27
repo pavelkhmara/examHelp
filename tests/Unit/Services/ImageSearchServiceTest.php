@@ -63,7 +63,7 @@ class ImageSearchServiceTest extends TestCase
 
         Log::shouldReceive('info')->times(4); // ImageSearchService (2x) + UnsplashProvider (2x)
 
-        $service = new ImageSearchService();
+        $service = new ImageSearchService;
 
         // Act
         $result = $service->searchImages('nature', 10);
@@ -104,7 +104,7 @@ class ImageSearchServiceTest extends TestCase
             return str_contains($message, 'Image search disabled');
         });
 
-        $service = new ImageSearchService();
+        $service = new ImageSearchService;
 
         // Act
         $result = $service->searchImages('nature', 10);
@@ -134,7 +134,7 @@ class ImageSearchServiceTest extends TestCase
         Log::shouldReceive('info')->times(2); // ImageSearchService start + UnsplashProvider start
         Log::shouldReceive('error')->times(3); // UnsplashProvider API error + UnsplashProvider catch + ImageSearchService catch
 
-        $service = new ImageSearchService();
+        $service = new ImageSearchService;
 
         // Act & Assert
         $this->expectException(\RuntimeException::class);
@@ -163,7 +163,7 @@ class ImageSearchServiceTest extends TestCase
         Log::shouldReceive('info')->times(3); // ImageSearchService start + UnsplashProvider start + ImageSearchService completion (no provider completion when empty)
         Log::shouldReceive('warning')->once(); // UnsplashProvider warning when no results
 
-        $service = new ImageSearchService();
+        $service = new ImageSearchService;
 
         // Act (not passing count parameter)
         $result = $service->searchImages('test');

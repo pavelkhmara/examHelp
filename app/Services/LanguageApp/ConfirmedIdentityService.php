@@ -33,10 +33,8 @@ class ConfirmedIdentityService
     /**
      * Создать подтвержденную идентичность
      *
-     * @param  Exam  $exam
      * @param  array  $identityData  Данные идентичности из Identity stage
      * @param  GenerationTask  $task  Задача, которая подтвердила
-     * @return ConfirmedIdentity
      */
     public function createConfirmedIdentity(
         Exam $exam,
@@ -72,7 +70,6 @@ class ConfirmedIdentityService
     /**
      * Проверить, нужно ли перезапускать Identity stage
      *
-     * @param  Exam  $exam
      * @return array ['should_rerun' => bool, 'reason' => string|null, 'confirmed_identity' => ConfirmedIdentity|null]
      */
     public function shouldRerunIdentity(Exam $exam): array
@@ -82,7 +79,7 @@ class ConfirmedIdentityService
             ->where('is_valid', true)
             ->first();
 
-        if (!$confirmedIdentity) {
+        if (! $confirmedIdentity) {
             return [
                 'should_rerun' => true,
                 'reason' => 'No confirmed identity exists',
@@ -112,10 +109,6 @@ class ConfirmedIdentityService
     /**
      * Инвалидировать подтвержденную идентичность
      * (вызывается при изменении влияющих полей)
-     *
-     * @param  Exam  $exam
-     * @param  string  $reason
-     * @return void
      */
     public function invalidateConfirmedIdentity(Exam $exam, string $reason = 'Fields changed'): void
     {
@@ -136,9 +129,6 @@ class ConfirmedIdentityService
 
     /**
      * Извлечь текущие значения влияющих полей
-     *
-     * @param  Exam  $exam
-     * @return array
      */
     protected function extractSourceFields(Exam $exam): array
     {
@@ -157,10 +147,6 @@ class ConfirmedIdentityService
 
     /**
      * Получить список изменившихся полей
-     *
-     * @param  ConfirmedIdentity  $confirmedIdentity
-     * @param  array  $currentFields
-     * @return array
      */
     protected function getChangedFields(ConfirmedIdentity $confirmedIdentity, array $currentFields): array
     {
@@ -179,9 +165,6 @@ class ConfirmedIdentityService
 
     /**
      * Получить последнюю подтвержденную идентичность (даже если инвалидирована)
-     *
-     * @param  Exam  $exam
-     * @return ConfirmedIdentity|null
      */
     public function getLastConfirmedIdentity(Exam $exam): ?ConfirmedIdentity
     {
@@ -194,8 +177,6 @@ class ConfirmedIdentityService
      * Проверить, совпадает ли текущая идентичность с подтвержденной
      * (для информирования пользователя)
      *
-     * @param  Exam  $exam
-     * @param  array  $newIdentityData
      * @return array ['matches' => bool, 'differences' => array]
      */
     public function compareWithConfirmed(Exam $exam, array $newIdentityData): array
@@ -204,7 +185,7 @@ class ConfirmedIdentityService
             ->where('is_valid', true)
             ->first();
 
-        if (!$confirmedIdentity) {
+        if (! $confirmedIdentity) {
             return ['matches' => false, 'differences' => ['No confirmed identity']];
         }
 

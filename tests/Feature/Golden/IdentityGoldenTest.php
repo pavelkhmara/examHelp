@@ -40,7 +40,7 @@ class IdentityGoldenTest extends TestCase
         $this->assertArrayHasKey('confidence', $golden);
         $confidence = $golden['confidence'];
 
-        if (!empty($confidence)) {
+        if (! empty($confidence)) {
             $this->assertIsArray($confidence);
 
             // If overall is present, it should be between 0 and 1

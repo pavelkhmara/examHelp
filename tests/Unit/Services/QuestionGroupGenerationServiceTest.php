@@ -2,7 +2,6 @@
 
 namespace Tests\Unit\Services;
 
-use App\Models\Exam;
 use App\Models\ExamCategory;
 use App\Models\GenerationPlan;
 use App\Models\Question;

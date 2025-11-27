@@ -226,7 +226,7 @@ HINT;
      */
     private static function getConfirmedIdentityHint(?array $confirmedIdentity): string
     {
-        if (!$confirmedIdentity) {
+        if (! $confirmedIdentity) {
             return '';
         }
 
@@ -270,7 +270,7 @@ HINT;
      */
     private static function getLocalizationHint(?array $userInput): string
     {
-        if (!$userInput) {
+        if (! $userInput) {
             return '';
         }
 
@@ -278,14 +278,14 @@ HINT;
         $language = $userInput['language'] ?? null;
 
         if ($country) {
-            return "\n**Local Sources Requirement:**\n" .
-                   "Include at least 1-2 sources from {$country} in local language if available.\n" .
+            return "\n**Local Sources Requirement:**\n".
+                   "Include at least 1-2 sources from {$country} in local language if available.\n".
                    "Prioritize official government sites and certification bodies from {$country}.";
         }
 
         if ($language) {
-            return "\n**Local Sources Requirement:**\n" .
-                   "Include at least 1-2 sources in {$language} language.\n" .
+            return "\n**Local Sources Requirement:**\n".
+                   "Include at least 1-2 sources in {$language} language.\n".
                    "Prioritize official certification bodies and exam providers in {$language}.";
         }
 

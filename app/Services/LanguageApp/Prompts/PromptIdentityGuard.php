@@ -120,7 +120,7 @@ SYSTEM;
             $iterationNumber = $iterationContext['iteration_number'] ?? 1;
             $previousAttempts = $iterationContext['previous_attempts'] ?? [];
 
-            if (!empty($previousAttempts)) {
+            if (! empty($previousAttempts)) {
                 $iterationSection = "\n\n**PREVIOUS VERIFICATION ATTEMPTS:**\n";
                 $iterationSection .= "This is attempt #{$iterationNumber}. Previous attempts:\n\n";
 
@@ -133,16 +133,16 @@ SYSTEM;
 
                     $iterationSection .= "Attempt #{$attemptNum}: {$status}, confidence: {$confidence}%\n";
 
-                    if (!empty($canonical['family'])) {
-                        $iterationSection .= "  - Identified: " . ($canonical['family'] ?? 'unknown');
-                        if (!empty($canonical['variant'])) {
+                    if (! empty($canonical['family'])) {
+                        $iterationSection .= '  - Identified: '.($canonical['family'] ?? 'unknown');
+                        if (! empty($canonical['variant'])) {
                             $iterationSection .= " ({$canonical['variant']})";
                         }
                         $iterationSection .= "\n";
                     }
 
-                    if (!empty($issues)) {
-                        $iterationSection .= "  - Issues: " . count($issues) . " questions needed clarification\n";
+                    if (! empty($issues)) {
+                        $iterationSection .= '  - Issues: '.count($issues)." questions needed clarification\n";
                     }
                 }
 
@@ -153,7 +153,7 @@ SYSTEM;
 
         // Build web search section
         $webSearchSection = '';
-        if ($webSearchData && is_array($webSearchData) && !empty($webSearchData)) {
+        if ($webSearchData && is_array($webSearchData) && ! empty($webSearchData)) {
             $webSearchSection = "\n\n**WEB SEARCH RESULTS:**\n";
             $webSearchSection .= "Additional information gathered from web search:\n\n";
 
@@ -167,8 +167,8 @@ SYSTEM;
                 }
 
                 if ($summary) {
-                    $webSearchSection .= "Search #{" . ($idx + 1) . "}: \"{$query}\"\n";
-                    $webSearchSection .= $summary . "\n\n";
+                    $webSearchSection .= 'Search #{'.($idx + 1)."}: \"{$query}\"\n";
+                    $webSearchSection .= $summary."\n\n";
                 }
             }
 
@@ -177,18 +177,18 @@ SYSTEM;
 
         // Build existing identity section
         $existingIdentitySection = '';
-        if ($existingIdentity && is_array($existingIdentity) && !empty($existingIdentity)) {
+        if ($existingIdentity && is_array($existingIdentity) && ! empty($existingIdentity)) {
             $existingIdentityJson = json_encode($existingIdentity, JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT);
             $existingIdentitySection = "\n\n**EXISTING IDENTITY DATA:**\n";
             $existingIdentitySection .= "The following identity information was already captured during exam creation:\n";
             $existingIdentitySection .= "```json\n{$existingIdentityJson}\n```\n";
-            $existingIdentitySection .= "IMPORTANT: Use this as prior information. If document evidence contradicts this, ";
+            $existingIdentitySection .= 'IMPORTANT: Use this as prior information. If document evidence contradicts this, ';
             $existingIdentitySection .= "prefer document evidence but note the conflict in your reasoning.\n";
         }
 
         // Build user metadata section
         $userMetaSection = '';
-        if ($userMeta && is_array($userMeta) && !empty($userMeta)) {
+        if ($userMeta && is_array($userMeta) && ! empty($userMeta)) {
             $userMetaJson = json_encode($userMeta, JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT);
             $userMetaSection = "\n\n**USER METADATA (from initial analysis):**\n";
             $userMetaSection .= "Additional information about the user and their exam preparation:\n";

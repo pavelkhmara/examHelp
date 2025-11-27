@@ -23,7 +23,7 @@ class TaskManagementController extends Controller
         $oldStatus = $task->status;
 
         // Only cancel if task is in active state
-        if (!in_array($oldStatus, ['queued', 'running', 'pending_confirmation', 'pending_clarification'])) {
+        if (! in_array($oldStatus, ['queued', 'running', 'pending_confirmation', 'pending_clarification'])) {
             return response()->json([
                 'success' => false,
                 'message' => "Cannot cancel task in '{$oldStatus}' status. Only active tasks can be cancelled.",
@@ -129,7 +129,7 @@ class TaskManagementController extends Controller
         $oldStatus = $task->status;
 
         // Only retry failed or cancelled tasks
-        if (!in_array($oldStatus, ['failed', 'cancelled'])) {
+        if (! in_array($oldStatus, ['failed', 'cancelled'])) {
             return response()->json([
                 'success' => false,
                 'message' => "Cannot retry task in '{$oldStatus}' status. Only failed/cancelled tasks can be retried.",
@@ -290,7 +290,7 @@ class TaskManagementController extends Controller
 
             // Parse user_input from exam
             $userInput = [];
-            if (!empty($exam->user_input)) {
+            if (! empty($exam->user_input)) {
                 if (is_array($exam->user_input)) {
                     $userInput = $exam->user_input;
                 } elseif (is_string($exam->user_input)) {
@@ -328,7 +328,7 @@ class TaskManagementController extends Controller
                     'attempts' => 0,
                     'result' => null,
                     'error' => null,
-                    'idempotency_key' => "exam:{$exam->id}:research:force_start:" . now()->timestamp . ':' . uniqid(),
+                    'idempotency_key' => "exam:{$exam->id}:research:force_start:".now()->timestamp.':'.uniqid(),
                 ]);
 
                 Log::info('[TaskManagement] Task created', ['task_id' => $task->id]);
@@ -340,7 +340,7 @@ class TaskManagementController extends Controller
 
                 return response()->json([
                     'success' => false,
-                    'message' => 'Failed to create task: ' . $e->getMessage(),
+                    'message' => 'Failed to create task: '.$e->getMessage(),
                     'error_details' => $e->getMessage(),
                 ], 500);
             }
@@ -393,7 +393,7 @@ class TaskManagementController extends Controller
                 try {
                     $task->addActivity(
                         'job_dispatch_failed',
-                        'Failed to dispatch job: ' . $e->getMessage(),
+                        'Failed to dispatch job: '.$e->getMessage(),
                         ['error' => $e->getMessage()]
                     );
                 } catch (\Throwable $activityError) {
@@ -405,7 +405,7 @@ class TaskManagementController extends Controller
 
                 return response()->json([
                     'success' => false,
-                    'message' => 'Task created but job dispatch failed: ' . $e->getMessage(),
+                    'message' => 'Task created but job dispatch failed: '.$e->getMessage(),
                     'task_id' => $task->id,
                     'error_details' => $e->getMessage(),
                 ], 500);
@@ -430,7 +430,7 @@ class TaskManagementController extends Controller
 
             return response()->json([
                 'success' => false,
-                'message' => 'Force start failed: ' . $e->getMessage(),
+                'message' => 'Force start failed: '.$e->getMessage(),
                 'error_details' => $e->getMessage(),
                 'trace' => explode("\n", $e->getTraceAsString()),
             ], 500);
@@ -447,7 +447,7 @@ class TaskManagementController extends Controller
             'success' => true,
             'config' => [
                 'queue_driver' => config('queue.default'),
-                'queue_connection' => config('queue.connections.' . config('queue.default')),
+                'queue_connection' => config('queue.connections.'.config('queue.default')),
                 'app_env' => app()->environment(),
                 'app_debug' => config('app.debug'),
                 'php_version' => PHP_VERSION,

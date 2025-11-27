@@ -24,7 +24,7 @@ class SnapshotComparison
         $lines[] = '=== Snapshot Comparison Report ===';
         $lines[] = '';
 
-        if (!$this->hasBaseline) {
+        if (! $this->hasBaseline) {
             $lines[] = 'Status: NO BASELINE';
             $lines[] = "Message: {$this->message}";
 
@@ -40,7 +40,7 @@ class SnapshotComparison
         $lines[] = "Hash: {$this->baseline->getShortHash()}";
         $lines[] = '';
 
-        if (!empty($this->diffs)) {
+        if (! empty($this->diffs)) {
             $lines[] = 'Differences ('.count($this->diffs).' total):';
             foreach (array_slice($this->diffs, 0, 10) as $diff) {
                 $type = $diff['type'] ?? 'unknown';

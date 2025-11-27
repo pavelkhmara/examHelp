@@ -5,7 +5,6 @@ namespace App\Services\LanguageApp\Providers;
 use App\Services\LanguageApp\AiRateLimiter;
 use App\Services\LanguageApp\AsyncAiProvider;
 use GuzzleHttp\Client;
-use GuzzleHttp\Exception\GuzzleException;
 use GuzzleHttp\Promise\PromiseInterface;
 use GuzzleHttp\Promise\Utils;
 use Illuminate\Support\Facades\Log;

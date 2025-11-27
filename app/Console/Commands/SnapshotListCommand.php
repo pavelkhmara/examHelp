@@ -23,7 +23,7 @@ class SnapshotListCommand extends Command
 
         $examId = $this->argument('exam');
 
-        if (!$examId) {
+        if (! $examId) {
             return $this->listAllExams($manager);
         }
 

@@ -4,7 +4,6 @@ namespace Tests\Unit\Services;
 
 use App\Models\Exam;
 use App\Models\ExamCategory;
-use App\Models\ExamExampleQuestion;
 use App\Models\Question;
 use App\Services\Nova\ExamFullViewRenderer;
 use Illuminate\Foundation\Testing\RefreshDatabase;

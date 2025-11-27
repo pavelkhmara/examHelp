@@ -79,7 +79,7 @@ class ResetAndRestartResearch extends Action
 
                     // Step 2: Parse user_input from exam
                     $userInput = [];
-                    if (!empty($exam->user_input)) {
+                    if (! empty($exam->user_input)) {
                         if (is_array($exam->user_input)) {
                             $userInput = $exam->user_input;
                         } elseif (is_string($exam->user_input)) {
@@ -134,7 +134,7 @@ class ResetAndRestartResearch extends Action
                         subject: $exam,
                         request: $payload,
                         jobClass: \App\Jobs\RunExamResearchJob::class,
-                        idempotencyKey: "exam:{$exam->id}:research:force_restart:" . now()->timestamp . ':' . uniqid(),
+                        idempotencyKey: "exam:{$exam->id}:research:force_restart:".now()->timestamp.':'.uniqid(),
                         queue: null
                     );
 
@@ -183,8 +183,8 @@ class ResetAndRestartResearch extends Action
                 }
             }
 
-            if (!empty($errors)) {
-                return Action::danger('❌ Errors occurred: ' . implode('; ', $errors));
+            if (! empty($errors)) {
+                return Action::danger('❌ Errors occurred: '.implode('; ', $errors));
             }
 
             $examCount = count($processedExams);
@@ -197,14 +197,13 @@ class ResetAndRestartResearch extends Action
                 'trace' => $e->getTraceAsString(),
             ]);
 
-            return Action::danger('❌ Action failed: ' . $e->getMessage());
+            return Action::danger('❌ Action failed: '.$e->getMessage());
         }
     }
 
     /**
      * Cancel all active tasks for the exam
      *
-     * @param \App\Models\Exam $exam
      * @return int Number of cancelled tasks
      */
     private function cancelActiveTasks(\App\Models\Exam $exam): int

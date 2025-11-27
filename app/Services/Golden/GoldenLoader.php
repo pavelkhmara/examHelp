@@ -19,7 +19,7 @@ class GoldenLoader
         $filename = $this->getStageFilename($stage);
         $path = "{$this->basePath}/{$examId}/{$filename}";
 
-        if (!file_exists($path)) {
+        if (! file_exists($path)) {
             throw new \RuntimeException("Golden fixture not found: {$path}");
         }
 
@@ -141,7 +141,7 @@ class GoldenLoader
     {
         $path = base_path("tests/Fixtures/exams/{$examId}.json");
 
-        if (!file_exists($path)) {
+        if (! file_exists($path)) {
             return null;
         }
 
@@ -274,13 +274,13 @@ class GoldenLoader
             'synthesis' => '05-synthesis.json',
         ];
 
-        if (!isset($stageFiles[$stageName])) {
+        if (! isset($stageFiles[$stageName])) {
             return null;
         }
 
         $path = "{$this->basePath}/{$fixtureId}/{$stageFiles[$stageName]}";
 
-        if (!file_exists($path)) {
+        if (! file_exists($path)) {
             return null;
         }
 

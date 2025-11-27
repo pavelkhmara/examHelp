@@ -3,7 +3,6 @@
 namespace App\Services\LanguageApp;
 
 use App\Models\Exam;
-use App\Models\ExamCategory;
 use App\Models\GenerationPlan;
 use App\Models\Question;
 use App\Models\QuestionGroup;
@@ -42,7 +41,7 @@ class QuestionGroupGenerationService
 
         $questionGroups = $plan->plan_data['question_groups'] ?? null;
 
-        if (!$questionGroups || !is_array($questionGroups)) {
+        if (! $questionGroups || ! is_array($questionGroups)) {
             throw new \Exception('plan_data must contain question_groups array for inline mode');
         }
 
@@ -125,7 +124,7 @@ class QuestionGroupGenerationService
             throw new \Exception("Question group '{$groupSpec['id']}' missing required field: title");
         }
 
-        if (!isset($groupSpec['questions']) || !is_array($groupSpec['questions'])) {
+        if (! isset($groupSpec['questions']) || ! is_array($groupSpec['questions'])) {
             throw new \Exception("Question group '{$groupSpec['id']}' missing questions array");
         }
 
@@ -231,7 +230,7 @@ class QuestionGroupGenerationService
             'group_id' => $questionGroup->group_id,
             'order' => $order,
             'action' => $action,
-            'has_interaction' => !empty($questionSpec['interaction']),
+            'has_interaction' => ! empty($questionSpec['interaction']),
         ]);
 
         // Prepare question data (v2 archetype structure)
@@ -268,6 +267,7 @@ class QuestionGroupGenerationService
         // ✅ UPDATE skeleton if exists, CREATE if not
         if ($existingQuestion) {
             $existingQuestion->update($questionData);
+
             return $existingQuestion;
         }
 
@@ -331,12 +331,11 @@ class QuestionGroupGenerationService
      * to ensure exam.meta.generated_questions_v2 stays in sync.
      *
      * @param  GenerationPlan  $plan  Plan with generated questions
-     * @return void
      */
     protected function syncGeneratedQuestionsToExamMeta(GenerationPlan $plan): void
     {
         $exam = Exam::find($plan->exam_id);
-        if (!$exam) {
+        if (! $exam) {
             return;
         }
 
@@ -359,7 +358,7 @@ class QuestionGroupGenerationService
             // If question has group_id, extract raw ID by removing prefix
             if ($question->question_group_id) {
                 $group = QuestionGroup::find($question->question_group_id);
-                if ($group && str_starts_with($questionId, $group->group_id . '_')) {
+                if ($group && str_starts_with($questionId, $group->group_id.'_')) {
                     $rawId = substr($questionId, strlen($group->group_id) + 1);
                 }
             }
@@ -386,7 +385,7 @@ class QuestionGroupGenerationService
         // Merge with existing questions (avoid duplicates by 'id')
         $merged = collect($existingQuestions);
         foreach ($generatedQuestions as $newQuestion) {
-            $existingIndex = $merged->search(fn($q) => $q['id'] === $newQuestion['id']);
+            $existingIndex = $merged->search(fn ($q) => $q['id'] === $newQuestion['id']);
             if ($existingIndex !== false) {
                 // Replace existing question
                 $merged[$existingIndex] = $newQuestion;

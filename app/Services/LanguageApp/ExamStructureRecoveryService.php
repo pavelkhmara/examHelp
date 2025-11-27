@@ -26,7 +26,6 @@ class ExamStructureRecoveryService
     /**
      * Check if exam structure needs recovery
      *
-     * @param Exam $exam
      * @return bool True if recovery needed
      */
     public function needsRecovery(Exam $exam): bool
@@ -48,8 +47,7 @@ class ExamStructureRecoveryService
     /**
      * Recover exam structure from existing data
      *
-     * @param Exam $exam
-     * @param bool $dryRun If true, don't save changes
+     * @param  bool  $dryRun  If true, don't save changes
      * @return array Recovery result with stats
      */
     public function recover(Exam $exam, bool $dryRun = false): array
@@ -80,16 +78,17 @@ class ExamStructureRecoveryService
 
         if ($categories->isEmpty()) {
             $result['errors'][] = 'No categories found for this exam';
+
             return $result;
         }
 
         // Recover question_archetypes
         $recoveredArchetypes = $this->recoverQuestionArchetypes($categories, $exam);
-        $archetypesChanged = !empty($recoveredArchetypes) && $recoveredArchetypes !== $existingArchetypes;
+        $archetypesChanged = ! empty($recoveredArchetypes) && $recoveredArchetypes !== $existingArchetypes;
 
         // Recover section_archetypes
         $recoveredSections = $this->recoverSectionArchetypes($categories);
-        $sectionsChanged = !empty($recoveredSections) && $recoveredSections !== $existingSections;
+        $sectionsChanged = ! empty($recoveredSections) && $recoveredSections !== $existingSections;
 
         if ($archetypesChanged || $sectionsChanged) {
             $result['needed_recovery'] = true;
@@ -103,11 +102,11 @@ class ExamStructureRecoveryService
             ]);
 
             // Preserve existing fields
-            if (!isset($newStructure['sources'])) {
+            if (! isset($newStructure['sources'])) {
                 $newStructure['sources'] = $exam->sources ?? [];
             }
 
-            if (!$dryRun) {
+            if (! $dryRun) {
                 // Save to database
                 $meta = $exam->meta ?? [];
                 $meta['exam_structure'] = $newStructure;
@@ -140,9 +139,7 @@ class ExamStructureRecoveryService
     /**
      * Recover question_archetypes from categories and example questions
      *
-     * @param \Illuminate\Support\Collection $categories
-     * @param Exam $exam
-     * @return array
+     * @param  \Illuminate\Support\Collection  $categories
      */
     protected function recoverQuestionArchetypes($categories, Exam $exam): array
     {
@@ -151,7 +148,7 @@ class ExamStructureRecoveryService
         // Strategy 1: Get from category.meta['question_archetypes']
         foreach ($categories as $category) {
             $categoryArchetypes = $category->meta['question_archetypes'] ?? [];
-            if (!empty($categoryArchetypes)) {
+            if (! empty($categoryArchetypes)) {
                 $allArchetypes = array_merge($allArchetypes, $categoryArchetypes);
             }
         }
@@ -162,7 +159,7 @@ class ExamStructureRecoveryService
                 $steps = $category->meta['steps'] ?? [];
                 foreach ($steps as $step) {
                     $allArchetypes[] = [
-                        'id' => $step['archetype_id'] ?? 'archetype_' . \Str::random(8),
+                        'id' => $step['archetype_id'] ?? 'archetype_'.\Str::random(8),
                         'name' => $step['name'] ?? 'Unknown Task',
                         'category' => $category->key,
                         'step_duration' => $step['duration_min'] ?? null,
@@ -186,14 +183,14 @@ class ExamStructureRecoveryService
 
             foreach ($examples as $example) {
                 $categoryKey = $example->examCategory->key ?? 'unknown';
-                if (!isset($archetypesByCategory[$categoryKey])) {
+                if (! isset($archetypesByCategory[$categoryKey])) {
                     $archetypesByCategory[$categoryKey] = [];
                 }
 
-                $archetypeId = $example->archetype_id ?? 'archetype_' . \Str::random(8);
+                $archetypeId = $example->archetype_id ?? 'archetype_'.\Str::random(8);
 
                 // Avoid duplicates
-                if (!isset($archetypesByCategory[$categoryKey][$archetypeId])) {
+                if (! isset($archetypesByCategory[$categoryKey][$archetypeId])) {
                     $archetypesByCategory[$categoryKey][$archetypeId] = [
                         'id' => $archetypeId,
                         'name' => $example->name ?? 'Unknown Task',
@@ -215,7 +212,7 @@ class ExamStructureRecoveryService
 
         // Add recovery metadata
         foreach ($allArchetypes as &$archetype) {
-            if (!isset($archetype['recovered'])) {
+            if (! isset($archetype['recovered'])) {
                 $archetype['recovered'] = false;
             }
         }
@@ -226,8 +223,7 @@ class ExamStructureRecoveryService
     /**
      * Recover section_archetypes from categories
      *
-     * @param \Illuminate\Support\Collection $categories
-     * @return array
+     * @param  \Illuminate\Support\Collection  $categories
      */
     protected function recoverSectionArchetypes($categories): array
     {
@@ -250,10 +246,6 @@ class ExamStructureRecoveryService
 
     /**
      * Batch recover multiple exams
-     *
-     * @param array $examIds
-     * @param bool $dryRun
-     * @return array
      */
     public function recoverBatch(array $examIds, bool $dryRun = false): array
     {
@@ -268,9 +260,10 @@ class ExamStructureRecoveryService
         foreach ($examIds as $examId) {
             $exam = Exam::find($examId);
 
-            if (!$exam) {
+            if (! $exam) {
                 $results['failed']++;
                 $results['details'][$examId] = ['error' => 'Exam not found'];
+
                 continue;
             }
 
@@ -303,9 +296,6 @@ class ExamStructureRecoveryService
 
     /**
      * Get diagnostics for an exam
-     *
-     * @param Exam $exam
-     * @return array
      */
     public function diagnose(Exam $exam): array
     {
@@ -321,7 +311,7 @@ class ExamStructureRecoveryService
             'exam_title' => $exam->title,
             'needs_recovery' => $this->needsRecovery($exam),
             'current_state' => [
-                'has_exam_structure' => !empty($examStructure),
+                'has_exam_structure' => ! empty($examStructure),
                 'question_archetypes_count' => count($questionArchetypes),
                 'section_archetypes_count' => count($sectionArchetypes),
                 'categories_count' => $categories->count(),
@@ -337,8 +327,8 @@ class ExamStructureRecoveryService
             $diagnostics['categories'][] = [
                 'key' => $category->key,
                 'name' => $category->name,
-                'has_question_archetypes' => !empty($categoryArchetypes),
-                'has_steps' => !empty($categorySteps),
+                'has_question_archetypes' => ! empty($categoryArchetypes),
+                'has_steps' => ! empty($categorySteps),
                 'question_archetypes_count' => count($categoryArchetypes),
                 'steps_count' => count($categorySteps),
                 'example_questions_count' => $exampleQuestions->where('exam_category_id', $category->id)->count(),

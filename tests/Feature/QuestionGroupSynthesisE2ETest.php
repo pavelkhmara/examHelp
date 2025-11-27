@@ -182,7 +182,7 @@ class QuestionGroupSynthesisE2ETest extends TestCase
             dump([
                 'exception' => get_class($e),
                 'message' => $e->getMessage(),
-                'file' => $e->getFile() . ':' . $e->getLine(),
+                'file' => $e->getFile().':'.$e->getLine(),
                 'trace' => array_slice($e->getTrace(), 0, 5),
             ]);
             throw $e;
@@ -217,11 +217,11 @@ class QuestionGroupSynthesisE2ETest extends TestCase
         $allQuestions = Question::where('exam_id', $exam->id)->get();
         dump([
             'total_count' => $allQuestions->count(),
-            'questions' => $allQuestions->map(fn($q) => [
+            'questions' => $allQuestions->map(fn ($q) => [
                 'id' => $q->id,
                 'question_id' => $q->question_id,
                 'type' => $q->type,
-                'has_interaction' => !empty($q->interaction) && is_array($q->interaction) && count($q->interaction) > 0,
+                'has_interaction' => ! empty($q->interaction) && is_array($q->interaction) && count($q->interaction) > 0,
                 'created' => $q->created_at->format('H:i:s'),
                 'updated' => $q->updated_at->format('H:i:s'),
             ])->toArray(),
@@ -250,7 +250,7 @@ class QuestionGroupSynthesisE2ETest extends TestCase
         $this->assertIsArray($updated1->interaction);
 
         // DEBUG: Check interaction structure
-        if (!array_key_exists('stem', $updated1->interaction)) {
+        if (! array_key_exists('stem', $updated1->interaction)) {
             dump([
                 'interaction_keys' => array_keys($updated1->interaction),
                 'interaction_content' => $updated1->interaction,
@@ -404,7 +404,7 @@ class QuestionGroupSynthesisE2ETest extends TestCase
             $this->assertStringContainsString(
                 'listening-part-1',
                 $question->question_id,
-                "Grouped question should have group_id in question_id"
+                'Grouped question should have group_id in question_id'
             );
         }
 

@@ -118,7 +118,7 @@ class StageComparator
                 continue;
             }
 
-            if (!array_key_exists($key, $generated)) {
+            if (! array_key_exists($key, $generated)) {
                 $diffs[] = [
                     'type' => 'missing_in_generated',
                     'path' => $currentPath,
@@ -185,7 +185,7 @@ class StageComparator
                 continue;
             }
 
-            if (!array_key_exists($key, $golden)) {
+            if (! array_key_exists($key, $golden)) {
                 $diffs[] = [
                     'type' => 'extra_in_generated',
                     'path' => $currentPath,
@@ -244,7 +244,7 @@ class StageComparator
                 $key = $matches[1];
                 $index = (int) $matches[2];
 
-                if (!isset($value[$key]) || !is_array($value[$key])) {
+                if (! isset($value[$key]) || ! is_array($value[$key])) {
                     return null;
                 }
                 $value = $value[$key][$index] ?? null;
@@ -252,7 +252,7 @@ class StageComparator
                 continue;
             }
 
-            if (!is_array($value) || !isset($value[$key])) {
+            if (! is_array($value) || ! isset($value[$key])) {
                 return null;
             }
             $value = $value[$key];
@@ -276,7 +276,7 @@ class StageComparator
         $fieldPath = $parts[1];
 
         $array = $this->getByPath($data, $arrayPath);
-        if (!is_array($array)) {
+        if (! is_array($array)) {
             return [];
         }
 
@@ -391,7 +391,7 @@ class StageComparator
 
     private function isSimpleIndexedArray(array $arr): bool
     {
-        if (!$this->isIndexedArray($arr)) {
+        if (! $this->isIndexedArray($arr)) {
             return false;
         }
 

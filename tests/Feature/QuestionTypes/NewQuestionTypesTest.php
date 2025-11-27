@@ -49,7 +49,7 @@ class NewQuestionTypesTest extends TestCase
      */
     public function test_listen_true_false_has_scoring_rules(): void
     {
-        $contract = new QuestionTypeContract();
+        $contract = new QuestionTypeContract;
 
         $task = [
             'type' => 'listen_true_false',
@@ -138,7 +138,7 @@ class NewQuestionTypesTest extends TestCase
      */
     public function test_translation_has_scoring_rules(): void
     {
-        $contract = new QuestionTypeContract();
+        $contract = new QuestionTypeContract;
 
         $task = [
             'type' => 'translation',
@@ -203,7 +203,7 @@ class NewQuestionTypesTest extends TestCase
      */
     public function test_roleplay_has_scoring_rules(): void
     {
-        $contract = new QuestionTypeContract();
+        $contract = new QuestionTypeContract;
 
         $task = [
             'type' => 'roleplay',
@@ -242,7 +242,7 @@ class NewQuestionTypesTest extends TestCase
      */
     public function test_note_completion_has_scoring_rules(): void
     {
-        $contract = new QuestionTypeContract();
+        $contract = new QuestionTypeContract;
 
         $task = [
             'type' => 'note_completion',
