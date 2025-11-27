@@ -379,8 +379,8 @@ class IdentityGuardService extends AbstractAiService
         // If confidence is between 0.70 and 0.8, we need additional verification
         $needsBoost = (
             ($res['status'] ?? '') === 'certain'
-            && ($res['confidence'] ?? 0) >= 0.70
-            && ($res['confidence'] ?? 0) < 0.8
+            && $res['confidence'] >= 0.70
+            && $res['confidence'] < 0.8
             && empty($res['red_flags'] ?? [])
         );
 

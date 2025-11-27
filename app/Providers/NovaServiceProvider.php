@@ -66,6 +66,8 @@ class NovaServiceProvider extends NovaApplicationServiceProvider
 
         // // Итоговое меню = глобальные пункты + «Exams» со всеми экземплярами
         // return new Menu(array_merge($global, [$byExams]));
+
+        return [];
     }
 
     /**

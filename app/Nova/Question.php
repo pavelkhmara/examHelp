@@ -14,8 +14,14 @@ use Laravel\Nova\Http\Requests\NovaRequest;
 use Laravel\Nova\Panel;
 use Laravel\Nova\Resource;
 
+/**
+ * @extends Resource<\App\Models\Question>
+ */
 class Question extends Resource
 {
+    /**
+     * @var class-string<\App\Models\Question>
+     */
     public static $model = \App\Models\Question::class;
 
     public static $title = 'question_id';
@@ -70,23 +76,23 @@ class Question extends Resource
 
             Number::make('Time Limit (sec)', 'time_limit_sec')->sortable(),
 
-            Code::make('Instructions', fn () => json_encode($this->instructions, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE))
+            Code::make('Instructions', fn () => json_encode($this->resource->instructions ?? [], JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE))
                 ->language('json')
                 ->onlyOnDetail(),
 
-            Code::make('Stimulus', fn () => json_encode($this->stimulus, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE))
+            Code::make('Stimulus', fn () => json_encode($this->resource->stimulus ?? [], JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE))
                 ->language('json')
                 ->onlyOnDetail(),
 
-            Code::make('Interaction', fn () => json_encode($this->interaction, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE))
+            Code::make('Interaction', fn () => json_encode($this->resource->interaction ?? [], JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE))
                 ->language('json')
                 ->onlyOnDetail(),
 
-            Code::make('Response', fn () => json_encode($this->response, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE))
+            Code::make('Response', fn () => json_encode($this->resource->response ?? [], JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE))
                 ->language('json')
                 ->onlyOnDetail(),
 
-            Code::make('Scoring', fn () => json_encode($this->scoring, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE))
+            Code::make('Scoring', fn () => json_encode($this->resource->scoring ?? [], JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE))
                 ->language('json')
                 ->onlyOnDetail(),
 

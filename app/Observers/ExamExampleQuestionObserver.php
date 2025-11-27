@@ -26,7 +26,8 @@ class ExamExampleQuestionObserver
         }
 
         // Get the exam through category
-        $category = $exampleQuestion->examCategory;
+        $category = $exampleQuestion->category;
+        /** @phpstan-ignore-next-line */
         if (! $category || ! $category->exam) {
             return;
         }

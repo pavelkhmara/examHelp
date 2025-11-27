@@ -164,7 +164,7 @@ class QuestionGroupAssembler
         }
 
         // AUTO-FIX: Validate stimulus is not empty, add placeholder if empty
-        $stimulus = $group['stimulus'] ?? [];
+        $stimulus = $group['stimulus'];
         if (is_array($stimulus)) {
             $hasContent = false;
             foreach (['text_html', 'images', 'audio', 'video'] as $key) {

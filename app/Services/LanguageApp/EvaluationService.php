@@ -32,9 +32,13 @@ class EvaluationService
         $feedback = 'Please provide a more detailed and structured answer.';
 
         if ($example && ($example->good_answer || $example->average_answer || $example->bad_answer)) {
-            $simGood = $this->similarity($answer, (string) $example->good_answer);
-            $simAvg = $this->similarity($answer, (string) $example->average_answer);
-            $simBad = $this->similarity($answer, (string) $example->bad_answer);
+            $goodAnswer = is_array($example->good_answer) ? json_encode($example->good_answer) : (string) $example->good_answer;
+            $avgAnswer = is_array($example->average_answer) ? json_encode($example->average_answer) : (string) $example->average_answer;
+            $badAnswer = is_array($example->bad_answer) ? json_encode($example->bad_answer) : (string) $example->bad_answer;
+
+            $simGood = $this->similarity($answer, $goodAnswer);
+            $simAvg = $this->similarity($answer, $avgAnswer);
+            $simBad = $this->similarity($answer, $badAnswer);
 
             // Небольшая «сглаженная» формула
             $score = max(
@@ -54,7 +58,7 @@ class EvaluationService
             $which = $maxSim === $simGood ? 'good' : ($maxSim === $simAvg ? 'average' : 'bad');
 
             // Простейший разбор рубрики (суррогаты)
-            $rubric['content'] = (int) round($this->overlap($answer, (string) $example->good_answer) * 100);
+            $rubric['content'] = (int) round($this->overlap($answer, $goodAnswer) * 100);
             $rubric['clarity'] = (int) round($this->clarity($answer) * 100);
             $rubric['language'] = (int) round($this->language($answer) * 100);
 

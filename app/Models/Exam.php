@@ -17,7 +17,7 @@ use Illuminate\Database\Eloquent\Relations\HasOne;
  * @property string|null $level
  * @property string|null $language_of_test
  * @property bool $is_active
- * @property string|null $user_input
+ * @property array|null $user_input
  * @property array|null $user_meta
  * @property array|null $identity
  * @property array|null $system_analysis
@@ -61,6 +61,7 @@ class Exam extends Model
     ];
 
     protected $casts = [
+        'user_input' => AsArrayWithUnescapedSlashes::class,
         'user_meta' => AsArrayWithUnescapedSlashes::class,
         'identity' => AsArrayWithUnescapedSlashes::class,
         'system_analysis' => AsArrayWithUnescapedSlashes::class,

@@ -44,7 +44,7 @@ class TtsService
      * @param  string  $text  Текст для озвучки
      * @param  string|null  $filename  Имя файла (без расширения), если null - генерируется автоматически
      * @param  string|null  $voice  Голос (alloy, echo, fable, onyx, nova, shimmer)
-     * @return array{path: string, url: string} Путь к файлу и публичный URL
+     * @return array{path: string, url: string} Путь к файлу и публичный URL (пустые строки если TTS отключен)
      *
      * @throws \Exception
      */
@@ -59,8 +59,8 @@ class TtsService
             Log::info('[TtsService] TTS disabled, skipping audio generation');
 
             return [
-                'path' => null,
-                'url' => null,
+                'path' => '',
+                'url' => '',
             ];
         }
 
@@ -134,7 +134,7 @@ class TtsService
     /**
      * Генерирует аудио для массива текстов (батч)
      *
-     * @param  array<array{text: string, filename?: string, voice?: string}>  $items
+     * @param  array<int, array{text: string, filename?: string, voice?: string}>  $items
      * @return array<array{path: string|null, url: string|null, error?: string}>
      */
     public function generateBatch(array $items): array
@@ -143,7 +143,7 @@ class TtsService
 
         foreach ($items as $index => $item) {
             try {
-                $text = $item['text'] ?? '';
+                $text = $item['text'];
                 $filename = $item['filename'] ?? null;
                 $voice = $item['voice'] ?? null;
 
