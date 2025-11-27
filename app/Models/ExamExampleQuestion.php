@@ -35,6 +35,8 @@ use Illuminate\Database\Eloquent\Model;
  * @property string|null $difficulty From payload field
  * @property-read Exam $exam
  * @property-read ExamCategory|null $category
+ *
+ * @uses HasFactory<\Database\Factories\ExamExampleQuestionFactory>
  */
 class ExamExampleQuestion extends Model
 {
@@ -63,7 +65,7 @@ class ExamExampleQuestion extends Model
     ];
 
     /**
-     * @return \Illuminate\Database\Eloquent\Relations\BelongsTo<Exam>
+     * @return \Illuminate\Database\Eloquent\Relations\BelongsTo<Exam, covariant self>
      */
     public function exam()
     {
@@ -71,7 +73,7 @@ class ExamExampleQuestion extends Model
     }
 
     /**
-     * @return \Illuminate\Database\Eloquent\Relations\BelongsTo<ExamCategory>
+     * @return \Illuminate\Database\Eloquent\Relations\BelongsTo<ExamCategory, covariant self>
      */
     public function category()
     {

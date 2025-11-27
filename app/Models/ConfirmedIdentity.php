@@ -35,7 +35,7 @@ class ConfirmedIdentity extends Model
     /**
      * Exam к которому относится подтверждённая идентичность
      *
-     * @return BelongsTo<Exam>
+     * @return BelongsTo<Exam, covariant self>
      */
     public function exam(): BelongsTo
     {
@@ -45,7 +45,7 @@ class ConfirmedIdentity extends Model
     /**
      * Задача (GenerationTask), которая создала эту подтверждённую идентичность
      *
-     * @return BelongsTo<GenerationTask>
+     * @return BelongsTo<GenerationTask, covariant self>
      */
     public function confirmedByTask(): BelongsTo
     {

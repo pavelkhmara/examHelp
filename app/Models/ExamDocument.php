@@ -27,6 +27,8 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  *
  * Virtual properties:
  * @property string|null $filename Alias for original_name
+ *
+ * @uses HasFactory<\Database\Factories\ExamDocumentFactory>
  */
 class ExamDocument extends Model
 {
@@ -58,7 +60,7 @@ class ExamDocument extends Model
     ];
 
     /**
-     * @return BelongsTo<Exam>
+     * @return BelongsTo<Exam, covariant self>
      */
     public function exam(): BelongsTo
     {
@@ -66,7 +68,7 @@ class ExamDocument extends Model
     }
 
     /**
-     * @return \Illuminate\Database\Eloquent\Relations\BelongsTo<GenerationTask>
+     * @return \Illuminate\Database\Eloquent\Relations\BelongsTo<GenerationTask, covariant self>
      */
     public function generationTask(): \Illuminate\Database\Eloquent\Relations\BelongsTo
     {

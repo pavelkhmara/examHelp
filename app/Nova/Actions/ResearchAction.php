@@ -55,7 +55,7 @@ class ResearchAction extends Action
         return true;
     }
 
-    public function handle(ActionFields $fields, $models)
+    public function handle(ActionFields $fields, $models): \Laravel\Nova\Actions\Action
     {
         \Illuminate\Support\Facades\Log::info('🔵 [ResearchAction] BUTTON CLICKED - Action started', [
             'timestamp' => now()->toDateTimeString(),

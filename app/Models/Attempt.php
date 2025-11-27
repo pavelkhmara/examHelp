@@ -19,6 +19,8 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
  * @property \Carbon\Carbon $updated_at
  * @property-read Exam $exam
  * @property-read \Illuminate\Database\Eloquent\Collection<int, AttemptAnswer> $answers
+ *
+ * @uses HasFactory<\Database\Factories\AttemptFactory>
  */
 class Attempt extends Model
 {
@@ -27,7 +29,7 @@ class Attempt extends Model
     protected $fillable = ['exam_id', 'user_id', 'started_at', 'completed_at', 'score'];
 
     /**
-     * @return BelongsTo<Exam>
+     * @return BelongsTo<Exam, covariant self>
      */
     public function exam(): BelongsTo
     {
@@ -35,7 +37,7 @@ class Attempt extends Model
     }
 
     /**
-     * @return HasMany<AttemptAnswer>
+     * @return HasMany<AttemptAnswer, covariant self>
      */
     public function answers(): HasMany
     {

@@ -30,6 +30,8 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  * @property-read float $progress_percent
  * @property-read bool $is_completed
  * @property-read bool $is_failed
+ *
+ * @uses HasFactory<\Database\Factories\GenerationPlanFactory>
  */
 class GenerationPlan extends Model
 {
@@ -63,7 +65,7 @@ class GenerationPlan extends Model
     /**
      * Get the exam that owns this generation plan
      *
-     * @return BelongsTo<Exam>
+     * @return BelongsTo<Exam, covariant self>
      */
     public function exam(): BelongsTo
     {
@@ -73,7 +75,7 @@ class GenerationPlan extends Model
     /**
      * Get the exam category (section) that this plan belongs to
      *
-     * @return BelongsTo<ExamCategory>
+     * @return BelongsTo<ExamCategory, covariant self>
      */
     public function section(): BelongsTo
     {
@@ -119,7 +121,7 @@ class GenerationPlan extends Model
     /**
      * Scope: Filter by status
      */
-    public function scopeStatus($query, string $status)
+    public function scopeStatus($query, string $status): mixed
     {
         return $query->where('status', $status);
     }
@@ -135,7 +137,7 @@ class GenerationPlan extends Model
     /**
      * Scope: Filter by section
      */
-    public function scopeSection($query, string $sectionId)
+    public function scopeSection($query, string $sectionId): mixed
     {
         return $query->where('section_id', $sectionId);
     }
@@ -143,7 +145,7 @@ class GenerationPlan extends Model
     /**
      * Scope: Get pending plans
      */
-    public function scopePending($query)
+    public function scopePending($query): mixed
     {
         return $query->where('status', 'pending');
     }
@@ -159,7 +161,7 @@ class GenerationPlan extends Model
     /**
      * Scope: Get completed plans
      */
-    public function scopeCompleted($query)
+    public function scopeCompleted($query): mixed
     {
         return $query->where('status', 'completed');
     }
@@ -167,7 +169,7 @@ class GenerationPlan extends Model
     /**
      * Scope: Get failed plans
      */
-    public function scopeFailed($query)
+    public function scopeFailed($query): mixed
     {
         return $query->where('status', 'failed');
     }

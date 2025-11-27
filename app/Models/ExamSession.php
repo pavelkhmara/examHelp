@@ -34,7 +34,7 @@ class ExamSession extends Model
     ];
 
     /**
-     * @return BelongsTo<Exam>
+     * @return BelongsTo<Exam, covariant self>
      */
     public function exam(): BelongsTo
     {
@@ -42,7 +42,7 @@ class ExamSession extends Model
     }
 
     /**
-     * @return HasMany<Answer>
+     * @return HasMany<Answer, covariant self>
      */
     public function answers(): HasMany
     {
@@ -50,7 +50,7 @@ class ExamSession extends Model
     }
 
     /**
-     * @return HasMany<Recommendation>
+     * @return HasMany<Recommendation, covariant self>
      */
     public function recommendations(): HasMany
     {

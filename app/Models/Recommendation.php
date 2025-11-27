@@ -37,7 +37,7 @@ class Recommendation extends Model
     public const PRIORITY_LOW = 'low';
 
     /**
-     * @return BelongsTo<ExamSession>
+     * @return BelongsTo<ExamSession, covariant self>
      */
     public function session(): BelongsTo
     {
@@ -45,7 +45,7 @@ class Recommendation extends Model
     }
 
     /**
-     * @return BelongsTo<ExamCategory>
+     * @return BelongsTo<ExamCategory, covariant self>
      */
     public function examCategory(): BelongsTo
     {

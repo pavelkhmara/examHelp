@@ -40,6 +40,8 @@ use Illuminate\Database\Eloquent\Relations\HasOne;
  * @property int|null $total_exam_duration
  * @property array $exam_structure
  * @property array $structure_sections
+ *
+ * @uses HasFactory<\Database\Factories\ExamFactory>
  */
 class Exam extends Model
 {
@@ -68,7 +70,7 @@ class Exam extends Model
     ];
 
     /**
-     * @return HasMany<ExamCategory>
+     * @return HasMany<ExamCategory, covariant self>
      */
     public function categories(): HasMany
     {
@@ -76,7 +78,7 @@ class Exam extends Model
     }
 
     /**
-     * @return HasMany<ExamExampleQuestion>
+     * @return HasMany<ExamExampleQuestion, covariant self>
      */
     public function examples(): HasMany
     {
@@ -84,7 +86,7 @@ class Exam extends Model
     }
 
     /**
-     * @return HasMany<GenerationTask>
+     * @return HasMany<GenerationTask, covariant self>
      */
     public function generationTasks(): HasMany
     {
@@ -92,7 +94,7 @@ class Exam extends Model
     }
 
     /**
-     * @return HasMany<GenerationLog>
+     * @return HasMany<GenerationLog, covariant self>
      */
     public function generationLogs(): HasMany
     {
@@ -100,7 +102,7 @@ class Exam extends Model
     }
 
     /**
-     * @return HasMany<ExamDocument>
+     * @return HasMany<ExamDocument, covariant self>
      */
     public function documents(): HasMany
     {
@@ -108,7 +110,7 @@ class Exam extends Model
     }
 
     /**
-     * @return HasOne<ConfirmedIdentity>
+     * @return HasOne<ConfirmedIdentity, covariant self>
      */
     public function confirmedIdentity(): HasOne
     {
@@ -116,7 +118,7 @@ class Exam extends Model
     }
 
     /**
-     * @return HasMany<ConfirmedIdentity>
+     * @return HasMany<ConfirmedIdentity, covariant self>
      */
     public function confirmedIdentities(): HasMany
     {
@@ -124,7 +126,7 @@ class Exam extends Model
     }
 
     /**
-     * @return HasMany<Question>
+     * @return HasMany<Question, covariant self>
      */
     public function questions(): HasMany
     {
@@ -132,7 +134,7 @@ class Exam extends Model
     }
 
     /**
-     * @return HasMany<QuestionGroup>
+     * @return HasMany<QuestionGroup, covariant self>
      */
     public function questionGroups(): HasMany
     {

@@ -66,6 +66,8 @@ use Illuminate\Database\Eloquent\SoftDeletes;
  * @property-read Exam $exam
  * @property-read ExamCategory $section
  * @property-read QuestionGroup|null $questionGroup
+ *
+ * @uses HasFactory<\Database\Factories\QuestionFactory>
  */
 class Question extends Model
 {
@@ -132,7 +134,7 @@ class Question extends Model
     // ========== RELATIONSHIPS ==========
 
     /**
-     * @return BelongsTo<Exam>
+     * @return BelongsTo<Exam, covariant self>
      */
     public function exam(): BelongsTo
     {
@@ -140,7 +142,7 @@ class Question extends Model
     }
 
     /**
-     * @return BelongsTo<ExamCategory>
+     * @return BelongsTo<ExamCategory, covariant self>
      */
     public function section(): BelongsTo
     {
@@ -148,7 +150,7 @@ class Question extends Model
     }
 
     /**
-     * @return BelongsTo<QuestionGroup>
+     * @return BelongsTo<QuestionGroup, covariant self>
      */
     public function questionGroup(): BelongsTo
     {
@@ -244,7 +246,7 @@ class Question extends Model
     /**
      * Scope to only published questions
      */
-    public function scopePublished($query)
+    public function scopePublished($query): mixed
     {
         return $query->where('status', 'published');
     }
@@ -252,7 +254,7 @@ class Question extends Model
     /**
      * Scope to only draft questions
      */
-    public function scopeDraft($query)
+    public function scopeDraft($query): mixed
     {
         return $query->where('status', 'draft');
     }
@@ -260,7 +262,7 @@ class Question extends Model
     /**
      * Scope to only frozen questions
      */
-    public function scopeFrozen($query)
+    public function scopeFrozen($query): mixed
     {
         return $query->whereNotNull('frozen_at');
     }
@@ -268,7 +270,7 @@ class Question extends Model
     /**
      * Scope to questions by type
      */
-    public function scopeOfType($query, string $type)
+    public function scopeOfType($query, string $type): mixed
     {
         return $query->where('type', $type);
     }

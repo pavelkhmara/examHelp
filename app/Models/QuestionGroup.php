@@ -25,6 +25,8 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
  * @property array|null $playback_settings
  * @property array|null $metadata
  * @property int $order
+ *
+ * @uses HasFactory<\Database\Factories\QuestionGroupFactory>
  */
 class QuestionGroup extends Model
 {
@@ -53,7 +55,7 @@ class QuestionGroup extends Model
     // ========== RELATIONSHIPS ==========
 
     /**
-     * @return BelongsTo<Exam>
+     * @return BelongsTo<Exam, covariant self>
      */
     public function exam(): BelongsTo
     {
@@ -61,7 +63,7 @@ class QuestionGroup extends Model
     }
 
     /**
-     * @return BelongsTo<ExamCategory>
+     * @return BelongsTo<ExamCategory, covariant self>
      */
     public function section(): BelongsTo
     {
@@ -69,7 +71,7 @@ class QuestionGroup extends Model
     }
 
     /**
-     * @return HasMany<Question>
+     * @return HasMany<Question, covariant self>
      */
     public function questions(): HasMany
     {
@@ -179,17 +181,17 @@ class QuestionGroup extends Model
 
     // ========== SCOPES ==========
 
-    public function scopeForSection($query, int $sectionId)
+    public function scopeForSection($query, int $sectionId): mixed
     {
         return $query->where('section_id', $sectionId);
     }
 
-    public function scopeForExam($query, string $examId)
+    public function scopeForExam($query, string $examId): mixed
     {
         return $query->where('exam_id', $examId);
     }
 
-    public function scopeOrdered($query)
+    public function scopeOrdered($query): mixed
     {
         return $query->orderBy('order');
     }

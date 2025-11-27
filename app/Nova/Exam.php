@@ -1832,7 +1832,7 @@ class Exam extends Resource
     /**
      * Process single uploaded document and create ExamDocument record
      */
-    protected static function handleSingleDocumentUpload(NovaRequest $request, $model)
+    protected static function handleSingleDocumentUpload(NovaRequest $request, $model): void
     {
         if (! $request->hasFile('document_upload')) {
             return;

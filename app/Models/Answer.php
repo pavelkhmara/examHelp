@@ -28,7 +28,7 @@ class Answer extends Model
     ];
 
     /**
-     * @return BelongsTo<ExamSession>
+     * @return BelongsTo<ExamSession, covariant self>
      */
     public function session(): BelongsTo
     {
@@ -36,7 +36,7 @@ class Answer extends Model
     }
 
     /**
-     * @return BelongsTo<Question>
+     * @return BelongsTo<Question, covariant self>
      */
     public function question(): BelongsTo
     {

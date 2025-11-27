@@ -21,7 +21,7 @@ use Laravel\Nova\NovaApplicationServiceProvider;
 
 class NovaServiceProvider extends NovaApplicationServiceProvider
 {
-    public function menu(Request $request)
+    public function menu(Request $request): array
     {
         // Log::info('Nova menu rebuilt');
 

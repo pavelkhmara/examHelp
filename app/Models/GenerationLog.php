@@ -40,7 +40,7 @@ class GenerationLog extends Model
     ];
 
     /**
-     * @return BelongsTo<Exam>
+     * @return BelongsTo<Exam, covariant self>
      */
     public function exam(): BelongsTo
     {
@@ -48,7 +48,7 @@ class GenerationLog extends Model
     }
 
     /**
-     * @return BelongsTo<GenerationTask>
+     * @return BelongsTo<GenerationTask, covariant self>
      */
     public function task()
     {

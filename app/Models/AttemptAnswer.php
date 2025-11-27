@@ -7,6 +7,9 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
+/**
+ * @uses HasFactory<\Database\Factories\AttemptAnswerFactory>
+ */
 class AttemptAnswer extends Model
 {
     use HasFactory, HasUuid;
@@ -14,7 +17,7 @@ class AttemptAnswer extends Model
     protected $fillable = ['attempt_id', 'question_id', 'selected_option_id', 'text_answer', 'is_correct'];
 
     /**
-     * @return BelongsTo<Attempt>
+     * @return BelongsTo<Attempt, covariant self>
      */
     public function attempt(): BelongsTo
     {
@@ -22,7 +25,7 @@ class AttemptAnswer extends Model
     }
 
     /**
-     * @return BelongsTo<Question>
+     * @return BelongsTo<Question, covariant self>
      */
     public function question(): BelongsTo
     {
@@ -30,7 +33,7 @@ class AttemptAnswer extends Model
     }
 
     /**
-     * @return BelongsTo<QuestionOption>
+     * @return BelongsTo<QuestionOption, covariant self>
      */
     public function selectedOption(): BelongsTo
     {

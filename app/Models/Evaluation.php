@@ -15,7 +15,7 @@ class Evaluation extends Model
     ];
 
     /**
-     * @return \Illuminate\Database\Eloquent\Relations\BelongsTo<Exam>
+     * @return \Illuminate\Database\Eloquent\Relations\BelongsTo<Exam, covariant self>
      */
     public function exam()
     {
@@ -23,7 +23,7 @@ class Evaluation extends Model
     }
 
     /**
-     * @return \Illuminate\Database\Eloquent\Relations\BelongsTo<ExamCategory>
+     * @return \Illuminate\Database\Eloquent\Relations\BelongsTo<ExamCategory, covariant self>
      */
     public function category()
     {

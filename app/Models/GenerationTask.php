@@ -10,6 +10,8 @@ use Illuminate\Database\Eloquent\Relations\MorphTo;
 
 /**
  * @property string $status Task status: queued, running, completed, failed, pending_confirmation, pending_clarification, cancelled, waiting_for_confirmation
+ *
+ * @uses HasFactory<\Database\Factories\GenerationTaskFactory>
  */
 class GenerationTask extends Model
 {
@@ -31,7 +33,7 @@ class GenerationTask extends Model
     ];
 
     /**
-     * @return BelongsTo<Exam>
+     * @return BelongsTo<Exam, covariant self>
      */
     public function exam(): BelongsTo
     {
@@ -44,7 +46,7 @@ class GenerationTask extends Model
     }
 
     /**
-     * @return \Illuminate\Database\Eloquent\Relations\HasMany<GenerationLog>
+     * @return \Illuminate\Database\Eloquent\Relations\HasMany<GenerationLog, covariant self>
      */
     public function logs()
     {

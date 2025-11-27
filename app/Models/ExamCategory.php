@@ -31,6 +31,8 @@ use Illuminate\Database\Eloquent\Model;
  * @property-read \Illuminate\Database\Eloquent\Collection<int, ExamExampleQuestion> $examples
  * @property-read \Illuminate\Database\Eloquent\Collection<int, Question> $questions
  * @property-read \Illuminate\Database\Eloquent\Collection<int, QuestionGroup> $questionGroups
+ *
+ * @uses HasFactory<\Database\Factories\ExamCategoryFactory>
  */
 class ExamCategory extends Model
 {
@@ -51,7 +53,7 @@ class ExamCategory extends Model
     ];
 
     /**
-     * @return \Illuminate\Database\Eloquent\Relations\BelongsTo<Exam>
+     * @return \Illuminate\Database\Eloquent\Relations\BelongsTo<Exam, covariant self>
      */
     public function exam()
     {
@@ -59,7 +61,7 @@ class ExamCategory extends Model
     }
 
     /**
-     * @return \Illuminate\Database\Eloquent\Relations\HasMany<ExamExampleQuestion>
+     * @return \Illuminate\Database\Eloquent\Relations\HasMany<ExamExampleQuestion, covariant self>
      */
     public function examples()
     {
@@ -67,7 +69,7 @@ class ExamCategory extends Model
     }
 
     /**
-     * @return \Illuminate\Database\Eloquent\Relations\HasMany<Question>
+     * @return \Illuminate\Database\Eloquent\Relations\HasMany<Question, covariant self>
      */
     public function questions()
     {
@@ -75,7 +77,7 @@ class ExamCategory extends Model
     }
 
     /**
-     * @return \Illuminate\Database\Eloquent\Relations\HasMany<QuestionGroup>
+     * @return \Illuminate\Database\Eloquent\Relations\HasMany<QuestionGroup, covariant self>
      */
     public function questionGroups()
     {
