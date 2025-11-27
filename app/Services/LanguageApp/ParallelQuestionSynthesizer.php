@@ -133,6 +133,12 @@ class ParallelQuestionSynthesizer extends AbstractAiService
             $providerName = config('ai.provider', 'openai');
             $asyncProvider = AiProviderFactory::makeAsync($providerName, config('ai'));
 
+            // ✅ FIX: Save requests map for accessing opts later (contains _questions_by_group)
+            $requestsMap = [];
+            foreach ($requests as $request) {
+                $requestsMap[$request['key']] = $request;
+            }
+
             // Send all requests in parallel
             Log::info('[ParallelQuestionSynthesizer] Sending parallel AI requests', [
                 'requests_count' => count($requests),
@@ -154,6 +160,9 @@ class ParallelQuestionSynthesizer extends AbstractAiService
                 $category = \App\Models\ExamCategory::find($plan->section_id);
                 $sectionName = $category ? $category->name : "section_{$plan->section_id}";
 
+                // ✅ FIX: Get opts with _questions_by_group metadata
+                $opts = $requestsMap[$key]['opts'] ?? [];
+
                 // Log AI request/response
                 if ($task) {
                     $this->log(
@@ -167,6 +176,33 @@ class ParallelQuestionSynthesizer extends AbstractAiService
                 try {
                     // Extract questions from response (Structured Outputs wraps in {"questions": [...]})
                     $questions = $this->parseAndValidateQuestions($aiResult);
+
+                    // ✅ FIX: Add group_id from opts to parsed questions
+                    // AI doesn't return group_id (not in JSON schema), so we restore it from filter metadata
+                    $questionsByGroup = $opts['_questions_by_group'] ?? [];
+                    if (!empty($questionsByGroup)) {
+                        foreach ($questions as $index => &$question) {
+                            // Match question by index with filter metadata
+                            if (isset($questionsByGroup[$index])) {
+                                $filterMetadata = $questionsByGroup[$index];
+
+                                // Propagate group_id and question_id from filter
+                                if (isset($filterMetadata['group_id'])) {
+                                    $question['group_id'] = $filterMetadata['group_id'];
+                                }
+                                if (isset($filterMetadata['question_id'])) {
+                                    $question['id'] = $filterMetadata['question_id'];
+                                }
+                            }
+                        }
+                        unset($question); // Break reference
+
+                        Log::info('[ParallelQuestionSynthesizer] Added group_id from filter metadata', [
+                            'plan_id' => $plan->id,
+                            'questions_count' => count($questions),
+                            'with_group_id' => count(array_filter($questions, fn($q) => !empty($q['group_id']))),
+                        ]);
+                    }
 
                     // DEBUG: Check parsed questions
                     dump([
