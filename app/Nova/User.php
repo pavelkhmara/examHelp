@@ -11,7 +11,7 @@ use Laravel\Nova\Fields\Text;
 use Laravel\Nova\Http\Requests\NovaRequest;
 
 /**
- * @extends Resource<\App\Models\User>
+ * @extends resource<\App\Models\User>
  */
 class User extends Resource
 {

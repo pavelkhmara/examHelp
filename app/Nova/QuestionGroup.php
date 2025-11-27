@@ -17,7 +17,7 @@ use Laravel\Nova\Panel;
  * Manages question groups (tasks) with shared stimulus and playback controls.
  * Used for listening/reading tasks where multiple questions share common audio/text/video.
  *
- * @extends Resource<\App\Models\QuestionGroup>
+ * @extends resource<\App\Models\QuestionGroup>
  */
 class QuestionGroup extends Resource
 {

@@ -12,7 +12,7 @@ use Laravel\Nova\Fields\Textarea;
 use Laravel\Nova\Http\Requests\NovaRequest;
 
 /**
- * @extends Resource<\App\Models\GenerationLog>
+ * @extends resource<\App\Models\GenerationLog>
  */
 class GenerationLog extends Resource
 {

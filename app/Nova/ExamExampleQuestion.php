@@ -17,7 +17,7 @@ use Laravel\Nova\Http\Requests\NovaRequest;
 use Laravel\Nova\Panel;
 
 /**
- * @extends Resource<\App\Models\ExamExampleQuestion>
+ * @extends resource<\App\Models\ExamExampleQuestion>
  */
 class ExamExampleQuestion extends Resource
 {
