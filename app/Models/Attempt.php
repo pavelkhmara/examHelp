@@ -17,7 +17,6 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
  * @property float|null $score
  * @property \Carbon\Carbon $created_at
  * @property \Carbon\Carbon $updated_at
- *
  * @property-read Exam $exam
  * @property-read \Illuminate\Database\Eloquent\Collection<int, AttemptAnswer> $answers
  */

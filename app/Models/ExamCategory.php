@@ -27,7 +27,6 @@ use Illuminate\Database\Eloquent\Model;
  * @property array $question_templates
  * @property string|null $slug Deprecated
  * @property array|null $question_types Deprecated
- *
  * @property-read Exam $exam
  * @property-read \Illuminate\Database\Eloquent\Collection<int, ExamExampleQuestion> $examples
  * @property-read \Illuminate\Database\Eloquent\Collection<int, Question> $questions

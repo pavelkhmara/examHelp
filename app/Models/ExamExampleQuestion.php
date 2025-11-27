@@ -33,7 +33,6 @@ use Illuminate\Database\Eloquent\Model;
  * Virtual properties:
  * @property string|null $task_type Deprecated: use $type instead
  * @property string|null $difficulty From payload field
- *
  * @property-read Exam $exam
  * @property-read ExamCategory|null $category
  */

@@ -36,8 +36,8 @@ class DiagnosticsController extends Controller
                     'analysis_status' => $exam->analysis_status,
                     'categories_count' => $exam->categories_count ?? 0,
                     'examples_count' => $exam->examples_count ?? 0,
-                    'created_at' => $exam->created_at?->toISOString(),
-                    'updated_at' => $exam->updated_at?->toISOString(),
+                    'created_at' => $exam->created_at->toISOString(),
+                    'updated_at' => $exam->updated_at->toISOString(),
                 ];
             });
 
@@ -74,8 +74,8 @@ class DiagnosticsController extends Controller
                 'user_input' => $exam->user_input,
                 'identity' => $exam->identity,
                 'exam_structure' => $exam->exam_structure,
-                'created_at' => $exam->created_at?->toISOString(),
-                'updated_at' => $exam->updated_at?->toISOString(),
+                'created_at' => $exam->created_at->toISOString(),
+                'updated_at' => $exam->updated_at->toISOString(),
             ],
             'latest_task' => $latestTask ? [
                 'id' => $latestTask->id,
@@ -83,8 +83,8 @@ class DiagnosticsController extends Controller
                 'status' => $latestTask->status,
                 'attempts' => $latestTask->attempts,
                 'error' => $latestTask->error,
-                'created_at' => $latestTask->created_at?->toISOString(),
-                'updated_at' => $latestTask->updated_at?->toISOString(),
+                'created_at' => $latestTask->created_at->toISOString(),
+                'updated_at' => $latestTask->updated_at->toISOString(),
             ] : null,
             'documents_count' => $exam->documents()->count(),
             'tasks_count' => $exam->generationTasks()->count(),
@@ -114,8 +114,8 @@ class DiagnosticsController extends Controller
                     'error' => $task->error ? substr($task->error, 0, 200) : null,
                     'request_source' => $task->request['source'] ?? null,
                     'activities_count' => is_array($task->activities) ? count($task->activities) : 0,
-                    'created_at' => $task->created_at?->toISOString(),
-                    'updated_at' => $task->updated_at?->toISOString(),
+                    'created_at' => $task->created_at->toISOString(),
+                    'updated_at' => $task->updated_at->toISOString(),
                 ];
             });
 
@@ -156,8 +156,8 @@ class DiagnosticsController extends Controller
                 'request' => $task->request,
                 'result' => $task->result,
                 'activities' => $task->activities,
-                'created_at' => $task->created_at?->toISOString(),
-                'updated_at' => $task->updated_at?->toISOString(),
+                'created_at' => $task->created_at->toISOString(),
+                'updated_at' => $task->updated_at->toISOString(),
             ],
             'exam' => [
                 'id' => $task->exam->id,
@@ -188,7 +188,7 @@ class DiagnosticsController extends Controller
                     'total_tokens' => $log->total_tokens,
                     'model' => $log->model,
                     'duration_ms' => $log->duration_ms,
-                    'created_at' => $log->created_at?->toISOString(),
+                    'created_at' => $log->created_at->toISOString(),
                 ];
             });
 
@@ -224,7 +224,7 @@ class DiagnosticsController extends Controller
                     'slug' => $category->slug,
                     'duration_min' => $category->duration_min,
                     'question_types' => $category->question_types,
-                    'created_at' => $category->created_at?->toISOString(),
+                    'created_at' => $category->created_at->toISOString(),
                 ];
             });
 
@@ -256,7 +256,7 @@ class DiagnosticsController extends Controller
                     'question_text' => substr($example->question_text ?? '', 0, 200),
                     'task_type' => $example->task_type,
                     'difficulty' => $example->difficulty,
-                    'created_at' => $example->created_at?->toISOString(),
+                    'created_at' => $example->created_at->toISOString(),
                 ];
             });
 
@@ -326,8 +326,8 @@ class DiagnosticsController extends Controller
                     'status' => $task->status,
                     'idempotency_key' => $task->idempotency_key,
                     'source' => $task->request['source'] ?? null,
-                    'created_at' => $task->created_at?->toISOString(),
-                    'updated_at' => $task->updated_at?->toISOString(),
+                    'created_at' => $task->created_at->toISOString(),
+                    'updated_at' => $task->updated_at->toISOString(),
                 ];
             });
 

@@ -38,9 +38,6 @@ class GenerationTask extends Model
         return $this->belongsTo(Exam::class);
     }
 
-    /**
-     * @return MorphTo
-     */
     public function subject(): MorphTo
     {
         return $this->morphTo();

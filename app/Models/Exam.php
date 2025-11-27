@@ -139,7 +139,7 @@ class Exam extends Model
         return $this->hasMany(QuestionGroup::class, 'exam_id', 'id');
     }
 
-    public function loadAllCounts()
+    public function loadAllCounts(): self
     {
         return $this->loadCount([
             'categories',

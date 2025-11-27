@@ -63,7 +63,6 @@ use Illuminate\Database\Eloquent\SoftDeletes;
  * @property mixed $options Deprecated: from interaction field
  * @property string|null $prompt Deprecated: from instructions field
  * @property int|null $position Deprecated: from order field
- *
  * @property-read Exam $exam
  * @property-read ExamCategory $section
  * @property-read QuestionGroup|null $questionGroup

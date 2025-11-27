@@ -58,7 +58,7 @@ class Exam extends Resource
         return true;
     }
 
-    public static function refreshInterval()
+    public static function refreshInterval(): int
     {
         // NOTE: This only works for INDEX page, NOT detail page
         // Users must manually refresh detail page to see updates

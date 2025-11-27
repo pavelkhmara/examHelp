@@ -23,7 +23,6 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  *
  * Virtual properties:
  * @property int|null $duration_ms Computed from timestamps
- *
  * @property-read Exam|null $exam
  * @property-read GenerationTask|null $task
  */
