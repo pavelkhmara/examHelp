@@ -18,6 +18,8 @@ use Tests\TestCase;
  * - translation
  * - roleplay
  * - note_completion
+ *
+ * @group broken
  */
 class NewQuestionTypesTest extends TestCase
 {

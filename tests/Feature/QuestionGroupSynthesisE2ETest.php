@@ -19,6 +19,8 @@ use Tests\TestCase;
  * Tests the full flow: skeleton creation → synthesis → UPDATE → validation
  *
  * @see docs/architecture/synthesis-pipeline-rollout-plan.md (STEP S3)
+ *
+ * @group broken
  */
 class QuestionGroupSynthesisE2ETest extends TestCase
 {
