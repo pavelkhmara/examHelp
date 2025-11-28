@@ -33,7 +33,6 @@ class QuickCheckService
      */
     public const CRITICAL_FIELDS = [
         'title',
-        'has_document_or_input',
     ];
 
     /**
@@ -42,6 +41,7 @@ class QuickCheckService
     public const RECOMMENDED_FIELDS = [
         'language_of_test',
         'level',
+        'has_document_or_input',
         'exam_family',
         'exam_provider',
         'description',
