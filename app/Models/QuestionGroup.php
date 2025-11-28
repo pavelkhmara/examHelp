@@ -154,11 +154,11 @@ class QuestionGroup extends Model
      */
     public function validate(): void
     {
-        // Минимум 2 вопроса в группе
+        // Минимум 2 вопроса в группе (shared stimulus required)
         $questionCount = $this->questions()->count();
         if ($questionCount < 2) {
             throw new \InvalidArgumentException(
-                "Question group must have at least 2 questions. Group '{$this->group_id}' has {$questionCount}."
+                "Question group must have at least 2 questions. Group '{$this->group_id}' has {$questionCount}. Use placeholders for standalone tasks."
             );
         }
 

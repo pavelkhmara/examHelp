@@ -230,7 +230,7 @@ class QuestionGroupTest extends TestCase
     }
 
     /**
-     * Тест: метод validate() - валидация минимума вопросов (должно быть >= 2)
+     * Тест: метод validate() - валидация минимума вопросов (должно быть >= 1)
      */
     public function test_validate_minimum_questions(): void
     {
@@ -241,17 +241,37 @@ class QuestionGroupTest extends TestCase
             ->forExamAndSection($exam->id, $category->id)
             ->create();
 
-        // Только 1 вопрос
-        Question::factory()->create([
-            'exam_id' => $exam->id,
-            'section_id' => $category->id,
-            'question_group_id' => $group->id,
-        ]);
-
+        // 0 вопросов - should fail
         // Act & Assert
         $this->expectException(\InvalidArgumentException::class);
         $this->expectExceptionMessage('must have at least 2 questions');
 
+        $group->validate();
+    }
+
+    /**
+     * Тест: метод validate() - fails с 1 вопросом (single-question groups not allowed)
+     */
+    public function test_validate_fails_with_single_question(): void
+    {
+        // Arrange
+        $exam = Exam::factory()->create();
+        $category = ExamCategory::factory()->create(['exam_id' => $exam->id]);
+        $group = QuestionGroup::factory()
+            ->forExamAndSection($exam->id, $category->id)
+            ->create();
+
+        // Создать 1 вопрос (should use placeholders instead)
+        Question::factory()->create([
+            'exam_id' => $exam->id,
+            'section_id' => $category->id,
+            'question_group_id' => $group->id,
+            'type' => 'speaking_prompt',
+        ]);
+
+        // Act & Assert - должен быть exception
+        $this->expectException(\InvalidArgumentException::class);
+        $this->expectExceptionMessage('must have at least 2 questions');
         $group->validate();
     }
 

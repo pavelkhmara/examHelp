@@ -246,16 +246,14 @@ class QuestionGroupValidatorTest extends TestCase
     /**
      * Тест: ошибка при менее чем 2 вопросах в questions array
      */
-    public function test_fails_when_questions_less_than_two(): void
+    public function test_fails_when_questions_is_zero(): void
     {
         // Arrange
         $data = [
             'id' => 'task-1',
             'title' => 'Task I',
             'stimulus' => ['audio' => ['https://example.com/audio.mp3']],
-            'questions' => [
-                ['id' => 'q1'],
-            ],
+            'questions' => [],
         ];
 
         // Act & Assert
@@ -292,7 +290,28 @@ class QuestionGroupValidatorTest extends TestCase
     }
 
     /**
-     * Тест: успешная валидация с 2 вопросами (минимум)
+     * Тест: ошибка при 1 вопросе (single-question groups not allowed)
+     */
+    public function test_fails_with_single_question(): void
+    {
+        // Arrange
+        $data = [
+            'id' => 'task-1',
+            'title' => 'Task I',
+            'stimulus' => ['text_html' => '<p>Describe this picture</p>'],
+            'questions' => [
+                ['id' => 'q1', 'type' => 'speaking_prompt'],
+            ],
+        ];
+
+        // Act & Assert
+        $this->expectException(ValidationException::class);
+        $this->expectExceptionMessage('minItems 2 violated');
+        $this->validator->validate($data);
+    }
+
+    /**
+     * Тест: успешная валидация с 2 вопросами
      */
     public function test_validates_with_minimum_two_questions(): void
     {

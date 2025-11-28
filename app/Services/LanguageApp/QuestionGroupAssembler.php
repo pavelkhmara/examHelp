@@ -45,7 +45,8 @@ class QuestionGroupAssembler
      * Output:
      * {
      *   "plan_data": {
-     *     "question_groups": [ ... validated groups ... ]
+     *     "question_groups": [ ... validated groups ... ],
+     *     "placeholders": [ ... converted single-question groups ... ]
      *   },
      *   "total_questions": 6
      * }
@@ -68,6 +69,7 @@ class QuestionGroupAssembler
         }
 
         $validatedGroups = [];
+        $convertedPlaceholders = [];
         $totalQuestions = 0;
 
         foreach ($questionGroups as $index => $group) {
@@ -81,18 +83,31 @@ class QuestionGroupAssembler
 
             // Validate group structure
             try {
-                $validatedGroup = $this->validateGroup($group, $groupId, $sectionId);
-                $validatedGroups[] = $validatedGroup;
+                $result = $this->validateGroup($group, $groupId, $sectionId);
 
-                // Count questions in this group
-                $questionsInGroup = count($validatedGroup['questions'] ?? []);
-                $totalQuestions += $questionsInGroup;
+                // Check if this was converted to placeholder
+                if (isset($result['_converted_to_placeholder']) && $result['_converted_to_placeholder']) {
+                    $convertedPlaceholders[] = $result['placeholder'];
+                    $totalQuestions += 1;
 
-                Log::debug('[QuestionGroupAssembler] Group validated', [
-                    'section_id' => $sectionId,
-                    'group_id' => $groupId,
-                    'questions_count' => $questionsInGroup,
-                ]);
+                    Log::info('[QuestionGroupAssembler] Single-question group converted to placeholder', [
+                        'section_id' => $sectionId,
+                        'original_group_id' => $groupId,
+                        'placeholder_id' => $result['placeholder']['id'] ?? 'unknown',
+                    ]);
+                } else {
+                    $validatedGroups[] = $result;
+
+                    // Count questions in this group
+                    $questionsInGroup = count($result['questions'] ?? []);
+                    $totalQuestions += $questionsInGroup;
+
+                    Log::debug('[QuestionGroupAssembler] Group validated', [
+                        'section_id' => $sectionId,
+                        'group_id' => $groupId,
+                        'questions_count' => $questionsInGroup,
+                    ]);
+                }
             } catch (\Throwable $e) {
                 Log::error('[QuestionGroupAssembler] Group validation failed', [
                     'section_id' => $sectionId,
@@ -109,13 +124,17 @@ class QuestionGroupAssembler
         Log::info('[QuestionGroupAssembler] Assembly completed', [
             'section_id' => $sectionId,
             'groups_count' => count($validatedGroups),
+            'placeholders_count' => count($convertedPlaceholders),
             'total_questions' => $totalQuestions,
         ]);
 
+        $planData = ['question_groups' => $validatedGroups];
+        if (! empty($convertedPlaceholders)) {
+            $planData['placeholders'] = $convertedPlaceholders;
+        }
+
         return [
-            'plan_data' => [
-                'question_groups' => $validatedGroups,
-            ],
+            'plan_data' => $planData,
             'total_questions' => $totalQuestions,
         ];
     }
@@ -151,10 +170,21 @@ class QuestionGroupAssembler
 
         // Validate minimum questions count
         $questionsCount = count($group['questions']);
-        if ($questionsCount < 2) {
+        if ($questionsCount < 1) {
             throw new \Exception(
-                "Group '{$groupId}' must have at least 2 questions, got {$questionsCount} in section {$sectionId}"
+                "Group '{$groupId}' has no questions in section {$sectionId}"
             );
+        }
+
+        // AUTO-FIX: Convert single-question groups to placeholders
+        if ($questionsCount === 1) {
+            Log::warning('[QuestionGroupAssembler] AUTO-FIX: Converting single-question group to placeholder', [
+                'section_id' => $sectionId,
+                'group_id' => $groupId,
+                'question_type' => $group['questions'][0]['type'] ?? 'unknown',
+            ]);
+
+            return $this->convertSingleQuestionGroupToPlaceholder($group, $groupId, $sectionId);
         }
 
         if ($questionsCount > 20) {
@@ -269,6 +299,61 @@ class QuestionGroupAssembler
         }
 
         return $group;
+    }
+
+    /**
+     * Convert single-question group to placeholder
+     *
+     * Preserves stimulus and instructions from group while converting to placeholder format.
+     *
+     * @param  array  $group  Single-question group data
+     * @param  string  $groupId  Group identifier
+     * @param  string  $sectionId  Section ID for logging
+     * @return array Conversion result with _converted_to_placeholder flag
+     */
+    protected function convertSingleQuestionGroupToPlaceholder(array $group, string $groupId, string $sectionId): array
+    {
+        $question = $group['questions'][0];
+
+        // Merge group stimulus into question stimulus
+        $groupStimulus = $group['stimulus'] ?? [];
+        $questionStimulus = $question['stimulus'] ?? [];
+
+        // Merge stimulus arrays (group takes precedence for shared keys)
+        $mergedStimulus = array_merge($questionStimulus, $groupStimulus);
+
+        // For array fields (audio, images, video), concatenate instead of replace
+        foreach (['audio', 'images', 'video'] as $arrayKey) {
+            if (isset($questionStimulus[$arrayKey]) && isset($groupStimulus[$arrayKey])) {
+                $mergedStimulus[$arrayKey] = array_merge(
+                    (array) $groupStimulus[$arrayKey],
+                    (array) $questionStimulus[$arrayKey]
+                );
+            }
+        }
+
+        // Build placeholder from question + group data
+        $placeholder = array_merge($question, [
+            'stimulus' => $mergedStimulus,
+            'instructions' => $group['instructions'] ?? $question['instructions'] ?? null,
+        ]);
+
+        // Remove group-specific fields that don't apply to placeholders
+        unset($placeholder['group_id']);
+        unset($placeholder['question_group_ref']);
+
+        Log::info('[QuestionGroupAssembler] Converted single-question group to placeholder', [
+            'section_id' => $sectionId,
+            'original_group_id' => $groupId,
+            'placeholder_id' => $placeholder['id'] ?? 'unknown',
+            'has_stimulus' => ! empty($mergedStimulus),
+            'has_instructions' => ! empty($placeholder['instructions']),
+        ]);
+
+        return [
+            '_converted_to_placeholder' => true,
+            'placeholder' => $placeholder,
+        ];
     }
 
     /**
