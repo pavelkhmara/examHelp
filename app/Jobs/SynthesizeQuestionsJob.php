@@ -513,6 +513,7 @@ class SynthesizeQuestionsJob implements ShouldQueue
      * Polls all plans concurrently instead of waiting for each plan sequentially.
      *
      * @param  \Illuminate\Support\Collection<int, \App\Models\GenerationPlan>  $plans
+     *
      * @throws \RuntimeException
      */
     protected function waitForAllPlansCompletion(
