@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace App\Services\LanguageApp;
 
-use App\Services\LanguageApp\Providers\AiProvider;
 use Illuminate\Support\Facades\Log;
 
 /**
@@ -28,10 +27,11 @@ class ImageSelectionService
     /**
      * Select best images from search results
      *
-     * @param string $description Text description to match against
-     * @param array $images Array of images from ImageSearchService
-     * @param bool|null $testMode Return top-3 instead of top-1 (defaults to config)
+     * @param  string  $description  Text description to match against
+     * @param  array  $images  Array of images from ImageSearchService
+     * @param  bool|null  $testMode  Return top-3 instead of top-1 (defaults to config)
      * @return array{winner: array, alternatives: array, rankings: array}
+     *
      * @throws \Exception
      */
     public function selectImages(string $description, array $images, ?bool $testMode = null): array
@@ -102,7 +102,7 @@ class ImageSelectionService
 
             // OpenAiProvider returns decoded content directly
             $data = $response['content'] ?? null;
-            if (!$data) {
+            if (! $data) {
                 throw new \RuntimeException('Empty response from AI');
             }
 
@@ -112,7 +112,7 @@ class ImageSelectionService
             }
 
             // Sort by score descending
-            usort($rankings, fn($a, $b) => $b['score'] <=> $a['score']);
+            usort($rankings, fn ($a, $b) => $b['score'] <=> $a['score']);
 
             // Take top N
             $topRankings = array_slice($rankings, 0, $topN);
@@ -121,11 +121,12 @@ class ImageSelectionService
             $selectedImages = [];
             foreach ($topRankings as $ranking) {
                 $index = $ranking['index'];
-                if (!isset($images[$index])) {
+                if (! isset($images[$index])) {
                     Log::warning('[ImageSelectionService] Invalid image index in ranking', [
                         'index' => $index,
                         'total_images' => count($images),
                     ]);
+
                     continue;
                 }
 

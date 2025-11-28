@@ -106,22 +106,23 @@ class JsonSchemaExamMetadata
     /**
      * Validate AI response against schema
      *
-     * @param array $response AI response to validate
+     * @param  array  $response  AI response to validate
      * @return array Validated response
+     *
      * @throws \RuntimeException if validation fails
      */
     public function validate(array $response): array
     {
         // Basic structure validation
-        if (!isset($response['user_meta']) || !is_array($response['user_meta'])) {
+        if (! isset($response['user_meta']) || ! is_array($response['user_meta'])) {
             throw new \RuntimeException('Response missing required field: user_meta');
         }
 
-        if (!isset($response['identity']) || !is_array($response['identity'])) {
+        if (! isset($response['identity']) || ! is_array($response['identity'])) {
             throw new \RuntimeException('Response missing required field: identity');
         }
 
-        if (!isset($response['confidence']) || !is_numeric($response['confidence'])) {
+        if (! isset($response['confidence']) || ! is_numeric($response['confidence'])) {
             throw new \RuntimeException('Response missing required field: confidence');
         }
 
@@ -133,15 +134,15 @@ class JsonSchemaExamMetadata
 
         // Validate user_meta required fields
         $userMeta = $response['user_meta'];
-        if (!isset($userMeta['user_gender']) || !in_array($userMeta['user_gender'], ['male', 'female', 'unknown'])) {
+        if (! isset($userMeta['user_gender']) || ! in_array($userMeta['user_gender'], ['male', 'female', 'unknown'])) {
             throw new \RuntimeException('user_meta.user_gender must be one of: male, female, unknown');
         }
 
         // Validate exam_level if provided
         if (isset($userMeta['exam_level']) && $userMeta['exam_level'] !== null) {
             $validLevels = ['A1', 'A2', 'B1', 'B2', 'C1', 'C2'];
-            if (!in_array($userMeta['exam_level'], $validLevels)) {
-                throw new \RuntimeException('user_meta.exam_level must be one of: ' . implode(', ', $validLevels));
+            if (! in_array($userMeta['exam_level'], $validLevels)) {
+                throw new \RuntimeException('user_meta.exam_level must be one of: '.implode(', ', $validLevels));
             }
         }
 

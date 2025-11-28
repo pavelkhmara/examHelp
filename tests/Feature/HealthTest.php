@@ -12,7 +12,18 @@ class HealthTest extends TestCase
 
         $response->assertStatus(200)
             ->assertJson([
-                'status' => 'ok',
+                'status' => 'healthy',
+            ])
+            ->assertJsonStructure([
+                'status',
+                'checks' => [
+                    'database',
+                    'redis',
+                    'openai_api_key',
+                    'tts',
+                    'images',
+                ],
+                'timestamp',
             ]);
     }
 }

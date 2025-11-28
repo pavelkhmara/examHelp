@@ -1,0 +1,17 @@
+{
+    "exam_id": "fc96d4e2-f4c0-41ca-8be2-4f8fbb6d7252",
+    "stage": "phase_b",
+    "label": "baseline",
+    "hash": "9fbb165445bac6dfe2d2cd6f5da2494fcc9998eac5125ea1237149db870b912f",
+    "data": {
+        "stage": "phase_b",
+        "exam_id": "fc96d4e2-f4c0-41ca-8be2-4f8fbb6d7252",
+        "structure_v2": []
+    },
+    "captured_at": "2025-11-25T21:20:03+00:00",
+    "metadata": {
+        "exam_title": "эталон Egzamin Certyfikatowy z Języka Polskiego jako Obcego - C1",
+        "exam_level": "C1",
+        "research_status": "completed"
+    }
+}

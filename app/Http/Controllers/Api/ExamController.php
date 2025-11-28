@@ -4,11 +4,12 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use App\Models\Exam;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
 class ExamController extends Controller
 {
-    public function index(Request $request)
+    public function index(Request $request): JsonResponse
     {
         $exams = Exam::query()
             ->where('is_active', true)
@@ -19,7 +20,7 @@ class ExamController extends Controller
         return response()->json(['data' => $exams]);
     }
 
-    public function show(Exam $exam)
+    public function show(Exam $exam): JsonResponse
     {
         abort_unless($exam->is_active, 404);
 
@@ -47,7 +48,7 @@ class ExamController extends Controller
         ]);
     }
 
-    public function store(Request $request)
+    public function store(Request $request): JsonResponse
     {
         $validated = $request->validate([
             'title' => ['required', 'string', 'max:255'],
@@ -90,7 +91,7 @@ class ExamController extends Controller
      * Update exam fields from MissingFieldsForm
      * Used by identity-clarifier card to fill missing fields during research
      */
-    public function updateFields(Request $request, Exam $exam)
+    public function updateFields(Request $request, Exam $exam): JsonResponse
     {
         $validated = $request->validate([
             'title' => ['nullable', 'string', 'max:255'],
@@ -109,7 +110,7 @@ class ExamController extends Controller
         }
 
         // Update user_input fields
-        if (!empty($validated['user_input_updates'])) {
+        if (! empty($validated['user_input_updates'])) {
             $userInput = is_array($exam->user_input) ? $exam->user_input : [];
             $userInput = array_merge($userInput, $validated['user_input_updates']);
             $exam->user_input = $userInput;
@@ -132,7 +133,7 @@ class ExamController extends Controller
     /**
      * Dismiss a card for the exam
      */
-    public function dismissCard(Request $request, Exam $exam)
+    public function dismissCard(Request $request, Exam $exam): JsonResponse
     {
         $validated = $request->validate([
             'card_type' => ['required', 'string', 'in:missing_fields,fields_changed,stalled_task'],

@@ -18,8 +18,7 @@ class AiRateLimiter
         private readonly int $maxRequestsPerMinute = 60,
         private readonly int $maxRetries = 3,
         private readonly int $retryDelayMs = 1000
-    ) {
-    }
+    ) {}
 
     /**
      * Attempt to acquire rate limit permit
@@ -40,10 +39,15 @@ class AiRateLimiter
             $redis = Redis::connection();
 
             // Remove old entries outside the window
+            /** @phpstan-ignore-next-line */
             $redis->zremrangebyscore($key, 0, $windowStart);
 
             // Count requests in current window
             $count = $redis->zcard($key);
+
+            if (! is_int($count)) {
+                $count = 0;
+            }
 
             if ($count >= $this->maxRequestsPerMinute) {
                 Log::warning('AI rate limit reached', [
@@ -118,9 +122,12 @@ class AiRateLimiter
             $windowStart = $now - 60;
 
             $redis = Redis::connection();
+            /** @phpstan-ignore-next-line */
             $redis->zremrangebyscore($key, 0, $windowStart);
 
-            return $redis->zcard($key);
+            $count = $redis->zcard($key);
+
+            return is_int($count) ? $count : 0;
         } catch (\Throwable $e) {
             Log::error('Failed to get rate limit count', ['error' => $e->getMessage()]);
 
@@ -142,6 +149,7 @@ class AiRateLimiter
             $redis = Redis::connection();
 
             // Get oldest request timestamp
+            /** @phpstan-ignore-next-line */
             $oldest = $redis->zrange($key, 0, 0, 'WITHSCORES');
 
             if (empty($oldest)) {

@@ -45,7 +45,10 @@ class ResetAndRestartResearch extends Action
         ];
     }
 
-    public function handle(ActionFields $fields, $models)
+    /**
+     * @param  \Illuminate\Support\Collection<int, \App\Models\Exam>  $models
+     */
+    public function handle(ActionFields $fields, $models): mixed
     {
         Log::info('🔵 [ResetAndRestartResearch] BUTTON CLICKED - Action started', [
             'timestamp' => now()->toDateTimeString(),
@@ -69,6 +72,7 @@ class ResetAndRestartResearch extends Action
                 try {
                     // Step 1: Cancel active tasks if requested
                     $cancelledCount = 0;
+                    /** @phpstan-ignore-next-line */
                     if ($fields->cancel_active_tasks) {
                         $cancelledCount = $this->cancelActiveTasks($exam);
                         Log::info('[ResetAndRestartResearch] Cancelled active tasks', [
@@ -79,7 +83,8 @@ class ResetAndRestartResearch extends Action
 
                     // Step 2: Parse user_input from exam
                     $userInput = [];
-                    if (!empty($exam->user_input)) {
+                    if (! empty($exam->user_input)) {
+                        /** @phpstan-ignore-next-line */
                         if (is_array($exam->user_input)) {
                             $userInput = $exam->user_input;
                         } elseif (is_string($exam->user_input)) {
@@ -134,7 +139,7 @@ class ResetAndRestartResearch extends Action
                         subject: $exam,
                         request: $payload,
                         jobClass: \App\Jobs\RunExamResearchJob::class,
-                        idempotencyKey: "exam:{$exam->id}:research:force_restart:" . now()->timestamp . ':' . uniqid(),
+                        idempotencyKey: "exam:{$exam->id}:research:force_restart:".now()->timestamp.':'.uniqid(),
                         queue: null
                     );
 
@@ -183,8 +188,8 @@ class ResetAndRestartResearch extends Action
                 }
             }
 
-            if (!empty($errors)) {
-                return Action::danger('❌ Errors occurred: ' . implode('; ', $errors));
+            if (! empty($errors)) {
+                return Action::danger('❌ Errors occurred: '.implode('; ', $errors));
             }
 
             $examCount = count($processedExams);
@@ -197,14 +202,13 @@ class ResetAndRestartResearch extends Action
                 'trace' => $e->getTraceAsString(),
             ]);
 
-            return Action::danger('❌ Action failed: ' . $e->getMessage());
+            return Action::danger('❌ Action failed: '.$e->getMessage());
         }
     }
 
     /**
      * Cancel all active tasks for the exam
      *
-     * @param \App\Models\Exam $exam
      * @return int Number of cancelled tasks
      */
     private function cancelActiveTasks(\App\Models\Exam $exam): int
@@ -252,11 +256,9 @@ class ResetAndRestartResearch extends Action
     }
 
     /**
-     * Get the fields available on the action.
-     *
-     * @return array
+     * Get the displayable name of the action.
      */
-    public function name()
+    public function name(): string
     {
         return '🔄 Reset & Restart Research';
     }

@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use App\Models\GenerationTask;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 
@@ -16,14 +17,14 @@ class TaskManagementController extends Controller
      * Cancel a specific task
      * POST /api/tasks/{taskId}/cancel
      */
-    public function cancelTask(int $taskId, Request $request)
+    public function cancelTask(int $taskId, Request $request): JsonResponse
     {
         $task = GenerationTask::query()->findOrFail($taskId);
 
         $oldStatus = $task->status;
 
         // Only cancel if task is in active state
-        if (!in_array($oldStatus, ['queued', 'running', 'pending_confirmation', 'pending_clarification'])) {
+        if (! in_array($oldStatus, ['queued', 'running', 'pending_confirmation', 'pending_clarification'])) {
             return response()->json([
                 'success' => false,
                 'message' => "Cannot cancel task in '{$oldStatus}' status. Only active tasks can be cancelled.",
@@ -68,7 +69,7 @@ class TaskManagementController extends Controller
      * Cancel all active tasks for an exam
      * POST /api/exams/{examId}/tasks/cancel-all
      */
-    public function cancelAllExamTasks(string $examId, Request $request)
+    public function cancelAllExamTasks(string $examId, Request $request): JsonResponse
     {
         $exam = \App\Models\Exam::query()->findOrFail($examId);
 
@@ -122,14 +123,14 @@ class TaskManagementController extends Controller
      * Retry a failed task
      * POST /api/tasks/{taskId}/retry
      */
-    public function retryTask(int $taskId)
+    public function retryTask(int $taskId): JsonResponse
     {
         $task = GenerationTask::query()->findOrFail($taskId);
 
         $oldStatus = $task->status;
 
         // Only retry failed or cancelled tasks
-        if (!in_array($oldStatus, ['failed', 'cancelled'])) {
+        if (! in_array($oldStatus, ['failed', 'cancelled'])) {
             return response()->json([
                 'success' => false,
                 'message' => "Cannot retry task in '{$oldStatus}' status. Only failed/cancelled tasks can be retried.",
@@ -180,7 +181,7 @@ class TaskManagementController extends Controller
      * Force complete a stuck task (dangerous!)
      * POST /api/tasks/{taskId}/force-complete
      */
-    public function forceCompleteTask(int $taskId, Request $request)
+    public function forceCompleteTask(int $taskId, Request $request): JsonResponse
     {
         $task = GenerationTask::query()->findOrFail($taskId);
 
@@ -220,7 +221,7 @@ class TaskManagementController extends Controller
      * Get stuck tasks (running for more than 1 hour)
      * GET /api/tasks/stuck
      */
-    public function getStuckTasks()
+    public function getStuckTasks(): JsonResponse
     {
         $stuckTasks = GenerationTask::query()
             ->whereIn('status', ['running', 'queued'])
@@ -254,7 +255,7 @@ class TaskManagementController extends Controller
      * Force start research for an exam (bypasses all checks)
      * POST /api/exams/{examId}/research/force-start
      */
-    public function forceStartResearch(string $examId, Request $request)
+    public function forceStartResearch(string $examId, Request $request): JsonResponse
     {
         try {
             Log::info('[TaskManagement] forceStartResearch called', [
@@ -290,7 +291,8 @@ class TaskManagementController extends Controller
 
             // Parse user_input from exam
             $userInput = [];
-            if (!empty($exam->user_input)) {
+            if (! empty($exam->user_input)) {
+                /** @phpstan-ignore-next-line */
                 if (is_array($exam->user_input)) {
                     $userInput = $exam->user_input;
                 } elseif (is_string($exam->user_input)) {
@@ -328,7 +330,7 @@ class TaskManagementController extends Controller
                     'attempts' => 0,
                     'result' => null,
                     'error' => null,
-                    'idempotency_key' => "exam:{$exam->id}:research:force_start:" . now()->timestamp . ':' . uniqid(),
+                    'idempotency_key' => "exam:{$exam->id}:research:force_start:".now()->timestamp.':'.uniqid(),
                 ]);
 
                 Log::info('[TaskManagement] Task created', ['task_id' => $task->id]);
@@ -340,7 +342,7 @@ class TaskManagementController extends Controller
 
                 return response()->json([
                     'success' => false,
-                    'message' => 'Failed to create task: ' . $e->getMessage(),
+                    'message' => 'Failed to create task: '.$e->getMessage(),
                     'error_details' => $e->getMessage(),
                 ], 500);
             }
@@ -393,7 +395,7 @@ class TaskManagementController extends Controller
                 try {
                     $task->addActivity(
                         'job_dispatch_failed',
-                        'Failed to dispatch job: ' . $e->getMessage(),
+                        'Failed to dispatch job: '.$e->getMessage(),
                         ['error' => $e->getMessage()]
                     );
                 } catch (\Throwable $activityError) {
@@ -405,7 +407,7 @@ class TaskManagementController extends Controller
 
                 return response()->json([
                     'success' => false,
-                    'message' => 'Task created but job dispatch failed: ' . $e->getMessage(),
+                    'message' => 'Task created but job dispatch failed: '.$e->getMessage(),
                     'task_id' => $task->id,
                     'error_details' => $e->getMessage(),
                 ], 500);
@@ -430,7 +432,7 @@ class TaskManagementController extends Controller
 
             return response()->json([
                 'success' => false,
-                'message' => 'Force start failed: ' . $e->getMessage(),
+                'message' => 'Force start failed: '.$e->getMessage(),
                 'error_details' => $e->getMessage(),
                 'trace' => explode("\n", $e->getTraceAsString()),
             ], 500);
@@ -441,13 +443,13 @@ class TaskManagementController extends Controller
      * Get system configuration for diagnostics
      * GET /api/diagnostics/system-config
      */
-    public function getSystemConfig()
+    public function getSystemConfig(): JsonResponse
     {
         return response()->json([
             'success' => true,
             'config' => [
                 'queue_driver' => config('queue.default'),
-                'queue_connection' => config('queue.connections.' . config('queue.default')),
+                'queue_connection' => config('queue.connections.'.config('queue.default')),
                 'app_env' => app()->environment(),
                 'app_debug' => config('app.debug'),
                 'php_version' => PHP_VERSION,

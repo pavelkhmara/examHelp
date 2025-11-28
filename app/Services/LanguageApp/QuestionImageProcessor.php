@@ -27,7 +27,7 @@ class QuestionImageProcessor
     /**
      * Process questions and generate images where necessary
      *
-     * @param array<int, ExamExampleQuestion|Question> $questions
+     * @param  array<int, ExamExampleQuestion|Question>  $questions
      * @return array{processed: int, images_generated: int, errors: int}
      */
     public function processQuestions(array $questions): array
@@ -68,13 +68,12 @@ class QuestionImageProcessor
     /**
      * Process one question and generate image if necessary
      *
-     * @param ExamExampleQuestion|Question $question
      * @return bool True if image was generated
      */
     public function processQuestion(ExamExampleQuestion|Question $question): bool
     {
         // Check if image generation is needed
-        if (!$this->shouldGenerateImage($question)) {
+        if (! $this->shouldGenerateImage($question)) {
             return false;
         }
 
@@ -84,6 +83,7 @@ class QuestionImageProcessor
             Log::debug('[QuestionImageProcessor] No text for image search', [
                 'question_id' => $question->id,
             ]);
+
             return false;
         }
 
@@ -95,6 +95,7 @@ class QuestionImageProcessor
                     'question_id' => $question->id,
                     'search_text' => $searchText,
                 ]);
+
                 return false;
             }
 
@@ -152,18 +153,16 @@ class QuestionImageProcessor
 
     /**
      * Determine if image generation is needed for this question
-     *
-     * @param ExamExampleQuestion|Question $question
      */
     protected function shouldGenerateImage(ExamExampleQuestion|Question $question): bool
     {
         // If image generation is disabled globally
-        if (!config('ai.images.enabled', false)) {
+        if (! config('ai.images.enabled', false)) {
             return false;
         }
 
         // If image already exists
-        if (!empty($question->image_url) || !empty($question->image_file_path)) {
+        if (! empty($question->image_url) || ! empty($question->image_file_path)) {
             return false;
         }
 
@@ -206,7 +205,7 @@ class QuestionImageProcessor
             }
 
             // Check if stimulus has images array (might need replacement)
-            if (isset($stimulus['images']) && is_array($stimulus['images']) && !empty($stimulus['images'])) {
+            if (isset($stimulus['images']) && is_array($stimulus['images']) && ! empty($stimulus['images'])) {
                 // Already has images, but might be placeholders
                 foreach ($stimulus['images'] as $img) {
                     if (isset($img['generate']) && $img['generate'] === true) {
@@ -223,8 +222,6 @@ class QuestionImageProcessor
 
     /**
      * Extract text for image search
-     *
-     * @param ExamExampleQuestion|Question $question
      */
     protected function getTextForImageSearch(ExamExampleQuestion|Question $question): ?string
     {
@@ -238,7 +235,7 @@ class QuestionImageProcessor
             }
 
             // Priority 2: stimulus.text (if it's descriptive)
-            if (isset($payload['stimulus']['text']) && !empty($payload['stimulus']['text'])) {
+            if (isset($payload['stimulus']['text']) && ! empty($payload['stimulus']['text'])) {
                 $text = $payload['stimulus']['text'];
                 // Only use if it's descriptive (not too long, not too short)
                 if (mb_strlen($text) >= 10 && mb_strlen($text) <= 300) {
@@ -247,12 +244,12 @@ class QuestionImageProcessor
             }
 
             // Priority 3: question description field
-            if (!empty($question->description)) {
+            if (! empty($question->description)) {
                 return $question->description;
             }
 
             // Priority 4: question field itself
-            if (!empty($question->question)) {
+            if (! empty($question->question)) {
                 return $question->question;
             }
         }
@@ -267,7 +264,7 @@ class QuestionImageProcessor
             }
 
             // Priority 2: stimulus.text_html (strip tags)
-            if (isset($stimulus['text_html']) && !empty($stimulus['text_html'])) {
+            if (isset($stimulus['text_html']) && ! empty($stimulus['text_html'])) {
                 $text = strip_tags($stimulus['text_html']);
                 // Only use if it's descriptive (not too long, not too short)
                 if (mb_strlen($text) >= 10 && mb_strlen($text) <= 300) {
@@ -277,12 +274,12 @@ class QuestionImageProcessor
 
             // Priority 3: metadata.topic
             $metadata = $question->metadata ?? [];
-            if (!empty($metadata['topic'])) {
+            if (! empty($metadata['topic'])) {
                 return $metadata['topic'];
             }
 
             // Priority 4: question_id (last resort)
-            if (!empty($question->question_id)) {
+            if (! empty($question->question_id)) {
                 return $question->question_id;
             }
         }
@@ -305,11 +302,12 @@ class QuestionImageProcessor
 
             $response = Http::timeout(30)->get($url);
 
-            if (!$response->successful()) {
+            if (! $response->successful()) {
                 Log::error('[QuestionImageProcessor] Failed to download image', [
                     'url' => $url,
                     'status' => $response->status(),
                 ]);
+
                 return null;
             }
 
@@ -325,8 +323,8 @@ class QuestionImageProcessor
             };
 
             // Generate filename
-            $filename = 'q_' . $questionId . '_' . md5($url) . '.' . $extension;
-            $relativePath = 'images/' . date('Y/m/d') . '/' . $filename;
+            $filename = 'q_'.$questionId.'_'.md5($url).'.'.$extension;
+            $relativePath = 'images/'.date('Y/m/d').'/'.$filename;
 
             // Save to storage
             Storage::disk('public')->put($relativePath, $imageContent);
@@ -343,6 +341,7 @@ class QuestionImageProcessor
                 'url' => $url,
                 'error' => $e->getMessage(),
             ]);
+
             return null;
         }
     }
@@ -352,7 +351,7 @@ class QuestionImageProcessor
      */
     public function deleteImage(string $path): bool
     {
-        if (!$path) {
+        if (! $path) {
             return false;
         }
 
@@ -363,6 +362,7 @@ class QuestionImageProcessor
                 'path' => $path,
                 'error' => $e->getMessage(),
             ]);
+
             return false;
         }
     }
@@ -372,7 +372,7 @@ class QuestionImageProcessor
      */
     public function imageExists(string $path): bool
     {
-        if (!$path) {
+        if (! $path) {
             return false;
         }
 
@@ -384,7 +384,7 @@ class QuestionImageProcessor
      */
     public function getImageUrl(string $path): ?string
     {
-        if (!$path || !$this->imageExists($path)) {
+        if (! $path || ! $this->imageExists($path)) {
             return null;
         }
 

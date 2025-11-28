@@ -4,7 +4,6 @@ namespace App\Nova\Actions;
 
 use App\Models\Exam;
 use App\Models\GenerationTask;
-use App\Services\LanguageApp\ExamResearchService;
 use Illuminate\Bus\Queueable;
 use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Support\Collection;
@@ -20,15 +19,15 @@ class ConfidenceBoostAction extends Action
 
     public $uriKey = 'boost-confidence';
 
-    /**
-     * Perform the action on the given models.
-     */
-    public function authorizedToRun(\Illuminate\Http\Request $request, $model)
+    public function authorizedToRun(\Illuminate\Http\Request $request, $model): bool
     {
         return true;
     }
 
-    public function handle(ActionFields $fields, Collection $models)
+    /**
+     * @param  Collection<int, \App\Models\Exam>  $models
+     */
+    public function handle(ActionFields $fields, Collection $models): mixed
     {
         foreach ($models as $exam) {
             /** @var Exam $exam */

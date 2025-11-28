@@ -6,9 +6,9 @@
  * Tests the resolution of assembly configs from Phase B into generation plans.
  */
 
-require __DIR__ . '/vendor/autoload.php';
+require __DIR__.'/vendor/autoload.php';
 
-$app = require_once __DIR__ . '/bootstrap/app.php';
+$app = require_once __DIR__.'/bootstrap/app.php';
 $kernel = $app->make(Illuminate\Contracts\Console\Kernel::class);
 $kernel->bootstrap();
 
@@ -16,14 +16,14 @@ use App\Models\Exam;
 use App\Services\LanguageApp\AssemblyResolver;
 
 echo "🧪 Testing AssemblyResolver\n";
-echo str_repeat('=', 80) . "\n\n";
+echo str_repeat('=', 80)."\n\n";
 
 // Find exam with Phase B structure
 $exam = Exam::where('slug', 'ielts-academic-full-pipeline-test')
     ->latest()
     ->first();
 
-if (!$exam) {
+if (! $exam) {
     echo "❌ Test exam not found. Creating new test exam with Phase B structure...\n\n";
 
     // Create test exam with Phase B structure
@@ -153,13 +153,13 @@ echo "   Slug: {$exam->slug}\n\n";
 
 // Check structure_v2
 $structure = $exam->meta['structure_v2'] ?? null;
-if (!$structure) {
+if (! $structure) {
     echo "❌ No structure_v2 found in exam meta\n";
     exit(1);
 }
 
 $sections = $structure['sections'] ?? [];
-echo "   Sections: " . count($sections) . "\n\n";
+echo '   Sections: '.count($sections)."\n\n";
 
 // Test AssemblyResolver
 try {
@@ -175,26 +175,26 @@ try {
     echo "✅ AssemblyResolver completed in {$elapsed}ms\n\n";
 
     echo "📊 Generation Plans Created:\n";
-    echo str_repeat('-', 80) . "\n";
+    echo str_repeat('-', 80)."\n";
 
     foreach ($plans as $i => $plan) {
-        echo "\n[" . ($i + 1) . "] Plan ID: {$plan->id}\n";
+        echo "\n[".($i + 1)."] Plan ID: {$plan->id}\n";
         echo "   Section: {$plan->section_id}\n";
         echo "   Assembly Mode: {$plan->assembly_mode}\n";
         echo "   Total Questions: {$plan->total_questions}\n";
         echo "   Status: {$plan->status}\n";
         echo "   Plan Data:\n";
-        echo "   " . json_encode($plan->plan_data, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE) . "\n";
+        echo '   '.json_encode($plan->plan_data, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE)."\n";
     }
 
-    echo "\n" . str_repeat('=', 80) . "\n";
+    echo "\n".str_repeat('=', 80)."\n";
     echo "✅ TEST PASSED - AssemblyResolver works correctly!\n";
-    echo "   Created " . count($plans) . " generation plans\n";
+    echo '   Created '.count($plans)." generation plans\n";
 
     // Show database records
     echo "\n📦 Database Records:\n";
     $dbPlans = \App\Models\GenerationPlan::where('exam_id', $exam->id)->get();
-    echo "   Generation Plans in DB: " . $dbPlans->count() . "\n";
+    echo '   Generation Plans in DB: '.$dbPlans->count()."\n";
 
     foreach ($dbPlans as $plan) {
         echo "   - {$plan->section_id}: {$plan->assembly_mode} ({$plan->total_questions} questions)\n";
@@ -205,6 +205,6 @@ try {
     echo "Error: {$e->getMessage()}\n";
     echo "File: {$e->getFile()}:{$e->getLine()}\n";
     echo "\nStack trace:\n";
-    echo $e->getTraceAsString() . "\n";
+    echo $e->getTraceAsString()."\n";
     exit(1);
 }

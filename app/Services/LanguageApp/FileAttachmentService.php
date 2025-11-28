@@ -27,6 +27,7 @@ class FileAttachmentService
     public function isSupportedMime(string $mime): bool
     {
         $supported = config('ai.file_attachments.supported_mimes', []);
+
         return in_array($mime, $supported, true);
     }
 
@@ -35,13 +36,15 @@ class FileAttachmentService
      */
     public function uploadDocument(ExamDocument $doc): bool
     {
-        if (!$this->isEnabled()) {
+        if (! $this->isEnabled()) {
             Log::debug('FileAttachmentService: disabled, skipping upload', ['doc_id' => $doc->id]);
+
             return false;
         }
 
-        if (!$this->isSupportedMime($doc->mime)) {
+        if (! $this->isSupportedMime($doc->mime)) {
             Log::debug('FileAttachmentService: unsupported mime', ['doc_id' => $doc->id, 'mime' => $doc->mime]);
+
             return false;
         }
 
@@ -49,9 +52,10 @@ class FileAttachmentService
         $disk = $doc->disk ?? 'local';
         $filePath = Storage::disk($disk)->path($doc->path);
 
-        if (!file_exists($filePath)) {
+        if (! file_exists($filePath)) {
             Log::error('FileAttachmentService: file not found', ['doc_id' => $doc->id, 'path' => $filePath]);
             $doc->update(['file_attachment_status' => 'failed']);
+
             return false;
         }
 
@@ -66,11 +70,13 @@ class FileAttachmentService
                 'file_attached_at' => now(),
             ]);
             Log::info('FileAttachmentService: upload success', ['doc_id' => $doc->id, 'file_id' => $result['file_id']]);
+
             return true;
         }
 
         $doc->update(['file_attachment_status' => 'failed']);
         Log::error('FileAttachmentService: upload failed', ['doc_id' => $doc->id, 'error' => $result['error'] ?? 'unknown']);
+
         return false;
     }
 
@@ -79,7 +85,7 @@ class FileAttachmentService
      */
     public function deleteDocument(ExamDocument $doc): bool
     {
-        if (!$doc->openai_file_id) {
+        if (! $doc->openai_file_id) {
             return true; // Nothing to delete
         }
 
@@ -91,17 +97,19 @@ class FileAttachmentService
                 'file_attachment_status' => null,
                 'file_attached_at' => null,
             ]);
+
             return true;
         }
 
         Log::warning('FileAttachmentService: delete failed', ['doc_id' => $doc->id, 'error' => $result['error'] ?? 'unknown']);
+
         return false;
     }
 
     /**
      * Get file IDs for documents that have been uploaded.
      *
-     * @param ExamDocument[]|iterable $documents
+     * @param  ExamDocument[]|iterable  $documents
      * @return string[]
      */
     public function getFileIds(iterable $documents): array
@@ -112,6 +120,7 @@ class FileAttachmentService
                 $fileIds[] = $doc->openai_file_id;
             }
         }
+
         return $fileIds;
     }
 }

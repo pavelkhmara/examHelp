@@ -13,7 +13,8 @@ class PromptExamOverview
         string $contextNotes,
         ?string $retryHint = null,
         ?array $userInputParsed = null,
-        string $documentsHint = ''
+        string $documentsHint = '',
+        ?array $confirmedIdentity = null // Added for compatibility, not used in legacy prompt
     ): string {
         $categoryWeightHint = self::getCategoryWeightHint();
         $localizationHint = self::getLocalizationHint($userInputParsed);

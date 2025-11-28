@@ -3,8 +3,8 @@
 namespace App\Nova;
 
 use App\Domain\Taxonomy\QuestionType;
-use App\Nova\Filters\ExamFilter;
 use App\Nova\Fields\CollapsiblePanel;
+use App\Nova\Filters\ExamFilter;
 use Laravel\Nova\Fields\Badge;
 use Laravel\Nova\Fields\BelongsTo;
 use Laravel\Nova\Fields\Code;
@@ -16,9 +16,12 @@ use Laravel\Nova\Fields\Textarea;
 use Laravel\Nova\Http\Requests\NovaRequest;
 use Laravel\Nova\Panel;
 
+/**
+ * @extends Resource<\App\Models\ExamExampleQuestion>
+ */
 class ExamExampleQuestion extends Resource
 {
-    public static $model = \App\Models\ExamExampleQuestion::class;
+    public static string $model = \App\Models\ExamExampleQuestion::class;
 
     public static $title = 'question';
 
@@ -81,7 +84,7 @@ class ExamExampleQuestion extends Resource
                 ])
                 ->onlyOnIndex(),
             Text::make('Question Preview', function () {
-                return mb_substr($this->question, 0, 100).(mb_strlen($this->question) > 100 ? '...' : '');
+                return mb_substr($this->resource->question, 0, 100).(mb_strlen($this->resource->question) > 100 ? '...' : '');
             })->onlyOnIndex(),
 
             // Detail view - beautiful document-like display
@@ -102,7 +105,7 @@ class ExamExampleQuestion extends Resource
     {
         return [
             Text::make('Type', function () {
-                return $this->type?->value ?? 'Unknown';
+                return $this->resource->type?->value ?? 'Unknown';
             })->onlyOnDetail(),
 
             BelongsTo::make('Category', 'category', ExamCategory::class)
@@ -174,13 +177,13 @@ class ExamExampleQuestion extends Resource
         $fields = [];
 
         // Show image if available
-        if ($this->image_url || $this->image_file_path) {
+        if ($this->resource->image_url || $this->resource->image_file_path) {
             $fields[] = Heading::make('Generated Image');
 
             // Display winner image
-            $imageUrl = $this->image_url;
+            $imageUrl = $this->resource->image_url;
             if ($imageUrl) {
-                $metadata = $this->image_metadata ?? [];
+                $metadata = $this->resource->image_metadata ?? [];
                 $aiScore = $metadata['ai_score'] ?? 'N/A';
                 $aiReason = $metadata['ai_reason'] ?? '';
                 $provider = $metadata['provider'] ?? 'unknown';
@@ -193,39 +196,39 @@ class ExamExampleQuestion extends Resource
                 // Winner image
                 $html .= '<div class="border rounded-lg p-4 bg-white dark:bg-gray-800">';
                 $html .= '<h4 class="text-lg font-semibold mb-3 text-gray-900 dark:text-gray-100">🏆 Selected Image</h4>';
-                $html .= '<img src="' . htmlspecialchars($imageUrl) . '" alt="Question image" class="w-full rounded-lg shadow-lg mb-3" style="max-width: 600px;">';
+                $html .= '<img src="'.htmlspecialchars($imageUrl).'" alt="Question image" class="w-full rounded-lg shadow-lg mb-3" style="max-width: 600px;">';
 
                 // Metadata
                 $html .= '<div class="grid grid-cols-2 gap-2 text-sm">';
                 $html .= '<div class="text-gray-600 dark:text-gray-400">AI Score:</div>';
-                $html .= '<div class="font-semibold text-gray-900 dark:text-gray-100">' . htmlspecialchars((string)$aiScore) . '/10</div>';
+                $html .= '<div class="font-semibold text-gray-900 dark:text-gray-100">'.htmlspecialchars((string) $aiScore).'/10</div>';
                 $html .= '<div class="text-gray-600 dark:text-gray-400">Provider:</div>';
-                $html .= '<div class="text-gray-900 dark:text-gray-100">' . htmlspecialchars($provider) . '</div>';
+                $html .= '<div class="text-gray-900 dark:text-gray-100">'.htmlspecialchars($provider).'</div>';
                 $html .= '<div class="text-gray-600 dark:text-gray-400">Author:</div>';
                 $html .= '<div class="text-gray-900 dark:text-gray-100">';
                 if ($authorUrl) {
-                    $html .= '<a href="' . htmlspecialchars($authorUrl) . '" target="_blank" class="text-blue-600 hover:underline">' . htmlspecialchars($author) . '</a>';
+                    $html .= '<a href="'.htmlspecialchars($authorUrl).'" target="_blank" class="text-blue-600 hover:underline">'.htmlspecialchars($author).'</a>';
                 } else {
                     $html .= htmlspecialchars($author);
                 }
                 $html .= '</div>';
                 if ($license) {
                     $html .= '<div class="text-gray-600 dark:text-gray-400">License:</div>';
-                    $html .= '<div class="text-gray-900 dark:text-gray-100">' . htmlspecialchars($license) . '</div>';
+                    $html .= '<div class="text-gray-900 dark:text-gray-100">'.htmlspecialchars($license).'</div>';
                 }
                 $html .= '</div>';
 
                 if ($aiReason) {
                     $html .= '<div class="mt-3 p-3 bg-blue-50 dark:bg-blue-900/20 rounded">';
-                    $html .= '<p class="text-sm text-gray-700 dark:text-gray-300"><strong>AI Reasoning:</strong> ' . htmlspecialchars($aiReason) . '</p>';
+                    $html .= '<p class="text-sm text-gray-700 dark:text-gray-300"><strong>AI Reasoning:</strong> '.htmlspecialchars($aiReason).'</p>';
                     $html .= '</div>';
                 }
 
                 $html .= '</div>';
 
                 // Alternative images (test mode)
-                $alternatives = $this->image_alternatives ?? [];
-                if (!empty($alternatives)) {
+                $alternatives = $this->resource->image_alternatives ?? [];
+                if (! empty($alternatives)) {
                     $html .= '<div class="border rounded-lg p-4 bg-gray-50 dark:bg-gray-900/50 mt-4">';
                     $html .= '<h4 class="text-lg font-semibold mb-3 text-gray-900 dark:text-gray-100">🥈 Alternative Options (Test Mode)</h4>';
                     $html .= '<div class="grid grid-cols-2 gap-4">';
@@ -236,11 +239,11 @@ class ExamExampleQuestion extends Resource
                         $altReason = $alt['ai_reason'] ?? '';
 
                         $html .= '<div class="border rounded p-2 bg-white dark:bg-gray-800">';
-                        $html .= '<img src="' . htmlspecialchars($altUrl) . '" alt="Alternative ' . ($idx + 1) . '" class="w-full rounded mb-2">';
+                        $html .= '<img src="'.htmlspecialchars($altUrl).'" alt="Alternative '.($idx + 1).'" class="w-full rounded mb-2">';
                         $html .= '<div class="text-xs text-gray-600 dark:text-gray-400">';
-                        $html .= '<div><strong>Score:</strong> ' . htmlspecialchars((string)$altScore) . '/10</div>';
+                        $html .= '<div><strong>Score:</strong> '.htmlspecialchars((string) $altScore).'/10</div>';
                         if ($altReason) {
-                            $html .= '<div class="mt-1">' . htmlspecialchars(mb_substr($altReason, 0, 80)) . '...</div>';
+                            $html .= '<div class="mt-1">'.htmlspecialchars(mb_substr($altReason, 0, 80)).'...</div>';
                         }
                         $html .= '</div>';
                         $html .= '</div>';
@@ -252,13 +255,13 @@ class ExamExampleQuestion extends Resource
 
                 $html .= '</div>';
 
-                $fields[] = Text::make('Image', function() use ($html) {
+                $fields[] = Text::make('Image', function () use ($html) {
                     return $html;
                 })->asHtml()->onlyOnDetail();
             }
 
             // Show metadata
-            if ($this->image_metadata) {
+            if ($this->resource->image_metadata) {
                 $fields[] = Code::make('Image Metadata', 'image_metadata')
                     ->json()
                     ->onlyOnDetail()
@@ -266,7 +269,7 @@ class ExamExampleQuestion extends Resource
                     ->help('AI selection metadata and image source information');
             }
         } else {
-            $fields[] = Text::make('No Image', function() {
+            $fields[] = Text::make('No Image', function () {
                 return '<div class="text-gray-500 dark:text-gray-400 italic">No image generated for this question</div>';
             })->asHtml()->onlyOnDetail();
         }
@@ -314,49 +317,49 @@ class ExamExampleQuestion extends Resource
         // 1. Название (Question Title/Name)
         $html .= '<div>';
         $html .= '<h3 class="text-xl font-bold text-gray-900 dark:text-gray-100 mb-2">';
-        $html .= htmlspecialchars($this->question_name ?? 'Unnamed Question');
+        $html .= htmlspecialchars($this->resource->question_name ?? 'Unnamed Question');
         $html .= '</h3>';
-        if ($this->type) {
+        if ($this->resource->type) {
             $html .= '<span class="inline-block bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300 text-sm font-medium px-3 py-1 rounded">';
-            $html .= '<p class="text-base text-gray-800 dark:text-gray-200"> Question Type: <b>' . nl2br(htmlspecialchars($this->type->value)) . '</b></p>';
+            $html .= '<p class="text-base text-gray-800 dark:text-gray-200"> Question Type: <b>'.nl2br(htmlspecialchars($this->resource->type->value)).'</b></p>';
             $html .= '</span>';
         }
         $html .= '</div>';
 
         // 2. Описание (What this tests)
-        if ($this->description) {
+        if ($this->resource->description) {
             $html .= '<div class="border-l-4 border-blue-500 pl-4">';
             $html .= '<h4 class="text-sm font-semibold text-gray-700 dark:text-gray-300 uppercase mb-2">What This Tests</h4>';
-            $html .= '<p class="text-base text-gray-800 dark:text-gray-200">' . nl2br(htmlspecialchars($this->description)) . '</p>';
+            $html .= '<p class="text-base text-gray-800 dark:text-gray-200">'.nl2br(htmlspecialchars($this->resource->description)).'</p>';
             $html .= '</div>';
         }
 
         // 3. Условия (Instructions/Conditions)
-        if ($this->instructions) {
+        if ($this->resource->instructions) {
             $html .= '<div class="bg-yellow-50 dark:bg-yellow-900/10 border border-yellow-200 dark:border-yellow-800 rounded-lg p-4">';
             $html .= '<h4 class="text-sm font-semibold text-yellow-900 dark:text-yellow-200 uppercase mb-2">📋 Instructions</h4>';
-            $html .= '<p class="text-base text-yellow-900 dark:text-yellow-100">' . nl2br(htmlspecialchars($this->instructions)) . '</p>';
+            $html .= '<p class="text-base text-yellow-900 dark:text-yellow-100">'.nl2br(htmlspecialchars($this->resource->instructions)).'</p>';
             $html .= '</div>';
         }
 
         // 4. Важные детали (Important Details - from payload or other metadata)
         $importantDetails = $this->getImportantDetails();
-        if (!empty($importantDetails)) {
+        if (! empty($importantDetails)) {
             $html .= '<div class="bg-purple-50 dark:bg-purple-900/10 border border-purple-200 dark:border-purple-800 rounded-lg p-4">';
             $html .= '<h4 class="text-sm font-semibold text-purple-900 dark:text-purple-200 uppercase mb-2">⚠️ Important Details</h4>';
             $html .= '<ul class="list-disc list-inside space-y-1 text-base text-purple-900 dark:text-purple-100">';
             foreach ($importantDetails as $detail) {
-                $html .= '<li>' . htmlspecialchars($detail) . '</li>';
+                $html .= '<li>'.htmlspecialchars($detail).'</li>';
             }
             $html .= '</ul>';
             $html .= '</div>';
         }
 
         // 5. Что/как проверяет (Assessment Guide)
-        if ($this->assessment_guide) {
+        if ($this->resource->assessment_guide) {
             $html .= '<div class="bg-green-50 dark:bg-green-900/10 border border-green-200 dark:border-green-800 rounded-lg p-4">';
             $html .= '<h4 class="text-sm font-semibold text-green-900 dark:text-green-200 uppercase mb-2">✅ How to Assess</h4>';
-            $html .= '<p class="text-base text-green-900 dark:text-green-100">' . nl2br(htmlspecialchars($this->assessment_guide)) . '</p>';
+            $html .= '<p class="text-base text-green-900 dark:text-green-100">'.nl2br(htmlspecialchars($this->resource->assessment_guide)).'</p>';
             $html .= '</div>';
         }
 
@@ -366,7 +369,7 @@ class ExamExampleQuestion extends Resource
 
         // Question text
         $html .= '<div class="mb-4 text-lg leading-relaxed text-gray-900 dark:text-gray-100">';
-        $html .= nl2br(htmlspecialchars($this->question));
+        $html .= nl2br(htmlspecialchars($this->resource->question));
         $html .= '</div>';
 
         // Options/Variants (if applicable from payload)
@@ -389,11 +392,11 @@ class ExamExampleQuestion extends Resource
     {
         $details = [];
 
-        if ($this->duration_minutes) {
-            $details[] = "Duration: {$this->duration_minutes} minutes";
+        if ($this->resource->duration_minutes) {
+            $details[] = "Duration: {$this->resource->duration_minutes} minutes";
         }
 
-        $payload = $this->payload ?? [];
+        $payload = $this->resource->payload ?? [];
 
         if (isset($payload['max_score'])) {
             $details[] = "Max Score: {$payload['max_score']}";
@@ -408,11 +411,11 @@ class ExamExampleQuestion extends Resource
         }
 
         if (isset($payload['partial_credit']) && $payload['partial_credit']) {
-            $details[] = "Partial credit available";
+            $details[] = 'Partial credit available';
         }
 
         if (isset($payload['case_sensitive']) && $payload['case_sensitive']) {
-            $details[] = "Case-sensitive answers";
+            $details[] = 'Case-sensitive answers';
         }
 
         return $details;
@@ -423,13 +426,13 @@ class ExamExampleQuestion extends Resource
      */
     private function buildQuestionBody(): ?string
     {
-        $payload = $this->payload ?? [];
+        $payload = $this->resource->payload ?? [];
         $html = '';
 
         // Handle different question types
-        if (in_array($this->type?->value, ['single_select', 'multi_select'], true)) {
+        if (in_array($this->resource->type?->value, ['single_select', 'multi_select'], true)) {
             $options = $payload['options'] ?? [];
-            if (!empty($options)) {
+            if (! empty($options)) {
                 $html .= '<div class="space-y-2 mt-4">';
                 foreach ($options as $idx => $option) {
                     $label = is_array($option) ? ($option['text'] ?? $option['label'] ?? '') : $option;
@@ -458,64 +461,66 @@ class ExamExampleQuestion extends Resource
         }
 
         // True/False, Yes/No/NG
-        if (in_array($this->type?->value, ['true_false', 'yes_no_ng'], true)) {
+        if (in_array($this->resource->type?->value, ['true_false', 'yes_no_ng'], true)) {
             $correctAnswer = $payload['correct_answer'] ?? null;
             if ($correctAnswer) {
                 $html .= '<div class="mt-4 p-3 bg-green-50 dark:bg-green-900/20 border border-green-300 dark:border-green-700 rounded">';
                 $html .= '<span class="text-green-600 dark:text-green-400 font-bold">✓ Correct Answer: </span>';
-                $html .= '<span class="text-gray-900 dark:text-gray-100">' . htmlspecialchars($correctAnswer) . '</span>';
+                $html .= '<span class="text-gray-900 dark:text-gray-100">'.htmlspecialchars($correctAnswer).'</span>';
                 $html .= '</div>';
             }
         }
 
-        return $html ?? $this->toHTML($this->payload) ?: null;
+        return $html !== '' ? $html : ($this->toHTML($this->resource->payload) ?: null);
     }
 
-    public function toHTML($data, $title = ''): string
+    public function toHTML(mixed $data, string $title = ''): string
     {
         $html = $title ? "<h2>{$this->escape($title)}</h2>" : '';
         $html .= '<div class="json-container">';
         $html .= $this->renderValue($data);
         $html .= '</div>';
-        
+
         return $html;
     }
-    
-    private function renderValue($value, $level = 0): string
+
+    private function renderValue(mixed $value, int $level = 0): string
     {
         $indent = str_repeat('  ', $level);
-        
+
         if (is_array($value) || is_object($value)) {
             return $this->renderObject($value, $level);
         }
-        
+
         return $this->renderScalar($value, $level);
     }
-    
-    private function renderObject($object, $level): string
+
+    private function renderObject(mixed $object, int $level): string
     {
         $indent = str_repeat('  ', $level);
         $html = "{$indent}<div class=\"json-object\">\n";
-        
+
         foreach ($object as $key => $value) {
             $html .= "{$indent}  <div class=\"json-property\">\n";
             $html .= "{$indent}    <strong class=\"json-key\">{$this->escape($key)}:</strong>\n";
             $html .= $this->renderValue($value, $level + 2);
             $html .= "{$indent}  </div>\n";
         }
-        
+
         $html .= "{$indent}</div>\n";
+
         return $html;
     }
-    
-    private function renderScalar($value, $level): string
+
+    private function renderScalar(mixed $value, int $level): string
     {
         $indent = str_repeat('  ', $level);
         $displayValue = $this->escape($value);
+
         return "{$indent}  <span class=\"json-value\">{$displayValue}</span>\n";
     }
-    
-    private function escape($value): string
+
+    private function escape(mixed $value): string
     {
         return htmlspecialchars($value ?? '', ENT_QUOTES, 'UTF-8');
     }

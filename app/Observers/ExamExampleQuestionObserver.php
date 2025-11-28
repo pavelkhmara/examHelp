@@ -21,13 +21,14 @@ class ExamExampleQuestionObserver
     public function created(ExamExampleQuestion $exampleQuestion): void
     {
         // Skip if no exam_category_id (shouldn't happen, but be safe)
-        if (!$exampleQuestion->exam_category_id) {
+        if (! $exampleQuestion->exam_category_id) {
             return;
         }
 
         // Get the exam through category
-        $category = $exampleQuestion->examCategory;
-        if (!$category || !$category->exam) {
+        $category = $exampleQuestion->category;
+        /** @phpstan-ignore-next-line */
+        if (! $category || ! $category->exam) {
             return;
         }
 

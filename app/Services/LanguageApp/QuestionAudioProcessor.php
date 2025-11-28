@@ -23,7 +23,7 @@ class QuestionAudioProcessor
     /**
      * Обрабатывает вопросы и генерирует аудио где необходимо
      *
-     * @param array<int, Question> $questions
+     * @param  array<int, Question>  $questions
      * @return array{processed: int, audio_generated: int, errors: int}
      */
     public function processQuestions(array $questions): array
@@ -69,7 +69,7 @@ class QuestionAudioProcessor
     public function processQuestion(Question $question): bool
     {
         // Проверяем нужно ли генерировать аудио для этого вопроса
-        if (!$this->shouldGenerateAudio($question)) {
+        if (! $this->shouldGenerateAudio($question)) {
             return false;
         }
 
@@ -79,17 +79,19 @@ class QuestionAudioProcessor
             Log::debug('[QuestionAudioProcessor] No text to speak', [
                 'question_id' => $question->question_id,
             ]);
+
             return false;
         }
 
         // Генерируем аудио
-        $filename = 'q_' . $question->question_id . '_' . time();
+        $filename = 'q_'.$question->question_id.'_'.time();
         $result = $this->tts->generateAudio($textToSpeak, $filename);
 
         if (empty($result['path']) || empty($result['url'])) {
             Log::warning('[QuestionAudioProcessor] Audio generation returned empty result', [
                 'question_id' => $question->question_id,
             ]);
+
             return false;
         }
 
@@ -138,18 +140,18 @@ class QuestionAudioProcessor
     protected function shouldGenerateAudio(Question $question): bool
     {
         // Если TTS отключен глобально
-        if (!config('ai.tts.enabled', false)) {
+        if (! config('ai.tts.enabled', false)) {
             return false;
         }
 
         // Если уже есть аудио файл
-        if (!empty($question->audio_file_path)) {
+        if (! empty($question->audio_file_path)) {
             return false;
         }
 
         // Если уже есть audio_url в instructions
         $instructions = $question->instructions ?? [];
-        if (!empty($instructions['audio_url'])) {
+        if (! empty($instructions['audio_url'])) {
             return false;
         }
 
@@ -165,10 +167,16 @@ class QuestionAudioProcessor
             return false;
         }
 
-        // WHITELIST: типы где НУЖНО генерировать аудио (пользователь слушает)
+        // ✅ SMART DETECTION: Все типы начинающиеся с 'listen_' требуют аудио (2025-11-26)
+        // Автоматически поддерживает: listen_mcq, listen_true_false, listen_yes_no_ng и любые новые listen_* типы
+        if (str_starts_with($question->type, 'listen_')) {
+            return true;
+        }
+
+        // WHITELIST: другие типы где НУЖНО генерировать аудио (пользователь слушает)
         $audioTypes = [
-            'listen_mcq',       // Listening comprehension - пользователь слушает и отвечает
             'dictation',        // Диктант - пользователь слушает и пишет
+            'note_completion',  // Заполнение заметок (может быть по аудио)
         ];
 
         if (in_array($question->type, $audioTypes, true)) {
@@ -198,19 +206,19 @@ class QuestionAudioProcessor
     {
         // Приоритет 1: stimulus.text_html (основной контент для озвучки)
         $stimulus = $question->stimulus ?? [];
-        if (!empty($stimulus['text_html'])) {
+        if (! empty($stimulus['text_html'])) {
             // Убираем HTML теги
             return strip_tags($stimulus['text_html']);
         }
 
         // Приоритет 2: instructions.full (инструкции)
         $instructions = $question->instructions ?? [];
-        if (!empty($instructions['full'])) {
+        if (! empty($instructions['full'])) {
             return $instructions['full'];
         }
 
         // Приоритет 3: instructions.brief
-        if (!empty($instructions['brief'])) {
+        if (! empty($instructions['brief'])) {
             return $instructions['brief'];
         }
 

@@ -3,9 +3,7 @@
 namespace App\Nova\Actions;
 
 use App\Models\GenerationTask;
-use App\Services\LanguageApp\ExamResearchService;
 use Illuminate\Bus\Queueable;
-use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Support\Collection;
 use Laravel\Nova\Actions\Action;
@@ -28,7 +26,6 @@ class GenerateExamplesAction extends Action
     /**
      * Determine if the action should be available for the given request.
      *
-     * @param  \Illuminate\Http\Request  $request
      * @return bool
      */
     public function authorizedToSee(\Illuminate\Http\Request $request)
@@ -42,21 +39,22 @@ class GenerateExamplesAction extends Action
 
         // Если есть resourceId - проверяем, что экзамен существует
         $exam = \App\Models\Exam::find($request->resourceId);
+
         return (bool) $exam;
     }
 
     /**
      * Determine if the user is authorized to run the action.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @return bool
      */
-    public function authorizedToRun(\Illuminate\Http\Request $request, $model)
+    public function authorizedToRun(\Illuminate\Http\Request $request, $model): bool
     {
         return true;
     }
 
-    public function handle(ActionFields $fields, Collection $models)
+    /**
+     * @param  Collection<int, \App\Models\Exam>  $models
+     */
+    public function handle(ActionFields $fields, Collection $models): mixed
     {
         /** @var \App\Models\Exam $exam */
         foreach ($models as $exam) {

@@ -1,0 +1,59 @@
+{
+    "exam_id": "a073d1c7-4869-486c-a62f-04df75f2ffdd",
+    "stage": "identity",
+    "label": "monitoring-baseline",
+    "hash": "87c6513eca720911d6ce0d751ca4c6c0530008b4058a687f949a89f017eb3e37",
+    "data": {
+        "stage": "identity",
+        "exam_id": "a073d1c7-4869-486c-a62f-04df75f2ffdd",
+        "identity_data": {
+            "hold": true,
+            "status": "certain",
+            "anchors": [
+                {
+                    "page": null,
+                    "snippet": "Q: Is this an official IELTS test (issued by British Council\/IDP\/Cambridge) or a custom\/practice listening task? A: IDP"
+                },
+                {
+                    "page": null,
+                    "snippet": "Q: Is the listening task from the Academic or General Training module? A: General Training"
+                }
+            ],
+            "canonical": {
+                "name": "IELTS General Training",
+                "family": "IELTS",
+                "variant": "General Training",
+                "provider": "IDP",
+                "language_of_test": "English"
+            },
+            "followups": [],
+            "candidates": [
+                {
+                    "name": "IELTS General Training",
+                    "score": 0.92,
+                    "family": "IELTS",
+                    "provider": "IDP"
+                }
+            ],
+            "confidence": 0.92,
+            "need_fields": [],
+            "clarification_data": [
+                "IDP",
+                "General Training",
+                null
+            ],
+            "clarification_notes": null,
+            "clarification_provided_at": "2025-11-26T21:40:12.454036Z",
+            "user_provided_clarification": true
+        },
+        "confidence": {
+            "overall": 0.92
+        }
+    },
+    "captured_at": "2025-11-27T10:33:58+00:00",
+    "metadata": {
+        "exam_title": "[MONITOR-REAL] IELTS Listening Test",
+        "exam_level": "B1",
+        "research_status": "completed"
+    }
+}

@@ -2,7 +2,6 @@
 
 namespace App\Nova\Actions;
 
-use App\Models\GenerationTask;
 use Illuminate\Bus\Queueable;
 use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Support\Collection;
@@ -23,19 +22,15 @@ class CancelStalledTaskAction extends Action
 
     public $uriKey = 'cancel-stalled-task';
 
-    /**
-     * Perform the action on the given models.
-     *
-     * @param  \Laravel\Nova\Fields\ActionFields  $fields
-     * @param  \Illuminate\Support\Collection  $models
-     * @return mixed
-     */
-    public function authorizedToRun(\Illuminate\Http\Request $request, $model)
+    public function authorizedToRun(\Illuminate\Http\Request $request, $model): bool
     {
         return true;
     }
 
-    public function handle(ActionFields $fields, Collection $models)
+    /**
+     * @param  Collection<int, \App\Models\Exam>  $models
+     */
+    public function handle(ActionFields $fields, Collection $models): mixed
     {
         $action = $fields->get('action');
 
@@ -51,7 +46,7 @@ class CancelStalledTaskAction extends Action
                 ->latest()
                 ->first();
 
-            if (!$stalledTask) {
+            if (! $stalledTask) {
                 return Action::danger('No stalled task found for this exam.');
             }
 
@@ -114,12 +109,13 @@ class CancelStalledTaskAction extends Action
 
             return Action::message('Stalled task cancelled successfully.');
         }
+
+        return Action::danger('No models provided.');
     }
 
     /**
      * Get the fields available on the action.
      *
-     * @param  \Laravel\Nova\Http\Requests\NovaRequest  $request
      * @return array
      */
     public function fields(NovaRequest $request)

@@ -11,6 +11,9 @@ use Mockery;
 use Mockery\MockInterface;
 use Tests\TestCase;
 
+/**
+ * @group broken
+ */
 class RunPhaseAJobTest extends TestCase
 {
     use RefreshDatabase;

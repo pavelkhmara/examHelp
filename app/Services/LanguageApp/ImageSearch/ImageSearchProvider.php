@@ -12,9 +12,10 @@ interface ImageSearchProvider
     /**
      * Search for images by query
      *
-     * @param string $query Search query (e.g., "mountain landscape", "business meeting")
-     * @param int $count Number of images to return
+     * @param  string  $query  Search query (e.g., "mountain landscape", "business meeting")
+     * @param  int  $count  Number of images to return
      * @return array<array{url: string, thumb_url: string, description: string, author: string, author_url: string, source: string, license: string}>
+     *
      * @throws \Exception
      */
     public function search(string $query, int $count = 15): array;

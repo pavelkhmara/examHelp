@@ -29,3 +29,17 @@ Route::get('/diagnostics-dashboard/compare/{genId}/{refId}', [\App\Http\Controll
     ->name('diagnostics.compare');
 Route::get('/diagnostics-dashboard/reference-exams', [\App\Http\Controllers\DiagnosticsDashboardController::class, 'referenceExams'])
     ->name('diagnostics.reference-exams');
+
+// Golden Stage Fixtures & Snapshots
+Route::get('/diagnostics-dashboard/golden-fixtures', [\App\Http\Controllers\DiagnosticsDashboardController::class, 'goldenFixtures'])
+    ->name('diagnostics.golden-fixtures');
+Route::get('/diagnostics-dashboard/golden-compare/{examId}/{fixtureId}', [\App\Http\Controllers\DiagnosticsDashboardController::class, 'goldenCompare'])
+    ->name('diagnostics.golden-compare');
+Route::get('/diagnostics-dashboard/golden-compare/{examId}/{fixtureId}/{stage}', [\App\Http\Controllers\DiagnosticsDashboardController::class, 'goldenCompareStage'])
+    ->name('diagnostics.golden-compare-stage');
+Route::post('/diagnostics-dashboard/snapshot/capture/{examId}', [\App\Http\Controllers\DiagnosticsDashboardController::class, 'snapshotCapture'])
+    ->name('diagnostics.snapshot-capture');
+Route::get('/diagnostics-dashboard/snapshot/list/{examId?}', [\App\Http\Controllers\DiagnosticsDashboardController::class, 'snapshotList'])
+    ->name('diagnostics.snapshot-list');
+Route::get('/diagnostics-dashboard/snapshot/compare/{examId}/{stage}', [\App\Http\Controllers\DiagnosticsDashboardController::class, 'snapshotCompare'])
+    ->name('diagnostics.snapshot-compare');

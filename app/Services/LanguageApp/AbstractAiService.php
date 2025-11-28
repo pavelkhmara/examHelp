@@ -62,6 +62,9 @@ abstract class AbstractAiService
         $promptClass = $opts['prompt_class'] ?? Prompts\PromptExamOverview::class;
         $promptArgs = $opts['prompt_args'] ?? [];
 
+        // Get confirmed identity from payload (if provided)
+        $confirmedIdentity = $payload['confirmed_identity'] ?? null;
+
         // Build prompt with provided args or default args
         $defaultArgs = [
             $examTitle,
@@ -69,10 +72,11 @@ abstract class AbstractAiService
             $contextNotes,
             $retryHint,
             $userInputParsed,
-            $filesHint
+            $filesHint,
+            $confirmedIdentity,
         ];
 
-        $buildArgs = !empty($promptArgs) ? $promptArgs : $defaultArgs;
+        $buildArgs = ! empty($promptArgs) ? $promptArgs : $defaultArgs;
         $prompt = $promptClass::build(...$buildArgs);
 
         // 3) Messages
@@ -110,7 +114,10 @@ abstract class AbstractAiService
         return $res;
     }
 
-    private function gatherWebHints($exam_info, int $limit = 5): string
+    /**
+     * @param  array<int|string, mixed>  $exam_info
+     */
+    private function gatherWebHints(array $exam_info, int $limit = 5): string
     {
         // СТАБ: здесь может быть ваш сервис web-поиска (SerpAPI, proxy и т.д.)
         // Пока просто возвращаем пустышку, чтобы не ломать протокол
@@ -289,8 +296,8 @@ abstract class AbstractAiService
     {
         try {
             // 1) Готовим имя файла
-            $slugRaw = $exam_slug ?? ($exam['slug'] ?? 'exam');   // подстрой под свой контекст
-            $levelRaw = $exam_level ?? ($exam['level'] ?? 'level'); // подстрой под свой контекст
+            $slugRaw = $examSlug;
+            $levelRaw = $examLevel;
 
             $slug = Str::slug((string) $slugRaw, '_');
             $level = Str::slug((string) $levelRaw, '_');

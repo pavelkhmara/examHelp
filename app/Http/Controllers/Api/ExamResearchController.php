@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Exam;
 use App\Models\ExamDocument;
 use App\Support\Queue\TaskDispatcher;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
@@ -15,7 +16,7 @@ use Illuminate\Validation\ValidationException;
 class ExamResearchController extends Controller
 {
     // Внедряем TaskDispatcher через DI, чтобы не дергать enqueue статически
-    public function research(Request $request, string $examId, TaskDispatcher $tasks)
+    public function research(Request $request, string $examId, TaskDispatcher $tasks): JsonResponse
     {
         /** @var Exam $exam */
         $exam = Exam::query()->findOrFail($examId);
@@ -116,29 +117,11 @@ class ExamResearchController extends Controller
             queue: null
         );
 
-        // НОРМАЛИЗУЕМ task_id к int (enqueue может вернуть int|array|Model)
-        $taskId = null;
-        if (is_int($enq)) {
-            $taskId = $enq;
-        } elseif (is_array($enq)) {
-            if (isset($enq['id']) && is_numeric($enq['id'])) {
-                $taskId = (int) $enq['id'];
-            } elseif (isset($enq['task_id']) && is_numeric($enq['task_id'])) {
-                $taskId = (int) $enq['task_id'];
-            } elseif (isset($enq['task']) && is_object($enq['task']) && isset($enq['task']->id)) {
-                $taskId = (int) $enq['task']->id;
-            }
-        } elseif (is_object($enq)) {
-            // Вдруг вернули модель GenerationTask
-            if (isset($enq->id)) {
-                $taskId = (int) $enq->id;
-            } elseif (method_exists($enq, 'getKey')) {
-                $taskId = (int) $enq->getKey();
-            }
-        }
+        // enqueue() returns GenerationTask model
+        $taskId = $enq->id;
 
         if (! is_int($taskId)) {
-            // Последний предсказуемый fallback: бросим валидационную ошибку, чтобы не отдавать мусор
+            // Safety check (should never happen since enqueue returns GenerationTask with int ID)
             throw ValidationException::withMessages([
                 'enqueue' => 'Не удалось определить идентификатор задачи.',
             ]);
@@ -152,7 +135,7 @@ class ExamResearchController extends Controller
      *
      * POST /api/exams/{examId}/research/{taskId}/confirm-identity
      */
-    public function confirmIdentity(Request $request, string $examId, int $taskId)
+    public function confirmIdentity(Request $request, string $examId, int $taskId): JsonResponse
     {
         /** @var Exam $exam */
         $exam = Exam::query()->findOrFail($examId);
@@ -169,7 +152,7 @@ class ExamResearchController extends Controller
         $result = $task->result ?? [];
         $identity = null;
 
-        if (isset($result['verification_attempts']) && !empty($result['verification_attempts'])) {
+        if (isset($result['verification_attempts']) && ! empty($result['verification_attempts'])) {
             $latestAttempt = end($result['verification_attempts']);
             $identity = $latestAttempt['identity_result'] ?? null;
         } else {
@@ -219,7 +202,7 @@ class ExamResearchController extends Controller
 
             // Update identity in verification_attempts structure
             $result = (array) ($task->result ?? []);
-            if (isset($result['verification_attempts']) && !empty($result['verification_attempts'])) {
+            if (isset($result['verification_attempts']) && ! empty($result['verification_attempts'])) {
                 $attemptIndex = count($result['verification_attempts']) - 1;
                 $result['verification_attempts'][$attemptIndex]['identity_result'] = $identity;
             } else {
@@ -278,7 +261,7 @@ class ExamResearchController extends Controller
 
             // Update identity in verification_attempts structure
             $result = (array) ($task->result ?? []);
-            if (isset($result['verification_attempts']) && !empty($result['verification_attempts'])) {
+            if (isset($result['verification_attempts']) && ! empty($result['verification_attempts'])) {
                 $attemptIndex = count($result['verification_attempts']) - 1;
                 $result['verification_attempts'][$attemptIndex]['identity_result'] = $identity;
             } else {
@@ -312,7 +295,7 @@ class ExamResearchController extends Controller
      *
      * POST /api/exams/{examId}/research/{taskId}/clarify
      */
-    public function clarify(Request $request, string $examId, int $taskId)
+    public function clarify(Request $request, string $examId, int $taskId): JsonResponse
     {
         \Illuminate\Support\Facades\Log::info('🔍 [CLARIFY STEP 1] Endpoint called', [
             'exam_id' => $examId,
@@ -395,9 +378,9 @@ class ExamResearchController extends Controller
                 $clarificationText = "=== Additional Information (User Answers) ===\n\n";
 
                 foreach ($validated['answers'] as $index => $answer) {
-                    if (isset($followups[$index]) && !empty(trim($answer))) {
+                    if (isset($followups[$index]) && ! empty(trim($answer))) {
                         $question = $followups[$index];
-                        $questionText = is_string($question) ? $question : ($question['q'] ?? 'Question ' . ($index + 1));
+                        $questionText = is_string($question) ? $question : ($question['q'] ?? 'Question '.($index + 1));
                         $clarificationText .= "Q: {$questionText}\n";
                         $clarificationText .= "A: {$answer}\n\n";
                     }
@@ -491,7 +474,7 @@ class ExamResearchController extends Controller
                 $identity['user_rejected_all'] = true;
                 $identity['rejected_at'] = now()->toISOString();
 
-                if (!empty($validated['notes'])) {
+                if (! empty($validated['notes'])) {
                     $identity['rejection_notes'] = $validated['notes'];
                 }
 
@@ -499,7 +482,7 @@ class ExamResearchController extends Controller
                 $result['identity'] = $identity;
                 $task->result = $result;
                 $task->status = 'failed';
-                $task->error = 'User rejected all exam variants - none match their exam. ' . ($validated['notes'] ?? '');
+                $task->error = 'User rejected all exam variants - none match their exam. '.($validated['notes'] ?? '');
                 $task->save();
 
                 // Add activity log
@@ -516,6 +499,12 @@ class ExamResearchController extends Controller
                     'message' => 'All variants rejected. Research cancelled.',
                     'task_id' => $task->id,
                 ]);
+
+            default:
+                return response()->json([
+                    'status' => 'error',
+                    'message' => 'Invalid clarification type',
+                ], 400);
         }
     }
 
@@ -524,7 +513,7 @@ class ExamResearchController extends Controller
      *
      * GET /api/exams/{examId}/pending-task
      */
-    public function getPendingTask(string $examId)
+    public function getPendingTask(string $examId): JsonResponse
     {
         \Illuminate\Support\Facades\Log::info('getPendingTask called', [
             'examId' => $examId,
@@ -545,6 +534,7 @@ class ExamResearchController extends Controller
 
             if (! $task) {
                 \Illuminate\Support\Facades\Log::info('No pending task found');
+
                 return response()->json([
                     'task' => null,
                     'needs_clarification' => false,
@@ -559,7 +549,7 @@ class ExamResearchController extends Controller
             // Normalize result structure for frontend compatibility
             // Frontend expects result.identity, but backend stores result.verification_attempts[0].identity_result
             $result = $task->result;
-            if (is_array($result) && isset($result['verification_attempts']) && is_array($result['verification_attempts']) && !empty($result['verification_attempts'])) {
+            if (is_array($result) && isset($result['verification_attempts']) && is_array($result['verification_attempts']) && ! empty($result['verification_attempts'])) {
                 // Extract identity from latest verification attempt
                 $latestAttempt = end($result['verification_attempts']);
                 if (isset($latestAttempt['identity_result'])) {

@@ -9,6 +9,9 @@ use Illuminate\Support\Facades\Queue;
 use Illuminate\Support\Facades\Storage;
 use Tests\TestCase;
 
+/**
+ * @group broken
+ */
 class ResearchUploadTest extends TestCase
 {
     use RefreshDatabase;

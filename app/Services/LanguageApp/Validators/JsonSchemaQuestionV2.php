@@ -26,7 +26,7 @@ final class JsonSchemaQuestionV2
         'matching', 'order_sentences', 'order_words', 'highlight_text',
         'short_answer', 'numeric', 'dictation',
         'writing_prompt', 'speaking_prompt',
-        'listen_mcq',
+        'listen_mcq', 'listen_true_false', 'listen_yes_no_ng', // Listening question types
         'translation', 'roleplay', 'note_completion',
     ];
 
@@ -89,6 +89,18 @@ final class JsonSchemaQuestionV2
             'typical_errors' => $typicalErrors,
             'ui_hints' => $uiHints,
             'accessibility' => $accessibility,
+
+            // ✅ FIX: Preserve pipeline metadata fields (FK Bug fix 2025-11-27)
+            // These fields are NOT in JSON schema but CRITICAL for pipeline flow:
+            // - group_id: QuestionGroup FK string for grouped questions
+            // - is_duplicate: Deduplication flag from QuestionDeduplicator
+            // - duplicate_of: Reference to original question if duplicate
+            // - similarity_score: Similarity metric for duplicate detection
+            // See: docs/bugs/fk-bug-final-resolution-2025-11-27.md
+            'group_id' => $data['group_id'] ?? null,
+            'is_duplicate' => $data['is_duplicate'] ?? false,
+            'duplicate_of' => $data['duplicate_of'] ?? null,
+            'similarity_score' => $data['similarity_score'] ?? 0.0,
         ];
     }
 
@@ -173,10 +185,12 @@ final class JsonSchemaQuestionV2
 
         return [
             'response_type' => $responseType,
+            'stem' => $interaction['stem'] ?? null,  // ✅ Add stem field
             'options' => $interaction['options'] ?? null,
             'pairs' => $interaction['pairs'] ?? null,
             'bank' => $interaction['bank'] ?? null,
             'spans' => $interaction['spans'] ?? null,
+            'input_type' => $interaction['input_type'] ?? null,  // ✅ Add input_type for text questions
         ];
     }
 

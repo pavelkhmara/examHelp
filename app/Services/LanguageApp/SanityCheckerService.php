@@ -368,6 +368,7 @@ class SanityCheckerService
         $sections = $examDocDraft['sections'] ?? [];
         if (empty($sections)) {
             $missing[] = 'No sections found in exam doc';
+
             return 0.5; // Neutral
         }
 
@@ -393,7 +394,7 @@ class SanityCheckerService
                 }
             }
 
-            if ($found && !$hasTiming) {
+            if ($found && ! $hasTiming) {
                 $fails[] = "Section '{$reqSection}' found but missing timing";
             }
         }
@@ -404,6 +405,7 @@ class SanityCheckerService
 
         // Score based on sections with timing / total expected
         $score = $foundWithTiming / $totalExpected;
+
         return $score;
     }
 

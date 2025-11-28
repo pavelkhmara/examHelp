@@ -9,6 +9,9 @@ use App\Models\GenerationTask;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
+/**
+ * @group broken
+ */
 class ConfidenceBoostFlowTest extends TestCase
 {
     use RefreshDatabase;

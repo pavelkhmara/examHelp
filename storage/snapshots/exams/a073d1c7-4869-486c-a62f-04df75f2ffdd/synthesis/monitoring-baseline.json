@@ -1,0 +1,236 @@
+{
+    "exam_id": "a073d1c7-4869-486c-a62f-04df75f2ffdd",
+    "stage": "synthesis",
+    "label": "monitoring-baseline",
+    "hash": "0f8877f08c5c023c9498abb41081e8bef95624b68abfab97888c1d523279c9c1",
+    "data": {
+        "stage": "synthesis",
+        "exam_id": "a073d1c7-4869-486c-a62f-04df75f2ffdd",
+        "sections": [
+            {
+                "key": 1069,
+                "skill": "listening",
+                "name": "Listening",
+                "question_groups": [
+                    {
+                        "group_id": "listening-part-1",
+                        "title": "Part 1",
+                        "order": 1,
+                        "questions": []
+                    },
+                    {
+                        "group_id": "listening-part-2",
+                        "title": "Part 2",
+                        "order": 2,
+                        "questions": []
+                    },
+                    {
+                        "group_id": "listening-part-3",
+                        "title": "Part 3",
+                        "order": 3,
+                        "questions": []
+                    },
+                    {
+                        "group_id": "listening-part-4",
+                        "title": "Part 4",
+                        "order": 4,
+                        "questions": []
+                    }
+                ],
+                "ungrouped_questions": [
+                    {
+                        "question_id": "sec-listening_q8",
+                        "type": "listen_mcq",
+                        "order": 7
+                    },
+                    {
+                        "question_id": "sec-listening_q9",
+                        "type": "listen_mcq",
+                        "order": 8
+                    },
+                    {
+                        "question_id": "sec-listening_q40",
+                        "type": "listen_yes_no_ng",
+                        "order": 9
+                    }
+                ]
+            },
+            {
+                "key": 1070,
+                "skill": "reading",
+                "name": "General Training Reading",
+                "question_groups": [
+                    {
+                        "group_id": "gt-reading-s1a",
+                        "title": "Section 1 - Notices and Timetables",
+                        "order": 1,
+                        "questions": []
+                    },
+                    {
+                        "group_id": "gt-reading-s1b",
+                        "title": "Section 1 - Community Announcement and Leaflet",
+                        "order": 2,
+                        "questions": []
+                    },
+                    {
+                        "group_id": "gt-reading-s2a",
+                        "title": "Section 2 - Workplace Handbook Extract",
+                        "order": 3,
+                        "questions": []
+                    },
+                    {
+                        "group_id": "gt-reading-s2b",
+                        "title": "Section 2 - Policy and Procedures",
+                        "order": 4,
+                        "questions": []
+                    },
+                    {
+                        "group_id": "gt-reading-s3",
+                        "title": "Section 3 - Long Passage: Feature Article",
+                        "order": 5,
+                        "questions": []
+                    }
+                ],
+                "ungrouped_questions": [
+                    {
+                        "question_id": "sec-reading-gt_rgt-q15",
+                        "type": "single_select",
+                        "order": 0
+                    },
+                    {
+                        "question_id": "sec-reading-gt_rgt-q7",
+                        "type": "single_select",
+                        "order": 0
+                    },
+                    {
+                        "question_id": "sec-reading-gt_rgt-q28",
+                        "type": "single_select",
+                        "order": 0
+                    },
+                    {
+                        "question_id": "sec-reading-gt_rgt-q22",
+                        "type": "single_select",
+                        "order": 0
+                    },
+                    {
+                        "question_id": "sec-reading-gt_rgt-q16",
+                        "type": "single_select",
+                        "order": 1
+                    },
+                    {
+                        "question_id": "sec-reading-gt_rgt-q29",
+                        "type": "single_select",
+                        "order": 1
+                    },
+                    {
+                        "question_id": "sec-reading-gt_rgt-q17",
+                        "type": "single_select",
+                        "order": 2
+                    },
+                    {
+                        "question_id": "sec-reading-gt_rgt-q30",
+                        "type": "single_select",
+                        "order": 2
+                    },
+                    {
+                        "question_id": "sec-reading-gt_rgt-q31",
+                        "type": "single_select",
+                        "order": 3
+                    },
+                    {
+                        "question_id": "sec-reading-gt_rgt-q32",
+                        "type": "single_select",
+                        "order": 4
+                    }
+                ]
+            },
+            {
+                "key": 1072,
+                "skill": "speaking",
+                "name": "Speaking",
+                "question_groups": [],
+                "ungrouped_questions": [
+                    {
+                        "question_id": "sec-speaking_q_sp_p1_personal_short_001",
+                        "type": "speaking_prompt",
+                        "order": 0
+                    },
+                    {
+                        "question_id": "sec-speaking_sp_p1_personal_short",
+                        "type": "speaking_prompt",
+                        "order": 0
+                    },
+                    {
+                        "question_id": "sec-speaking_sp_p3_roleplay_q1",
+                        "type": "roleplay",
+                        "order": 0
+                    },
+                    {
+                        "question_id": "sec-speaking_1072_speaking_prompt_1764233000_ehnm",
+                        "type": "speaking_prompt",
+                        "order": 0
+                    },
+                    {
+                        "question_id": "sec-speaking_1072_speaking_prompt_1764233001_4vyb",
+                        "type": "speaking_prompt",
+                        "order": 0
+                    },
+                    {
+                        "question_id": "sec-speaking_sp_p1_personal_short_001",
+                        "type": "speaking_prompt",
+                        "order": 1
+                    },
+                    {
+                        "question_id": "sec-speaking_1072_speaking_prompt_1764232956_ctkj",
+                        "type": "speaking_prompt",
+                        "order": 1
+                    },
+                    {
+                        "question_id": "sec-speaking_1072_speaking_prompt_1764233000_koc3",
+                        "type": "speaking_prompt",
+                        "order": 1
+                    },
+                    {
+                        "question_id": "sec-speaking_1072_speaking_prompt_1764233001_2ivc",
+                        "type": "speaking_prompt",
+                        "order": 1
+                    },
+                    {
+                        "question_id": "sec-speaking_sp_p1_personal_short_q1",
+                        "type": "speaking_prompt",
+                        "order": 2
+                    },
+                    {
+                        "question_id": "sec-speaking_1072_speaking_prompt_1764233045_f0uv",
+                        "type": "speaking_prompt",
+                        "order": 2
+                    }
+                ]
+            },
+            {
+                "key": 1071,
+                "skill": "writing",
+                "name": "General Training Writing",
+                "question_groups": [],
+                "ungrouped_questions": [
+                    {
+                        "question_id": "sec-writing-gt_gt_wr_letter_formal_v1_q1",
+                        "type": "writing_prompt",
+                        "order": 0
+                    },
+                    {
+                        "question_id": "sec-writing-gt_1071_writing_prompt_1764232853_vxkl",
+                        "type": "writing_prompt",
+                        "order": 0
+                    }
+                ]
+            }
+        ]
+    },
+    "captured_at": "2025-11-27T10:33:58+00:00",
+    "metadata": {
+        "exam_title": "[MONITOR-REAL] IELTS Listening Test",
+        "exam_level": "B1",
+        "research_status": "completed"
+    }
+}

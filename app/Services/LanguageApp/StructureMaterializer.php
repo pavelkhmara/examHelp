@@ -27,12 +27,11 @@ class StructureMaterializer
     /**
      * Materialize structure_v2 sections into database tables
      *
-     * @param Exam $exam
-     * @param array $sections Array of section data from structure_v2
-     * @param bool $createQuestionsInGroup If true, create Question records from question_groups
-     *                                     (for fixture imports with full question data)
-     *                                     If false (default), only create QuestionGroup structure
-     *                                     (for pipeline - synthesis will create Questions later)
+     * @param  array  $sections  Array of section data from structure_v2
+     * @param  bool  $createQuestionsInGroup  If true, create Question records from question_groups
+     *                                        (for fixture imports with full question data)
+     *                                        If false (default), only create QuestionGroup structure
+     *                                        (for pipeline - synthesis will create Questions later)
      * @return array Stats about created records
      */
     public function materialize(Exam $exam, array $sections, bool $createQuestionsInGroup = false): array
@@ -105,19 +104,20 @@ class StructureMaterializer
 
                     // Only create Question records if explicitly requested (fixture import)
                     // For pipeline flow, Questions are created by QuestionAttacher after synthesis
-                    if (!$createQuestionsInGroup) {
+                    if (! $createQuestionsInGroup) {
                         continue;
                     }
 
                     // Check if questions have actual content (not just placeholders)
                     $questions = $groupData['questions'] ?? [];
-                    $hasContent = !empty($questions) && $this->questionsHaveContent($questions);
+                    $hasContent = ! empty($questions) && $this->questionsHaveContent($questions);
 
-                    if (!$hasContent) {
+                    if (! $hasContent) {
                         Log::debug('[StructureMaterializer] Skipping question creation - no content', [
                             'group_id' => $group->group_id,
                             'questions_count' => count($questions),
                         ]);
+
                         continue;
                     }
 
@@ -167,9 +167,6 @@ class StructureMaterializer
 
     /**
      * Check if questions array contains actual content (not just type/id placeholders)
-     *
-     * @param array $questions
-     * @return bool
      */
     protected function questionsHaveContent(array $questions): bool
     {
@@ -181,22 +178,22 @@ class StructureMaterializer
         $first = $questions[0];
 
         // Questions with content have instructions, interaction, or stimulus with actual data
-        $hasInstructions = !empty($first['instructions']) && (
-            !empty($first['instructions']['text_html']) ||
-            !empty($first['instructions']['brief']) ||
-            !empty($first['instructions']['full'])
+        $hasInstructions = ! empty($first['instructions']) && (
+            ! empty($first['instructions']['text_html']) ||
+            ! empty($first['instructions']['brief']) ||
+            ! empty($first['instructions']['full'])
         );
 
-        $hasInteraction = !empty($first['interaction']) && (
-            !empty($first['interaction']['options']) ||
-            !empty($first['interaction']['pairs']) ||
-            !empty($first['interaction']['spans'])
+        $hasInteraction = ! empty($first['interaction']) && (
+            ! empty($first['interaction']['options']) ||
+            ! empty($first['interaction']['pairs']) ||
+            ! empty($first['interaction']['spans'])
         );
 
-        $hasStimulus = !empty($first['stimulus']) && (
-            !empty($first['stimulus']['text_html']) ||
-            !empty($first['stimulus']['audio']) ||
-            !empty($first['stimulus']['images'])
+        $hasStimulus = ! empty($first['stimulus']) && (
+            ! empty($first['stimulus']['text_html']) ||
+            ! empty($first['stimulus']['audio']) ||
+            ! empty($first['stimulus']['images'])
         );
 
         return $hasInstructions || $hasInteraction || $hasStimulus;

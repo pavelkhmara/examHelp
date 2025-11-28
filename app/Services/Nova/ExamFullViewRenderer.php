@@ -117,17 +117,17 @@ class ExamFullViewRenderer
         $html .= '<h2 style="margin: 0 0 8px; font-size: 22px; font-weight: 600; color: #111827;">';
         $html .= htmlspecialchars($sectionTitle);
         $html .= '</h2>';
-        
+
         // Section metadata
         $html .= '<div style="display: flex; flex-wrap: wrap; gap: 8px;">';
         if ($skill) {
             $html .= $this->renderBadge($skill, 'skill');
         }
         if (isset($sectionData['duration_min'])) {
-            $html .= $this->renderBadge($sectionData['duration_min'] . ' min', 'time');
+            $html .= $this->renderBadge($sectionData['duration_min'].' min', 'time');
         }
         if (isset($sectionData['max_score'])) {
-            $html .= $this->renderBadge('Max: ' . $sectionData['max_score'] . ' pts', 'score');
+            $html .= $this->renderBadge('Max: '.$sectionData['max_score'].' pts', 'score');
         }
         $html .= '</div>';
         $html .= '</div>'; // close flex container
@@ -183,7 +183,7 @@ class ExamFullViewRenderer
         } elseif ($assemblyMode === 'pool') {
             $html .= $this->renderPoolQuestions($sectionData, $questions, $dataSource);
         } else {
-            $html .= $this->renderEmptyState('Неизвестный assembly mode: ' . $assemblyMode);
+            $html .= $this->renderEmptyState('Неизвестный assembly mode: '.$assemblyMode);
         }
 
         return $html;
@@ -191,8 +191,10 @@ class ExamFullViewRenderer
 
     /**
      * Render assembly mode explanation
+     *
+     * @param  mixed  $questions  Collection of Question or ExamExampleQuestion
      */
-    private function renderAssemblyModeExplanation(string $assemblyMode, array $sectionData, ?string $dataSource, $questions): string
+    private function renderAssemblyModeExplanation(string $assemblyMode, array $sectionData, ?string $dataSource, mixed $questions): string
     {
         $expectedCount = $sectionData['expected_question_count']['target'] ?? null;
         $questionsCount = $questions->count();
@@ -217,8 +219,8 @@ class ExamFullViewRenderer
 
             if ($expectedCount && $questionsCount > 0) {
                 $html .= '<p style="margin: 0; font-size: 14px; color: #78350f; line-height: 1.5;">';
-                $html .= '📊 <strong>Источник данных:</strong> ' . $questionsCount . ' ' . $sourceLabel . '<br>';
-                $html .= '🎯 <strong>Генерация:</strong> Из пула будет выбрано <strong>' . $expectedCount . ' ' . $this->pluralize($expectedCount, 'задание', 'задания', 'заданий') . '</strong> случайным образом';
+                $html .= '📊 <strong>Источник данных:</strong> '.$questionsCount.' '.$sourceLabel.'<br>';
+                $html .= '🎯 <strong>Генерация:</strong> Из пула будет выбрано <strong>'.$expectedCount.' '.$this->pluralize($expectedCount, 'задание', 'задания', 'заданий').'</strong> случайным образом';
                 $html .= '</p>';
             }
 
@@ -243,8 +245,8 @@ class ExamFullViewRenderer
 
             if ($expectedCount && $questionsCount > 0) {
                 $html .= '<p style="margin: 0; font-size: 14px; color: #1e3a8a; line-height: 1.5;">';
-                $html .= '📊 <strong>Источник данных:</strong> ' . $questionsCount . ' ' . $sourceLabel . '<br>';
-                $html .= '🎯 <strong>Генерация:</strong> По чертежу (' . $slotsCount . ' ' . $this->pluralize($slotsCount, 'слот', 'слота', 'слотов') . ') будет сгенерировано <strong>' . $expectedCount . ' ' . $this->pluralize($expectedCount, 'задание', 'задания', 'заданий') . '</strong>';
+                $html .= '📊 <strong>Источник данных:</strong> '.$questionsCount.' '.$sourceLabel.'<br>';
+                $html .= '🎯 <strong>Генерация:</strong> По чертежу ('.$slotsCount.' '.$this->pluralize($slotsCount, 'слот', 'слота', 'слотов').') будет сгенерировано <strong>'.$expectedCount.' '.$this->pluralize($expectedCount, 'задание', 'задания', 'заданий').'</strong>';
                 $html .= '</p>';
             }
 
@@ -267,7 +269,7 @@ class ExamFullViewRenderer
 
             if ($questionsCount > 0) {
                 $html .= '<p style="margin: 0; font-size: 14px; color: #064e3b; line-height: 1.5;">';
-                $html .= '📊 <strong>Источник данных:</strong> ' . $questionsCount . ' ' . $sourceLabel . '<br>';
+                $html .= '📊 <strong>Источник данных:</strong> '.$questionsCount.' '.$sourceLabel.'<br>';
                 $html .= '🎯 <strong>Генерация:</strong> Каждое задание генерируется индивидуально с уникальным контентом';
                 $html .= '</p>';
             }
@@ -283,8 +285,10 @@ class ExamFullViewRenderer
     /**
      * Render inline questions (all questions from section)
      * Supports both grouped (question_groups) and ungrouped questions
+     *
+     * @param  mixed  $questions  Collection of Question or ExamExampleQuestion
      */
-    private function renderInlineQuestions($questions, ?string $dataSource): string
+    private function renderInlineQuestions(mixed $questions, ?string $dataSource): string
     {
         if ($questions->isEmpty()) {
             return $this->renderEmptyState('Нет вопросов для отображения');
@@ -301,6 +305,7 @@ class ExamFullViewRenderer
                 return 0; // Ungrouped questions first
             }
             $questionGroup = $groupQuestions->first()->questionGroup;
+
             return $questionGroup ? $questionGroup->order : 999;
         })->all(); // Convert to array to maintain sort order
 
@@ -334,8 +339,10 @@ class ExamFullViewRenderer
 
     /**
      * Render a question group with shared stimulus and playback controls
+     *
+     * @param  mixed  $questions  Collection of Question or ExamExampleQuestion
      */
-    private function renderQuestionGroup(QuestionGroup $questionGroup, $questions, int $startNumber, ?string $dataSource): string
+    private function renderQuestionGroup(QuestionGroup $questionGroup, mixed $questions, int $startNumber, ?string $dataSource): string
     {
         $metadata = $questionGroup->metadata ?? [];
         $isChoiceSet = $metadata['is_choice_set'] ?? false;
@@ -344,7 +351,7 @@ class ExamFullViewRenderer
         $borderColor = $isChoiceSet ? '#8b5cf6' : '#e5e7eb';
         $bgColor = $isChoiceSet ? '#faf5ff' : '#ffffff';
 
-        $html = '<div class="question-group" data-group-id="' . htmlspecialchars($questionGroup->group_id) . '" style="background: ' . $bgColor . '; border-radius: 12px; padding: 24px; margin-bottom: 24px; box-shadow: 0 10px 25px rgba(0, 0, 0, 0.06); border: 2px solid ' . $borderColor . ';">';
+        $html = '<div class="question-group" data-group-id="'.htmlspecialchars($questionGroup->group_id).'" style="background: '.$bgColor.'; border-radius: 12px; padding: 24px; margin-bottom: 24px; box-shadow: 0 10px 25px rgba(0, 0, 0, 0.06); border: 2px solid '.$borderColor.';">';
 
         // Choice set indicator
         if ($isChoiceSet) {
@@ -352,24 +359,24 @@ class ExamFullViewRenderer
         }
 
         // Group header
-        $html .= '<div class="question-group-header" style="border-bottom: 2px solid ' . $borderColor . '; padding-bottom: 16px; margin-bottom: 20px;">';
+        $html .= '<div class="question-group-header" style="border-bottom: 2px solid '.$borderColor.'; padding-bottom: 16px; margin-bottom: 20px;">';
         $html .= '<h3 style="margin: 0 0 8px; font-size: 20px; font-weight: 600; color: #111827;">';
         $html .= htmlspecialchars($questionGroup->title);
         $html .= '</h3>';
 
         // Group metadata
         $html .= '<div style="display: flex; flex-wrap: wrap; gap: 8px;">';
-        $html .= $this->renderBadge($questions->count() . ' ' . $this->pluralize($questions->count(), 'задание', 'задания', 'заданий'), 'score');
+        $html .= $this->renderBadge($questions->count().' '.$this->pluralize($questions->count(), 'задание', 'задания', 'заданий'), 'score');
 
         if (isset($metadata['total_points'])) {
-            $html .= $this->renderBadge($metadata['total_points'] . ' pts', 'score');
+            $html .= $this->renderBadge($metadata['total_points'].' pts', 'score');
         }
         if (isset($metadata['word_limit'])) {
-            $html .= $this->renderBadge($metadata['word_limit'] . ' słów', 'time');
+            $html .= $this->renderBadge($metadata['word_limit'].' słów', 'time');
         }
         if (isset($metadata['suggested_time_sec'])) {
             $minutes = ceil($metadata['suggested_time_sec'] / 60);
-            $html .= $this->renderBadge($minutes . ' мин', 'time');
+            $html .= $this->renderBadge($minutes.' мин', 'time');
         }
         $html .= '</div>';
         $html .= '</div>';
@@ -379,7 +386,7 @@ class ExamFullViewRenderer
         if (isset($instructions['brief'])) {
             $html .= '<div style="background: #fef3c7; border-left: 4px solid #f59e0b; padding: 12px; border-radius: 4px; margin-bottom: 16px;">';
             $html .= '<p style="margin: 0; font-size: 14px; color: #92400e; font-weight: 500;">';
-            $html .= '📋 ' . $instructions['brief'];
+            $html .= '📋 '.$instructions['brief'];
             $html .= '</p>';
             $html .= '</div>';
         }
@@ -411,12 +418,12 @@ class ExamFullViewRenderer
         $stimulus = $questionGroup->stimulus ?? [];
 
         // Audio with playback controls
-        if (!empty($stimulus['audio'])) {
+        if (! empty($stimulus['audio'])) {
             $html .= $this->renderGroupAudio($questionGroup, $stimulus['audio']);
         }
 
         // Text (with gap replacement for fill-in-blank questions)
-        if (!empty($stimulus['text_html'])) {
+        if (! empty($stimulus['text_html'])) {
             $textHtml = $stimulus['text_html'];
 
             // Replace ______ (underscores) or [__X__] with input fields
@@ -439,15 +446,15 @@ class ExamFullViewRenderer
         }
 
         // Options table (for matching questions like Zadanie III)
-        if (!empty($stimulus['options_html'])) {
+        if (! empty($stimulus['options_html'])) {
             $html .= '<div style="margin-bottom: 12px; padding: 12px; background: #fef3c7; border-radius: 4px; border: 1px solid #f59e0b;">';
             $html .= '<div style="font-size: 14px; font-weight: 600; color: #92400e; margin-bottom: 8px;">Варианты ответов:</div>';
-            $html .= '<div style="font-size: 14px; color: #78350f;">' . $stimulus['options_html'] . '</div>';
+            $html .= '<div style="font-size: 14px; color: #78350f;">'.$stimulus['options_html'].'</div>';
             $html .= '</div>';
         }
 
         // Images (with labels A, B, C... for matching questions)
-        if (!empty($stimulus['images']) && is_array($stimulus['images'])) {
+        if (! empty($stimulus['images']) && is_array($stimulus['images'])) {
             $html .= '<div style="margin-bottom: 12px; display: flex; flex-wrap: wrap; gap: 12px;">';
             $labelIndex = 0;
             foreach ($stimulus['images'] as $image) {
@@ -455,8 +462,8 @@ class ExamFullViewRenderer
                 $label = chr(65 + $labelIndex); // A, B, C, D...
                 if ($imageUrl) {
                     $html .= '<div style="text-align: center; flex: 0 0 auto; max-width: 300px;">';
-                    $html .= '<div style="font-weight: 700; font-size: 18px; color: #1e40af; margin-bottom: 4px; background: #dbeafe; padding: 4px 12px; border-radius: 4px; display: inline-block;">' . $label . '</div>';
-                    $html .= '<img src="' . htmlspecialchars($imageUrl) . '" alt="' . $label . '" style="max-width: 100%; border-radius: 8px; border: 2px solid #e5e7eb;">';
+                    $html .= '<div style="font-weight: 700; font-size: 18px; color: #1e40af; margin-bottom: 4px; background: #dbeafe; padding: 4px 12px; border-radius: 4px; display: inline-block;">'.$label.'</div>';
+                    $html .= '<img src="'.htmlspecialchars($imageUrl).'" alt="'.$label.'" style="max-width: 100%; border-radius: 8px; border: 2px solid #e5e7eb;">';
                     $html .= '</div>';
                 }
                 $labelIndex++;
@@ -465,13 +472,13 @@ class ExamFullViewRenderer
         }
 
         // Video
-        if (!empty($stimulus['video']) && is_array($stimulus['video'])) {
+        if (! empty($stimulus['video']) && is_array($stimulus['video'])) {
             $html .= '<div style="margin-bottom: 12px;">';
             foreach ($stimulus['video'] as $video) {
                 $videoUrl = is_string($video) ? $video : ($video['url'] ?? '');
                 if ($videoUrl) {
                     $html .= '<video controls style="width: 100%; border-radius: 8px; margin-bottom: 8px;">';
-                    $html .= '<source src="' . htmlspecialchars($videoUrl) . '" type="video/mp4">';
+                    $html .= '<source src="'.htmlspecialchars($videoUrl).'" type="video/mp4">';
                     $html .= '</video>';
                 }
             }
@@ -493,18 +500,18 @@ class ExamFullViewRenderer
         $enforcement = $playbackSettings['enforcement'] ?? 'none';
         $showCounter = $playbackSettings['show_counter'] ?? true;
 
-        $uniqueId = 'audio-' . uniqid();
+        $uniqueId = 'audio-'.uniqid();
 
-        $html = '<div class="audio-player-container" id="' . $uniqueId . '" ';
-        $html .= 'data-max-plays="' . ($maxPlays ?? 'unlimited') . '" ';
-        $html .= 'data-enforcement="' . htmlspecialchars($enforcement) . '" ';
-        $html .= 'data-show-counter="' . ($showCounter ? 'true' : 'false') . '" ';
+        $html = '<div class="audio-player-container" id="'.$uniqueId.'" ';
+        $html .= 'data-max-plays="'.($maxPlays ?? 'unlimited').'" ';
+        $html .= 'data-enforcement="'.htmlspecialchars($enforcement).'" ';
+        $html .= 'data-show-counter="'.($showCounter ? 'true' : 'false').'" ';
         $html .= 'style="margin-bottom: 16px; padding: 16px; background: #f0fdf4; border: 2px solid #10b981; border-radius: 8px;">';
 
         // Playback counter
-        if ($showCounter && !is_null($maxPlays)) {
+        if ($showCounter && ! is_null($maxPlays)) {
             $html .= '<div class="playback-counter" style="margin-bottom: 12px; font-size: 14px; font-weight: 600; color: #065f46;">';
-            $html .= '🎧 Осталось прослушиваний: <span class="plays-left">' . $maxPlays . '</span>';
+            $html .= '🎧 Осталось прослушиваний: <span class="plays-left">'.$maxPlays.'</span>';
             $html .= '</div>';
         }
 
@@ -513,25 +520,25 @@ class ExamFullViewRenderer
             $url = is_string($audioUrl) ? $audioUrl : ($audioUrl['url'] ?? '');
             if ($url) {
                 $html .= '<audio controls class="question-group-audio" style="width: 100%; margin-bottom: 8px;">';
-                $html .= '<source src="' . htmlspecialchars($url) . '" type="audio/mpeg">';
+                $html .= '<source src="'.htmlspecialchars($url).'" type="audio/mpeg">';
                 $html .= 'Ваш браузер не поддерживает аудио.';
                 $html .= '</audio>';
             }
         }
 
         // Enforcement info
-        if (!is_null($maxPlays)) {
+        if (! is_null($maxPlays)) {
             if ($enforcement === 'strict') {
-                $html .= '<p style="margin: 8px 0 0; font-size: 13px; color: #dc2626; font-weight: 500;">🔒 Строгий контроль: после ' . $maxPlays . ' прослушивания(й) аудио будет заблокировано</p>';
+                $html .= '<p style="margin: 8px 0 0; font-size: 13px; color: #dc2626; font-weight: 500;">🔒 Строгий контроль: после '.$maxPlays.' прослушивания(й) аудио будет заблокировано</p>';
             } elseif ($enforcement === 'advisory') {
-                $html .= '<p style="margin: 8px 0 0; font-size: 13px; color: #f59e0b; font-weight: 500;">⚠️ Рекомендация: рекомендуется прослушать не более ' . $maxPlays . ' раз(а)</p>';
+                $html .= '<p style="margin: 8px 0 0; font-size: 13px; color: #f59e0b; font-weight: 500;">⚠️ Рекомендация: рекомендуется прослушать не более '.$maxPlays.' раз(а)</p>';
             } else {
-                $html .= '<p style="margin: 8px 0 0; font-size: 13px; color: #6b7280;">ℹ️ Указано максимум: ' . $maxPlays . ' прослушивания(й)</p>';
+                $html .= '<p style="margin: 8px 0 0; font-size: 13px; color: #6b7280;">ℹ️ Указано максимум: '.$maxPlays.' прослушивания(й)</p>';
             }
         }
 
         // JavaScript для контроля воспроизведения
-        if (!is_null($maxPlays) && $enforcement === 'strict') {
+        if (! is_null($maxPlays) && $enforcement === 'strict') {
             $html .= '<script>';
             $html .= $this->getPlaybackControlScript($uniqueId, $maxPlays);
             $html .= '</script>';
@@ -608,11 +615,11 @@ JS;
         // Column I content
         $col1 = $parts[0] ?? '';
         $col1 = preg_replace('/<p><strong>Kolumna\s+I[^<]*<\/strong><\/p>/i', '', $col1);
-        $html .= '<td style="vertical-align: top; padding: 12px; border: 1px solid #d1d5db; line-height: 1.6;">' . trim($col1) . '</td>';
+        $html .= '<td style="vertical-align: top; padding: 12px; border: 1px solid #d1d5db; line-height: 1.6;">'.trim($col1).'</td>';
 
         // Column II content
         $col2 = isset($parts[2]) ? $parts[2] : '';
-        $html .= '<td style="vertical-align: top; padding: 12px; border: 1px solid #d1d5db; line-height: 1.6;">' . trim($col2) . '</td>';
+        $html .= '<td style="vertical-align: top; padding: 12px; border: 1px solid #d1d5db; line-height: 1.6;">'.trim($col2).'</td>';
 
         $html .= '</tr></tbody></table>';
         $html .= '</div>';
@@ -625,19 +632,19 @@ JS;
      */
     private function renderGroupedQuestion(Question $question, int $number, ?string $dataSource): string
     {
-        $html = '<div class="grouped-question" data-question-id="' . htmlspecialchars($question->question_id) . '" style="background: #f9fafb; border-radius: 8px; padding: 16px; margin-bottom: 12px; border: 1px solid #e5e7eb;">';
+        $html = '<div class="grouped-question" data-question-id="'.htmlspecialchars($question->question_id).'" style="background: #f9fafb; border-radius: 8px; padding: 16px; margin-bottom: 12px; border: 1px solid #e5e7eb;">';
 
         // Question number
         $html .= '<div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">';
         $html .= '<h4 style="margin: 0; font-size: 16px; font-weight: 600; color: #111827;">';
-        $html .= $number . '.';
+        $html .= $number.'.';
         $html .= '</h4>';
         $html .= $this->renderBadge($question->type, 'type');
         $html .= '</div>';
 
         // Question stimulus (individual text for this question)
         $stimulus = $question->stimulus ?? [];
-        if (!empty($stimulus['text_html'])) {
+        if (! empty($stimulus['text_html'])) {
             $html .= '<div style="background: #f0f9ff; border-left: 3px solid #3b82f6; padding: 10px 12px; margin-bottom: 10px; border-radius: 4px; font-size: 14px; color: #1e40af; line-height: 1.5;">';
             $html .= $stimulus['text_html'];
             $html .= '</div>';
@@ -668,7 +675,7 @@ JS;
         if (isset($instructions['brief'])) {
             $html .= '<div style="background: #fef3c7; border-left: 4px solid #f59e0b; padding: 12px; border-radius: 4px; margin-bottom: 12px;">';
             $html .= '<p style="margin: 0; font-size: 14px; color: #92400e; font-weight: 500;">';
-            $html .= '📋 ' . $instructions['brief'];
+            $html .= '📋 '.$instructions['brief'];
             $html .= '</p>';
             $html .= '</div>';
         }
@@ -686,8 +693,10 @@ JS;
 
     /**
      * Render blueprint questions (templates with expected count)
+     *
+     * @param  mixed  $questions  Collection of Question or ExamExampleQuestion
      */
-    private function renderBlueprintQuestions(array $sectionData, $questions, ?string $dataSource): string
+    private function renderBlueprintQuestions(array $sectionData, mixed $questions, ?string $dataSource): string
     {
         // Show all available templates/questions
         if ($questions->isEmpty()) {
@@ -707,8 +716,10 @@ JS;
 
     /**
      * Render pool questions (show all from pool with selection indicator)
+     *
+     * @param  mixed  $questions  Collection of Question or ExamExampleQuestion
      */
-    private function renderPoolQuestions(array $sectionData, $questions, ?string $dataSource): string
+    private function renderPoolQuestions(array $sectionData, mixed $questions, ?string $dataSource): string
     {
         // Show all pool questions
         if ($questions->isEmpty()) {
@@ -729,7 +740,7 @@ JS;
     /**
      * Render a single question (Question or ExamExampleQuestion)
      */
-    private function renderQuestion($question, int $number, ?string $dataSource, bool $isTemplate = false): string
+    private function renderQuestion(Question|ExamExampleQuestion $question, int $number, ?string $dataSource, bool $isTemplate = false): string
     {
         // Determine if it's a generated Question or ExamExampleQuestion
         $isGenerated = $question instanceof Question;
@@ -739,7 +750,7 @@ JS;
         // Question number and type
         $html .= '<div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">';
         $html .= '<h3 style="margin: 0; font-size: 18px; font-weight: 600; color: #111827;">';
-        $html .= 'Задание ' . $number;
+        $html .= 'Задание '.$number;
         if ($isTemplate) {
             $html .= ' <span style="font-size: 12px; color: #6b7280;">(шаблон)</span>';
         }
@@ -773,7 +784,7 @@ JS;
         if (isset($instructions['brief'])) {
             $html .= '<div style="background: #fef3c7; border-left: 4px solid #f59e0b; padding: 12px; border-radius: 4px; margin-bottom: 12px;">';
             $html .= '<p style="margin: 0; font-size: 14px; color: #92400e; font-weight: 500;">';
-            $html .= '📋 ' . $instructions['brief'];
+            $html .= '📋 '.$instructions['brief'];
             $html .= '</p>';
             $html .= '</div>';
         }
@@ -789,25 +800,25 @@ JS;
         }
 
         // Images
-        if (isset($stimulus['images']) && is_array($stimulus['images']) && !empty($stimulus['images'])) {
+        if (isset($stimulus['images']) && is_array($stimulus['images']) && ! empty($stimulus['images'])) {
             $html .= '<div style="margin-bottom: 12px;">';
             foreach ($stimulus['images'] as $image) {
                 $imageUrl = is_string($image) ? $image : ($image['url'] ?? '');
                 if ($imageUrl) {
-                    $html .= '<img src="' . htmlspecialchars($imageUrl) . '" alt="Question image" style="max-width: 100%; border-radius: 8px; margin-bottom: 8px;">';
+                    $html .= '<img src="'.htmlspecialchars($imageUrl).'" alt="Question image" style="max-width: 100%; border-radius: 8px; margin-bottom: 8px;">';
                 }
             }
             $html .= '</div>';
         }
 
         // Audio
-        if (isset($stimulus['audio']) && is_array($stimulus['audio']) && !empty($stimulus['audio'])) {
+        if (isset($stimulus['audio']) && is_array($stimulus['audio']) && ! empty($stimulus['audio'])) {
             $html .= '<div style="margin-bottom: 12px;">';
             foreach ($stimulus['audio'] as $audio) {
                 $audioUrl = is_string($audio) ? $audio : ($audio['url'] ?? '');
                 if ($audioUrl) {
                     $html .= '<audio controls style="width: 100%; margin-bottom: 8px;">';
-                    $html .= '<source src="' . htmlspecialchars($audioUrl) . '" type="audio/mpeg">';
+                    $html .= '<source src="'.htmlspecialchars($audioUrl).'" type="audio/mpeg">';
                     $html .= '</audio>';
                 }
             }
@@ -834,7 +845,7 @@ JS;
         if ($question->instructions) {
             $html .= '<div style="background: #fef3c7; border-left: 4px solid #f59e0b; padding: 12px; border-radius: 4px; margin-bottom: 12px;">';
             $html .= '<p style="margin: 0; font-size: 14px; color: #92400e; font-weight: 500;">';
-            $html .= '📋 ' . $question->instructions;
+            $html .= '📋 '.$question->instructions;
             $html .= '</p>';
             $html .= '</div>';
         }
@@ -855,7 +866,7 @@ JS;
         if ($question->assessment_guide) {
             $html .= '<div style="background: #ecfdf5; border-left: 4px solid #10b981; padding: 12px; border-radius: 4px; margin-top: 12px;">';
             $html .= '<p style="margin: 0; font-size: 13px; color: #065f46; font-weight: 500;">';
-            $html .= '✅ ' . $question->assessment_guide;
+            $html .= '✅ '.$question->assessment_guide;
             $html .= '</p>';
             $html .= '</div>';
         }
@@ -876,9 +887,9 @@ JS;
 
         // Handle selection-based questions (by response_type OR by question type with options)
         $isSelectionType = in_array($responseType, ['selection'], true)
-            || (in_array($question->type, ['single_select', 'multi_select', 'true_false'], true) && !empty($options));
+            || (in_array($question->type, ['single_select', 'multi_select', 'true_false'], true) && ! empty($options));
 
-        if ($isSelectionType && !empty($options)) {
+        if ($isSelectionType && ! empty($options)) {
             $html .= '<div style="margin-top: 12px;">';
             $html .= '<ol style="list-style: none; padding: 0; margin: 0;">';
 
@@ -892,11 +903,11 @@ JS;
                 $bgColor = $isCorrect ? '#ecfdf5' : '#ffffff';
                 $borderColor = $isCorrect ? '#10b981' : '#e5e7eb';
 
-                $html .= '<li style="margin-bottom: 8px; padding: 10px 12px; background: ' . $bgColor . '; border: 1px solid ' . $borderColor . '; border-radius: 6px;">';
+                $html .= '<li style="margin-bottom: 8px; padding: 10px 12px; background: '.$bgColor.'; border: 1px solid '.$borderColor.'; border-radius: 6px;">';
                 if ($isCorrect) {
                     $html .= '<span style="color: #10b981; font-weight: bold; margin-right: 8px;">✓</span>';
                 }
-                $html .= '<span style="color: #374151;">' . htmlspecialchars($label) . '</span>';
+                $html .= '<span style="color: #374151;">'.htmlspecialchars($label).'</span>';
                 $html .= '</li>';
             }
 
@@ -920,7 +931,7 @@ JS;
         // Handle selection-based questions
         if (in_array($type, ['single_select', 'multi_select'], true)) {
             $options = $payload['options'] ?? [];
-            if (!empty($options)) {
+            if (! empty($options)) {
                 $html .= '<div style="margin-top: 12px;">';
                 $html .= '<ol style="list-style: none; padding: 0; margin: 0;">';
 
@@ -941,11 +952,11 @@ JS;
                     $bgColor = $isCorrect ? '#ecfdf5' : '#ffffff';
                     $borderColor = $isCorrect ? '#10b981' : '#e5e7eb';
 
-                    $html .= '<li style="margin-bottom: 8px; padding: 10px 12px; background: ' . $bgColor . '; border: 1px solid ' . $borderColor . '; border-radius: 6px;">';
+                    $html .= '<li style="margin-bottom: 8px; padding: 10px 12px; background: '.$bgColor.'; border: 1px solid '.$borderColor.'; border-radius: 6px;">';
                     if ($isCorrect) {
                         $html .= '<span style="color: #10b981; font-weight: bold; margin-right: 8px;">✓</span>';
                     }
-                    $html .= '<span style="color: #374151;">' . htmlspecialchars($label) . '</span>';
+                    $html .= '<span style="color: #374151;">'.htmlspecialchars($label).'</span>';
                     $html .= '</li>';
                 }
 
@@ -969,22 +980,22 @@ JS;
 
         if ($question->time_limit_sec) {
             $minutes = ceil($question->time_limit_sec / 60);
-            $items[] = '⏱ ' . $minutes . ' мин';
+            $items[] = '⏱ '.$minutes.' мин';
         }
 
         $scoring = $question->scoring ?? [];
         if (isset($scoring['max_score'])) {
-            $items[] = '📊 Max: ' . $scoring['max_score'] . ' pts';
+            $items[] = '📊 Max: '.$scoring['max_score'].' pts';
         }
 
         if (isset($metadata['difficulty'])) {
-            $items[] = '🎯 ' . ucfirst($metadata['difficulty']);
+            $items[] = '🎯 '.ucfirst($metadata['difficulty']);
         }
 
-        if (!empty($items)) {
+        if (! empty($items)) {
             $html .= '<div style="margin-top: 12px; padding-top: 12px; border-top: 1px solid #e5e7eb; display: flex; gap: 16px; flex-wrap: wrap; font-size: 13px; color: #6b7280;">';
             foreach ($items as $item) {
-                $html .= '<span>' . htmlspecialchars($item) . '</span>';
+                $html .= '<span>'.htmlspecialchars($item).'</span>';
             }
             $html .= '</div>';
         }
@@ -1000,7 +1011,7 @@ JS;
         $scoring = $question->scoring ?? [];
         $answerKey = $scoring['answer_key'] ?? null;
 
-        if (!$answerKey) {
+        if (! $answerKey) {
             return false;
         }
 
@@ -1016,7 +1027,7 @@ JS;
      */
     private function findCategory(Exam $exam, ?string $sectionId): ?ExamCategory
     {
-        if (!$sectionId) {
+        if (! $sectionId) {
             return null;
         }
 
@@ -1041,7 +1052,7 @@ JS;
 
         $color = $colors[$type] ?? $colors['default'];
 
-        return '<span style="display: inline-block; font-size: 12px; padding: 4px 8px; border-radius: 999px; background: ' . $color['bg'] . '; color: ' . $color['text'] . '; border: 1px solid ' . $color['border'] . '; font-weight: 600;">' . htmlspecialchars($text) . '</span>';
+        return '<span style="display: inline-block; font-size: 12px; padding: 4px 8px; border-radius: 999px; background: '.$color['bg'].'; color: '.$color['text'].'; border: 1px solid '.$color['border'].'; font-weight: 600;">'.htmlspecialchars($text).'</span>';
     }
 
     /**
@@ -1049,7 +1060,7 @@ JS;
      */
     private function renderEmptyState(string $message): string
     {
-        return '<div style="padding: 24px; text-align: center; background: #f9fafb; border-radius: 8px; border: 2px dashed #d1d5db; color: #6b7280; font-size: 14px;">' . htmlspecialchars($message) . '</div>';
+        return '<div style="padding: 24px; text-align: center; background: #f9fafb; border-radius: 8px; border: 2px dashed #d1d5db; color: #6b7280; font-size: 14px;">'.htmlspecialchars($message).'</div>';
     }
 
     /**

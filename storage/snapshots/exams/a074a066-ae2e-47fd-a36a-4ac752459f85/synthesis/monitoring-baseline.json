@@ -1,0 +1,221 @@
+{
+    "exam_id": "a074a066-ae2e-47fd-a36a-4ac752459f85",
+    "stage": "synthesis",
+    "label": "monitoring-baseline",
+    "hash": "98cb93df603b18cc58e09b35c74ee3e3b2d1b13bdc797054b5cde46c84e9832c",
+    "data": {
+        "stage": "synthesis",
+        "exam_id": "a074a066-ae2e-47fd-a36a-4ac752459f85",
+        "sections": [
+            {
+                "key": 1068,
+                "skill": "listening",
+                "name": "Listening Test",
+                "question_groups": [
+                    {
+                        "group_id": "listening-part-1",
+                        "title": "Part 1",
+                        "order": 1,
+                        "questions": []
+                    },
+                    {
+                        "group_id": "listening-part-2",
+                        "title": "Part 2",
+                        "order": 2,
+                        "questions": []
+                    },
+                    {
+                        "group_id": "listening-part-3",
+                        "title": "Part 3",
+                        "order": 3,
+                        "questions": []
+                    },
+                    {
+                        "group_id": "listening-part-4",
+                        "title": "Part 4",
+                        "order": 4,
+                        "questions": []
+                    }
+                ],
+                "ungrouped_questions": [
+                    {
+                        "question_id": "sec-listening_q1",
+                        "type": "dictation",
+                        "order": 0
+                    },
+                    {
+                        "question_id": "sec-listening_q31",
+                        "type": "dictation",
+                        "order": 0
+                    },
+                    {
+                        "question_id": "sec-listening_q21",
+                        "type": "listen_mcq",
+                        "order": 0
+                    },
+                    {
+                        "question_id": "sec-listening_q11",
+                        "type": "single_select",
+                        "order": 0
+                    },
+                    {
+                        "question_id": "sec-listening_q2",
+                        "type": "dictation",
+                        "order": 1
+                    },
+                    {
+                        "question_id": "sec-listening_q32",
+                        "type": "dictation",
+                        "order": 1
+                    },
+                    {
+                        "question_id": "sec-listening_q22",
+                        "type": "single_select",
+                        "order": 1
+                    },
+                    {
+                        "question_id": "sec-listening_q12",
+                        "type": "single_select",
+                        "order": 1
+                    },
+                    {
+                        "question_id": "sec-listening_q13",
+                        "type": "listen_mcq",
+                        "order": 2
+                    },
+                    {
+                        "question_id": "sec-listening_q33",
+                        "type": "dictation",
+                        "order": 2
+                    },
+                    {
+                        "question_id": "sec-listening_q3",
+                        "type": "dictation",
+                        "order": 2
+                    },
+                    {
+                        "question_id": "sec-listening_q23",
+                        "type": "listen_mcq",
+                        "order": 2
+                    },
+                    {
+                        "question_id": "sec-listening_q14",
+                        "type": "single_select",
+                        "order": 3
+                    },
+                    {
+                        "question_id": "sec-listening_q34",
+                        "type": "dictation",
+                        "order": 3
+                    },
+                    {
+                        "question_id": "sec-listening_q24",
+                        "type": "listen_mcq",
+                        "order": 3
+                    },
+                    {
+                        "question_id": "sec-listening_q4",
+                        "type": "dictation",
+                        "order": 3
+                    },
+                    {
+                        "question_id": "sec-listening_q15",
+                        "type": "single_select",
+                        "order": 4
+                    },
+                    {
+                        "question_id": "sec-listening_q35",
+                        "type": "dictation",
+                        "order": 4
+                    },
+                    {
+                        "question_id": "sec-listening_q5",
+                        "type": "dictation",
+                        "order": 4
+                    },
+                    {
+                        "question_id": "sec-listening_q25",
+                        "type": "single_select",
+                        "order": 4
+                    },
+                    {
+                        "question_id": "sec-listening_q26",
+                        "type": "single_select",
+                        "order": 5
+                    },
+                    {
+                        "question_id": "sec-listening_q36",
+                        "type": "dictation",
+                        "order": 5
+                    },
+                    {
+                        "question_id": "sec-listening_q6",
+                        "type": "dictation",
+                        "order": 5
+                    },
+                    {
+                        "question_id": "sec-listening_q16",
+                        "type": "listen_true_false",
+                        "order": 5
+                    },
+                    {
+                        "question_id": "sec-listening_q27",
+                        "type": "listen_yes_no_ng",
+                        "order": 6
+                    },
+                    {
+                        "question_id": "sec-listening_q7",
+                        "type": "dictation",
+                        "order": 6
+                    },
+                    {
+                        "question_id": "sec-listening_q17",
+                        "type": "listen_true_false",
+                        "order": 6
+                    },
+                    {
+                        "question_id": "sec-listening_q37",
+                        "type": "dictation",
+                        "order": 6
+                    },
+                    {
+                        "question_id": "sec-listening_q28",
+                        "type": "listen_yes_no_ng",
+                        "order": 7
+                    },
+                    {
+                        "question_id": "sec-listening_q18",
+                        "type": "listen_true_false",
+                        "order": 7
+                    },
+                    {
+                        "question_id": "sec-listening_q38",
+                        "type": "dictation",
+                        "order": 7
+                    },
+                    {
+                        "question_id": "sec-listening_q29",
+                        "type": "listen_yes_no_ng",
+                        "order": 8
+                    },
+                    {
+                        "question_id": "sec-listening_q19",
+                        "type": "listen_true_false",
+                        "order": 8
+                    },
+                    {
+                        "question_id": "sec-listening_q39",
+                        "type": "dictation",
+                        "order": 8
+                    }
+                ]
+            }
+        ]
+    },
+    "captured_at": "2025-11-27T10:33:57+00:00",
+    "metadata": {
+        "exam_title": "[LONG-MONITOR-1] IELTS Listening Minimal",
+        "exam_level": "B1",
+        "research_status": "completed"
+    }
+}

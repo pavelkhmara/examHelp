@@ -66,6 +66,9 @@ Make your best inference now:
 PROMPT;
     }
 
+    /**
+     * @phpstan-ignore-next-line (method reserved for future use)
+     */
     private static function formatArray(array $items): string
     {
         if (empty($items)) {
@@ -74,8 +77,9 @@ PROMPT;
 
         return implode("\n- ", array_map(function ($item) {
             if (is_array($item)) {
-                return "- " . json_encode($item, JSON_UNESCAPED_UNICODE);
+                return '- '.json_encode($item, JSON_UNESCAPED_UNICODE);
             }
+
             return "- $item";
         }, $items));
     }

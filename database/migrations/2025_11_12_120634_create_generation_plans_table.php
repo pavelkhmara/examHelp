@@ -32,7 +32,7 @@ return new class extends Migration
 
             // Generation status
             $table->enum('status', ['pending', 'in_progress', 'completed', 'failed', 'partial'])
-                  ->default('pending');
+                ->default('pending');
 
             // Question generation tracking
             $table->integer('total_questions')->default(0); // Expected total

@@ -1,0 +1,46 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:examhelp:golden-fixtures:input:v1",
+  "title": "Golden Fixture - Input Stage",
+  "description": "Schema for input data that starts the generation pipeline",
+  "type": "object",
+  "required": ["version", "exam_id", "exam"],
+  "properties": {
+    "$schema": { "type": "string" },
+    "version": { "type": "string", "const": "1.0" },
+    "exam_id": { "type": "string", "pattern": "^[a-z0-9-]+$" },
+    "created_at": { "type": "string", "format": "date" },
+
+    "exam": {
+      "type": "object",
+      "required": ["title", "language_of_test", "level"],
+      "properties": {
+        "title": { "type": "string", "minLength": 5 },
+        "language_of_test": { "type": "string" },
+        "level": { "type": "string", "enum": ["A1", "A2", "B1", "B2", "C1", "C2"] },
+        "provider": { "type": "string" },
+        "family": { "type": "string" },
+        "description": { "type": "string" }
+      }
+    },
+
+    "user_input": { "type": ["string", "null"] },
+
+    "documents": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["filename"],
+        "properties": {
+          "filename": { "type": "string" },
+          "extracted_text_preview": { "type": "string" },
+          "pages": { "type": "integer", "minimum": 1 },
+          "type": { "type": "string" }
+        }
+      }
+    },
+
+    "notes": { "type": ["string", "null"] },
+    "_source": { "type": "string" }
+  }
+}

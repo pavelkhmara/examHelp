@@ -1,0 +1,346 @@
+{
+    "exam_id": "a073d2c9-d888-4604-8a2f-75bf95fa1953",
+    "stage": "phase_b",
+    "label": "monitoring-baseline",
+    "hash": "5f47716f7716e890f47f0d86408a7b3661f6688b251e6b674b64aae5604c3825",
+    "data": {
+        "stage": "phase_b",
+        "exam_id": "a073d2c9-d888-4604-8a2f-75bf95fa1953",
+        "structure_v2": {
+            "id": "ielts-academic-listening-bc-v2-2025-11-27",
+            "meta": {
+                "name": "IELTS Academic — Listening",
+                "tags": [
+                    "IELTS",
+                    "Academic",
+                    "Listening",
+                    "paper-based:+10min-transfer"
+                ],
+                "level": "B1",
+                "session": null,
+                "language": "en",
+                "provider": "British Council"
+            },
+            "rubrics": null,
+            "version": "2.0",
+            "policies": {
+                "navigation": {
+                    "backtracking": false
+                },
+                "proctoring": {
+                    "mic": false,
+                    "camera": true,
+                    "screen": true
+                },
+                "policy_precedence": "question>section>exam",
+                "answer_transfer_window_sec": 600
+            },
+            "sections": [
+                {
+                    "id": "listening",
+                    "skill": "listening",
+                    "title": "Listening Test",
+                    "assembly": {
+                        "mode": "inline",
+                        "question_groups": [
+                            {
+                                "id": "listening-part-1",
+                                "title": "Part 1",
+                                "stimulus": {
+                                    "audio": [
+                                        "placeholder_audio.mp3"
+                                    ]
+                                },
+                                "questions": [
+                                    {
+                                        "id": "q1",
+                                        "type": "dictation"
+                                    },
+                                    {
+                                        "id": "q2",
+                                        "type": "dictation"
+                                    },
+                                    {
+                                        "id": "q3",
+                                        "type": "dictation"
+                                    },
+                                    {
+                                        "id": "q4",
+                                        "type": "dictation"
+                                    },
+                                    {
+                                        "id": "q5",
+                                        "type": "dictation"
+                                    },
+                                    {
+                                        "id": "q6",
+                                        "type": "dictation"
+                                    },
+                                    {
+                                        "id": "q7",
+                                        "type": "dictation"
+                                    },
+                                    {
+                                        "id": "q8",
+                                        "type": "dictation"
+                                    },
+                                    {
+                                        "id": "q9",
+                                        "type": "dictation"
+                                    },
+                                    {
+                                        "id": "q10",
+                                        "type": "dictation"
+                                    }
+                                ],
+                                "playback_settings": {
+                                    "max_plays": 1,
+                                    "enforcement": "strict"
+                                }
+                            },
+                            {
+                                "id": "listening-part-2",
+                                "title": "Part 2",
+                                "stimulus": {
+                                    "audio": [
+                                        "placeholder_audio.mp3"
+                                    ]
+                                },
+                                "questions": [
+                                    {
+                                        "id": "q11",
+                                        "type": "listen_mcq"
+                                    },
+                                    {
+                                        "id": "q12",
+                                        "type": "listen_mcq"
+                                    },
+                                    {
+                                        "id": "q13",
+                                        "type": "listen_mcq"
+                                    },
+                                    {
+                                        "id": "q14",
+                                        "type": "listen_mcq"
+                                    },
+                                    {
+                                        "id": "q15",
+                                        "type": "listen_mcq"
+                                    },
+                                    {
+                                        "id": "q16",
+                                        "type": "listen_mcq"
+                                    },
+                                    {
+                                        "id": "q17",
+                                        "type": "dictation"
+                                    },
+                                    {
+                                        "id": "q18",
+                                        "type": "dictation"
+                                    },
+                                    {
+                                        "id": "q19",
+                                        "type": "dictation"
+                                    },
+                                    {
+                                        "id": "q20",
+                                        "type": "dictation"
+                                    }
+                                ],
+                                "playback_settings": {
+                                    "max_plays": 1,
+                                    "enforcement": "strict"
+                                }
+                            },
+                            {
+                                "id": "listening-part-3",
+                                "title": "Part 3",
+                                "stimulus": {
+                                    "audio": [
+                                        "placeholder_audio.mp3"
+                                    ]
+                                },
+                                "questions": [
+                                    {
+                                        "id": "q21",
+                                        "type": "listen_mcq"
+                                    },
+                                    {
+                                        "id": "q22",
+                                        "type": "listen_mcq"
+                                    },
+                                    {
+                                        "id": "q23",
+                                        "type": "listen_mcq"
+                                    },
+                                    {
+                                        "id": "q24",
+                                        "type": "listen_mcq"
+                                    },
+                                    {
+                                        "id": "q25",
+                                        "type": "listen_mcq"
+                                    },
+                                    {
+                                        "id": "q26",
+                                        "type": "listen_mcq"
+                                    },
+                                    {
+                                        "id": "q27",
+                                        "type": "listen_yes_no_ng"
+                                    },
+                                    {
+                                        "id": "q28",
+                                        "type": "listen_yes_no_ng"
+                                    },
+                                    {
+                                        "id": "q29",
+                                        "type": "listen_yes_no_ng"
+                                    },
+                                    {
+                                        "id": "q30",
+                                        "type": "listen_yes_no_ng"
+                                    }
+                                ],
+                                "playback_settings": {
+                                    "max_plays": 1,
+                                    "enforcement": "strict"
+                                }
+                            },
+                            {
+                                "id": "listening-part-4",
+                                "title": "Part 4",
+                                "stimulus": {
+                                    "audio": [
+                                        "placeholder_audio.mp3"
+                                    ]
+                                },
+                                "questions": [
+                                    {
+                                        "id": "q31",
+                                        "type": "dictation"
+                                    },
+                                    {
+                                        "id": "q32",
+                                        "type": "dictation"
+                                    },
+                                    {
+                                        "id": "q33",
+                                        "type": "dictation"
+                                    },
+                                    {
+                                        "id": "q34",
+                                        "type": "dictation"
+                                    },
+                                    {
+                                        "id": "q35",
+                                        "type": "dictation"
+                                    },
+                                    {
+                                        "id": "q36",
+                                        "type": "dictation"
+                                    },
+                                    {
+                                        "id": "q37",
+                                        "type": "listen_true_false"
+                                    },
+                                    {
+                                        "id": "q38",
+                                        "type": "listen_true_false"
+                                    },
+                                    {
+                                        "id": "q39",
+                                        "type": "listen_true_false"
+                                    },
+                                    {
+                                        "id": "q40",
+                                        "type": "listen_true_false"
+                                    }
+                                ],
+                                "playback_settings": {
+                                    "max_plays": 1,
+                                    "enforcement": "strict"
+                                }
+                            }
+                        ]
+                    },
+                    "max_score": 40,
+                    "questions": [],
+                    "duration_min": 30,
+                    "question_archetypes": [
+                        {
+                            "id": "listen_mcq_main_idea",
+                            "name": "Listening MCQ - Detail\/Main Idea",
+                            "type": "listen_mcq",
+                            "config": {
+                                "scoring": {
+                                    "max_points": 1,
+                                    "partial_credit": false
+                                },
+                                "duration_sec": 90,
+                                "options_count": 4
+                            },
+                            "difficulty": "medium"
+                        },
+                        {
+                            "id": "dictation_note_completion",
+                            "name": "Dictation - Form\/Note Completion",
+                            "type": "dictation",
+                            "config": {
+                                "scoring": {
+                                    "max_points": 1,
+                                    "partial_credit": false
+                                },
+                                "duration_sec": 60,
+                                "input_constraints": {
+                                    "max_chars": 30
+                                }
+                            },
+                            "difficulty": "easy"
+                        },
+                        {
+                            "id": "listen_true_false_statements",
+                            "name": "Listening True\/False - Statement Verification",
+                            "type": "listen_true_false",
+                            "config": {
+                                "scoring": {
+                                    "max_points": 1,
+                                    "partial_credit": false
+                                },
+                                "duration_sec": 75,
+                                "options_count": 2
+                            },
+                            "difficulty": "hard"
+                        },
+                        {
+                            "id": "listen_yes_no_ng_inference",
+                            "name": "Listening Yes\/No\/Not Given - Inference",
+                            "type": "listen_yes_no_ng",
+                            "config": {
+                                "scoring": {
+                                    "max_points": 1,
+                                    "partial_credit": false
+                                },
+                                "duration_sec": 75,
+                                "options_count": 3
+                            },
+                            "difficulty": "hard"
+                        }
+                    ]
+                }
+            ],
+            "resources": [],
+            "pass_policy": {
+                "mode": "overall_only",
+                "overall_threshold_percent": 0
+            }
+        }
+    },
+    "captured_at": "2025-11-27T10:33:57+00:00",
+    "metadata": {
+        "exam_title": "[MONITOR-REAL-SYNTH] IELTS Listening",
+        "exam_level": "B1",
+        "research_status": "completed"
+    }
+}

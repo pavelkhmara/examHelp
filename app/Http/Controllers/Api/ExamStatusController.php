@@ -24,9 +24,6 @@ class ExamStatusController extends Controller
 
     /**
      * Получить полный статус экзамена
-     *
-     * @param  string  $examId
-     * @return JsonResponse
      */
     public function show(string $examId): JsonResponse
     {
@@ -143,8 +140,6 @@ class ExamStatusController extends Controller
      * Получить список изменившихся полей
      *
      * @param  \App\Models\ConfirmedIdentity  $confirmedIdentity
-     * @param  array  $currentFields
-     * @return array
      */
     protected function getChangedFieldsList($confirmedIdentity, array $currentFields): array
     {
@@ -160,7 +155,7 @@ class ExamStatusController extends Controller
                 continue;
             }
 
-            if (!isset($currentFields[$field]) || $currentFields[$field] !== $oldValue) {
+            if (! isset($currentFields[$field]) || $currentFields[$field] !== $oldValue) {
                 $changedFields[] = $field;
             }
         }
@@ -170,9 +165,6 @@ class ExamStatusController extends Controller
 
     /**
      * Получить зависшую задачу (если есть)
-     *
-     * @param  Exam  $exam
-     * @return \App\Models\GenerationTask|null
      */
     protected function getStalledTask(Exam $exam): ?\App\Models\GenerationTask
     {
@@ -191,11 +183,8 @@ class ExamStatusController extends Controller
     /**
      * Построить данные прогресса экзамена
      *
-     * @param  Exam  $exam
-     * @param  array  $quickCheck
      * @param  \App\Models\ConfirmedIdentity|null  $confirmedIdentity
      * @param  \App\Models\GenerationTask|null  $latestTask
-     * @return array
      */
     protected function buildProgressData(
         Exam $exam,
@@ -213,7 +202,7 @@ class ExamStatusController extends Controller
             'label' => 'Данные',
             'status' => $dataStatus,
             'metrics' => [
-                'completion' => $quickCheck['completion_percentage'] . '%',
+                'completion' => $quickCheck['completion_percentage'].'%',
             ],
             'duration' => null,
         ];
@@ -281,11 +270,11 @@ class ExamStatusController extends Controller
 
         // If structure_v2 exists but categories not yet created, count sections from structure
         $structureV2 = $exam->meta['structure_v2'] ?? null;
-        if (!empty($structureV2) && $categoriesCount === 0) {
+        if (! empty($structureV2) && $categoriesCount === 0) {
             $categoriesCount = count($structureV2['sections'] ?? []);
         }
 
-        if ($categoriesCount > 0 || !empty($structureV2)) {
+        if ($categoriesCount > 0 || ! empty($structureV2)) {
             $structureStatus = 'completed';
         } elseif ($latestTask && $latestTask->status === 'running') {
             // Проверяем, не идет ли сейчас Overview/Structure generation
@@ -437,7 +426,7 @@ class ExamStatusController extends Controller
                 ->exists();
 
             // Only show error if no successful task of same type came after
-            if (!$hasSuccessfulTaskAfter) {
+            if (! $hasSuccessfulTaskAfter) {
                 $errorStage = 'unknown';
 
                 // Попытка определить stage из activities
@@ -455,7 +444,7 @@ class ExamStatusController extends Controller
 
                 // Укоротить сообщение об ошибке для компактного отображения
                 $shortError = strlen($failedTask->error) > 100
-                    ? substr($failedTask->error, 0, 100) . '...'
+                    ? substr($failedTask->error, 0, 100).'...'
                     : $failedTask->error;
 
                 $latestErrorData = [

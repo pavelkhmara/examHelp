@@ -9,8 +9,8 @@ use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
 use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Queue\SerializesModels;
-use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Storage;
 use ZipArchive;
 
 class UnzipAndAttachDocumentsJob implements ShouldQueue
@@ -33,20 +33,22 @@ class UnzipAndAttachDocumentsJob implements ShouldQueue
         $exam = Exam::findOrFail($this->examId);
         $fullZipPath = Storage::disk($this->disk)->path($this->zipPath);
 
-        if (!file_exists($fullZipPath)) {
-            Log::error("ZIP file not found for extraction", [
+        if (! file_exists($fullZipPath)) {
+            Log::error('ZIP file not found for extraction', [
                 'exam_id' => $this->examId,
                 'path' => $this->zipPath,
             ]);
+
             return;
         }
 
-        $zip = new ZipArchive();
+        $zip = new ZipArchive;
         if ($zip->open($fullZipPath) !== true) {
-            Log::error("Failed to open ZIP archive", [
+            Log::error('Failed to open ZIP archive', [
                 'exam_id' => $this->examId,
                 'path' => $this->zipPath,
             ]);
+
             return;
         }
 
@@ -69,10 +71,11 @@ class UnzipAndAttachDocumentsJob implements ShouldQueue
 
             $fileContent = $zip->getFromIndex($i);
             if ($fileContent === false) {
-                Log::warning("Could not read file from ZIP", [
+                Log::warning('Could not read file from ZIP', [
                     'exam_id' => $this->examId,
                     'filename' => $filename,
                 ]);
+
                 continue;
             }
 
@@ -82,7 +85,7 @@ class UnzipAndAttachDocumentsJob implements ShouldQueue
             $isAudio = in_array($extension, self::AUDIO_EXTENSIONS, true);
 
             // Store the extracted file
-            $storagePath = 'documents/extracted_' . time() . '_' . basename($filename);
+            $storagePath = 'documents/extracted_'.time().'_'.basename($filename);
             Storage::disk($this->disk)->put($storagePath, $fileContent);
 
             // Create ExamDocument record
@@ -103,19 +106,19 @@ class UnzipAndAttachDocumentsJob implements ShouldQueue
 
             if ($isAudio) {
                 $audioCount++;
-                Log::info("Audio file extracted from ZIP (not dispatching text extraction)", [
+                Log::info('Audio file extracted from ZIP (not dispatching text extraction)', [
                     'exam_id' => $this->examId,
                     'document_id' => $document->id,
                     'filename' => $filename,
                 ]);
             } else {
                 // Dispatch text extraction job for non-audio files
-                if (!config('documents.fake', false)) {
+                if (! config('documents.fake', false)) {
                     ExtractExamDocumentTextJob::dispatch($document->id);
                     $textExtractionDispatched++;
                 }
 
-                Log::info("Non-audio file extracted from ZIP, dispatched text extraction", [
+                Log::info('Non-audio file extracted from ZIP, dispatched text extraction', [
                     'exam_id' => $this->examId,
                     'document_id' => $document->id,
                     'filename' => $filename,
@@ -125,7 +128,7 @@ class UnzipAndAttachDocumentsJob implements ShouldQueue
 
         $zip->close();
 
-        Log::info("ZIP extraction completed", [
+        Log::info('ZIP extraction completed', [
             'exam_id' => $this->examId,
             'zip_path' => $this->zipPath,
             'extracted_count' => $extractedCount,

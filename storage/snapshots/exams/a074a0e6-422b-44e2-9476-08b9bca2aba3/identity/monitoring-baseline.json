@@ -1,0 +1,51 @@
+{
+    "exam_id": "a074a0e6-422b-44e2-9476-08b9bca2aba3",
+    "stage": "identity",
+    "label": "monitoring-baseline",
+    "hash": "34f7646d2c927ab6ec77aaefc2ffb1a64f0db93b8b01cd6c15a0b1709436413f",
+    "data": {
+        "stage": "identity",
+        "exam_id": "a074a0e6-422b-44e2-9476-08b9bca2aba3",
+        "identity_data": {
+            "hold": true,
+            "status": "certain",
+            "anchors": [
+                {
+                    "page": null,
+                    "snippet": "Existing identity: \"exam_name\": \"TOEFL iBT Reading\", \"exam_family\": \"TOEFL iBT\", \"provider\": \"ETS\", \"exam_language\": \"en\""
+                },
+                {
+                    "page": null,
+                    "snippet": "User input exam_name: \"[LONG-MONITOR-2] TOEFL Reading Standard\""
+                }
+            ],
+            "canonical": {
+                "name": "TOEFL iBT Reading",
+                "family": "TOEFL iBT",
+                "variant": "Reading",
+                "provider": "ETS",
+                "language_of_test": "English"
+            },
+            "followups": [],
+            "candidates": [
+                {
+                    "name": "TOEFL iBT Reading",
+                    "score": 0.9,
+                    "family": "TOEFL iBT",
+                    "provider": "ETS"
+                }
+            ],
+            "confidence": 0.9,
+            "need_fields": []
+        },
+        "confidence": {
+            "overall": 0.9
+        }
+    },
+    "captured_at": "2025-11-27T10:33:56+00:00",
+    "metadata": {
+        "exam_title": "[LONG-MONITOR-2] TOEFL Reading Standard",
+        "exam_level": "B2",
+        "research_status": "completed"
+    }
+}

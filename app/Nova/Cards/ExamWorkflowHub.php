@@ -28,8 +28,6 @@ class ExamWorkflowHub extends Card
 
     /**
      * ExamWorkflowHub constructor.
-     *
-     * @param  string|null  $examId
      */
     public function __construct(?string $examId = null)
     {

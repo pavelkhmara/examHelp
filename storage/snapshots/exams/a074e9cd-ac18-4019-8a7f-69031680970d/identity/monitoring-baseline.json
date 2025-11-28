@@ -1,0 +1,51 @@
+{
+    "exam_id": "a074e9cd-ac18-4019-8a7f-69031680970d",
+    "stage": "identity",
+    "label": "monitoring-baseline",
+    "hash": "a50aac45fb9c2957f10a50fb13cc2b324804ad55ea18f50427a49771174af861",
+    "data": {
+        "stage": "identity",
+        "exam_id": "a074e9cd-ac18-4019-8a7f-69031680970d",
+        "identity_data": {
+            "hold": true,
+            "status": "certain",
+            "anchors": [
+                {
+                    "page": 1,
+                    "snippet": "© Państwowa Komisja ds. Poświadczania Znajomości Języka Polskiego jako Obcego"
+                },
+                {
+                    "page": 1,
+                    "snippet": "EGZAMIN CERTYFIKATOWY Z JĘZYKA POLSKIEGO JAKO OBCEGO B1 POZIOM PROGOWY"
+                }
+            ],
+            "canonical": {
+                "name": "Państwowy Certyfikat Języka Polskiego B1",
+                "family": "Państwowy Certyfikat Języka Polskiego",
+                "variant": "B1 (poziom progowy)",
+                "provider": "Państwowa Komisja ds. Poświadczania Znajomości Języka Polskiego jako Obcego",
+                "language_of_test": "Polish"
+            },
+            "followups": [],
+            "candidates": [
+                {
+                    "name": "Państwowy Certyfikat Języka Polskiego B1",
+                    "score": 0.97,
+                    "family": "Państwowy Certyfikat Języka Polskiego",
+                    "provider": "Państwowa Komisja ds. Poświadczania Znajomości Języka Polskiego jako Obcego"
+                }
+            ],
+            "confidence": 0.97,
+            "need_fields": []
+        },
+        "confidence": {
+            "overall": 0.97
+        }
+    },
+    "captured_at": "2025-11-27T16:51:48+00:00",
+    "metadata": {
+        "exam_title": "pjc Egzaminy certyfikatowe z języka polskiego jako obcego",
+        "exam_level": "B1",
+        "research_status": "completed"
+    }
+}

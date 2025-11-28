@@ -13,7 +13,9 @@ use Illuminate\Database\Eloquent\Relations\MorphTo;
  */
 class GenerationTask extends Model
 {
+    /** @use HasFactory<\Database\Factories\GenerationTaskFactory> */
     use HasFactory;
+
     protected $fillable = [
         'exam_id', 'type', 'status',
         'request', 'response', 'result',
@@ -29,16 +31,25 @@ class GenerationTask extends Model
         'heartbeat_at' => 'datetime',
     ];
 
+    /**
+     * @return BelongsTo<Exam, covariant self>
+     */
     public function exam(): BelongsTo
     {
         return $this->belongsTo(Exam::class);
     }
 
+    /**
+     * @return MorphTo<\Illuminate\Database\Eloquent\Model, covariant self>
+     */
     public function subject(): MorphTo
     {
         return $this->morphTo();
     }
 
+    /**
+     * @return \Illuminate\Database\Eloquent\Relations\HasMany<GenerationLog, covariant self>
+     */
     public function logs()
     {
         return $this->hasMany(GenerationLog::class);
@@ -69,6 +80,7 @@ class GenerationTask extends Model
                             'task_id' => $this->id,
                             'time_diff_seconds' => $diffSeconds,
                         ]);
+
                         return;
                     }
                 } catch (\Exception $e) {

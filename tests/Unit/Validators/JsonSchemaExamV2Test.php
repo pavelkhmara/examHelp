@@ -12,7 +12,7 @@ class JsonSchemaExamV2Test extends TestCase
 
     public function test_valid_exam_skeleton_passes_validation(): void
     {
-        $validator = new JsonSchemaExamV2();
+        $validator = new JsonSchemaExamV2;
 
         $data = [
             'id' => 'test-exam',
@@ -48,7 +48,7 @@ class JsonSchemaExamV2Test extends TestCase
     {
         $this->expectException(\Throwable::class);
 
-        $validator = new JsonSchemaExamV2();
+        $validator = new JsonSchemaExamV2;
 
         $data = [
             'id' => 'test-exam',
@@ -65,5 +65,3 @@ class JsonSchemaExamV2Test extends TestCase
         $validator->validate($data);
     }
 }
-
-

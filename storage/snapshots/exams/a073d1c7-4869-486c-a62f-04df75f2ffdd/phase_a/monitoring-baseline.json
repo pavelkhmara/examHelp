@@ -1,0 +1,309 @@
+{
+    "exam_id": "a073d1c7-4869-486c-a62f-04df75f2ffdd",
+    "stage": "phase_a",
+    "label": "monitoring-baseline",
+    "hash": "3ae789896bc7645b0b49c531b1155ba3b15d8065c281121664f799fbde57ae2e",
+    "data": {
+        "stage": "phase_a",
+        "exam_id": "a073d1c7-4869-486c-a62f-04df75f2ffdd",
+        "structure_v2": {
+            "id": "ielts-gt-structure-monitor-v1",
+            "version": "2.0",
+            "meta": {
+                "name": "IELTS General Training – Full Exam Structure (Monitoring)",
+                "tags": [
+                    "IELTS",
+                    "General Training",
+                    "Structure",
+                    "Monitoring",
+                    "Official timings"
+                ],
+                "level": "B1",
+                "session": null,
+                "language": "en",
+                "provider": "IDP"
+            },
+            "pass_policy": {
+                "mode": "mixed",
+                "overall_threshold_percent": 60,
+                "per_section_threshold_percent": 40
+            },
+            "policies": {
+                "navigation": {
+                    "backtracking": true
+                },
+                "proctoring": {
+                    "mic": true,
+                    "camera": true,
+                    "screen": true
+                },
+                "policy_precedence": "question>section>exam",
+                "answer_transfer_window_sec": 600
+            },
+            "sections": [
+                {
+                    "id": "sec-listening",
+                    "skill": "listening",
+                    "title": "Listening",
+                    "max_score": 40,
+                    "questions": [],
+                    "duration_min": 30,
+                    "question_archetypes": [
+                        {
+                            "id": "arch-listen-mcq",
+                            "name": "Listening MCQ - Detail and Inference",
+                            "type": "listen_mcq",
+                            "config": {
+                                "scoring": {
+                                    "max_points": 1,
+                                    "partial_credit": false
+                                },
+                                "duration_sec": 60,
+                                "options_count": 3
+                            },
+                            "difficulty": "medium"
+                        },
+                        {
+                            "id": "arch-dictation-fill",
+                            "name": "Dictation - Form\/Sentence Completion",
+                            "type": "dictation",
+                            "config": {
+                                "scoring": {
+                                    "max_points": 1,
+                                    "partial_credit": false
+                                },
+                                "duration_sec": 45
+                            },
+                            "difficulty": "easy"
+                        },
+                        {
+                            "id": "arch-listen-tf",
+                            "name": "Listening True\/False - Factual Claims",
+                            "type": "listen_true_false",
+                            "config": {
+                                "scoring": {
+                                    "max_points": 1,
+                                    "partial_credit": false
+                                },
+                                "duration_sec": 45
+                            },
+                            "difficulty": "medium"
+                        },
+                        {
+                            "id": "arch-listen-yng",
+                            "name": "Listening Yes\/No\/Not Given - Attitude\/Claims",
+                            "type": "listen_yes_no_ng",
+                            "config": {
+                                "scoring": {
+                                    "max_points": 1,
+                                    "partial_credit": false
+                                },
+                                "duration_sec": 60
+                            },
+                            "difficulty": "hard"
+                        }
+                    ]
+                },
+                {
+                    "id": "sec-reading-gt",
+                    "skill": "reading",
+                    "title": "General Training Reading",
+                    "max_score": 40,
+                    "questions": [],
+                    "duration_min": 60,
+                    "question_archetypes": [
+                        {
+                            "id": "read_mcq_main_idea",
+                            "name": "Reading MCQ - Main Idea and Detail",
+                            "type": "read_mcq",
+                            "config": {
+                                "scoring": {
+                                    "max_points": 1,
+                                    "partial_credit": false
+                                },
+                                "duration_sec": 90,
+                                "options_count": 4
+                            },
+                            "difficulty": "medium"
+                        },
+                        {
+                            "id": "read_true_false_facts",
+                            "name": "Reading True\/False - Factual Statements",
+                            "type": "read_true_false",
+                            "config": {
+                                "scoring": {
+                                    "max_points": 1,
+                                    "partial_credit": false
+                                },
+                                "duration_sec": 75
+                            },
+                            "difficulty": "easy"
+                        },
+                        {
+                            "id": "read_yes_no_ng_claims",
+                            "name": "Reading Yes\/No\/Not Given - Author's Claims",
+                            "type": "read_yes_no_ng",
+                            "config": {
+                                "scoring": {
+                                    "max_points": 1,
+                                    "partial_credit": false
+                                },
+                                "duration_sec": 90
+                            },
+                            "difficulty": "hard"
+                        },
+                        {
+                            "id": "matching_headings_features",
+                            "name": "Reading Matching - Headings\/Features",
+                            "type": "matching",
+                            "config": {
+                                "scoring": {
+                                    "max_points": 1,
+                                    "partial_credit": false
+                                },
+                                "duration_sec": 90
+                            },
+                            "difficulty": "medium"
+                        },
+                        {
+                            "id": "sentence_completion_contextual",
+                            "name": "Reading Sentence Completion - Contextual Detail",
+                            "type": "sentence_completion",
+                            "config": {
+                                "scoring": {
+                                    "max_points": 1,
+                                    "partial_credit": false
+                                },
+                                "duration_sec": 75
+                            },
+                            "difficulty": "medium"
+                        }
+                    ]
+                },
+                {
+                    "id": "sec-writing-gt",
+                    "skill": "writing",
+                    "title": "General Training Writing",
+                    "max_score": 9,
+                    "questions": [],
+                    "duration_min": 60,
+                    "question_archetypes": [
+                        {
+                            "id": "gt_wr_letter_formal_v1",
+                            "name": "GT Task 1 Letter — Formal\/Semi-formal",
+                            "type": "writing_prompt",
+                            "config": {
+                                "scoring": {
+                                    "max_points": 3,
+                                    "partial_credit": true
+                                },
+                                "duration_sec": 1200,
+                                "expected_word_count_min": 150,
+                                "expected_word_count_target": 170
+                            },
+                            "difficulty": "medium"
+                        },
+                        {
+                            "id": "gt_wr_letter_informal_v1",
+                            "name": "GT Task 1 Letter — Informal",
+                            "type": "writing_prompt",
+                            "config": {
+                                "scoring": {
+                                    "max_points": 3,
+                                    "partial_credit": true
+                                },
+                                "duration_sec": 1200,
+                                "expected_word_count_min": 150,
+                                "expected_word_count_target": 170
+                            },
+                            "difficulty": "easy"
+                        },
+                        {
+                            "id": "gt_wr_essay_opinion_v1",
+                            "name": "GT Task 2 Essay — Opinion\/Argument",
+                            "type": "writing_prompt",
+                            "config": {
+                                "scoring": {
+                                    "max_points": 6,
+                                    "partial_credit": true
+                                },
+                                "duration_sec": 2400,
+                                "expected_word_count_min": 250,
+                                "expected_word_count_target": 280
+                            },
+                            "difficulty": "hard"
+                        }
+                    ]
+                },
+                {
+                    "id": "sec-speaking",
+                    "skill": "speaking",
+                    "title": "Speaking",
+                    "max_score": 9,
+                    "questions": [],
+                    "duration_min": 14,
+                    "question_archetypes": [
+                        {
+                            "id": "sp_p1_personal_short",
+                            "name": "Part 1 - Personal\/Introductory Prompt",
+                            "type": "speaking_prompt",
+                            "config": {
+                                "scoring": {
+                                    "max_points": 1,
+                                    "partial_credit": false
+                                },
+                                "duration_sec": 90
+                            },
+                            "difficulty": "easy"
+                        },
+                        {
+                            "id": "sp_p2_long_turn",
+                            "name": "Part 2 - Long Turn (Cue Card)",
+                            "type": "speaking_prompt",
+                            "config": {
+                                "scoring": {
+                                    "max_points": 3,
+                                    "partial_credit": false
+                                },
+                                "duration_sec": 150
+                            },
+                            "difficulty": "medium"
+                        },
+                        {
+                            "id": "sp_p3_discussion_followup",
+                            "name": "Part 3 - Discussion Question",
+                            "type": "speaking_prompt",
+                            "config": {
+                                "scoring": {
+                                    "max_points": 1,
+                                    "partial_credit": false
+                                },
+                                "duration_sec": 120
+                            },
+                            "difficulty": "medium"
+                        },
+                        {
+                            "id": "sp_p3_roleplay",
+                            "name": "Part 3 - Two-way Discussion (Role-play)",
+                            "type": "roleplay",
+                            "config": {
+                                "scoring": {
+                                    "max_points": 1,
+                                    "partial_credit": false
+                                },
+                                "duration_sec": 120
+                            },
+                            "difficulty": "hard"
+                        }
+                    ]
+                }
+            ]
+        }
+    },
+    "captured_at": "2025-11-27T10:33:58+00:00",
+    "metadata": {
+        "exam_title": "[MONITOR-REAL] IELTS Listening Test",
+        "exam_level": "B1",
+        "research_status": "completed"
+    }
+}

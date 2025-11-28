@@ -8,8 +8,29 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
+/**
+ * @property string $id
+ * @property string $exam_id
+ * @property int|null $generation_task_id
+ * @property string|null $original_name
+ * @property string|null $disk
+ * @property string|null $path
+ * @property string|null $mime
+ * @property int|null $size
+ * @property string|null $status
+ * @property string|null $extracted_text
+ * @property string|null $openai_file_id
+ * @property string|null $file_attachment_status
+ * @property \Carbon\Carbon|null $file_attached_at
+ * @property \Carbon\Carbon $created_at
+ * @property \Carbon\Carbon $updated_at
+ *
+ * Virtual properties:
+ * @property string|null $filename Alias for original_name
+ */
 class ExamDocument extends Model
 {
+    /** @use HasFactory<\Database\Factories\ExamDocumentFactory> */
     use HasFactory, HasUuid;
 
     protected $table = 'exam_documents';
@@ -37,13 +58,27 @@ class ExamDocument extends Model
         'file_attached_at' => 'datetime',
     ];
 
+    /**
+     * @return BelongsTo<Exam, covariant self>
+     */
     public function exam(): BelongsTo
     {
         return $this->belongsTo(Exam::class, 'exam_id', 'id');
     }
 
+    /**
+     * @return \Illuminate\Database\Eloquent\Relations\BelongsTo<GenerationTask, covariant self>
+     */
     public function generationTask(): \Illuminate\Database\Eloquent\Relations\BelongsTo
     {
         return $this->belongsTo(\App\Models\GenerationTask::class, 'generation_task_id');
+    }
+
+    /**
+     * Get filename (alias for original_name)
+     */
+    public function getFilenameAttribute(): ?string
+    {
+        return $this->original_name;
     }
 }

@@ -13,6 +13,7 @@ use Tests\TestCase;
 class WebSearchServiceTest extends TestCase
 {
     protected WebSearchService $service;
+
     protected AiProvider $mockAi;
 
     protected function setUp(): void

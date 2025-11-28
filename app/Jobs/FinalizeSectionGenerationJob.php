@@ -29,7 +29,9 @@ class FinalizeSectionGenerationJob implements ShouldQueue
     use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
 
     public int $tries = 20; // Allow many retries for waiting
+
     public int $timeout = 1800; // 30 minutes total
+
     public int $backoff = 30; // 30 seconds between retries
 
     public function __construct(public int $taskId) {}
@@ -105,6 +107,7 @@ class FinalizeSectionGenerationJob implements ShouldQueue
 
             // Retry after 30 seconds
             $this->release($this->backoff);
+
             return;
         }
 
@@ -127,7 +130,7 @@ class FinalizeSectionGenerationJob implements ShouldQueue
             // Run sanity checker
             $identitySnapshot = $task->result['identity'] ?? null;
 
-            if (!empty($sections) && $identitySnapshot) {
+            if (! empty($sections) && $identitySnapshot) {
                 $examDocDraft = [
                     'canonical' => $identitySnapshot['canonical'] ?? [],
                     'sections' => $sections,
@@ -153,7 +156,7 @@ class FinalizeSectionGenerationJob implements ShouldQueue
                     $result['sanity_check'] = $sanityResult;
                     $result['warnings'] = array_merge(
                         $result['warnings'] ?? [],
-                        ['Low compliance with exam family invariants: ' . $complianceScore]
+                        ['Low compliance with exam family invariants: '.$complianceScore]
                     );
                     $task->result = $result;
                     $task->save();
@@ -201,7 +204,7 @@ class FinalizeSectionGenerationJob implements ShouldQueue
                         'error' => $e->getMessage(),
                     ]);
 
-                    $task->addActivity('example_generation_failed', 'Example generation failed: ' . $e->getMessage());
+                    $task->addActivity('example_generation_failed', 'Example generation failed: '.$e->getMessage());
 
                     $result = (array) ($task->result ?? []);
                     $result['examples_error'] = $e->getMessage();
@@ -213,7 +216,7 @@ class FinalizeSectionGenerationJob implements ShouldQueue
             // Materialize structure_v2 into database tables (ExamCategory, QuestionGroup, Question)
             $task->addActivity('materializing_structure', 'Materializing structure_v2 into database tables');
 
-            $materializer = new StructureMaterializer();
+            $materializer = new StructureMaterializer;
             $stats = $materializer->materialize($exam, $sections);
 
             $task->addActivity('structure_materialized', sprintf(
@@ -253,10 +256,10 @@ class FinalizeSectionGenerationJob implements ShouldQueue
                 'trace' => $e->getTraceAsString(),
             ]);
 
-            $task->addActivity('finalization_exception', 'Finalization failed: ' . $e->getMessage());
+            $task->addActivity('finalization_exception', 'Finalization failed: '.$e->getMessage());
 
             $task->status = 'failed';
-            $task->error = 'Finalization failed: ' . $e->getMessage();
+            $task->error = 'Finalization failed: '.$e->getMessage();
             $task->save();
 
             $exam->research_status = 'failed';

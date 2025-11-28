@@ -1,0 +1,24 @@
+{
+    "exam_id": "0c6310f1-b891-4dfd-b0aa-3cfc7059aeac",
+    "stage": "phase_a",
+    "label": "test-via-tinker",
+    "hash": "c83f9df4c0af4c28f71d103789d9e5f269c936a923c07ba3c1baa273e96a47e1",
+    "data": {
+        "stage": "phase_a",
+        "exam_id": "0c6310f1-b891-4dfd-b0aa-3cfc7059aeac",
+        "structure_v2": {
+            "id": null,
+            "version": "2.0",
+            "meta": null,
+            "pass_policy": null,
+            "policies": null,
+            "sections": []
+        }
+    },
+    "captured_at": "2025-11-26T08:17:35+00:00",
+    "metadata": {
+        "exam_title": "Egzamin Certyfikatowy z Języka Polskiego jako Obcego - B1",
+        "exam_level": "B1",
+        "research_status": "completed"
+    }
+}

@@ -27,8 +27,8 @@ class QuestionGroupFactory extends Factory
         return [
             'exam_id' => $exam->id,
             'section_id' => $category->id,
-            'group_id' => 'task-' . strtoupper($this->faker->lexify('??')),
-            'title' => 'Task ' . strtoupper($this->faker->lexify('?')) . ': ' . $this->faker->sentence(3),
+            'group_id' => 'task-'.strtoupper($this->faker->lexify('??')),
+            'title' => 'Task '.strtoupper($this->faker->lexify('?')).': '.$this->faker->sentence(3),
             'instructions' => [
                 'brief' => 'Listen to the audio and answer the questions.',
                 'full' => 'You will hear a recording. Listen carefully and answer all questions in this section.',
@@ -61,7 +61,7 @@ class QuestionGroupFactory extends Factory
         return $this->state(function (array $attributes) use ($count) {
             $audioUrls = [];
             for ($i = 0; $i < $count; $i++) {
-                $audioUrls[] = 'https://example.com/audio/task-' . $this->faker->uuid . '.mp3';
+                $audioUrls[] = 'https://example.com/audio/task-'.$this->faker->uuid.'.mp3';
             }
 
             $attributes['stimulus']['audio'] = $audioUrls;
@@ -73,10 +73,10 @@ class QuestionGroupFactory extends Factory
     /**
      * Group with text stimulus (reading comprehension)
      */
-    public function withText(string $html = null): self
+    public function withText(?string $html = null): self
     {
         return $this->state(function (array $attributes) use ($html) {
-            $attributes['stimulus']['text_html'] = $html ?? '<p>' . $this->faker->paragraphs(3, true) . '</p>';
+            $attributes['stimulus']['text_html'] = $html ?? '<p>'.$this->faker->paragraphs(3, true).'</p>';
 
             return $attributes;
         });
@@ -91,7 +91,7 @@ class QuestionGroupFactory extends Factory
             $images = [];
             for ($i = 0; $i < $count; $i++) {
                 $images[] = [
-                    'url' => 'https://example.com/images/img-' . $this->faker->uuid . '.jpg',
+                    'url' => 'https://example.com/images/img-'.$this->faker->uuid.'.jpg',
                     'alt' => $this->faker->sentence(3),
                     'caption' => $this->faker->sentence(5),
                 ];

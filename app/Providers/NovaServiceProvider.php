@@ -21,7 +21,7 @@ use Laravel\Nova\NovaApplicationServiceProvider;
 
 class NovaServiceProvider extends NovaApplicationServiceProvider
 {
-    public function menu(Request $request)
+    public function menu(Request $request): array
     {
         // Log::info('Nova menu rebuilt');
 
@@ -66,6 +66,8 @@ class NovaServiceProvider extends NovaApplicationServiceProvider
 
         // // Итоговое меню = глобальные пункты + «Exams» со всеми экземплярами
         // return new Menu(array_merge($global, [$byExams]));
+
+        return [];
     }
 
     /**
@@ -90,10 +92,10 @@ class NovaServiceProvider extends NovaApplicationServiceProvider
             $cssFile = $manifest['resources/js/app.js']['css'][0] ?? null;
 
             if ($jsFile) {
-                Nova::script('identity-clarifier-app', asset('build/' . $jsFile));
+                Nova::script('identity-clarifier-app', asset('build/'.$jsFile));
             }
             if ($cssFile) {
-                Nova::style('identity-clarifier-css', asset('build/' . $cssFile));
+                Nova::style('identity-clarifier-css', asset('build/'.$cssFile));
             }
         });
     }

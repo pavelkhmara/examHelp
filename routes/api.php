@@ -21,7 +21,71 @@ use Illuminate\Support\Facades\Route;
 use Laravel\Nova\Http\Middleware\Authenticate;
 
 Route::get('/health', function () {
-    return response()->json(['status' => 'ok']);
+    // Check database connectivity
+    $dbOk = false;
+    $dbError = null;
+    try {
+        \Illuminate\Support\Facades\DB::select('SELECT 1');
+        $dbOk = true;
+    } catch (\Exception $e) {
+        $dbError = $e->getMessage();
+    }
+
+    // Check Redis connectivity (skip in testing environment where queue=sync)
+    $redisOk = false;
+    $redisError = null;
+    $redisRequired = config('queue.default') !== 'sync';
+
+    if ($redisRequired) {
+        try {
+            \Illuminate\Support\Facades\Redis::ping();
+            $redisOk = true;
+        } catch (\Exception $e) {
+            $redisError = $e->getMessage();
+        }
+    } else {
+        // Redis not required in test environment
+        $redisOk = true;
+        $redisError = 'not required (queue=sync)';
+    }
+
+    // Check API keys configuration
+    $openaiKey = config('ai.api_key');
+    $ttsKey = config('ai.tts.api_key') ?: config('ai.api_key');
+    $unsplashKey = config('ai.images.unsplash.api_key');
+
+    // Overall status
+    $status = ($dbOk && $redisOk) ? 'healthy' : 'degraded';
+
+    $checks = [
+        'database' => $dbOk ? 'ok' : 'fail',
+        'redis' => $redisOk ? 'ok' : 'fail',
+        'openai_api_key' => $openaiKey ? 'configured' : 'missing',
+        'tts' => [
+            'enabled' => config('ai.tts.enabled', false),
+            'api_key' => $ttsKey ? 'configured' : 'missing',
+        ],
+        'images' => [
+            'enabled' => config('ai.images.enabled', false),
+            'unsplash_api_key' => $unsplashKey ? 'configured' : 'missing',
+        ],
+        'queue_connection' => config('queue.default'),
+        'ai_provider' => config('ai.default'),
+    ];
+
+    // Add error details if any
+    if (! $dbOk) {
+        $checks['database_error'] = $dbError;
+    }
+    if ($redisRequired && ! $redisOk) {
+        $checks['redis_error'] = $redisError;
+    }
+
+    return response()->json([
+        'status' => $status,
+        'checks' => $checks,
+        'timestamp' => now()->toIso8601String(),
+    ], $status === 'healthy' ? 200 : 503);
 });
 
 // Route::get('/exams', [ExamController::class, 'index'])->name('exams.index');

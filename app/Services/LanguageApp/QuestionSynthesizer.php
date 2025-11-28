@@ -30,6 +30,8 @@ class QuestionSynthesizer extends AbstractAiService
 
     /**
      * Simple question types suitable for GPT-5 Mini
+     *
+     * @phpstan-ignore-next-line (constant reserved for future use)
      */
     private const SIMPLE_TYPES = [
         'single_select', 'multi_select', 'true_false', 'yes_no_ng',
@@ -341,7 +343,7 @@ class QuestionSynthesizer extends AbstractAiService
         Log::info('[QuestionSynthesizer] Batch generation completed', [
             'expected' => $quantity,
             'actual' => count($allQuestions),
-            'filters_used' => !empty($filters),
+            'filters_used' => ! empty($filters),
         ]);
 
         return $allQuestions;
@@ -350,11 +352,9 @@ class QuestionSynthesizer extends AbstractAiService
     /**
      * Generate a single question (for inline mode)
      *
-     * @param  Exam  $exam
      * @param  string  $questionType  Type of question to generate
      * @param  array  $config  Archetype configuration
      * @param  string  $sectionSkill  Section skill (reading, listening, etc.)
-     * @param  GenerationPlan  $plan
      * @param  array|null  $filter  Optional filter specification (type, difficulty, tags, etc.)
      */
     protected function generateSingleQuestion(
@@ -421,7 +421,31 @@ class QuestionSynthesizer extends AbstractAiService
             throw new \Exception('Failed to generate question - empty result');
         }
 
-        return $questions[0];
+        $question = $questions[0];
+
+        // CRITICAL FIX: Propagate group_id and question_id from filter to generated question
+        // This ensures skeleton questions in DB can be matched and updated
+        if ($filter) {
+            if (isset($filter['group_id'])) {
+                $question['group_id'] = $filter['group_id'];
+            }
+            if (isset($filter['question_id'])) {
+                $question['id'] = $filter['question_id'];
+            }
+        }
+
+        // ✅ CHECKPOINT LOGGING: Log question after AI generation and post-process
+        Log::info('[Contract:AfterAI] Question generated', [
+            'question_id' => $question['id'],
+            'group_id' => $question['group_id'] ?? 'NULL',
+            'type' => $question['type'],
+            'has_interaction' => ! empty($question['interaction']),
+            'interaction_keys' => is_array($question['interaction'] ?? null)
+                ? array_keys($question['interaction'])
+                : 'not_array',
+        ]);
+
+        return $question;
     }
 
     /**
@@ -481,18 +505,19 @@ class QuestionSynthesizer extends AbstractAiService
         }
 
         // ✅ FIX 5: Final validation - must be array of objects
-        if (!is_array($decoded) || empty($decoded)) {
+        if (! is_array($decoded) || empty($decoded)) {
             throw new \Exception('Failed to extract questions array from AI response');
         }
 
         // Validate each question
         $validatedQuestions = [];
         foreach ($decoded as $index => $question) {
-            if (!is_array($question)) {
+            if (! is_array($question)) {
                 Log::warning('[QuestionSynthesizer] Skipping non-array item', [
                     'index' => $index,
                     'type' => gettype($question),
                 ]);
+
                 continue;
             }
 
@@ -567,40 +592,71 @@ class QuestionSynthesizer extends AbstractAiService
     }
 
     /**
-     * Get section metadata from exam structure
+     * Get section metadata from ExamCategory (PRIMARY source of truth)
+     *
+     * FIX: Changed to read from ExamCategory instead of structure_v2
+     * See: docs/fixes/fix-dual-source-of-truth.md
      */
     protected function getSectionMetadata(Exam $exam, string|int $sectionId): array
+    {
+        // If $sectionId is numeric, it's an ExamCategory ID - load directly
+        if (is_numeric($sectionId)) {
+            $category = \App\Models\ExamCategory::find($sectionId);
+            if (! $category) {
+                throw new \Exception("ExamCategory not found for ID: {$sectionId}");
+            }
+
+            return $this->buildSectionFromCategory($category);
+        }
+
+        // String sectionId - find by key
+        $category = \App\Models\ExamCategory::where('exam_id', $exam->id)
+            ->where('key', $sectionId)
+            ->first();
+
+        if (! $category) {
+            // Fallback: try to find in structure_v2 (legacy support)
+            Log::warning('[QuestionSynthesizer] ExamCategory not found, falling back to structure_v2', [
+                'exam_id' => $exam->id,
+                'section_id' => $sectionId,
+            ]);
+
+            return $this->getSectionMetadataFromStructure($exam, $sectionId);
+        }
+
+        return $this->buildSectionFromCategory($category);
+    }
+
+    /**
+     * Build section metadata array from ExamCategory model
+     */
+    protected function buildSectionFromCategory(\App\Models\ExamCategory $category): array
+    {
+        $meta = $category->meta ?? [];
+
+        return [
+            'id' => $category->key ?? "sec-{$category->id}",
+            'title' => $category->name,
+            'skill' => $category->skill,
+            'duration_min' => $category->duration_min,
+            'max_score' => $category->max_score,
+            'description' => $category->description,
+            'questions' => $meta['questions'] ?? [],
+            'assembly' => $meta['assembly'] ?? [],
+            'question_archetypes' => $meta['question_archetypes'] ?? [],
+        ];
+    }
+
+    /**
+     * Legacy fallback: Get section from structure_v2
+     *
+     * @deprecated Use ExamCategory as primary source
+     */
+    protected function getSectionMetadataFromStructure(Exam $exam, string $sectionId): array
     {
         $structure = $exam->meta['structure_v2'] ?? [];
         $sections = $structure['sections'] ?? [];
 
-        // If $sectionId is numeric, it's an ExamCategory ID - match by skill
-        if (is_numeric($sectionId)) {
-            $category = \App\Models\ExamCategory::find($sectionId);
-            if (!$category) {
-                throw new \Exception("ExamCategory not found for ID: {$sectionId}");
-            }
-
-            // Match by skill (more reliable than key)
-            $skill = $category->skill;
-            foreach ($sections as $section) {
-                if (($section['skill'] ?? null) === $skill) {
-                    return $section;
-                }
-            }
-
-            // Fallback: try matching by key if skill match fails
-            $sectionKey = $category->key ?? $category->name;
-            foreach ($sections as $section) {
-                if ($section['id'] === $sectionKey) {
-                    return $section;
-                }
-            }
-
-            throw new \Exception("Section not found for skill '{$skill}' or key '{$sectionKey}' (ExamCategory ID: {$sectionId})");
-        }
-
-        // String sectionId - match by section ID
         foreach ($sections as $section) {
             if ($section['id'] === $sectionId) {
                 return $section;
@@ -613,9 +669,10 @@ class QuestionSynthesizer extends AbstractAiService
     /**
      * Get archetype matching specific question type
      *
-     * @param array $section Section metadata with question_archetypes
-     * @param string $questionType Question type (single_select, multi_select, etc.)
+     * @param  array  $section  Section metadata with question_archetypes
+     * @param  string  $questionType  Question type (single_select, multi_select, etc.)
      * @return array Archetype configuration
+     *
      * @throws \Exception If no matching archetype found
      */
     protected function getArchetypeByType(array $section, string $questionType): array
@@ -633,6 +690,7 @@ class QuestionSynthesizer extends AbstractAiService
                     'question_type' => $questionType,
                     'archetype_id' => $archetype['id'] ?? 'unknown',
                 ]);
+
                 return $archetype;
             }
         }

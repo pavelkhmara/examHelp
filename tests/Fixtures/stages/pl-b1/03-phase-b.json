@@ -1,0 +1,778 @@
+{
+    "stage": "phase_b",
+    "exam_id": "pl-b1-extracted",
+    "structure_v2": {
+        "id": "pl-b1-cert-ps-2025-001",
+        "meta": {
+            "name": "Test Polish B1 - Pipeline Stabilization",
+            "tags": [
+                "Państwowy egzamin certyfikatowy",
+                "B1",
+                "polski jako obcy",
+                "adult",
+                "exam-structure"
+            ],
+            "level": "B1",
+            "session": null,
+            "language": "pl",
+            "provider": "Państwowa Komisja ds. Poświadczania Znajomości Języka Polskiego jako Obcego"
+        },
+        "rubrics": null,
+        "version": "2.0",
+        "policies": {
+            "navigation": {
+                "backtracking": true
+            },
+            "proctoring": {
+                "mic": true,
+                "camera": true,
+                "screen": false
+            },
+            "policy_precedence": "task>section>exam"
+        },
+        "sections": [
+            {
+                "id": "sec-listening",
+                "skill": "listening",
+                "tasks": [],
+                "title": "Rozumienie ze słuchu",
+                "assembly": {
+                    "mode": "blueprint",
+                    "slots": [
+                        {
+                            "pick": 1,
+                            "tags": [
+                                "main_idea",
+                                "b1",
+                                "everyday_context"
+                            ],
+                            "type": "listen_mcq",
+                            "slot_id": "L1_main_idea_easy_mcq",
+                            "difficulty": "easy"
+                        },
+                        {
+                            "pick": 1,
+                            "tags": [
+                                "detail",
+                                "inference",
+                                "b1"
+                            ],
+                            "type": "listen_mcq",
+                            "slot_id": "L2_detail_inference_mcq",
+                            "difficulty": "medium"
+                        },
+                        {
+                            "pick": 6,
+                            "tags": [
+                                "pair",
+                                "statements_2",
+                                "b1"
+                            ],
+                            "type": "listen_true_false",
+                            "slot_id": "L3_true_false_pairs",
+                            "difficulty": "medium"
+                        },
+                        {
+                            "pick": 4,
+                            "tags": [
+                                "triplet",
+                                "statements_3",
+                                "b1"
+                            ],
+                            "type": "listen_yes_no_ng",
+                            "slot_id": "L4_yes_no_ng_triplets",
+                            "difficulty": "hard"
+                        },
+                        {
+                            "pick": 4,
+                            "tags": [
+                                "short_phrase",
+                                "spelling",
+                                "b1"
+                            ],
+                            "type": "dictation",
+                            "slot_id": "L5_dictation_short",
+                            "difficulty": "medium"
+                        }
+                    ],
+                    "assertions": {
+                        "total_tasks_equals": 16,
+                        "max_points_sum_equals": 30
+                    }
+                },
+                "max_score": 30,
+                "duration_min": 30,
+                "question_archetypes": [
+                    {
+                        "id": "listen_mcq_main_idea_b1",
+                        "name": "Pytanie wielokrotnego wyboru – główna myśl",
+                        "type": "listen_mcq",
+                        "config": {
+                            "scoring": {
+                                "max_points": 1,
+                                "partial_credit": false
+                            },
+                            "duration_sec": 90,
+                            "options_count": 4
+                        },
+                        "difficulty": "easy"
+                    },
+                    {
+                        "id": "listen_mcq_detail_inference_b1",
+                        "name": "Pytanie wielokrotnego wyboru – szczegóły i wnioskowanie",
+                        "type": "listen_mcq",
+                        "config": {
+                            "scoring": {
+                                "max_points": 1,
+                                "partial_credit": false
+                            },
+                            "duration_sec": 90,
+                            "options_count": 4
+                        },
+                        "difficulty": "medium"
+                    },
+                    {
+                        "id": "listen_true_false_pair_b1",
+                        "name": "Prawda/Fałsz – 2 zdania",
+                        "type": "listen_true_false",
+                        "config": {
+                            "scoring": {
+                                "max_points": 2,
+                                "partial_credit": true
+                            },
+                            "duration_sec": 120,
+                            "statements_count": 2
+                        },
+                        "difficulty": "medium"
+                    },
+                    {
+                        "id": "listen_yes_no_ng_triplet_b1",
+                        "name": "Tak/Nie/Brak informacji – 3 zdania",
+                        "type": "listen_yes_no_ng",
+                        "config": {
+                            "scoring": {
+                                "max_points": 3,
+                                "partial_credit": true
+                            },
+                            "duration_sec": 150,
+                            "statements_count": 3
+                        },
+                        "difficulty": "hard"
+                    },
+                    {
+                        "id": "dictation_short_phrase_b1",
+                        "name": "Dyktando – krótkie wyrażenia",
+                        "type": "dictation",
+                        "config": {
+                            "scoring": {
+                                "max_points": 1,
+                                "partial_credit": false
+                            },
+                            "duration_sec": 75
+                        },
+                        "difficulty": "medium"
+                    }
+                ]
+            },
+            {
+                "id": "sec-reading",
+                "skill": "reading",
+                "tasks": [],
+                "title": "Rozumienie tekstów pisanych",
+                "assembly": {
+                    "mode": "pool",
+                    "filters": [
+                        {
+                            "pick": 3,
+                            "tags": [
+                                "main_idea"
+                            ],
+                            "type": "read_mcq",
+                            "cefr_level": [
+                                "B1"
+                            ],
+                            "difficulty": [
+                                "easy"
+                            ],
+                            "skills_measured": [
+                                "global_comprehension"
+                            ]
+                        },
+                        {
+                            "pick": 4,
+                            "tags": [
+                                "detail",
+                                "inference"
+                            ],
+                            "type": "read_mcq",
+                            "cefr_level": [
+                                "B1"
+                            ],
+                            "difficulty": [
+                                "medium"
+                            ],
+                            "skills_measured": [
+                                "local_comprehension",
+                                "inference"
+                            ]
+                        },
+                        {
+                            "pick": 3,
+                            "type": "read_true_false",
+                            "cefr_level": [
+                                "B1"
+                            ],
+                            "difficulty": [
+                                "medium"
+                            ],
+                            "skills_measured": [
+                                "fact_checking",
+                                "scanning"
+                            ]
+                        },
+                        {
+                            "pick": 3,
+                            "type": "read_yes_no_ng",
+                            "cefr_level": [
+                                "B1"
+                            ],
+                            "difficulty": [
+                                "hard"
+                            ],
+                            "skills_measured": [
+                                "inference",
+                                "information_location"
+                            ]
+                        },
+                        {
+                            "pick": 2,
+                            "tags": [
+                                "headings"
+                            ],
+                            "type": "matching",
+                            "cefr_level": [
+                                "B1"
+                            ],
+                            "difficulty": [
+                                "medium"
+                            ],
+                            "skills_measured": [
+                                "text_structure",
+                                "cohesion"
+                            ]
+                        }
+                    ],
+                    "assertions": {
+                        "total_tasks_equals": 15,
+                        "max_points_sum_equals": 30
+                    }
+                },
+                "max_score": 30,
+                "duration_min": 45,
+                "question_archetypes": [
+                    {
+                        "id": "read_mcq_main_idea",
+                        "name": "Pytanie wielokrotnego wyboru – główna myśl",
+                        "type": "read_mcq",
+                        "config": {
+                            "scoring": {
+                                "max_points": 1,
+                                "partial_credit": false
+                            },
+                            "duration_sec": 75,
+                            "options_count": 4
+                        },
+                        "difficulty": "easy"
+                    },
+                    {
+                        "id": "read_mcq_detail_inference",
+                        "name": "Pytanie wielokrotnego wyboru – szczegóły i wnioskowanie",
+                        "type": "read_mcq",
+                        "config": {
+                            "scoring": {
+                                "max_points": 1,
+                                "partial_credit": false
+                            },
+                            "duration_sec": 90,
+                            "options_count": 4
+                        },
+                        "difficulty": "medium"
+                    },
+                    {
+                        "id": "read_true_false_pair",
+                        "name": "Prawda/Fałsz – 2 zdania",
+                        "type": "read_true_false",
+                        "config": {
+                            "scoring": {
+                                "max_points": 2,
+                                "partial_credit": true
+                            },
+                            "duration_sec": 120,
+                            "statements_count": 2
+                        },
+                        "difficulty": "medium"
+                    },
+                    {
+                        "id": "read_yes_no_ng_triplet",
+                        "name": "Tak/Nie/Brak informacji – 3 zdania",
+                        "type": "read_yes_no_ng",
+                        "config": {
+                            "scoring": {
+                                "max_points": 3,
+                                "partial_credit": true
+                            },
+                            "duration_sec": 150,
+                            "statements_count": 3
+                        },
+                        "difficulty": "hard"
+                    },
+                    {
+                        "id": "matching_headings_04",
+                        "name": "Dobieranie nagłówków – 4 akapity",
+                        "type": "matching",
+                        "config": {
+                            "scoring": {
+                                "max_points": 4,
+                                "partial_credit": true
+                            },
+                            "items_count": 4,
+                            "duration_sec": 210
+                        },
+                        "difficulty": "medium"
+                    }
+                ]
+            },
+            {
+                "id": "sec-grammar",
+                "skill": "grammar_lexis",
+                "tasks": [],
+                "title": "Poprawność gramatyczna",
+                "assembly": {
+                    "mode": "blueprint",
+                    "slots": [
+                        {
+                            "pick": 10,
+                            "tags": [
+                                "morphology",
+                                "case_endings",
+                                "agreement_adj_noun"
+                            ],
+                            "type": "single_select",
+                            "slot_id": "morphology_easy_mcq",
+                            "difficulty": "easy"
+                        },
+                        {
+                            "pick": 8,
+                            "tags": [
+                                "syntax",
+                                "rekcja",
+                                "prepositions",
+                                "word_order"
+                            ],
+                            "type": "single_select",
+                            "slot_id": "syntax_rekcja_mcq",
+                            "difficulty": "medium"
+                        },
+                        {
+                            "pick": 6,
+                            "tags": [
+                                "collocations",
+                                "aspect",
+                                "verb_forms",
+                                "functional_words"
+                            ],
+                            "type": "text_input",
+                            "slot_id": "single_gap_fill",
+                            "difficulty": "medium"
+                        },
+                        {
+                            "pick": 3,
+                            "tags": [
+                                "complex_sentences",
+                                "conjunctions",
+                                "cases",
+                                "agreement"
+                            ],
+                            "type": "sentence_completion",
+                            "slot_id": "two_blanks_sentence_completion",
+                            "difficulty": "hard"
+                        }
+                    ],
+                    "assertions": {
+                        "total_tasks_equals": 27,
+                        "max_points_sum_equals": 30
+                    }
+                },
+                "max_score": 30,
+                "duration_min": 45,
+                "question_archetypes": [
+                    {
+                        "id": "gram_single_select_4opt_easy",
+                        "name": "Wybór formy – morfologia (4 opcje)",
+                        "type": "single_select",
+                        "config": {
+                            "scoring": {
+                                "max_points": 1,
+                                "partial_credit": false
+                            },
+                            "duration_sec": 60,
+                            "options_count": 4
+                        },
+                        "difficulty": "easy"
+                    },
+                    {
+                        "id": "gram_single_select_4opt_medium",
+                        "name": "Wybór formy – składnia i rekcja (4 opcje)",
+                        "type": "single_select",
+                        "config": {
+                            "scoring": {
+                                "max_points": 1,
+                                "partial_credit": false
+                            },
+                            "duration_sec": 75,
+                            "options_count": 4
+                        },
+                        "difficulty": "medium"
+                    },
+                    {
+                        "id": "gram_text_input_single_gap",
+                        "name": "Uzupełnij lukę – jedno słowo",
+                        "type": "text_input",
+                        "config": {
+                            "scoring": {
+                                "max_points": 1,
+                                "partial_credit": false
+                            },
+                            "duration_sec": 75,
+                            "input_constraints": {
+                                "mode": "single_word",
+                                "max_chars": 20,
+                                "case_sensitive": false
+                            }
+                        },
+                        "difficulty": "medium"
+                    },
+                    {
+                        "id": "gram_sentence_completion_two_blanks",
+                        "name": "Uzupełnij zdanie – 2 luki",
+                        "type": "sentence_completion",
+                        "config": {
+                            "scoring": {
+                                "max_points": 2,
+                                "partial_credit": true
+                            },
+                            "blanks_count": 2,
+                            "duration_sec": 120,
+                            "supports_word_bank": true
+                        },
+                        "difficulty": "hard"
+                    }
+                ]
+            },
+            {
+                "id": "sec-writing",
+                "skill": "writing",
+                "tasks": [],
+                "title": "Pisanie",
+                "assembly": {
+                    "mode": "blueprint",
+                    "slots": [
+                        {
+                            "pick": 1,
+                            "tags": [
+                                "short",
+                                "functional",
+                                "email",
+                                "message",
+                                "announcement",
+                                "notice",
+                                "advert",
+                                "B1"
+                            ],
+                            "type": "writing_prompt",
+                            "slot_id": "slot_short_functional"
+                        },
+                        {
+                            "pick": 1,
+                            "tags": [
+                                "long",
+                                "opinion_essay",
+                                "argumentative",
+                                "formal_letter",
+                                "complaint",
+                                "B1"
+                            ],
+                            "type": "writing_prompt",
+                            "slot_id": "slot_long_text"
+                        }
+                    ],
+                    "assertions": {
+                        "total_tasks_equals": 2,
+                        "max_points_sum_equals": 40
+                    }
+                },
+                "max_score": 40,
+                "duration_min": 60,
+                "question_archetypes": [
+                    {
+                        "id": "writing_prompt_b1_short_email",
+                        "name": "Functional Writing: Email/Message (short)",
+                        "type": "writing_prompt",
+                        "config": {
+                            "genres": [
+                                "email",
+                                "message"
+                            ],
+                            "scoring": {
+                                "max_points": 15,
+                                "partial_credit": true
+                            },
+                            "context_tags": [
+                                "everyday",
+                                "arrangements",
+                                "requests",
+                                "information"
+                            ],
+                            "duration_sec": 1200,
+                            "word_count_max": 120,
+                            "word_count_min": 80,
+                            "allowed_registers": [
+                                "informal",
+                                "neutral"
+                            ]
+                        },
+                        "difficulty": "easy"
+                    },
+                    {
+                        "id": "writing_prompt_b1_short_notice",
+                        "name": "Functional Writing: Announcement/Notice (short)",
+                        "type": "writing_prompt",
+                        "config": {
+                            "genres": [
+                                "announcement",
+                                "notice",
+                                "advert"
+                            ],
+                            "scoring": {
+                                "max_points": 15,
+                                "partial_credit": true
+                            },
+                            "context_tags": [
+                                "public",
+                                "everyday",
+                                "informative"
+                            ],
+                            "duration_sec": 1200,
+                            "word_count_max": 120,
+                            "word_count_min": 80,
+                            "allowed_registers": [
+                                "neutral"
+                            ]
+                        },
+                        "difficulty": "medium"
+                    },
+                    {
+                        "id": "writing_prompt_b1_long_opinion",
+                        "name": "Long Writing: Opinion/Argumentative",
+                        "type": "writing_prompt",
+                        "config": {
+                            "genres": [
+                                "opinion_essay",
+                                "argumentative"
+                            ],
+                            "scoring": {
+                                "max_points": 25,
+                                "partial_credit": true
+                            },
+                            "context_tags": [
+                                "society",
+                                "education",
+                                "lifestyle",
+                                "work"
+                            ],
+                            "duration_sec": 2400,
+                            "word_count_max": 220,
+                            "word_count_min": 180,
+                            "allowed_registers": [
+                                "neutral",
+                                "formal"
+                            ],
+                            "structure_prompts": [
+                                "introduction",
+                                "arguments_with_examples",
+                                "conclusion"
+                            ]
+                        },
+                        "difficulty": "medium"
+                    },
+                    {
+                        "id": "writing_prompt_b1_long_complaint",
+                        "name": "Long Writing: Formal Complaint/Letter",
+                        "type": "writing_prompt",
+                        "config": {
+                            "genres": [
+                                "formal_letter",
+                                "complaint"
+                            ],
+                            "scoring": {
+                                "max_points": 25,
+                                "partial_credit": true
+                            },
+                            "context_tags": [
+                                "services",
+                                "shopping",
+                                "public_institutions"
+                            ],
+                            "duration_sec": 2400,
+                            "word_count_max": 220,
+                            "word_count_min": 180,
+                            "allowed_registers": [
+                                "formal"
+                            ],
+                            "structure_prompts": [
+                                "situation_description",
+                                "problem_details",
+                                "demands_or_solution",
+                                "closing"
+                            ]
+                        },
+                        "difficulty": "hard"
+                    }
+                ]
+            },
+            {
+                "id": "sec-speaking",
+                "skill": "speaking",
+                "tasks": [],
+                "title": "Mówienie",
+                "assembly": {
+                    "mode": "blueprint",
+                    "slots": [
+                        {
+                            "pick": 1,
+                            "tags": [
+                                "personal",
+                                "warmup",
+                                "B1"
+                            ],
+                            "type": "speaking_prompt",
+                            "slot_id": "slot_warmup",
+                            "difficulty": "easy"
+                        },
+                        {
+                            "pick": 1,
+                            "tags": [
+                                "picture_description",
+                                "opinion",
+                                "B1"
+                            ],
+                            "type": "speaking_prompt",
+                            "slot_id": "slot_monologue",
+                            "difficulty": "medium"
+                        },
+                        {
+                            "pick": 1,
+                            "tags": [
+                                "everyday",
+                                "service",
+                                "arrangements",
+                                "B1"
+                            ],
+                            "type": "roleplay",
+                            "slot_id": "slot_roleplay",
+                            "difficulty": "medium"
+                        }
+                    ],
+                    "assertions": {
+                        "total_tasks_equals": 3
+                    }
+                },
+                "max_score": 40,
+                "duration_min": 15,
+                "question_archetypes": [
+                    {
+                        "id": "sp_warmup_personal_01",
+                        "name": "Warm-up - Personal Questions",
+                        "type": "speaking_prompt",
+                        "config": {
+                            "scoring": {
+                                "max_points": 6,
+                                "partial_credit": true
+                            },
+                            "recording": {
+                                "max_retries": 1,
+                                "mic_required": true
+                            },
+                            "prompt_count": 2,
+                            "prep_time_sec": 15,
+                            "response_time_sec": 60
+                        },
+                        "difficulty": "easy"
+                    },
+                    {
+                        "id": "sp_monologue_description_01",
+                        "name": "Monologue - Describe a Picture and Give Opinion",
+                        "type": "speaking_prompt",
+                        "config": {
+                            "scoring": {
+                                "max_points": 18,
+                                "partial_credit": true
+                            },
+                            "materials": [
+                                "image"
+                            ],
+                            "recording": {
+                                "max_retries": 1,
+                                "mic_required": true
+                            },
+                            "prep_time_sec": 45,
+                            "response_time_sec": 120
+                        },
+                        "difficulty": "medium"
+                    },
+                    {
+                        "id": "rp_everyday_situation_01",
+                        "name": "Role-play - Everyday Situation",
+                        "type": "roleplay",
+                        "config": {
+                            "scoring": {
+                                "max_points": 16,
+                                "partial_credit": true
+                            },
+                            "recording": {
+                                "max_retries": 1,
+                                "mic_required": true
+                            },
+                            "prep_time_sec": 30,
+                            "total_time_sec": 180,
+                            "turns_expected": 6,
+                            "max_turn_duration_sec": 30
+                        },
+                        "difficulty": "medium"
+                    }
+                ]
+            }
+        ],
+        "resources": null,
+        "pass_policy": {
+            "mode": "mixed",
+            "overall_threshold_percent": 60,
+            "per_section_threshold_percent": 40
+        }
+    },
+    "$schema": "../_schemas/03-phase-b.json",
+    "version": "1.0",
+    "_comparison_hints": {
+        "critical_fields": [
+            "structure_v2.sections[].assembly.mode",
+            "structure_v2.sections[].assembly.question_groups[].questions",
+            "structure_v2.sections[].assembly.question_groups[].playback_settings.max_plays"
+        ],
+        "flexible_fields": [
+            "structure_v2.sections[].assembly.question_groups[].instructions",
+            "structure_v2.sections[].assembly.question_groups[].stimulus"
+        ],
+        "ignore_fields": []
+    },
+    "_notes": "Extracted from exam: a069581a-5c5e-4bcc-bc51-bafd0ce22330 (Test Polish B1 - Pipeline Stabilization)"
+}

@@ -1,0 +1,55 @@
+{
+    "exam_id": "a073d2c9-d888-4604-8a2f-75bf95fa1953",
+    "stage": "resolve_plans",
+    "label": "monitoring-baseline",
+    "hash": "c76626e9ed1bd359d39fda198e2e89f6caf9f9b22f144a05c8917a961bb6c34c",
+    "data": {
+        "stage": "resolve_plans",
+        "exam_id": "a073d2c9-d888-4604-8a2f-75bf95fa1953",
+        "generation_plans": [
+            {
+                "section_id": "listening",
+                "group_id": "listening-part-1",
+                "questions_count": 10,
+                "question_type": "dictation",
+                "synthesis_mode": "inline"
+            },
+            {
+                "section_id": "listening",
+                "group_id": "listening-part-2",
+                "questions_count": 10,
+                "question_type": "listen_mcq",
+                "synthesis_mode": "inline"
+            },
+            {
+                "section_id": "listening",
+                "group_id": "listening-part-3",
+                "questions_count": 10,
+                "question_type": "listen_mcq",
+                "synthesis_mode": "inline"
+            },
+            {
+                "section_id": "listening",
+                "group_id": "listening-part-4",
+                "questions_count": 10,
+                "question_type": "dictation",
+                "synthesis_mode": "inline"
+            }
+        ],
+        "summary": {
+            "total_plans": 4,
+            "by_section": {
+                "listening": {
+                    "plans": 4,
+                    "questions": 40
+                }
+            }
+        }
+    },
+    "captured_at": "2025-11-27T10:33:58+00:00",
+    "metadata": {
+        "exam_title": "[MONITOR-REAL-SYNTH] IELTS Listening",
+        "exam_level": "B1",
+        "research_status": "completed"
+    }
+}

@@ -20,15 +20,15 @@ class RejectAllVariantsAction extends Action
 
     public $uriKey = 'reject-all-variants';
 
-    /**
-     * Perform the action on the given models.
-     */
-    public function authorizedToRun(\Illuminate\Http\Request $request, $model)
+    public function authorizedToRun(\Illuminate\Http\Request $request, $model): bool
     {
         return true;
     }
 
-    public function handle(ActionFields $fields, Collection $models)
+    /**
+     * @param  Collection<int, \App\Models\Exam>  $models
+     */
+    public function handle(ActionFields $fields, Collection $models): mixed
     {
         foreach ($models as $exam) {
             /** @var Exam $exam */
@@ -38,7 +38,7 @@ class RejectAllVariantsAction extends Action
                 ->latest()
                 ->first();
 
-            if (!$task) {
+            if (! $task) {
                 return Action::danger('No pending task found for this exam.');
             }
 
@@ -50,7 +50,7 @@ class RejectAllVariantsAction extends Action
             $identity['user_rejected_all'] = true;
             $identity['rejected_at'] = now()->toISOString();
 
-            if (!empty($notes)) {
+            if (! empty($notes)) {
                 $identity['rejection_notes'] = $notes;
             }
 
@@ -58,7 +58,7 @@ class RejectAllVariantsAction extends Action
             $result['identity'] = $identity;
             $task->result = $result;
             $task->status = 'failed';
-            $task->error = 'User rejected all exam variants - none match their exam. ' . ($notes ?? '');
+            $task->error = 'User rejected all exam variants - none match their exam. '.($notes ?? '');
             $task->save();
 
             // Add activity log

@@ -15,8 +15,10 @@ use Illuminate\Support\Facades\Log;
  */
 class UnsplashImageSearchProvider implements ImageSearchProvider
 {
-    private string $apiKey;
+    private ?string $apiKey;
+
     private string $baseUrl;
+
     private int $timeout;
 
     public function __construct()
@@ -25,8 +27,12 @@ class UnsplashImageSearchProvider implements ImageSearchProvider
         $this->baseUrl = config('ai.images.unsplash.base_url', 'https://api.unsplash.com');
         $this->timeout = config('ai.images.timeout', 30);
 
-        if (empty($this->apiKey)) {
-            throw new \RuntimeException('Unsplash API key not configured (AI_IMAGE_UNSPLASH_KEY)');
+        // Fail-fast validation: если image search enabled но API key отсутствует
+        if (config('ai.images.enabled', false) && ! $this->apiKey) {
+            throw new \RuntimeException(
+                'Image search is enabled (AI_IMAGES_ENABLED=true) but Unsplash API key not configured. '.
+                'Set AI_IMAGE_UNSPLASH_KEY in .env file, or disable image search with AI_IMAGES_ENABLED=false.'
+            );
         }
     }
 
@@ -38,15 +44,21 @@ class UnsplashImageSearchProvider implements ImageSearchProvider
     /**
      * Search for images on Unsplash
      *
-     * @param string $query Search query
-     * @param int $count Number of results (max 30 per page)
-     * @return array
+     * @param  string  $query  Search query
+     * @param  int  $count  Number of results (max 30 per page)
+     *
      * @throws \Exception
      */
     public function search(string $query, int $count = 15): array
     {
         if (empty($query)) {
             throw new \InvalidArgumentException('Search query cannot be empty');
+        }
+
+        if (! $this->apiKey) {
+            Log::warning('[UnsplashImageSearch] API key not configured, returning empty results');
+
+            return [];
         }
 
         Log::info('[UnsplashImageSearch] Searching images', [
@@ -56,17 +68,17 @@ class UnsplashImageSearchProvider implements ImageSearchProvider
 
         try {
             $response = Http::withHeaders([
-                'Authorization' => 'Client-ID ' . $this->apiKey,
+                'Authorization' => 'Client-ID '.$this->apiKey,
                 'Accept-Version' => 'v1',
             ])
-            ->timeout($this->timeout)
-            ->get($this->baseUrl . '/search/photos', [
-                'query' => $query,
-                'per_page' => min($count, 30), // Unsplash max is 30 per page
-                'orientation' => 'landscape', // Prefer landscape for exam materials
-            ]);
+                ->timeout($this->timeout)
+                ->get($this->baseUrl.'/search/photos', [
+                    'query' => $query,
+                    'per_page' => min($count, 30), // Unsplash max is 30 per page
+                    'orientation' => 'landscape', // Prefer landscape for exam materials
+                ]);
 
-            if (!$response->successful()) {
+            if (! $response->successful()) {
                 $error = $response->json('errors.0') ?? $response->body();
                 Log::error('[UnsplashImageSearch] API error', [
                     'status' => $response->status(),
@@ -80,6 +92,7 @@ class UnsplashImageSearchProvider implements ImageSearchProvider
 
             if (empty($results)) {
                 Log::warning('[UnsplashImageSearch] No results found', ['query' => $query]);
+
                 return [];
             }
 

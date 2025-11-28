@@ -23,8 +23,8 @@ class ExamMetadataAnalysisService extends AbstractAiService
     /**
      * Analyze exam metadata from user input, description, and identity fields
      *
-     * @param Exam $exam The exam to analyze
-     * @param GenerationTask|null $task Optional task for logging
+     * @param  Exam  $exam  The exam to analyze
+     * @param  GenerationTask|null  $task  Optional task for logging
      * @return array Analysis result with user_meta, identity updates, and system_analysis
      */
     public function analyze(Exam $exam, ?GenerationTask $task = null): array
@@ -32,14 +32,16 @@ class ExamMetadataAnalysisService extends AbstractAiService
         Log::info("ExamMetadataAnalysisService: Starting analysis for exam {$exam->id}");
 
         // Step 1: Check if user_input is valid JSON and parse it
-        $parsedUserInput = $this->parseUserInput($exam->user_input);
+        /** @phpstan-ignore-next-line treatPhpDocTypesAsCertain */
+        $userInputString = is_string($exam->user_input) ? $exam->user_input : null;
+        $parsedUserInput = $this->parseUserInput($userInputString);
 
         // Step 2: Determine if we need AI analysis
         $needsAiAnalysis = $this->needsAiAnalysis($exam, $parsedUserInput);
 
-        if (!$needsAiAnalysis && !empty($parsedUserInput)) {
+        if (! $needsAiAnalysis && ! empty($parsedUserInput)) {
             // We have complete parsed JSON, no AI needed
-            Log::info("ExamMetadataAnalysisService: Complete JSON provided, skipping AI");
+            Log::info('ExamMetadataAnalysisService: Complete JSON provided, skipping AI');
 
             // Build system analysis with change tracking even without AI
             $oldUserMeta = $exam->user_meta ?? [];
@@ -72,7 +74,7 @@ class ExamMetadataAnalysisService extends AbstractAiService
         try {
             $validated = $this->validator->validate($aiResponse);
         } catch (\Exception $e) {
-            Log::error("ExamMetadataAnalysisService: Validation failed", [
+            Log::error('ExamMetadataAnalysisService: Validation failed', [
                 'error' => $e->getMessage(),
                 'response' => $aiResponse,
             ]);
@@ -81,7 +83,7 @@ class ExamMetadataAnalysisService extends AbstractAiService
                 'user_meta' => $parsedUserInput ?? [],
                 'identity' => $exam->identity ?? [],
                 'system_analysis' => [
-                    'critical' => ['AI response validation failed: ' . $e->getMessage()],
+                    'critical' => ['AI response validation failed: '.$e->getMessage()],
                 ],
             ];
         }
@@ -97,7 +99,7 @@ class ExamMetadataAnalysisService extends AbstractAiService
             $validated['identity'] ?? []
         );
 
-        Log::info("ExamMetadataAnalysisService: Analysis completed", [
+        Log::info('ExamMetadataAnalysisService: Analysis completed', [
             'user_meta_keys' => array_keys($newUserMeta),
             'identity_keys' => array_keys($mergedIdentity),
         ]);
@@ -119,18 +121,19 @@ class ExamMetadataAnalysisService extends AbstractAiService
         }
 
         $trimmed = trim($userInput);
-        if (!str_starts_with($trimmed, '{') && !str_starts_with($trimmed, '[')) {
+        if (! str_starts_with($trimmed, '{') && ! str_starts_with($trimmed, '[')) {
             return null;
         }
 
         try {
             $decoded = json_decode($trimmed, true, 512, JSON_THROW_ON_ERROR);
             if (is_array($decoded)) {
-                Log::info("ExamMetadataAnalysisService: Parsed user_input as JSON");
+                Log::info('ExamMetadataAnalysisService: Parsed user_input as JSON');
+
                 return $decoded;
             }
         } catch (\JsonException $e) {
-            Log::debug("ExamMetadataAnalysisService: user_input is not valid JSON");
+            Log::debug('ExamMetadataAnalysisService: user_input is not valid JSON');
         }
 
         return null;
@@ -146,9 +149,9 @@ class ExamMetadataAnalysisService extends AbstractAiService
         $requiredIdentity = ['exam_name', 'exam_family'];
 
         // Check if parsed JSON has all required fields
-        if (!empty($parsedUserInput)) {
-            $hasAllUserMeta = !array_diff($requiredUserMeta, array_keys($parsedUserInput));
-            $hasAllIdentity = !array_diff($requiredIdentity, array_keys($parsedUserInput));
+        if (! empty($parsedUserInput)) {
+            $hasAllUserMeta = ! array_diff($requiredUserMeta, array_keys($parsedUserInput));
+            $hasAllIdentity = ! array_diff($requiredIdentity, array_keys($parsedUserInput));
 
             if ($hasAllUserMeta && $hasAllIdentity) {
                 return false; // Complete data, no AI needed
@@ -156,7 +159,7 @@ class ExamMetadataAnalysisService extends AbstractAiService
         }
 
         // If we have any text input or incomplete JSON, we need AI
-        return !empty($exam->user_input) || !empty($exam->description) || !empty($parsedUserInput);
+        return ! empty($exam->user_input) || ! empty($exam->description) || ! empty($parsedUserInput);
     }
 
     /**
@@ -184,22 +187,22 @@ class ExamMetadataAnalysisService extends AbstractAiService
         $sources = [];
 
         // User input (original text)
-        if (!empty($exam->user_input)) {
+        if (! empty($exam->user_input)) {
             $sources['user_input'] = $exam->user_input;
         }
 
         // Parsed user input (if JSON)
-        if (!empty($parsedUserInput)) {
+        if (! empty($parsedUserInput)) {
             $sources['parsed_user_input'] = $parsedUserInput;
         }
 
         // Description
-        if (!empty($exam->description)) {
+        if (! empty($exam->description)) {
             $sources['description'] = $exam->description;
         }
 
         // Existing identity fields
-        if (!empty($exam->identity)) {
+        if (! empty($exam->identity)) {
             $sources['existing_identity'] = $exam->identity;
         }
 
@@ -241,7 +244,7 @@ class ExamMetadataAnalysisService extends AbstractAiService
             'model' => config('ai.model'), // Use gpt-5-mini for this task
         ];
 
-        Log::debug("ExamMetadataAnalysisService: Calling AI", ['payload' => $payload]);
+        Log::debug('ExamMetadataAnalysisService: Calling AI', ['payload' => $payload]);
 
         $response = $this->ai->generate($payload, $opts);
 
@@ -250,8 +253,8 @@ class ExamMetadataAnalysisService extends AbstractAiService
             $this->log($task, 'metadata_analysis', $payload, $response);
         }
 
-        if (!($response['ok'] ?? false)) {
-            throw new \RuntimeException('AI call failed: ' . ($response['error'] ?? 'Unknown error'));
+        if (! ($response['ok'] ?? false)) {
+            throw new \RuntimeException('AI call failed: '.($response['error'] ?? 'Unknown error'));
         }
 
         // OpenAiProvider returns 'content', not 'parsed'
@@ -277,7 +280,7 @@ class ExamMetadataAnalysisService extends AbstractAiService
         if ($confidence >= 0.8) {
             $analysis['info'][] = sprintf('Confidence is very high - %.2f', $confidence);
         } elseif ($confidence < 0.5) {
-            $analysis['warning'][] = 'Confidence too low - ' . sprintf('%.2f', $confidence);
+            $analysis['warning'][] = 'Confidence too low - '.sprintf('%.2f', $confidence);
         }
 
         // Check for conflicts between sources
@@ -303,7 +306,7 @@ class ExamMetadataAnalysisService extends AbstractAiService
 
         // Sources used
         $sourcesUsed = array_keys($sources);
-        $analysis['info'][] = 'Sources analyzed: ' . implode(', ', $sourcesUsed);
+        $analysis['info'][] = 'Sources analyzed: '.implode(', ', $sourcesUsed);
 
         // Add AI confidence
         $analysis['confidence'] = $confidence;
@@ -348,6 +351,7 @@ class ExamMetadataAnalysisService extends AbstractAiService
                     'new_value' => $newValue,
                 ];
                 $analysis['info'][] = sprintf('%s was set to: %s', $label, $this->formatValue($newValue));
+
                 continue;
             }
 
@@ -360,6 +364,7 @@ class ExamMetadataAnalysisService extends AbstractAiService
                     'old_value' => $oldValue,
                 ];
                 $analysis['warning'][] = sprintf('%s was removed (was: %s)', $label, $this->formatValue($oldValue));
+
                 continue;
             }
 
@@ -390,7 +395,7 @@ class ExamMetadataAnalysisService extends AbstractAiService
     /**
      * Format a value for display in messages
      */
-    private function formatValue($value): string
+    private function formatValue(mixed $value): string
     {
         if (is_bool($value)) {
             return $value ? 'Yes' : 'No';

@@ -22,16 +22,19 @@ class OverviewStatusCard extends Card
         $structure = $this->exam->meta['structure_v2'] ?? null;
 
         $phaseA = [
-            'completed' => !empty($structure),
+            'completed' => ! empty($structure),
             'sections_count' => count($structure['sections'] ?? []),
             'generated_at' => $structure['generated_at'] ?? null,
         ];
 
+        /** @var array<int|string, mixed> $sections */
+        $sections = $structure['sections'] ?? [];
+
         $phaseB = [
-            'completed' => !empty($structure['sections'][0]['assembly'] ?? null),
+            'completed' => ! empty($structure['sections'][0]['assembly'] ?? null),
             'assembly_mode' => $structure['sections'][0]['assembly']['mode'] ?? null,
-            'questions_count' => collect($structure['sections'] ?? [])
-                ->sum(fn ($s) => count($s['question_archetypes'] ?? $s['questions'] ?? [])),
+            'questions_count' => collect($sections)
+                ->sum(fn (array $s) => count($s['question_archetypes'] ?? $s['questions'] ?? [])),
         ];
 
         return array_merge(parent::jsonSerialize(), [

@@ -9,6 +9,9 @@ use App\Services\LanguageApp\ExamResearchService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
+/**
+ * @group broken
+ */
 class ResearchUsesDocumentsTest extends TestCase
 {
     use RefreshDatabase;

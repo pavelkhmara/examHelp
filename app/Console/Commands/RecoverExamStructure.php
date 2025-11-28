@@ -40,7 +40,7 @@ class RecoverExamStructure extends Command
     /**
      * Execute the console command.
      */
-    public function handle(ExamStructureRecoveryService $recovery)
+    public function handle(ExamStructureRecoveryService $recovery): int
     {
         // Scan mode - check all exams
         if ($this->option('scan')) {
@@ -55,15 +55,17 @@ class RecoverExamStructure extends Command
         // Single exam mode
         $examId = $this->argument('examId');
 
-        if (!$examId) {
+        if (! $examId) {
             $this->error('Please provide an exam ID or use --all or --scan');
+
             return 1;
         }
 
         $exam = Exam::find($examId);
 
-        if (!$exam) {
+        if (! $exam) {
             $this->error("Exam {$examId} not found");
+
             return 1;
         }
 
@@ -103,7 +105,7 @@ class RecoverExamStructure extends Command
         $this->newLine();
 
         // Category details
-        if (!empty($diagnostics['categories'])) {
+        if (! empty($diagnostics['categories'])) {
             $this->info('📂 Categories Details:');
             $this->table(
                 ['Key', 'Name', 'Has Archetypes', 'Has Steps', 'Archetypes Count', 'Steps Count', 'Examples'],
@@ -163,7 +165,7 @@ class RecoverExamStructure extends Command
                 ]
             );
 
-            if (!empty($result['errors'])) {
+            if (! empty($result['errors'])) {
                 $this->newLine();
                 $this->error('⚠️ Errors:');
                 foreach ($result['errors'] as $error) {
@@ -171,7 +173,7 @@ class RecoverExamStructure extends Command
                 }
             }
 
-            if (!$dryRun) {
+            if (! $dryRun) {
                 $this->newLine();
                 $this->info('💾 Changes have been saved to the database');
             }
@@ -208,6 +210,7 @@ class RecoverExamStructure extends Command
 
         if (empty($needingRecovery)) {
             $this->info('✅ All exams have complete structures');
+
             return 0;
         }
 
@@ -228,7 +231,7 @@ class RecoverExamStructure extends Command
         );
 
         $this->newLine();
-        $this->info("💡 To recover all: php artisan exam:recover-structure --all");
+        $this->info('💡 To recover all: php artisan exam:recover-structure --all');
 
         return 0;
     }
@@ -260,6 +263,7 @@ class RecoverExamStructure extends Command
 
         if (empty($examIds)) {
             $this->info('✅ All exams have complete structures');
+
             return 0;
         }
 
@@ -292,7 +296,7 @@ class RecoverExamStructure extends Command
             }
         }
 
-        if (!$dryRun && $results['recovered'] > 0) {
+        if (! $dryRun && $results['recovered'] > 0) {
             $this->newLine();
             $this->info('💾 Changes have been saved to the database');
         }

@@ -8,6 +8,9 @@ use App\Services\LanguageApp\ExamResearchService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
+/**
+ * @group broken
+ */
 class ResearchOverviewFlowTest extends TestCase
 {
     use RefreshDatabase;

@@ -8,6 +8,8 @@ use App\Models\ExamExampleQuestion;
 use App\Models\GenerationLog;
 use App\Models\GenerationTask;
 use App\Models\Question;
+use App\Services\Golden\GoldenLoader;
+use App\Services\Golden\SnapshotManager;
 use App\Services\LanguageApp\ExamStructureRecoveryService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -18,7 +20,7 @@ class DiagnosticsDashboardController extends Controller
      * Show diagnostics dashboard
      * GET /diagnostics-dashboard
      */
-    public function index(ExamStructureRecoveryService $recovery)
+    public function index(ExamStructureRecoveryService $recovery): \Illuminate\View\View
     {
         // Get system statistics
         $taskStatusCounts = GenerationTask::query()
@@ -123,11 +125,11 @@ class DiagnosticsDashboardController extends Controller
      * Diagnose a specific exam
      * GET /diagnostics-dashboard/exam/{examId}
      */
-    public function diagnoseExam(string $examId)
+    public function diagnoseExam(string $examId): \Illuminate\Http\JsonResponse
     {
         $exam = Exam::find($examId);
 
-        if (!$exam) {
+        if (! $exam) {
             return response()->json([
                 'success' => false,
                 'error' => 'Exam not found',
@@ -154,6 +156,7 @@ class DiagnosticsDashboardController extends Controller
         $activeTasks = $researchTasks->whereIn('status', ['queued', 'running'])
             ->map(function ($task) {
                 $stuckMinutes = now()->diffInMinutes($task->updated_at);
+
                 return [
                     'id' => $task->id,
                     'status' => $task->status,
@@ -171,6 +174,7 @@ class DiagnosticsDashboardController extends Controller
         // Get recent tasks (last 5)
         $recentTasks = $tasks->take(5)->map(function ($task) {
             $duration = $task->updated_at->diffInMinutes($task->created_at);
+
             return [
                 'id' => $task->id,
                 'type' => $task->type,
@@ -323,7 +327,7 @@ class DiagnosticsDashboardController extends Controller
      * Scan all exams for structure recovery needs
      * GET /api/diagnostics/structure-recovery/scan
      */
-    public function scanStructureRecovery(ExamStructureRecoveryService $recovery)
+    public function scanStructureRecovery(ExamStructureRecoveryService $recovery): \Illuminate\Http\JsonResponse
     {
         $exams = Exam::with('categories')->get();
         $needingRecovery = [];
@@ -352,11 +356,11 @@ class DiagnosticsDashboardController extends Controller
      * Recover structure for a single exam
      * POST /api/diagnostics/structure-recovery/recover/{examId}
      */
-    public function recoverStructure(string $examId, Request $request, ExamStructureRecoveryService $recovery)
+    public function recoverStructure(string $examId, Request $request, ExamStructureRecoveryService $recovery): \Illuminate\Http\JsonResponse
     {
         $exam = Exam::find($examId);
 
-        if (!$exam) {
+        if (! $exam) {
             return response()->json([
                 'success' => false,
                 'error' => 'Exam not found',
@@ -387,11 +391,11 @@ class DiagnosticsDashboardController extends Controller
      * Diagnose structure for a single exam
      * GET /api/diagnostics/structure-recovery/diagnose/{examId}
      */
-    public function diagnoseStructure(string $examId, ExamStructureRecoveryService $recovery)
+    public function diagnoseStructure(string $examId, ExamStructureRecoveryService $recovery): \Illuminate\Http\JsonResponse
     {
         $exam = Exam::find($examId);
 
-        if (!$exam) {
+        if (! $exam) {
             return response()->json([
                 'success' => false,
                 'error' => 'Exam not found',
@@ -420,15 +424,15 @@ class DiagnosticsDashboardController extends Controller
      * Compare generated exam with reference exam
      * GET /diagnostics-dashboard/compare/{genId}/{refId}
      */
-    public function compareExams(string $genId, string $refId)
+    public function compareExams(string $genId, string $refId): \Illuminate\Http\JsonResponse
     {
         $gen = Exam::find($genId);
         $ref = Exam::find($refId);
 
-        if (!$gen) {
+        if (! $gen) {
             return response()->json(['success' => false, 'error' => "Generated exam not found: $genId"], 404);
         }
-        if (!$ref) {
+        if (! $ref) {
             return response()->json(['success' => false, 'error' => "Reference exam not found: $refId"], 404);
         }
 
@@ -495,13 +499,13 @@ class DiagnosticsDashboardController extends Controller
         }
 
         // Question types
-        $genTypes = Question::whereHas('section', fn($q) => $q->where('exam_id', $genId))
+        $genTypes = Question::whereHas('section', fn ($q) => $q->where('exam_id', $genId))
             ->selectRaw('type, COUNT(*) as count')
             ->groupBy('type')
             ->pluck('count', 'type')
             ->toArray();
 
-        $refTypes = Question::whereHas('section', fn($q) => $q->where('exam_id', $refId))
+        $refTypes = Question::whereHas('section', fn ($q) => $q->where('exam_id', $refId))
             ->selectRaw('type, COUNT(*) as count')
             ->groupBy('type')
             ->pluck('count', 'type')
@@ -531,7 +535,7 @@ class DiagnosticsDashboardController extends Controller
         // Recommendations
         $recommendations = [];
         if ($genGroups == 0 && $refGroups > 0) {
-            $recommendations[] = "Question groups are missing - need to implement group generation";
+            $recommendations[] = 'Question groups are missing - need to implement group generation';
         }
         if ($genQuestions < $refQuestions * 0.7) {
             $missing = $refQuestions - $genQuestions;
@@ -542,9 +546,9 @@ class DiagnosticsDashboardController extends Controller
                 $recommendations[] = "Section '{$key}' needs more content (target: {$data['ref_questions']} questions)";
             }
         }
-        $missingTypes = array_keys(array_filter($typeComparison, fn($t) => $t['status'] === 'missing'));
-        if (!empty($missingTypes)) {
-            $recommendations[] = "Missing question types: " . implode(', ', $missingTypes);
+        $missingTypes = array_keys(array_filter($typeComparison, fn ($t) => $t['status'] === 'missing'));
+        if (! empty($missingTypes)) {
+            $recommendations[] = 'Missing question types: '.implode(', ', $missingTypes);
         }
 
         return response()->json([
@@ -584,11 +588,11 @@ class DiagnosticsDashboardController extends Controller
      * Get list of reference exams
      * GET /diagnostics-dashboard/reference-exams
      */
-    public function referenceExams()
+    public function referenceExams(): \Illuminate\Http\JsonResponse
     {
         $refs = Exam::whereJsonContains('meta->is_reference_exam', true)
             ->get()
-            ->map(fn($exam) => [
+            ->map(fn ($exam) => [
                 'id' => $exam->id,
                 'title' => $exam->title,
                 'level' => $exam->level,
@@ -607,7 +611,7 @@ class DiagnosticsDashboardController extends Controller
      * Recover all exams that need it
      * POST /api/diagnostics/structure-recovery/recover-all
      */
-    public function recoverAll(Request $request, ExamStructureRecoveryService $recovery)
+    public function recoverAll(Request $request, ExamStructureRecoveryService $recovery): \Illuminate\Http\JsonResponse
     {
         $dryRun = $request->boolean('dry_run', false);
         $exams = Exam::all();
@@ -644,6 +648,256 @@ class DiagnosticsDashboardController extends Controller
                 'success' => false,
                 'error' => $e->getMessage(),
                 'trace' => app()->environment('local') ? $e->getTraceAsString() : null,
+            ], 500);
+        }
+    }
+
+    // ========================================
+    // Golden Stage Fixtures & Snapshot Methods
+    // ========================================
+
+    /**
+     * Get available golden fixtures
+     * GET /diagnostics-dashboard/golden-fixtures
+     */
+    public function goldenFixtures(GoldenLoader $loader): \Illuminate\Http\JsonResponse
+    {
+        $fixtures = $loader->listFixtures();
+
+        return response()->json([
+            'success' => true,
+            'fixtures' => $fixtures,
+        ]);
+    }
+
+    /**
+     * Compare exam with golden fixture (all stages)
+     * GET /diagnostics-dashboard/golden-compare/{examId}/{fixtureId}
+     */
+    public function goldenCompare(string $examId, string $fixtureId, SnapshotManager $manager, GoldenLoader $loader): \Illuminate\Http\JsonResponse
+    {
+        $exam = Exam::find($examId);
+
+        if (! $exam) {
+            return response()->json(['success' => false, 'error' => "Exam not found: $examId"], 404);
+        }
+
+        $availableStages = $loader->getAvailableStages($fixtureId);
+        if (empty($availableStages)) {
+            return response()->json(['success' => false, 'error' => "Golden fixture not found: $fixtureId"], 404);
+        }
+
+        $results = [];
+        $totalSimilarity = 0;
+        $stageCount = 0;
+
+        foreach ($availableStages as $stage) {
+            try {
+                $golden = $loader->loadStage($fixtureId, $stage);
+                if (! $golden) {
+                    continue;
+                }
+
+                $comparison = $manager->compareWithGolden($exam, $stage, $golden);
+
+                $results[$stage] = [
+                    'similarity' => round($comparison->similarity * 100),
+                    'passed' => $comparison->similarity >= 0.8,
+                    'diffs_count' => count($comparison->diffs),
+                    'diffs' => array_slice($comparison->diffs, 0, 5), // First 5 diffs
+                    'message' => $comparison->message,
+                ];
+
+                $totalSimilarity += $comparison->similarity;
+                $stageCount++;
+            } catch (\Throwable $e) {
+                $results[$stage] = [
+                    'similarity' => 0,
+                    'passed' => false,
+                    'error' => $e->getMessage(),
+                ];
+            }
+        }
+
+        $overallSimilarity = $stageCount > 0 ? round(($totalSimilarity / $stageCount) * 100) : 0;
+        $passedCount = count(array_filter($results, fn ($r) => $r['passed']));
+
+        // Determine grade
+        $grade = match (true) {
+            $overallSimilarity >= 90 => 'excellent',
+            $overallSimilarity >= 75 => 'good',
+            $overallSimilarity >= 60 => 'acceptable',
+            $overallSimilarity >= 40 => 'needs_improvement',
+            default => 'poor',
+        };
+
+        return response()->json([
+            'success' => true,
+            'exam' => [
+                'id' => $exam->id,
+                'title' => $exam->title,
+                'level' => $exam->level,
+                'research_status' => $exam->research_status,
+            ],
+            'fixture' => [
+                'id' => $fixtureId,
+                'stages' => $availableStages,
+            ],
+            'stages' => $results,
+            'summary' => [
+                'overall_similarity' => $overallSimilarity,
+                'grade' => $grade,
+                'passed_stages' => $passedCount,
+                'total_stages' => $stageCount,
+            ],
+        ]);
+    }
+
+    /**
+     * Compare single stage with golden fixture
+     * GET /diagnostics-dashboard/golden-compare/{examId}/{fixtureId}/{stage}
+     */
+    public function goldenCompareStage(string $examId, string $fixtureId, string $stage, SnapshotManager $manager, GoldenLoader $loader): \Illuminate\Http\JsonResponse
+    {
+        $exam = Exam::find($examId);
+
+        if (! $exam) {
+            return response()->json(['success' => false, 'error' => "Exam not found: $examId"], 404);
+        }
+
+        $golden = $loader->loadStage($fixtureId, $stage);
+        if (! $golden) {
+            return response()->json(['success' => false, 'error' => "Golden stage not found: {$fixtureId}/{$stage}"], 404);
+        }
+
+        try {
+            $comparison = $manager->compareWithGolden($exam, $stage, $golden);
+
+            return response()->json([
+                'success' => true,
+                'exam_id' => $examId,
+                'fixture_id' => $fixtureId,
+                'stage' => $stage,
+                'similarity' => round($comparison->similarity * 100),
+                'passed' => $comparison->similarity >= 0.8,
+                'diffs' => $comparison->diffs,
+                'message' => $comparison->message,
+                'current_data' => $comparison->current,
+                'golden_data' => $golden,
+            ]);
+        } catch (\Throwable $e) {
+            return response()->json([
+                'success' => false,
+                'error' => $e->getMessage(),
+                'trace' => app()->environment('local') ? $e->getTraceAsString() : null,
+            ], 500);
+        }
+    }
+
+    /**
+     * Capture snapshot of exam stage
+     * POST /diagnostics-dashboard/snapshot/capture/{examId}
+     */
+    public function snapshotCapture(string $examId, Request $request, SnapshotManager $manager): \Illuminate\Http\JsonResponse
+    {
+        $exam = Exam::find($examId);
+
+        if (! $exam) {
+            return response()->json(['success' => false, 'error' => "Exam not found: $examId"], 404);
+        }
+
+        $stage = $request->input('stage');
+        $label = $request->input('label', 'baseline');
+        $captureAll = $request->boolean('all', false);
+
+        if (! $captureAll && ! $stage) {
+            return response()->json(['success' => false, 'error' => 'Either stage or all=true is required'], 400);
+        }
+
+        $stages = $captureAll ? SnapshotManager::getAvailableStages() : [$stage];
+        $results = [];
+
+        foreach ($stages as $stg) {
+            try {
+                $snapshot = $manager->capture($exam, $stg, $label);
+                $results[$stg] = [
+                    'success' => true,
+                    'label' => $snapshot->label,
+                    'hash' => $snapshot->getShortHash(),
+                ];
+            } catch (\Throwable $e) {
+                $results[$stg] = [
+                    'success' => false,
+                    'error' => $e->getMessage(),
+                ];
+            }
+        }
+
+        return response()->json([
+            'success' => true,
+            'exam_id' => $examId,
+            'label' => $label,
+            'stages' => $results,
+        ]);
+    }
+
+    /**
+     * List snapshots for exam
+     * GET /diagnostics-dashboard/snapshot/list/{examId?}
+     */
+    public function snapshotList(?string $examId, SnapshotManager $manager): \Illuminate\Http\JsonResponse
+    {
+        if ($examId) {
+            $snapshots = $manager->list($examId);
+
+            return response()->json([
+                'success' => true,
+                'exam_id' => $examId,
+                'snapshots' => $snapshots,
+            ]);
+        }
+
+        $exams = $manager->listExams();
+
+        return response()->json([
+            'success' => true,
+            'exams' => $exams,
+        ]);
+    }
+
+    /**
+     * Compare exam with its baseline snapshot
+     * GET /diagnostics-dashboard/snapshot/compare/{examId}/{stage}
+     */
+    public function snapshotCompare(string $examId, string $stage, Request $request, SnapshotManager $manager): \Illuminate\Http\JsonResponse
+    {
+        $exam = Exam::find($examId);
+
+        if (! $exam) {
+            return response()->json(['success' => false, 'error' => "Exam not found: $examId"], 404);
+        }
+
+        $label = $request->input('label');
+
+        try {
+            $comparison = $manager->compare($exam, $stage, $label);
+
+            return response()->json([
+                'success' => true,
+                'exam_id' => $examId,
+                'stage' => $stage,
+                'has_baseline' => $comparison->hasBaseline,
+                'similarity' => $comparison->hasBaseline ? round($comparison->similarity * 100) : null,
+                'passed' => $comparison->hasBaseline ? $comparison->similarity >= 0.8 : null,
+                'baseline_label' => $comparison->baseline?->label,
+                'baseline_hash' => $comparison->baseline?->getShortHash(),
+                'diffs' => $comparison->diffs,
+                'message' => $comparison->message,
+            ]);
+        } catch (\Throwable $e) {
+            return response()->json([
+                'success' => false,
+                'error' => $e->getMessage(),
             ], 500);
         }
     }

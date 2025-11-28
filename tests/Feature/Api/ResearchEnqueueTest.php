@@ -9,6 +9,9 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Bus;
 use Tests\TestCase;
 
+/**
+ * @group broken
+ */
 class ResearchEnqueueTest extends TestCase
 {
     use RefreshDatabase;

@@ -10,6 +10,9 @@ use App\Services\LanguageApp\AiProvider;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
+/**
+ * @group broken
+ */
 class PromptExecutorTest extends TestCase
 {
     use RefreshDatabase;

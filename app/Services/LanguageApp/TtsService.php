@@ -16,30 +16,44 @@ use Illuminate\Support\Facades\Storage;
  */
 class TtsService
 {
-    private string $apiKey;
+    private ?string $apiKey;
+
     private string $baseUrl;
+
     private string $model;
+
     private string $voice;
+
     private float $speed;
+
     private int $timeout;
 
     public function __construct()
     {
-        $this->apiKey = config('ai.tts.api_key', config('ai.api_key'));
+        $this->apiKey = config('ai.tts.api_key') ?: config('ai.api_key');
         $this->baseUrl = config('ai.tts.base_url', 'https://api.openai.com/v1');
         $this->model = config('ai.tts.model', 'tts-1');
         $this->voice = config('ai.tts.voice', 'alloy');
         $this->speed = config('ai.tts.speed', 1.0);
         $this->timeout = config('ai.tts.timeout', 60);
+
+        // Fail-fast validation: если TTS enabled но API key отсутствует
+        if (config('ai.tts.enabled', false) && ! $this->apiKey) {
+            throw new \RuntimeException(
+                'TTS is enabled (AI_TTS_ENABLED=true) but API key not configured. '.
+                'Set AI_TTS_API_KEY or AI_API_KEY in .env file, or disable TTS with AI_TTS_ENABLED=false.'
+            );
+        }
     }
 
     /**
      * Генерирует аудио файл из текста
      *
-     * @param string $text Текст для озвучки
-     * @param string|null $filename Имя файла (без расширения), если null - генерируется автоматически
-     * @param string|null $voice Голос (alloy, echo, fable, onyx, nova, shimmer)
-     * @return array{path: string, url: string} Путь к файлу и публичный URL
+     * @param  string  $text  Текст для озвучки
+     * @param  string|null  $filename  Имя файла (без расширения), если null - генерируется автоматически
+     * @param  string|null  $voice  Голос (alloy, echo, fable, onyx, nova, shimmer)
+     * @return array{path: string, url: string} Путь к файлу и публичный URL (пустые строки если TTS отключен)
+     *
      * @throws \Exception
      */
     public function generateAudio(string $text, ?string $filename = null, ?string $voice = null): array
@@ -49,17 +63,28 @@ class TtsService
         }
 
         // Проверяем включен ли TTS
-        if (!config('ai.tts.enabled', false)) {
+        if (! config('ai.tts.enabled', false)) {
             Log::info('[TtsService] TTS disabled, skipping audio generation');
+
             return [
-                'path' => null,
-                'url' => null,
+                'path' => '',
+                'url' => '',
+            ];
+        }
+
+        // Проверяем наличие API ключа
+        if (! $this->apiKey) {
+            Log::warning('[TtsService] API key not configured, skipping audio generation');
+
+            return [
+                'path' => '',
+                'url' => '',
             ];
         }
 
         // Генерируем имя файла если не указано
-        if (!$filename) {
-            $filename = 'tts_' . md5($text) . '_' . time();
+        if (! $filename) {
+            $filename = 'tts_'.md5($text).'_'.time();
         }
 
         $voice = $voice ?? $this->voice;
@@ -74,19 +99,19 @@ class TtsService
         try {
             // Вызываем OpenAI TTS API
             $response = Http::withHeaders([
-                'Authorization' => 'Bearer ' . $this->apiKey,
+                'Authorization' => 'Bearer '.$this->apiKey,
                 'Content-Type' => 'application/json',
             ])
-            ->timeout($this->timeout)
-            ->post($this->baseUrl . '/audio/speech', [
-                'model' => $this->model,
-                'input' => $text,
-                'voice' => $voice,
-                'speed' => $this->speed,
-                'response_format' => 'mp3',
-            ]);
+                ->timeout($this->timeout)
+                ->post($this->baseUrl.'/audio/speech', [
+                    'model' => $this->model,
+                    'input' => $text,
+                    'voice' => $voice,
+                    'speed' => $this->speed,
+                    'response_format' => 'mp3',
+                ]);
 
-            if (!$response->successful()) {
+            if (! $response->successful()) {
                 $error = $response->json('error.message') ?? $response->body();
                 Log::error('[TtsService] OpenAI TTS API error', [
                     'status' => $response->status(),
@@ -97,7 +122,7 @@ class TtsService
 
             // Сохраняем аудио файл
             $audioContent = $response->body();
-            $relativePath = 'audio/' . date('Y/m/d') . '/' . $filename . '.mp3';
+            $relativePath = 'audio/'.date('Y/m/d').'/'.$filename.'.mp3';
 
             Storage::disk('public')->put($relativePath, $audioContent);
 
@@ -127,7 +152,7 @@ class TtsService
     /**
      * Генерирует аудио для массива текстов (батч)
      *
-     * @param array<array{text: string, filename?: string, voice?: string}> $items
+     * @param  array<int, array{text: string, filename?: string, voice?: string}>  $items
      * @return array<array{path: string|null, url: string|null, error?: string}>
      */
     public function generateBatch(array $items): array
@@ -136,7 +161,7 @@ class TtsService
 
         foreach ($items as $index => $item) {
             try {
-                $text = $item['text'] ?? '';
+                $text = $item['text'];
                 $filename = $item['filename'] ?? null;
                 $voice = $item['voice'] ?? null;
 
@@ -165,7 +190,7 @@ class TtsService
      */
     public function deleteAudio(string $path): bool
     {
-        if (!$path) {
+        if (! $path) {
             return false;
         }
 
@@ -176,6 +201,7 @@ class TtsService
                 'path' => $path,
                 'error' => $e->getMessage(),
             ]);
+
             return false;
         }
     }
@@ -185,7 +211,7 @@ class TtsService
      */
     public function audioExists(string $path): bool
     {
-        if (!$path) {
+        if (! $path) {
             return false;
         }
 
@@ -197,7 +223,7 @@ class TtsService
      */
     public function getAudioUrl(string $path): ?string
     {
-        if (!$path || !$this->audioExists($path)) {
+        if (! $path || ! $this->audioExists($path)) {
             return null;
         }
 

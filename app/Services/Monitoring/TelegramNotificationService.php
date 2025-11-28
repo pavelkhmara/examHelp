@@ -2,14 +2,16 @@
 
 namespace App\Services\Monitoring;
 
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
-use Illuminate\Support\Facades\Cache;
 
 class TelegramNotificationService
 {
     private string $botToken;
+
     private string $chatId;
+
     private bool $enabled;
 
     public function __construct()
@@ -22,19 +24,21 @@ class TelegramNotificationService
     /**
      * Send alert message to Telegram
      *
-     * @param string $message Alert message
-     * @param array $context Additional context (exception, request, etc.)
+     * @param  string  $message  Alert message
+     * @param  array  $context  Additional context (exception, request, etc.)
      * @return bool Success status
      */
     public function sendAlert(string $message, array $context = []): bool
     {
-        if (!$this->enabled) {
+        if (! $this->enabled) {
             Log::debug('Telegram notifications disabled');
+
             return false;
         }
 
         if (empty($this->botToken) || empty($this->chatId)) {
             Log::error('Telegram bot token or chat ID not configured');
+
             return false;
         }
 
@@ -42,6 +46,7 @@ class TelegramNotificationService
         $rateLimitKey = $this->getRateLimitKey($message, $context);
         if (Cache::has($rateLimitKey)) {
             Log::debug('Telegram alert rate limited', ['key' => $rateLimitKey]);
+
             return false;
         }
 
@@ -62,6 +67,7 @@ class TelegramNotificationService
                 // Set rate limit cache: 5 minutes
                 Cache::put($rateLimitKey, true, now()->addMinutes(5));
                 Log::info('Telegram alert sent successfully');
+
                 return true;
             }
 
@@ -69,22 +75,20 @@ class TelegramNotificationService
                 'status' => $response->status(),
                 'body' => $response->body(),
             ]);
+
             return false;
         } catch (\Exception $e) {
             Log::error('Failed to send Telegram alert', [
                 'error' => $e->getMessage(),
                 'trace' => $e->getTraceAsString(),
             ]);
+
             return false;
         }
     }
 
     /**
      * Send server error alert (500 errors)
-     *
-     * @param \Throwable $exception
-     * @param array $requestContext
-     * @return bool
      */
     public function sendServerErrorAlert(\Throwable $exception, array $requestContext = []): bool
     {
@@ -98,16 +102,14 @@ class TelegramNotificationService
 
     /**
      * Send test notification
-     *
-     * @return bool
      */
     public function sendTestNotification(): bool
     {
         $message = "✅ <b>Test Notification</b>\n\n";
         $message .= "Telegram monitoring is working correctly!\n";
-        $message .= "Server: " . config('app.name') . "\n";
-        $message .= "Environment: " . config('app.env') . "\n";
-        $message .= "Time: " . now()->format('Y-m-d H:i:s');
+        $message .= 'Server: '.config('app.name')."\n";
+        $message .= 'Environment: '.config('app.env')."\n";
+        $message .= 'Time: '.now()->format('Y-m-d H:i:s');
 
         try {
             $response = Http::timeout(10)->post(
@@ -122,16 +124,13 @@ class TelegramNotificationService
             return $response->successful();
         } catch (\Exception $e) {
             Log::error('Failed to send test notification', ['error' => $e->getMessage()]);
+
             return false;
         }
     }
 
     /**
      * Format alert message with context
-     *
-     * @param string $message
-     * @param array $context
-     * @return string
      */
     private function formatMessage(string $message, array $context): string
     {
@@ -140,9 +139,9 @@ class TelegramNotificationService
         // Add exception details
         if (isset($context['exception']) && $context['exception'] instanceof \Throwable) {
             $e = $context['exception'];
-            $formatted .= "<b>Exception:</b> " . get_class($e) . "\n";
-            $formatted .= "<b>Message:</b> " . $this->truncate($e->getMessage(), 200) . "\n";
-            $formatted .= "<b>File:</b> " . basename($e->getFile()) . ":" . $e->getLine() . "\n\n";
+            $formatted .= '<b>Exception:</b> '.get_class($e)."\n";
+            $formatted .= '<b>Message:</b> '.$this->truncate($e->getMessage(), 200)."\n";
+            $formatted .= '<b>File:</b> '.basename($e->getFile()).':'.$e->getLine()."\n\n";
         }
 
         // Add request details
@@ -161,9 +160,9 @@ class TelegramNotificationService
         }
 
         // Add environment info
-        $formatted .= "<b>Environment:</b> " . config('app.env') . "\n";
-        $formatted .= "<b>Server:</b> " . gethostname() . "\n";
-        $formatted .= "<b>Time:</b> " . now()->format('Y-m-d H:i:s');
+        $formatted .= '<b>Environment:</b> '.config('app.env')."\n";
+        $formatted .= '<b>Server:</b> '.gethostname()."\n";
+        $formatted .= '<b>Time:</b> '.now()->format('Y-m-d H:i:s');
 
         // Telegram message limit is 4096 characters
         return $this->truncate($formatted, 4000);
@@ -171,10 +170,6 @@ class TelegramNotificationService
 
     /**
      * Generate rate limit cache key
-     *
-     * @param string $message
-     * @param array $context
-     * @return string
      */
     private function getRateLimitKey(string $message, array $context): string
     {
@@ -182,7 +177,7 @@ class TelegramNotificationService
 
         // Use exception class if available
         if (isset($context['exception']) && $context['exception'] instanceof \Throwable) {
-            $key .= get_class($context['exception']) . ':';
+            $key .= get_class($context['exception']).':';
         }
 
         // Use request URL if available
@@ -197,10 +192,6 @@ class TelegramNotificationService
 
     /**
      * Truncate string to max length
-     *
-     * @param string $text
-     * @param int $maxLength
-     * @return string
      */
     private function truncate(string $text, int $maxLength): string
     {
@@ -208,6 +199,6 @@ class TelegramNotificationService
             return $text;
         }
 
-        return mb_substr($text, 0, $maxLength) . '...';
+        return mb_substr($text, 0, $maxLength).'...';
     }
 }

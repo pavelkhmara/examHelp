@@ -18,12 +18,12 @@ return Application::configure(basePath: dirname(__DIR__))
         // Send Telegram alerts for server errors (500)
         $exceptions->report(function (Throwable $e) {
             // Only send alerts in production/staging (not local/testing)
-            if (!config('monitoring.enabled') || app()->environment(['local', 'testing'])) {
+            if (! config('monitoring.enabled') || app()->environment(['local', 'testing'])) {
                 return;
             }
 
             // Skip if not a server error (500-level)
-            if (!isServerError($e)) {
+            if (! isServerError($e)) {
                 return;
             }
 
@@ -61,12 +61,13 @@ return Application::configure(basePath: dirname(__DIR__))
 /**
  * Check if exception is a server error (500-level)
  */
-if (!function_exists('isServerError')) {
+if (! function_exists('isServerError')) {
     function isServerError(Throwable $e): bool
     {
         // If it's an HTTP exception, check status code
         if (method_exists($e, 'getStatusCode')) {
             $code = $e->getStatusCode();
+
             return $code >= 500 && $code < 600;
         }
 

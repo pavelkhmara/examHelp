@@ -26,7 +26,6 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  * @property \Carbon\Carbon|null $attached_at
  * @property \Carbon\Carbon $created_at
  * @property \Carbon\Carbon $updated_at
- *
  * @property-read Exam $exam
  * @property-read float $progress_percent
  * @property-read bool $is_completed
@@ -34,6 +33,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  */
 class GenerationPlan extends Model
 {
+    /** @use HasFactory<\Database\Factories\GenerationPlanFactory> */
     use HasFactory;
 
     protected $fillable = [
@@ -63,6 +63,8 @@ class GenerationPlan extends Model
 
     /**
      * Get the exam that owns this generation plan
+     *
+     * @return BelongsTo<Exam, covariant self>
      */
     public function exam(): BelongsTo
     {
@@ -71,6 +73,8 @@ class GenerationPlan extends Model
 
     /**
      * Get the exam category (section) that this plan belongs to
+     *
+     * @return BelongsTo<ExamCategory, covariant self>
      */
     public function section(): BelongsTo
     {
@@ -115,56 +119,70 @@ class GenerationPlan extends Model
 
     /**
      * Scope: Filter by status
+     *
+     * @param  \Illuminate\Database\Eloquent\Builder<self>  $query
      */
-    public function scopeStatus($query, string $status)
+    public function scopeStatus($query, string $status): mixed
     {
         return $query->where('status', $status);
     }
 
     /**
      * Scope: Filter by assembly mode
+     *
+     * @param  \Illuminate\Database\Eloquent\Builder<self>  $query
      */
-    public function scopeAssemblyMode($query, string $mode)
+    public function scopeAssemblyMode($query, string $mode): mixed
     {
         return $query->where('assembly_mode', $mode);
     }
 
     /**
      * Scope: Filter by section
+     *
+     * @param  \Illuminate\Database\Eloquent\Builder<self>  $query
      */
-    public function scopeSection($query, string $sectionId)
+    public function scopeSection($query, string $sectionId): mixed
     {
         return $query->where('section_id', $sectionId);
     }
 
     /**
      * Scope: Get pending plans
+     *
+     * @param  \Illuminate\Database\Eloquent\Builder<self>  $query
      */
-    public function scopePending($query)
+    public function scopePending($query): mixed
     {
         return $query->where('status', 'pending');
     }
 
     /**
      * Scope: Get in-progress plans
+     *
+     * @param  \Illuminate\Database\Eloquent\Builder<self>  $query
      */
-    public function scopeInProgress($query)
+    public function scopeInProgress($query): mixed
     {
         return $query->where('status', 'in_progress');
     }
 
     /**
      * Scope: Get completed plans
+     *
+     * @param  \Illuminate\Database\Eloquent\Builder<self>  $query
      */
-    public function scopeCompleted($query)
+    public function scopeCompleted($query): mixed
     {
         return $query->where('status', 'completed');
     }
 
     /**
      * Scope: Get failed plans
+     *
+     * @param  \Illuminate\Database\Eloquent\Builder<self>  $query
      */
-    public function scopeFailed($query)
+    public function scopeFailed($query): mixed
     {
         return $query->where('status', 'failed');
     }

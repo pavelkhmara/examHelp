@@ -25,9 +25,12 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
  * @property array|null $playback_settings
  * @property array|null $metadata
  * @property int $order
+ *
+ * @uses HasFactory<\Database\Factories\QuestionGroupFactory>
  */
 class QuestionGroup extends Model
 {
+    /** @use HasFactory<\Database\Factories\QuestionGroupFactory> */
     use HasFactory;
 
     protected $fillable = [
@@ -52,16 +55,25 @@ class QuestionGroup extends Model
 
     // ========== RELATIONSHIPS ==========
 
+    /**
+     * @return BelongsTo<Exam, covariant self>
+     */
     public function exam(): BelongsTo
     {
         return $this->belongsTo(Exam::class, 'exam_id', 'id');
     }
 
+    /**
+     * @return BelongsTo<ExamCategory, covariant self>
+     */
     public function section(): BelongsTo
     {
         return $this->belongsTo(ExamCategory::class, 'section_id');
     }
 
+    /**
+     * @return HasMany<Question, covariant self>
+     */
     public function questions(): HasMany
     {
         return $this->hasMany(Question::class, 'question_group_id');
@@ -98,7 +110,7 @@ class QuestionGroup extends Model
      */
     public function hasPlaybackLimit(): bool
     {
-        return !is_null($this->max_plays);
+        return ! is_null($this->max_plays);
     }
 
     /**
@@ -151,16 +163,16 @@ class QuestionGroup extends Model
         }
 
         // Проверка playback_settings
-        if (!empty($this->playback_settings)) {
+        if (! empty($this->playback_settings)) {
             $maxPlays = $this->playback_settings['max_plays'] ?? null;
-            if (!is_null($maxPlays) && (!is_int($maxPlays) || $maxPlays < 1)) {
+            if (! is_null($maxPlays) && (! is_int($maxPlays) || $maxPlays < 1)) {
                 throw new \InvalidArgumentException(
-                    "max_plays must be a positive integer or null. Got: " . var_export($maxPlays, true)
+                    'max_plays must be a positive integer or null. Got: '.var_export($maxPlays, true)
                 );
             }
 
             $enforcement = $this->playback_settings['enforcement'] ?? 'none';
-            if (!in_array($enforcement, ['strict', 'advisory', 'none'], true)) {
+            if (! in_array($enforcement, ['strict', 'advisory', 'none'], true)) {
                 throw new \InvalidArgumentException(
                     "Invalid enforcement mode: {$enforcement}. Allowed: strict, advisory, none."
                 );
@@ -170,22 +182,34 @@ class QuestionGroup extends Model
 
     // ========== SCOPES ==========
 
-    public function scopeForSection($query, int $sectionId)
+    /**
+     * @param  \Illuminate\Database\Eloquent\Builder<self>  $query
+     */
+    public function scopeForSection($query, int $sectionId): mixed
     {
         return $query->where('section_id', $sectionId);
     }
 
-    public function scopeForExam($query, string $examId)
+    /**
+     * @param  \Illuminate\Database\Eloquent\Builder<self>  $query
+     */
+    public function scopeForExam($query, string $examId): mixed
     {
         return $query->where('exam_id', $examId);
     }
 
-    public function scopeOrdered($query)
+    /**
+     * @param  \Illuminate\Database\Eloquent\Builder<self>  $query
+     */
+    public function scopeOrdered($query): mixed
     {
         return $query->orderBy('order');
     }
 
-    public function scopeWithQuestions($query)
+    /**
+     * @param  \Illuminate\Database\Eloquent\Builder<self>  $query
+     */
+    public function scopeWithQuestions($query): mixed
     {
         return $query->with('questions');
     }
@@ -205,7 +229,7 @@ class QuestionGroup extends Model
      */
     public function hasAudio(): bool
     {
-        return !empty($this->audio_urls);
+        return ! empty($this->audio_urls);
     }
 
     /**
@@ -213,7 +237,7 @@ class QuestionGroup extends Model
      */
     public function hasText(): bool
     {
-        return !empty($this->stimulus_text);
+        return ! empty($this->stimulus_text);
     }
 
     /**
@@ -221,7 +245,7 @@ class QuestionGroup extends Model
      */
     public function hasImages(): bool
     {
-        return !empty($this->stimulus_images);
+        return ! empty($this->stimulus_images);
     }
 
     /**

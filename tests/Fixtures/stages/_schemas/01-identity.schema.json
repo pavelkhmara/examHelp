@@ -1,0 +1,67 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:examhelp:golden-fixtures:identity:v1",
+  "title": "Golden Fixture - Identity",
+  "description": "Schema for confirmed exam identity data",
+  "type": "object",
+  "required": ["version", "stage", "exam_id", "identity_data"],
+  "properties": {
+    "$schema": { "type": "string" },
+    "version": { "type": "string", "const": "1.0" },
+    "stage": { "type": "string", "const": "identity" },
+    "exam_id": { "type": "string" },
+
+    "identity_data": {
+      "type": ["object", "null"],
+      "properties": {
+        "confirmed_title": { "type": "string" },
+        "confirmed_provider": { "type": "string" },
+        "confirmed_level": { "type": "string", "enum": ["A1", "A2", "B1", "B2", "C1", "C2"] },
+        "family": { "type": "string" },
+        "language_code": { "type": "string", "pattern": "^[a-z]{2}$" },
+        "exam_format": { "type": "string", "enum": ["paper-based", "computer-based", "hybrid"] },
+        "official_url": { "type": "string", "format": "uri" },
+        "confidence": { "type": "number", "minimum": 0, "maximum": 1 }
+      }
+    },
+
+    "confidence": {
+      "type": "object",
+      "properties": {
+        "overall": { "type": ["number", "null"], "minimum": 0, "maximum": 1 },
+        "title_match": { "type": "number", "minimum": 0, "maximum": 1 },
+        "provider_match": { "type": "number", "minimum": 0, "maximum": 1 },
+        "level_match": { "type": "number", "minimum": 0, "maximum": 1 }
+      }
+    },
+
+    "sources": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "url": { "type": "string", "format": "uri" },
+          "title": { "type": "string" },
+          "trust": { "type": "string", "enum": ["very_high", "high", "medium", "low", "very_low"] }
+        }
+      }
+    },
+
+    "verification_method": { "type": "string" },
+    "iterations_count": { "type": "integer", "minimum": 1 },
+
+    "_comparison_hints": { "$ref": "#/$defs/comparison_hints" },
+    "_notes": { "type": "string" }
+  },
+
+  "$defs": {
+    "comparison_hints": {
+      "type": "object",
+      "properties": {
+        "critical_fields": { "type": "array", "items": { "type": "string" } },
+        "flexible_fields": { "type": "array", "items": { "type": "string" } },
+        "ignore_fields": { "type": "array", "items": { "type": "string" } }
+      }
+    }
+  }
+}

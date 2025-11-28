@@ -3,7 +3,6 @@
 namespace App\Services\LanguageApp;
 
 use App\Models\Exam;
-use App\Models\ExamCategory;
 use App\Models\GenerationPlan;
 use App\Models\Question;
 use App\Models\QuestionGroup;
@@ -42,7 +41,7 @@ class QuestionGroupGenerationService
 
         $questionGroups = $plan->plan_data['question_groups'] ?? null;
 
-        if (!$questionGroups || !is_array($questionGroups)) {
+        if (! $questionGroups || ! is_array($questionGroups)) {
             throw new \Exception('plan_data must contain question_groups array for inline mode');
         }
 
@@ -72,6 +71,9 @@ class QuestionGroupGenerationService
                 'generated_questions' => $stats['questions'],
                 'completed_at' => now(),
             ]);
+
+            // ✅ SYNC: Update exam.meta.generated_questions_v2 for Nova display
+            $this->syncGeneratedQuestionsToExamMeta($plan);
 
             DB::commit();
 
@@ -122,31 +124,59 @@ class QuestionGroupGenerationService
             throw new \Exception("Question group '{$groupSpec['id']}' missing required field: title");
         }
 
-        if (!isset($groupSpec['questions']) || !is_array($groupSpec['questions'])) {
+        if (! isset($groupSpec['questions']) || ! is_array($groupSpec['questions'])) {
             throw new \Exception("Question group '{$groupSpec['id']}' missing questions array");
         }
 
-        Log::debug('[QuestionGroupGenerationService] Creating question group', [
+        // ✅ Check if QuestionGroup already exists (for synthesis UPDATE flow)
+        $existingGroup = QuestionGroup::where('group_id', $groupSpec['id'])
+            ->where('exam_id', $plan->exam_id)
+            ->first();
+
+        $groupAction = $existingGroup ? 'UPDATE' : 'CREATE';
+
+        Log::debug('[QuestionGroupGenerationService] Creating/updating question group', [
             'group_id' => $groupSpec['id'],
             'title' => $groupSpec['title'],
             'questions_count' => count($groupSpec['questions']),
+            'action' => $groupAction,
         ]);
 
-        // Create QuestionGroup
-        $questionGroup = QuestionGroup::create([
-            'exam_id' => $plan->exam_id,
-            'section_id' => $plan->section_id,
-            'group_id' => $groupSpec['id'],
-            'title' => $groupSpec['title'],
-            'instructions' => $groupSpec['instructions'] ?? null,
-            'stimulus' => $groupSpec['stimulus'] ?? null,
-            'playback_settings' => $groupSpec['playback_settings'] ?? null,
-            'metadata' => $groupSpec['metadata'] ?? null,
-            'order' => $groupSpec['order'] ?? $groupOrder,
-        ]);
+        // Update existing or create new QuestionGroup
+        if ($existingGroup) {
+            $existingGroup->update([
+                'title' => $groupSpec['title'],
+                'instructions' => $groupSpec['instructions'] ?? null,
+                'stimulus' => $groupSpec['stimulus'] ?? null,
+                'playback_settings' => $groupSpec['playback_settings'] ?? null,
+                'metadata' => $groupSpec['metadata'] ?? null,
+                'order' => $groupSpec['order'] ?? $groupOrder,
+            ]);
+            $questionGroup = $existingGroup;
+        } else {
+            $questionGroup = QuestionGroup::create([
+                'exam_id' => $plan->exam_id,
+                'section_id' => $plan->section_id,
+                'group_id' => $groupSpec['id'],
+                'title' => $groupSpec['title'],
+                'instructions' => $groupSpec['instructions'] ?? null,
+                'stimulus' => $groupSpec['stimulus'] ?? null,
+                'playback_settings' => $groupSpec['playback_settings'] ?? null,
+                'metadata' => $groupSpec['metadata'] ?? null,
+                'order' => $groupSpec['order'] ?? $groupOrder,
+            ]);
+        }
 
         // Generate Questions for this group
         foreach ($groupSpec['questions'] as $questionIndex => $questionSpec) {
+            // DEBUG: Check question ID before processing
+            \Log::debug('[QuestionGroupGenerationService] Processing question from spec', [
+                'question_index' => $questionIndex,
+                'question_id' => $questionSpec['id'] ?? 'N/A',
+                'question_type' => $questionSpec['type'] ?? 'N/A',
+                'all_keys' => array_keys($questionSpec),
+            ]);
+
             $this->generateQuestion($plan, $questionGroup, $questionSpec, $questionIndex);
         }
 
@@ -186,12 +216,21 @@ class QuestionGroupGenerationService
         // e.g., "listening-task-1_q1" instead of just "q1"
         $uniqueQuestionId = "{$questionGroup->group_id}_{$questionSpec['id']}";
 
-        Log::debug('[QuestionGroupGenerationService] Creating question', [
+        // ✅ Check if skeleton already exists (for synthesis UPDATE flow)
+        $existingQuestion = Question::where('question_id', $uniqueQuestionId)
+            ->where('exam_id', $plan->exam_id)
+            ->first();
+
+        $action = $existingQuestion ? 'UPDATE' : 'CREATE';
+
+        Log::debug('[QuestionGroupGenerationService] Creating/updating question', [
             'question_id' => $uniqueQuestionId,
             'raw_id' => $questionSpec['id'],
             'type' => $questionSpec['type'],
             'group_id' => $questionGroup->group_id,
             'order' => $order,
+            'action' => $action,
+            'has_interaction' => ! empty($questionSpec['interaction']),
         ]);
 
         // Prepare question data (v2 archetype structure)
@@ -224,6 +263,13 @@ class QuestionGroupGenerationService
 
             // Note: 'order' is not in Question fillable, will be handled separately if needed
         ];
+
+        // ✅ UPDATE skeleton if exists, CREATE if not
+        if ($existingQuestion) {
+            $existingQuestion->update($questionData);
+
+            return $existingQuestion;
+        }
 
         return Question::create($questionData);
     }
@@ -276,5 +322,93 @@ class QuestionGroupGenerationService
             'groups' => $groupsCount,
             'questions' => $questionsCount,
         ];
+    }
+
+    /**
+     * Synchronize generated questions to exam.meta.generated_questions_v2
+     *
+     * This method replicates the logic from QuestionAttacher::attachToExam()
+     * to ensure exam.meta.generated_questions_v2 stays in sync.
+     *
+     * @param  GenerationPlan  $plan  Plan with generated questions
+     */
+    protected function syncGeneratedQuestionsToExamMeta(GenerationPlan $plan): void
+    {
+        $exam = Exam::find($plan->exam_id);
+        if (! $exam) {
+            return;
+        }
+
+        // Load all questions for this plan's section
+        $questions = Question::where('exam_id', $plan->exam_id)
+            ->where('section_id', $plan->section_id)
+            ->get();
+
+        if ($questions->isEmpty()) {
+            return;
+        }
+
+        // Convert Question models to array format for generated_questions_v2
+        $generatedQuestions = $questions->map(function ($question) {
+            // Extract raw question ID (without group prefix)
+            // e.g., "listening-task-1_list-q1" → "list-q1"
+            $questionId = $question->question_id;
+            $rawId = $questionId;
+
+            // If question has group_id, extract raw ID by removing prefix
+            if ($question->question_group_id) {
+                $group = QuestionGroup::find($question->question_group_id);
+                if ($group && str_starts_with($questionId, $group->group_id.'_')) {
+                    $rawId = substr($questionId, strlen($group->group_id) + 1);
+                }
+            }
+
+            return [
+                'id' => $rawId,
+                'type' => $question->type,
+                'group_id' => $question->questionGroup?->group_id ?? null,
+                'skills_measured' => $question->skills_measured,
+                'time_limit_sec' => $question->time_limit_sec,
+                'instructions' => $question->instructions,
+                'stimulus' => $question->stimulus,
+                'interaction' => $question->interaction,
+                'response' => $question->response,
+                'scoring' => $question->scoring,
+                'metadata' => $question->metadata,
+            ];
+        })->toArray();
+
+        // Update exam.meta.generated_questions_v2
+        $meta = $exam->meta ?? [];
+        $existingQuestions = $meta['generated_questions_v2'] ?? [];
+
+        // Merge with existing questions (avoid duplicates by 'id')
+        /** @var array<int, array<string, mixed>> $existingList */
+        $existingList = $existingQuestions;
+        /** @var \Illuminate\Support\Collection<int, array<string, mixed>> $existingCollection */
+        $existingCollection = collect($existingList);
+        /** @var \Illuminate\Support\Collection<int, array<string, mixed>> $merged */
+        $merged = $existingCollection;
+        foreach ($generatedQuestions as $newQuestion) {
+            $existingIndex = $merged->search(fn ($q) => $q['id'] === $newQuestion['id']);
+            if ($existingIndex !== false) {
+                // Replace existing question
+                $merged[$existingIndex] = $newQuestion;
+            } else {
+                // Add new question
+                $merged->push($newQuestion);
+            }
+        }
+
+        $meta['generated_questions_v2'] = $merged->values()->toArray();
+        $exam->meta = $meta;
+        $exam->save();
+
+        Log::info('[QuestionGroupGenerationService] Synced generated_questions_v2 to exam.meta', [
+            'exam_id' => $exam->id,
+            'section_id' => $plan->section_id,
+            'questions_synced' => count($generatedQuestions),
+            'total_in_meta' => count($meta['generated_questions_v2']),
+        ]);
     }
 }

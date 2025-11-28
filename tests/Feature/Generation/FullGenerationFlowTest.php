@@ -22,5 +22,3 @@ class FullGenerationFlowTest extends TestCase
         $this->assertNotNull($exam->id);
     }
 }
-
-

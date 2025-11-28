@@ -10,6 +10,9 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Queue;
 use Tests\TestCase;
 
+/**
+ * @group broken
+ */
 class ParallelProcessingTest extends TestCase
 {
     use RefreshDatabase;

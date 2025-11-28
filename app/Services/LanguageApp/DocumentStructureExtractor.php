@@ -26,7 +26,6 @@ class DocumentStructureExtractor extends AbstractAiService
     /**
      * Extract structured data from document
      *
-     * @param ExamDocument $document
      * @return array|null Structured data or null if extraction fails
      */
     public function extract(ExamDocument $document): ?array
@@ -35,6 +34,7 @@ class DocumentStructureExtractor extends AbstractAiService
             Log::warning('DocumentStructureExtractor: No extracted text available', [
                 'document_id' => $document->id,
             ]);
+
             return null;
         }
 
@@ -99,8 +99,9 @@ class DocumentStructureExtractor extends AbstractAiService
                 'json_schema_name' => 'exam_structure',
             ]);
 
-            if (!isset($response['content'])) {
+            if (! isset($response['content'])) {
                 Log::warning('DocumentStructureExtractor: No content in AI response');
+
                 return null;
             }
 
@@ -110,6 +111,7 @@ class DocumentStructureExtractor extends AbstractAiService
                 Log::warning('DocumentStructureExtractor: Invalid JSON response', [
                     'error' => json_last_error_msg(),
                 ]);
+
                 return null;
             }
 
@@ -125,6 +127,7 @@ class DocumentStructureExtractor extends AbstractAiService
                 'document_id' => $document->id,
                 'error' => $e->getMessage(),
             ]);
+
             return null;
         }
     }
@@ -137,7 +140,7 @@ class DocumentStructureExtractor extends AbstractAiService
         // Truncate if too long
         $maxChars = config('ai.docs.max_chars', 50000);
         if (strlen($documentText) > $maxChars) {
-            $documentText = substr($documentText, 0, $maxChars) . "\n\n[...truncated...]";
+            $documentText = substr($documentText, 0, $maxChars)."\n\n[...truncated...]";
         }
 
         $systemPrompt = <<<'PROMPT'
@@ -252,7 +255,7 @@ PROMPT;
         $hints = [];
 
         // Identity hints
-        if (!empty($structured['identity'])) {
+        if (! empty($structured['identity'])) {
             $identity = $structured['identity'];
             $confidence = $identity['confidence'] ?? 0;
 
@@ -269,7 +272,7 @@ PROMPT;
         }
 
         // Structure hints
-        if (!empty($structured['structure']['sections'])) {
+        if (! empty($structured['structure']['sections'])) {
             $hints['document_structure'] = [
                 'source' => 'document',
                 'sections' => $structured['structure']['sections'],
@@ -278,7 +281,7 @@ PROMPT;
         }
 
         // Archetype hints
-        if (!empty($structured['archetypes'])) {
+        if (! empty($structured['archetypes'])) {
             $hints['document_archetypes'] = [
                 'source' => 'document',
                 'questions' => $structured['archetypes'],
@@ -286,7 +289,7 @@ PROMPT;
         }
 
         // Scoring hints
-        if (!empty($structured['scoring'])) {
+        if (! empty($structured['scoring'])) {
             $hints['document_scoring'] = [
                 'source' => 'document',
                 'scoring' => $structured['scoring'],
@@ -294,7 +297,7 @@ PROMPT;
         }
 
         // Notes
-        if (!empty($structured['extraction_notes'])) {
+        if (! empty($structured['extraction_notes'])) {
             $hints['extraction_notes'] = $structured['extraction_notes'];
         }
 

@@ -27,7 +27,7 @@ echo "=== Exam Diagnostics ===\n\n";
 // Find exam
 $exam = Exam::find($examId);
 
-if (!$exam) {
+if (! $exam) {
     echo "❌ Exam not found: {$examId}\n";
     exit(1);
 }
@@ -150,8 +150,8 @@ if ($activeTasks->isNotEmpty()) {
 }
 
 echo "\n=== System Configuration ===\n\n";
-echo "Queue Driver: " . config('queue.default') . "\n";
-echo "Environment: " . app()->environment() . "\n";
-echo "Debug Mode: " . (config('app.debug') ? 'enabled' : 'disabled') . "\n";
+echo 'Queue Driver: '.config('queue.default')."\n";
+echo 'Environment: '.app()->environment()."\n";
+echo 'Debug Mode: '.(config('app.debug') ? 'enabled' : 'disabled')."\n";
 
 echo "\n=== Diagnostics Complete ===\n";

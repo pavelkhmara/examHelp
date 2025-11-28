@@ -1,0 +1,59 @@
+{
+    "exam_id": "a073d2c9-d888-4604-8a2f-75bf95fa1953",
+    "stage": "identity",
+    "label": "monitoring-baseline",
+    "hash": "30fd1a6aa711e2ba414c8c658e203f7a89372a6dac90eab933d6bf43b5330749",
+    "data": {
+        "stage": "identity",
+        "exam_id": "a073d2c9-d888-4604-8a2f-75bf95fa1953",
+        "identity_data": {
+            "hold": true,
+            "status": "certain",
+            "anchors": [
+                {
+                    "page": null,
+                    "snippet": "exam_name: \"[MONITOR-REAL-SYNTH] IELTS Listening\""
+                },
+                {
+                    "page": null,
+                    "snippet": "Q: Is this IELTS Academic or General Training? A: IELTS Academic\nQ: Who issued this test — British Council, IDP, Cambridge Assessment English, or is it a third-party\/practice item? A: British Council"
+                }
+            ],
+            "canonical": {
+                "name": "IELTS Academic",
+                "family": "IELTS",
+                "variant": "Academic",
+                "provider": "British Council",
+                "language_of_test": "English"
+            },
+            "followups": [],
+            "candidates": [
+                {
+                    "name": "IELTS Academic",
+                    "score": 0.92,
+                    "family": "IELTS",
+                    "provider": "British Council"
+                }
+            ],
+            "confidence": 0.92,
+            "need_fields": [],
+            "clarification_data": [
+                "IELTS Academic",
+                "British Council",
+                "документов нет"
+            ],
+            "clarification_notes": null,
+            "clarification_provided_at": "2025-11-27T08:25:40.462325Z",
+            "user_provided_clarification": true
+        },
+        "confidence": {
+            "overall": 0.92
+        }
+    },
+    "captured_at": "2025-11-27T10:33:57+00:00",
+    "metadata": {
+        "exam_title": "[MONITOR-REAL-SYNTH] IELTS Listening",
+        "exam_level": "B1",
+        "research_status": "completed"
+    }
+}

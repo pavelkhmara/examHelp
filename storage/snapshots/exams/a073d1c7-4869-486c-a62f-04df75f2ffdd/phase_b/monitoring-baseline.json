@@ -1,0 +1,864 @@
+{
+    "exam_id": "a073d1c7-4869-486c-a62f-04df75f2ffdd",
+    "stage": "phase_b",
+    "label": "monitoring-baseline",
+    "hash": "50af2119ac917f066bfd0b9eae725d661123f03f3a92a55ab8a76d6c59d24f21",
+    "data": {
+        "stage": "phase_b",
+        "exam_id": "a073d1c7-4869-486c-a62f-04df75f2ffdd",
+        "structure_v2": {
+            "id": "ielts-gt-structure-monitor-v1",
+            "meta": {
+                "name": "IELTS General Training – Full Exam Structure (Monitoring)",
+                "tags": [
+                    "IELTS",
+                    "General Training",
+                    "Structure",
+                    "Monitoring",
+                    "Official timings"
+                ],
+                "level": "B1",
+                "session": null,
+                "language": "en",
+                "provider": "IDP"
+            },
+            "rubrics": null,
+            "version": "2.0",
+            "policies": {
+                "navigation": {
+                    "backtracking": true
+                },
+                "proctoring": {
+                    "mic": true,
+                    "camera": true,
+                    "screen": true
+                },
+                "policy_precedence": "question>section>exam",
+                "answer_transfer_window_sec": 600
+            },
+            "sections": [
+                {
+                    "id": "sec-listening",
+                    "skill": "listening",
+                    "title": "Listening",
+                    "assembly": {
+                        "mode": "inline",
+                        "question_groups": [
+                            {
+                                "id": "listening-part-1",
+                                "title": "Part 1",
+                                "stimulus": {
+                                    "audio": [
+                                        "placeholder_audio_part1.mp3"
+                                    ]
+                                },
+                                "questions": [
+                                    {
+                                        "id": "q1",
+                                        "type": "dictation"
+                                    },
+                                    {
+                                        "id": "q2",
+                                        "type": "dictation"
+                                    },
+                                    {
+                                        "id": "q3",
+                                        "type": "dictation"
+                                    },
+                                    {
+                                        "id": "q4",
+                                        "type": "dictation"
+                                    },
+                                    {
+                                        "id": "q5",
+                                        "type": "dictation"
+                                    },
+                                    {
+                                        "id": "q6",
+                                        "type": "dictation"
+                                    },
+                                    {
+                                        "id": "q7",
+                                        "type": "dictation"
+                                    },
+                                    {
+                                        "id": "q8",
+                                        "type": "dictation"
+                                    },
+                                    {
+                                        "id": "q9",
+                                        "type": "listen_mcq"
+                                    },
+                                    {
+                                        "id": "q10",
+                                        "type": "listen_mcq"
+                                    }
+                                ],
+                                "playback_settings": {
+                                    "max_plays": 1,
+                                    "enforcement": "strict"
+                                }
+                            },
+                            {
+                                "id": "listening-part-2",
+                                "title": "Part 2",
+                                "stimulus": {
+                                    "audio": [
+                                        "placeholder_audio_part2.mp3"
+                                    ]
+                                },
+                                "questions": [
+                                    {
+                                        "id": "q11",
+                                        "type": "listen_mcq"
+                                    },
+                                    {
+                                        "id": "q12",
+                                        "type": "listen_mcq"
+                                    },
+                                    {
+                                        "id": "q13",
+                                        "type": "listen_mcq"
+                                    },
+                                    {
+                                        "id": "q14",
+                                        "type": "listen_mcq"
+                                    },
+                                    {
+                                        "id": "q15",
+                                        "type": "listen_mcq"
+                                    },
+                                    {
+                                        "id": "q16",
+                                        "type": "listen_mcq"
+                                    },
+                                    {
+                                        "id": "q17",
+                                        "type": "listen_true_false"
+                                    },
+                                    {
+                                        "id": "q18",
+                                        "type": "listen_true_false"
+                                    },
+                                    {
+                                        "id": "q19",
+                                        "type": "listen_true_false"
+                                    },
+                                    {
+                                        "id": "q20",
+                                        "type": "listen_true_false"
+                                    }
+                                ],
+                                "playback_settings": {
+                                    "max_plays": 1,
+                                    "enforcement": "strict"
+                                }
+                            },
+                            {
+                                "id": "listening-part-3",
+                                "title": "Part 3",
+                                "stimulus": {
+                                    "audio": [
+                                        "placeholder_audio_part3.mp3"
+                                    ]
+                                },
+                                "questions": [
+                                    {
+                                        "id": "q21",
+                                        "type": "listen_mcq"
+                                    },
+                                    {
+                                        "id": "q22",
+                                        "type": "listen_mcq"
+                                    },
+                                    {
+                                        "id": "q23",
+                                        "type": "listen_mcq"
+                                    },
+                                    {
+                                        "id": "q24",
+                                        "type": "listen_mcq"
+                                    },
+                                    {
+                                        "id": "q25",
+                                        "type": "listen_mcq"
+                                    },
+                                    {
+                                        "id": "q26",
+                                        "type": "listen_yes_no_ng"
+                                    },
+                                    {
+                                        "id": "q27",
+                                        "type": "listen_yes_no_ng"
+                                    },
+                                    {
+                                        "id": "q28",
+                                        "type": "listen_yes_no_ng"
+                                    },
+                                    {
+                                        "id": "q29",
+                                        "type": "listen_yes_no_ng"
+                                    },
+                                    {
+                                        "id": "q30",
+                                        "type": "listen_yes_no_ng"
+                                    }
+                                ],
+                                "playback_settings": {
+                                    "max_plays": 1,
+                                    "enforcement": "strict"
+                                }
+                            },
+                            {
+                                "id": "listening-part-4",
+                                "title": "Part 4",
+                                "stimulus": {
+                                    "audio": [
+                                        "placeholder_audio_part4.mp3"
+                                    ]
+                                },
+                                "questions": [
+                                    {
+                                        "id": "q31",
+                                        "type": "dictation"
+                                    },
+                                    {
+                                        "id": "q32",
+                                        "type": "dictation"
+                                    },
+                                    {
+                                        "id": "q33",
+                                        "type": "dictation"
+                                    },
+                                    {
+                                        "id": "q34",
+                                        "type": "dictation"
+                                    },
+                                    {
+                                        "id": "q35",
+                                        "type": "dictation"
+                                    },
+                                    {
+                                        "id": "q36",
+                                        "type": "dictation"
+                                    },
+                                    {
+                                        "id": "q37",
+                                        "type": "listen_mcq"
+                                    },
+                                    {
+                                        "id": "q38",
+                                        "type": "listen_mcq"
+                                    },
+                                    {
+                                        "id": "q39",
+                                        "type": "listen_yes_no_ng"
+                                    },
+                                    {
+                                        "id": "q40",
+                                        "type": "listen_yes_no_ng"
+                                    }
+                                ],
+                                "playback_settings": {
+                                    "max_plays": 1,
+                                    "enforcement": "strict"
+                                }
+                            }
+                        ]
+                    },
+                    "max_score": 40,
+                    "questions": [],
+                    "duration_min": 30,
+                    "question_archetypes": [
+                        {
+                            "id": "arch-listen-mcq",
+                            "name": "Listening MCQ - Detail and Inference",
+                            "type": "listen_mcq",
+                            "config": {
+                                "scoring": {
+                                    "max_points": 1,
+                                    "partial_credit": false
+                                },
+                                "duration_sec": 60,
+                                "options_count": 3
+                            },
+                            "difficulty": "medium"
+                        },
+                        {
+                            "id": "arch-dictation-fill",
+                            "name": "Dictation - Form\/Sentence Completion",
+                            "type": "dictation",
+                            "config": {
+                                "scoring": {
+                                    "max_points": 1,
+                                    "partial_credit": false
+                                },
+                                "duration_sec": 45
+                            },
+                            "difficulty": "easy"
+                        },
+                        {
+                            "id": "arch-listen-tf",
+                            "name": "Listening True\/False - Factual Claims",
+                            "type": "listen_true_false",
+                            "config": {
+                                "scoring": {
+                                    "max_points": 1,
+                                    "partial_credit": false
+                                },
+                                "duration_sec": 45
+                            },
+                            "difficulty": "medium"
+                        },
+                        {
+                            "id": "arch-listen-yng",
+                            "name": "Listening Yes\/No\/Not Given - Attitude\/Claims",
+                            "type": "listen_yes_no_ng",
+                            "config": {
+                                "scoring": {
+                                    "max_points": 1,
+                                    "partial_credit": false
+                                },
+                                "duration_sec": 60
+                            },
+                            "difficulty": "hard"
+                        }
+                    ]
+                },
+                {
+                    "id": "sec-reading-gt",
+                    "skill": "reading",
+                    "title": "General Training Reading",
+                    "assembly": {
+                        "mode": "inline",
+                        "question_groups": [
+                            {
+                                "id": "gt-reading-s1a",
+                                "title": "Section 1 - Notices and Timetables",
+                                "stimulus": {
+                                    "text_html": "<article><h2>Community Notices and Bus Timetable<\/h2><p>Placeholder text outlining several short notices and a simplified bus timetable with routes, times, and special conditions. Readers should identify key details, times, and destinations.<\/p><\/article>"
+                                },
+                                "questions": [
+                                    {
+                                        "id": "rgt-q1",
+                                        "type": "matching"
+                                    },
+                                    {
+                                        "id": "rgt-q2",
+                                        "type": "matching"
+                                    },
+                                    {
+                                        "id": "rgt-q3",
+                                        "type": "matching"
+                                    },
+                                    {
+                                        "id": "rgt-q4",
+                                        "type": "sentence_completion"
+                                    },
+                                    {
+                                        "id": "rgt-q5",
+                                        "type": "sentence_completion"
+                                    },
+                                    {
+                                        "id": "rgt-q6",
+                                        "type": "sentence_completion"
+                                    }
+                                ],
+                                "playback_settings": null
+                            },
+                            {
+                                "id": "gt-reading-s1b",
+                                "title": "Section 1 - Community Announcement and Leaflet",
+                                "stimulus": {
+                                    "text_html": "<article><h2>Local Council Announcement and Event Leaflet<\/h2><p>Placeholder text describing a local recycling initiative and a weekend fair leaflet. Includes dates, eligibility details, and contact information to test locating information and factual understanding.<\/p><\/article>"
+                                },
+                                "questions": [
+                                    {
+                                        "id": "rgt-q7",
+                                        "type": "read_true_false"
+                                    },
+                                    {
+                                        "id": "rgt-q8",
+                                        "type": "read_true_false"
+                                    },
+                                    {
+                                        "id": "rgt-q9",
+                                        "type": "read_true_false"
+                                    },
+                                    {
+                                        "id": "rgt-q10",
+                                        "type": "read_true_false"
+                                    },
+                                    {
+                                        "id": "rgt-q11",
+                                        "type": "sentence_completion"
+                                    },
+                                    {
+                                        "id": "rgt-q12",
+                                        "type": "sentence_completion"
+                                    },
+                                    {
+                                        "id": "rgt-q13",
+                                        "type": "sentence_completion"
+                                    },
+                                    {
+                                        "id": "rgt-q14",
+                                        "type": "sentence_completion"
+                                    }
+                                ],
+                                "playback_settings": null
+                            },
+                            {
+                                "id": "gt-reading-s2a",
+                                "title": "Section 2 - Workplace Handbook Extract",
+                                "stimulus": {
+                                    "text_html": "<article><h2>Employee Handbook: Induction and Safety<\/h2><p>Placeholder text outlining procedures for new staff, safety briefings, personal protective equipment, and reporting incidents. Includes headings, bullet points, and examples.<\/p><\/article>"
+                                },
+                                "questions": [
+                                    {
+                                        "id": "rgt-q15",
+                                        "type": "read_mcq"
+                                    },
+                                    {
+                                        "id": "rgt-q16",
+                                        "type": "read_mcq"
+                                    },
+                                    {
+                                        "id": "rgt-q17",
+                                        "type": "read_mcq"
+                                    },
+                                    {
+                                        "id": "rgt-q18",
+                                        "type": "read_mcq"
+                                    },
+                                    {
+                                        "id": "rgt-q19",
+                                        "type": "matching"
+                                    },
+                                    {
+                                        "id": "rgt-q20",
+                                        "type": "matching"
+                                    },
+                                    {
+                                        "id": "rgt-q21",
+                                        "type": "matching"
+                                    }
+                                ],
+                                "playback_settings": null
+                            },
+                            {
+                                "id": "gt-reading-s2b",
+                                "title": "Section 2 - Policy and Procedures",
+                                "stimulus": {
+                                    "text_html": "<article><h2>Workplace Policy: Leave and Remote Work<\/h2><p>Placeholder text detailing leave entitlements, application processes, and remote work arrangements. Includes exceptions, time frames, and approval steps.<\/p><\/article>"
+                                },
+                                "questions": [
+                                    {
+                                        "id": "rgt-q22",
+                                        "type": "sentence_completion"
+                                    },
+                                    {
+                                        "id": "rgt-q23",
+                                        "type": "sentence_completion"
+                                    },
+                                    {
+                                        "id": "rgt-q24",
+                                        "type": "sentence_completion"
+                                    },
+                                    {
+                                        "id": "rgt-q25",
+                                        "type": "read_true_false"
+                                    },
+                                    {
+                                        "id": "rgt-q26",
+                                        "type": "read_true_false"
+                                    },
+                                    {
+                                        "id": "rgt-q27",
+                                        "type": "read_true_false"
+                                    }
+                                ],
+                                "playback_settings": null
+                            },
+                            {
+                                "id": "gt-reading-s3",
+                                "title": "Section 3 - Long Passage: Feature Article",
+                                "stimulus": {
+                                    "text_html": "<article><h2>Feature Article: Community Spaces and Wellbeing<\/h2><p>Placeholder text discussing the impact of public spaces on community wellbeing, referencing studies, contrasting viewpoints, and policy implications. Contains multiple paragraphs with topic sentences and supporting evidence.<\/p><\/article>"
+                                },
+                                "questions": [
+                                    {
+                                        "id": "rgt-q28",
+                                        "type": "read_mcq"
+                                    },
+                                    {
+                                        "id": "rgt-q29",
+                                        "type": "read_mcq"
+                                    },
+                                    {
+                                        "id": "rgt-q30",
+                                        "type": "read_mcq"
+                                    },
+                                    {
+                                        "id": "rgt-q31",
+                                        "type": "read_mcq"
+                                    },
+                                    {
+                                        "id": "rgt-q32",
+                                        "type": "read_mcq"
+                                    },
+                                    {
+                                        "id": "rgt-q33",
+                                        "type": "read_yes_no_ng"
+                                    },
+                                    {
+                                        "id": "rgt-q34",
+                                        "type": "read_yes_no_ng"
+                                    },
+                                    {
+                                        "id": "rgt-q35",
+                                        "type": "read_yes_no_ng"
+                                    },
+                                    {
+                                        "id": "rgt-q36",
+                                        "type": "read_yes_no_ng"
+                                    },
+                                    {
+                                        "id": "rgt-q37",
+                                        "type": "read_yes_no_ng"
+                                    },
+                                    {
+                                        "id": "rgt-q38",
+                                        "type": "matching"
+                                    },
+                                    {
+                                        "id": "rgt-q39",
+                                        "type": "matching"
+                                    },
+                                    {
+                                        "id": "rgt-q40",
+                                        "type": "matching"
+                                    }
+                                ],
+                                "playback_settings": null
+                            }
+                        ]
+                    },
+                    "max_score": 40,
+                    "questions": [],
+                    "duration_min": 60,
+                    "question_archetypes": [
+                        {
+                            "id": "read_mcq_main_idea",
+                            "name": "Reading MCQ - Main Idea and Detail",
+                            "type": "read_mcq",
+                            "config": {
+                                "scoring": {
+                                    "max_points": 1,
+                                    "partial_credit": false
+                                },
+                                "duration_sec": 90,
+                                "options_count": 4
+                            },
+                            "difficulty": "medium"
+                        },
+                        {
+                            "id": "read_true_false_facts",
+                            "name": "Reading True\/False - Factual Statements",
+                            "type": "read_true_false",
+                            "config": {
+                                "scoring": {
+                                    "max_points": 1,
+                                    "partial_credit": false
+                                },
+                                "duration_sec": 75
+                            },
+                            "difficulty": "easy"
+                        },
+                        {
+                            "id": "read_yes_no_ng_claims",
+                            "name": "Reading Yes\/No\/Not Given - Author's Claims",
+                            "type": "read_yes_no_ng",
+                            "config": {
+                                "scoring": {
+                                    "max_points": 1,
+                                    "partial_credit": false
+                                },
+                                "duration_sec": 90
+                            },
+                            "difficulty": "hard"
+                        },
+                        {
+                            "id": "matching_headings_features",
+                            "name": "Reading Matching - Headings\/Features",
+                            "type": "matching",
+                            "config": {
+                                "scoring": {
+                                    "max_points": 1,
+                                    "partial_credit": false
+                                },
+                                "duration_sec": 90
+                            },
+                            "difficulty": "medium"
+                        },
+                        {
+                            "id": "sentence_completion_contextual",
+                            "name": "Reading Sentence Completion - Contextual Detail",
+                            "type": "sentence_completion",
+                            "config": {
+                                "scoring": {
+                                    "max_points": 1,
+                                    "partial_credit": false
+                                },
+                                "duration_sec": 75
+                            },
+                            "difficulty": "medium"
+                        }
+                    ]
+                },
+                {
+                    "id": "sec-writing-gt",
+                    "skill": "writing",
+                    "title": "General Training Writing",
+                    "assembly": {
+                        "mode": "blueprint",
+                        "slots": [
+                            {
+                                "pick": 1,
+                                "tags": [
+                                    "gt",
+                                    "letter",
+                                    "formal_or_semi_formal"
+                                ],
+                                "type": "writing_prompt",
+                                "slot_id": "gt_task1_letter",
+                                "difficulty": "medium"
+                            },
+                            {
+                                "pick": 1,
+                                "tags": [
+                                    "gt",
+                                    "essay",
+                                    "argument_or_opinion"
+                                ],
+                                "type": "writing_prompt",
+                                "slot_id": "gt_task2_essay",
+                                "difficulty": "hard"
+                            }
+                        ],
+                        "assertions": {
+                            "total_questions_equals": 2
+                        }
+                    },
+                    "max_score": 9,
+                    "questions": [],
+                    "duration_min": 60,
+                    "question_archetypes": [
+                        {
+                            "id": "gt_wr_letter_formal_v1",
+                            "name": "GT Task 1 Letter — Formal\/Semi-formal",
+                            "type": "writing_prompt",
+                            "config": {
+                                "scoring": {
+                                    "max_points": 3,
+                                    "partial_credit": true
+                                },
+                                "duration_sec": 1200,
+                                "expected_word_count_min": 150,
+                                "expected_word_count_target": 170
+                            },
+                            "difficulty": "medium"
+                        },
+                        {
+                            "id": "gt_wr_letter_informal_v1",
+                            "name": "GT Task 1 Letter — Informal",
+                            "type": "writing_prompt",
+                            "config": {
+                                "scoring": {
+                                    "max_points": 3,
+                                    "partial_credit": true
+                                },
+                                "duration_sec": 1200,
+                                "expected_word_count_min": 150,
+                                "expected_word_count_target": 170
+                            },
+                            "difficulty": "easy"
+                        },
+                        {
+                            "id": "gt_wr_essay_opinion_v1",
+                            "name": "GT Task 2 Essay — Opinion\/Argument",
+                            "type": "writing_prompt",
+                            "config": {
+                                "scoring": {
+                                    "max_points": 6,
+                                    "partial_credit": true
+                                },
+                                "duration_sec": 2400,
+                                "expected_word_count_min": 250,
+                                "expected_word_count_target": 280
+                            },
+                            "difficulty": "hard"
+                        }
+                    ]
+                },
+                {
+                    "id": "sec-speaking",
+                    "skill": "speaking",
+                    "title": "Speaking",
+                    "assembly": {
+                        "mode": "blueprint",
+                        "slots": [
+                            {
+                                "pick": 3,
+                                "tags": [
+                                    "part1",
+                                    "personal",
+                                    "introduction"
+                                ],
+                                "type": "speaking_prompt",
+                                "slot_id": "part1_personal",
+                                "difficulty": "easy"
+                            },
+                            {
+                                "pick": 1,
+                                "tags": [
+                                    "part2",
+                                    "long_turn",
+                                    "cue_card"
+                                ],
+                                "type": "speaking_prompt",
+                                "slot_id": "part2_long_turn",
+                                "difficulty": "medium"
+                            },
+                            {
+                                "pick": 2,
+                                "tags": [
+                                    "part3",
+                                    "discussion",
+                                    "follow_up"
+                                ],
+                                "type": "speaking_prompt",
+                                "slot_id": "part3_discussion",
+                                "difficulty": "medium"
+                            },
+                            {
+                                "pick": 1,
+                                "tags": [
+                                    "part3",
+                                    "discussion",
+                                    "speculation"
+                                ],
+                                "type": "roleplay",
+                                "slot_id": "part3_roleplay",
+                                "difficulty": "hard"
+                            }
+                        ],
+                        "assertions": {
+                            "total_questions_equals": 7
+                        }
+                    },
+                    "max_score": 9,
+                    "questions": [],
+                    "duration_min": 14,
+                    "question_archetypes": [
+                        {
+                            "id": "sp_p1_personal_short",
+                            "name": "Part 1 - Personal\/Introductory Prompt",
+                            "type": "speaking_prompt",
+                            "config": {
+                                "scoring": {
+                                    "max_points": 1,
+                                    "partial_credit": false
+                                },
+                                "duration_sec": 90
+                            },
+                            "difficulty": "easy"
+                        },
+                        {
+                            "id": "sp_p2_long_turn",
+                            "name": "Part 2 - Long Turn (Cue Card)",
+                            "type": "speaking_prompt",
+                            "config": {
+                                "scoring": {
+                                    "max_points": 3,
+                                    "partial_credit": false
+                                },
+                                "duration_sec": 150
+                            },
+                            "difficulty": "medium"
+                        },
+                        {
+                            "id": "sp_p3_discussion_followup",
+                            "name": "Part 3 - Discussion Question",
+                            "type": "speaking_prompt",
+                            "config": {
+                                "scoring": {
+                                    "max_points": 1,
+                                    "partial_credit": false
+                                },
+                                "duration_sec": 120
+                            },
+                            "difficulty": "medium"
+                        },
+                        {
+                            "id": "sp_p3_roleplay",
+                            "name": "Part 3 - Two-way Discussion (Role-play)",
+                            "type": "roleplay",
+                            "config": {
+                                "scoring": {
+                                    "max_points": 1,
+                                    "partial_credit": false
+                                },
+                                "duration_sec": 120
+                            },
+                            "difficulty": "hard"
+                        }
+                    ]
+                }
+            ],
+            "resources": {
+                "sources": [
+                    {
+                        "url": "https:\/\/www.ielts.org\/about-ielts\/test-format",
+                        "title": "IELTS test format",
+                        "publisher": "IELTS"
+                    },
+                    {
+                        "url": "https:\/\/www.ielts.org\/about-ielts\/test-format\/listening",
+                        "title": "IELTS Listening test format",
+                        "publisher": "IELTS"
+                    },
+                    {
+                        "url": "https:\/\/takeielts.britishcouncil.org\/take-ielts\/what-to-expect\/general-training-reading-test",
+                        "title": "General Training Reading test",
+                        "publisher": "British Council"
+                    },
+                    {
+                        "url": "https:\/\/takeielts.britishcouncil.org\/take-ielts\/what-to-expect\/general-training-writing-test",
+                        "title": "General Training Writing test",
+                        "publisher": "British Council"
+                    },
+                    {
+                        "url": "https:\/\/ielts.idp.com\/about\/test-format",
+                        "title": "IELTS test format (IDP)",
+                        "publisher": "IDP IELTS"
+                    }
+                ],
+                "total_duration_min": 165,
+                "speaking_duration_max": 14,
+                "speaking_duration_min": 11
+            },
+            "pass_policy": {
+                "mode": "mixed",
+                "overall_threshold_percent": 60,
+                "per_section_threshold_percent": 40
+            }
+        }
+    },
+    "captured_at": "2025-11-27T10:33:58+00:00",
+    "metadata": {
+        "exam_title": "[MONITOR-REAL] IELTS Listening Test",
+        "exam_level": "B1",
+        "research_status": "completed"
+    }
+}

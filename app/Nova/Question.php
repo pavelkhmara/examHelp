@@ -2,24 +2,31 @@
 
 namespace App\Nova;
 
-use App\Nova\ExamCategory;
 use Laravel\Nova\Fields\Badge;
 use Laravel\Nova\Fields\BelongsTo;
+use Laravel\Nova\Fields\Boolean;
 use Laravel\Nova\Fields\Code;
 use Laravel\Nova\Fields\ID;
 use Laravel\Nova\Fields\Number;
 use Laravel\Nova\Fields\Select;
 use Laravel\Nova\Fields\Text;
-use Laravel\Nova\Fields\Boolean;
 use Laravel\Nova\Http\Requests\NovaRequest;
 use Laravel\Nova\Panel;
-use Laravel\Nova\Resource;
 
+/**
+ * @extends Resource<\App\Models\Question>
+ */
 class Question extends Resource
 {
-    public static $model = \App\Models\Question::class;
+    /**
+     * @var class-string<\App\Models\Question>
+     */
+    public static string $model = \App\Models\Question::class;
+
     public static $title = 'question_id';
+
     public static $search = ['question_id', 'type', 'metadata->topic'];
+
     public static $group = 'Language App';
 
     public function fields(NovaRequest $request)
@@ -68,23 +75,23 @@ class Question extends Resource
 
             Number::make('Time Limit (sec)', 'time_limit_sec')->sortable(),
 
-            Code::make('Instructions', fn () => json_encode($this->instructions, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE))
+            Code::make('Instructions', fn () => json_encode($this->resource->instructions ?? [], JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE))
                 ->language('json')
                 ->onlyOnDetail(),
 
-            Code::make('Stimulus', fn () => json_encode($this->stimulus, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE))
+            Code::make('Stimulus', fn () => json_encode($this->resource->stimulus ?? [], JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE))
                 ->language('json')
                 ->onlyOnDetail(),
 
-            Code::make('Interaction', fn () => json_encode($this->interaction, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE))
+            Code::make('Interaction', fn () => json_encode($this->resource->interaction ?? [], JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE))
                 ->language('json')
                 ->onlyOnDetail(),
 
-            Code::make('Response', fn () => json_encode($this->response, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE))
+            Code::make('Response', fn () => json_encode($this->resource->response ?? [], JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE))
                 ->language('json')
                 ->onlyOnDetail(),
 
-            Code::make('Scoring', fn () => json_encode($this->scoring, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE))
+            Code::make('Scoring', fn () => json_encode($this->resource->scoring ?? [], JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE))
                 ->language('json')
                 ->onlyOnDetail(),
 
@@ -121,18 +128,18 @@ class Question extends Resource
                     ->asHtml()
                     ->readonly()
                     ->resolveUsing(function () use ($audioUrl) {
-                        if (!$audioUrl) {
+                        if (! $audioUrl) {
                             return '<p style="color: #999;">Audio file not found</p>';
                         }
 
                         return '
                             <div style="padding: 10px; background: #f9fafb; border-radius: 6px;">
                                 <audio controls style="width: 100%; max-width: 500px;">
-                                    <source src="' . htmlspecialchars($audioUrl) . '" type="audio/mpeg">
+                                    <source src="'.htmlspecialchars($audioUrl).'" type="audio/mpeg">
                                     Your browser does not support the audio element.
                                 </audio>
                                 <div style="margin-top: 10px;">
-                                    <a href="' . htmlspecialchars($audioUrl) . '"
+                                    <a href="'.htmlspecialchars($audioUrl).'"
                                        download
                                        style="color: #4f46e5; text-decoration: none; font-weight: 500;">
                                         📥 Download Audio File
@@ -165,31 +172,31 @@ class Question extends Resource
                 // Winner image
                 $html .= '<div class="border rounded-lg p-4 bg-white dark:bg-gray-800">';
                 $html .= '<h4 class="text-lg font-semibold mb-3 text-gray-900 dark:text-gray-100">🏆 Selected Image</h4>';
-                $html .= '<img src="' . htmlspecialchars($imageUrl) . '" alt="Question image" class="w-full rounded-lg shadow-lg mb-3" style="max-width: 600px;">';
+                $html .= '<img src="'.htmlspecialchars($imageUrl).'" alt="Question image" class="w-full rounded-lg shadow-lg mb-3" style="max-width: 600px;">';
 
                 // Metadata
                 $html .= '<div class="grid grid-cols-2 gap-2 text-sm">';
                 $html .= '<div class="text-gray-600 dark:text-gray-400">AI Score:</div>';
-                $html .= '<div class="font-semibold text-gray-900 dark:text-gray-100">' . htmlspecialchars((string)$aiScore) . '/10</div>';
+                $html .= '<div class="font-semibold text-gray-900 dark:text-gray-100">'.htmlspecialchars((string) $aiScore).'/10</div>';
                 $html .= '<div class="text-gray-600 dark:text-gray-400">Provider:</div>';
-                $html .= '<div class="text-gray-900 dark:text-gray-100">' . htmlspecialchars($provider) . '</div>';
+                $html .= '<div class="text-gray-900 dark:text-gray-100">'.htmlspecialchars($provider).'</div>';
                 $html .= '<div class="text-gray-600 dark:text-gray-400">Author:</div>';
                 $html .= '<div class="text-gray-900 dark:text-gray-100">';
                 if ($authorUrl) {
-                    $html .= '<a href="' . htmlspecialchars($authorUrl) . '" target="_blank" class="text-blue-600 hover:underline">' . htmlspecialchars($author) . '</a>';
+                    $html .= '<a href="'.htmlspecialchars($authorUrl).'" target="_blank" class="text-blue-600 hover:underline">'.htmlspecialchars($author).'</a>';
                 } else {
                     $html .= htmlspecialchars($author);
                 }
                 $html .= '</div>';
                 if ($license) {
                     $html .= '<div class="text-gray-600 dark:text-gray-400">License:</div>';
-                    $html .= '<div class="text-gray-900 dark:text-gray-100">' . htmlspecialchars($license) . '</div>';
+                    $html .= '<div class="text-gray-900 dark:text-gray-100">'.htmlspecialchars($license).'</div>';
                 }
                 $html .= '</div>';
 
                 if ($aiReason) {
                     $html .= '<div class="mt-3 p-3 bg-blue-50 dark:bg-blue-900/20 rounded">';
-                    $html .= '<p class="text-sm text-gray-700 dark:text-gray-300"><strong>AI Reasoning:</strong> ' . htmlspecialchars($aiReason) . '</p>';
+                    $html .= '<p class="text-sm text-gray-700 dark:text-gray-300"><strong>AI Reasoning:</strong> '.htmlspecialchars($aiReason).'</p>';
                     $html .= '</div>';
                 }
 
@@ -197,7 +204,7 @@ class Question extends Resource
 
                 // Alternative images (test mode)
                 $alternatives = $this->resource->image_alternatives ?? [];
-                if (!empty($alternatives)) {
+                if (! empty($alternatives)) {
                     $html .= '<div class="border rounded-lg p-4 bg-gray-50 dark:bg-gray-900/50 mt-4">';
                     $html .= '<h4 class="text-lg font-semibold mb-3 text-gray-900 dark:text-gray-100">🥈 Alternative Options (Test Mode)</h4>';
                     $html .= '<div class="grid grid-cols-2 gap-4">';
@@ -208,11 +215,11 @@ class Question extends Resource
                         $altReason = $alt['ai_reason'] ?? '';
 
                         $html .= '<div class="border rounded p-2 bg-white dark:bg-gray-800">';
-                        $html .= '<img src="' . htmlspecialchars($altUrl) . '" alt="Alternative ' . ($idx + 1) . '" class="w-full rounded mb-2">';
+                        $html .= '<img src="'.htmlspecialchars($altUrl).'" alt="Alternative '.($idx + 1).'" class="w-full rounded mb-2">';
                         $html .= '<div class="text-xs text-gray-600 dark:text-gray-400">';
-                        $html .= '<div><strong>Score:</strong> ' . htmlspecialchars((string)$altScore) . '/10</div>';
+                        $html .= '<div><strong>Score:</strong> '.htmlspecialchars((string) $altScore).'/10</div>';
                         if ($altReason) {
-                            $html .= '<div class="mt-1">' . htmlspecialchars(mb_substr($altReason, 0, 80)) . '...</div>';
+                            $html .= '<div class="mt-1">'.htmlspecialchars(mb_substr($altReason, 0, 80)).'...</div>';
                         }
                         $html .= '</div>';
                         $html .= '</div>';
@@ -224,7 +231,7 @@ class Question extends Resource
 
                 $html .= '</div>';
 
-                $fields[] = Text::make('Image', function() use ($html) {
+                $fields[] = Text::make('Image', function () use ($html) {
                     return $html;
                 })->asHtml()->onlyOnDetail();
             }
@@ -241,7 +248,7 @@ class Question extends Resource
 
         // No media message
         if (empty($fields)) {
-            $fields[] = Text::make('No Media', function() {
+            $fields[] = Text::make('No Media', function () {
                 return '<div class="text-gray-500 dark:text-gray-400 italic">No audio or image generated for this question</div>';
             })->asHtml()->onlyOnDetail();
         }
@@ -254,13 +261,13 @@ class Question extends Resource
      */
     protected function getAudioUrl(): ?string
     {
-        if (!$this->resource || !$this->resource->audio_file_path) {
+        if (! $this->resource || ! $this->resource->audio_file_path) {
             return null;
         }
 
         // Проверяем есть ли URL в instructions
         $instructions = $this->resource->instructions ?? [];
-        if (!empty($instructions['audio_url'])) {
+        if (! empty($instructions['audio_url'])) {
             return $instructions['audio_url'];
         }
 
@@ -268,5 +275,3 @@ class Question extends Resource
         return \Illuminate\Support\Facades\Storage::disk('public')->url($this->resource->audio_file_path);
     }
 }
-
-

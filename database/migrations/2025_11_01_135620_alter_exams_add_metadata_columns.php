@@ -33,7 +33,7 @@ return new class extends Migration
             // Analysis status for async processing
             if (! Schema::hasColumn('exams', 'analysis_status')) {
                 $table->enum('analysis_status', [
-                    'pending', 'running', 'completed', 'failed'
+                    'pending', 'running', 'completed', 'failed',
                 ])->default('pending')->after('system_analysis');
             }
         });

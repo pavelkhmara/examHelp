@@ -1,0 +1,20 @@
+{
+    "exam_id": "0c6310f1-b891-4dfd-b0aa-3cfc7059aeac",
+    "stage": "identity",
+    "label": "baseline",
+    "hash": "da80a33d1d5b79026b072b9c4990054f0539bfa2328a3b66296671114b3e4693",
+    "data": {
+        "stage": "identity",
+        "exam_id": "0c6310f1-b891-4dfd-b0aa-3cfc7059aeac",
+        "identity_data": null,
+        "confidence": {
+            "overall": null
+        }
+    },
+    "captured_at": "2025-11-25T21:19:10+00:00",
+    "metadata": {
+        "exam_title": "Egzamin Certyfikatowy z Języka Polskiego jako Obcego - B1",
+        "exam_level": "B1",
+        "research_status": "completed"
+    }
+}

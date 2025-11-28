@@ -253,6 +253,8 @@ final class QuestionArraySchema
 
     /**
      * Get list of valid question types
+     *
+     * @phpstan-ignore-next-line (method reserved for future use)
      */
     private static function getValidTypes(): array
     {

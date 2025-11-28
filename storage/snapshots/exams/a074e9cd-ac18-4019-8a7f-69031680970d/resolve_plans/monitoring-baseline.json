@@ -1,0 +1,87 @@
+{
+    "exam_id": "a074e9cd-ac18-4019-8a7f-69031680970d",
+    "stage": "resolve_plans",
+    "label": "monitoring-baseline",
+    "hash": "ffb05e128be52de4bbd814b03dd26e8badf152680c9e6bf6f6a2fc4ecbc07f29",
+    "data": {
+        "stage": "resolve_plans",
+        "exam_id": "a074e9cd-ac18-4019-8a7f-69031680970d",
+        "generation_plans": [
+            {
+                "section_id": "b1-listening",
+                "group_id": "listening-task-1",
+                "questions_count": 6,
+                "question_type": "listen_true_false",
+                "synthesis_mode": "inline"
+            },
+            {
+                "section_id": "b1-listening",
+                "group_id": "listening-task-2",
+                "questions_count": 6,
+                "question_type": "listen_yes_no_ng",
+                "synthesis_mode": "inline"
+            },
+            {
+                "section_id": "b1-listening",
+                "group_id": "listening-task-3",
+                "questions_count": 6,
+                "question_type": "listen_mcq",
+                "synthesis_mode": "inline"
+            },
+            {
+                "section_id": "b1-listening",
+                "group_id": "listening-task-4",
+                "questions_count": 6,
+                "question_type": "listen_mcq",
+                "synthesis_mode": "inline"
+            },
+            {
+                "section_id": "b1-listening",
+                "group_id": "listening-task-5",
+                "questions_count": 6,
+                "question_type": "listen_true_false",
+                "synthesis_mode": "inline"
+            },
+            {
+                "section_id": "b1-reading",
+                "group_id": "reading-task-1",
+                "questions_count": 6,
+                "question_type": "matching",
+                "synthesis_mode": "inline"
+            },
+            {
+                "section_id": "b1-reading",
+                "group_id": "reading-task-2",
+                "questions_count": 10,
+                "question_type": "read_mcq",
+                "synthesis_mode": "inline"
+            },
+            {
+                "section_id": "b1-reading",
+                "group_id": "reading-task-3",
+                "questions_count": 10,
+                "question_type": "read_mcq",
+                "synthesis_mode": "inline"
+            }
+        ],
+        "summary": {
+            "total_plans": 8,
+            "by_section": {
+                "b1-listening": {
+                    "plans": 5,
+                    "questions": 30
+                },
+                "b1-reading": {
+                    "plans": 3,
+                    "questions": 26
+                }
+            }
+        }
+    },
+    "captured_at": "2025-11-27T16:51:48+00:00",
+    "metadata": {
+        "exam_title": "pjc Egzaminy certyfikatowe z języka polskiego jako obcego",
+        "exam_level": "B1",
+        "research_status": "completed"
+    }
+}

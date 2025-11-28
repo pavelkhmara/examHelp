@@ -9,8 +9,41 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
 
+/**
+ * @property string $id
+ * @property string|null $slug
+ * @property string $title
+ * @property string|null $description
+ * @property string|null $level
+ * @property string|null $language_of_test
+ * @property bool $is_active
+ * @property array|null $user_input
+ * @property array|null $user_meta
+ * @property array|null $identity
+ * @property array|null $system_analysis
+ * @property string|null $analysis_status
+ * @property array|null $sources
+ * @property array|null $meta
+ * @property string|null $research_status
+ * @property int $categories_count
+ * @property int $examples_count
+ * @property string|null $document_upload
+ * @property \Carbon\Carbon $created_at
+ * @property \Carbon\Carbon $updated_at
+ *
+ * Virtual properties from identity/meta:
+ * @property string|null $provider
+ * @property string|null $family
+ * @property array|null $structure_v2
+ *
+ * Computed properties:
+ * @property int|null $total_exam_duration
+ * @property array $exam_structure
+ * @property array $structure_sections
+ */
 class Exam extends Model
 {
+    /** @use HasFactory<\Database\Factories\ExamFactory> */
     use HasFactory, HasUuids;
 
     public $incrementing = false;
@@ -27,6 +60,7 @@ class Exam extends Model
     ];
 
     protected $casts = [
+        'user_input' => AsArrayWithUnescapedSlashes::class,
         'user_meta' => AsArrayWithUnescapedSlashes::class,
         'identity' => AsArrayWithUnescapedSlashes::class,
         'system_analysis' => AsArrayWithUnescapedSlashes::class,
@@ -35,52 +69,79 @@ class Exam extends Model
         'is_active' => 'boolean',
     ];
 
+    /**
+     * @return HasMany<ExamCategory, covariant self>
+     */
     public function categories(): HasMany
     {
         return $this->hasMany(ExamCategory::class, 'exam_id', 'id');
     }
 
+    /**
+     * @return HasMany<ExamExampleQuestion, covariant self>
+     */
     public function examples(): HasMany
     {
         return $this->hasMany(ExamExampleQuestion::class);
     }
 
+    /**
+     * @return HasMany<GenerationTask, covariant self>
+     */
     public function generationTasks(): HasMany
     {
         return $this->hasMany(GenerationTask::class, 'exam_id', 'id');
     }
 
+    /**
+     * @return HasMany<GenerationLog, covariant self>
+     */
     public function generationLogs(): HasMany
     {
         return $this->hasMany(GenerationLog::class);
     }
 
+    /**
+     * @return HasMany<ExamDocument, covariant self>
+     */
     public function documents(): HasMany
     {
         return $this->hasMany(ExamDocument::class);
     }
 
+    /**
+     * @return HasOne<ConfirmedIdentity, covariant self>
+     */
     public function confirmedIdentity(): HasOne
     {
         return $this->hasOne(ConfirmedIdentity::class, 'exam_id', 'id');
     }
 
+    /**
+     * @return HasMany<ConfirmedIdentity, covariant self>
+     */
     public function confirmedIdentities(): HasMany
     {
         return $this->hasMany(ConfirmedIdentity::class, 'exam_id', 'id');
     }
 
+    /**
+     * @return HasMany<Question, covariant self>
+     */
     public function questions(): HasMany
     {
         return $this->hasMany(Question::class, 'exam_id', 'id');
     }
 
+    /**
+     * @return HasMany<QuestionGroup, covariant self>
+     */
     public function questionGroups(): HasMany
     {
         return $this->hasMany(QuestionGroup::class, 'exam_id', 'id');
     }
 
-    public function loadAllCounts()
+    public function loadAllCounts(): self
     {
         return $this->loadCount([
             'categories',
@@ -96,6 +157,12 @@ class Exam extends Model
 
     /**
      * Get v2 exam structure from meta['structure_v2']
+     *
+     * @deprecated Use ExamCategory as primary source of truth for section data.
+     *             structure_v2 is now a STAGING area used during generation.
+     *             After finalize, read from $exam->categories instead.
+     *             See: docs/fixes/fix-dual-source-of-truth.md
+     *
      * This is the new v2 format with sections[], pass_policy, policies, etc.
      */
     public function getStructureV2Attribute(): ?array
@@ -105,6 +172,9 @@ class Exam extends Model
 
     /**
      * Set v2 exam structure to meta['structure_v2']
+     *
+     * @deprecated For new data, prefer writing to ExamCategory.
+     *             structure_v2 should only be used as staging during generation.
      */
     public function setStructureV2Attribute(array $value): void
     {
@@ -118,7 +188,7 @@ class Exam extends Model
     /**
      * Get v1 exam structure from meta['exam_structure'] (for backward compatibility)
      */
-    public function getExamStructureAttribute()
+    public function getExamStructureAttribute(): ?array
     {
         return $this->meta['exam_structure'] ?? null;
     }
@@ -126,7 +196,7 @@ class Exam extends Model
     /**
      * Get total exam duration from v1 structure (backward compatibility)
      */
-    public function getTotalExamDurationAttribute()
+    public function getTotalExamDurationAttribute(): ?int
     {
         return data_get($this->exam_structure, 'total_exam_duration');
     }
@@ -134,7 +204,7 @@ class Exam extends Model
     /**
      * Get sections from v1 structure (backward compatibility)
      */
-    public function getStructureSectionsAttribute()
+    public function getStructureSectionsAttribute(): array
     {
         // NEW v2: Try structure_v2 first (stored in meta)
         $v2 = $this->meta['structure_v2'] ?? null;
@@ -157,7 +227,7 @@ class Exam extends Model
 
         // REFERENCE EXAMS: Load from database tables (ExamCategory, QuestionGroup, Question)
         $categories = $this->categories()
-            ->with(['questionGroups' => fn($q) => $q->orderBy('order'), 'questionGroups.questions' => fn($q) => $q->orderBy('order')])
+            ->with(['questionGroups' => fn ($q) => $q->orderBy('order'), 'questionGroups.questions' => fn ($q) => $q->orderBy('order')])
             ->orderBy('order')
             ->get();
         if ($categories->isNotEmpty()) {

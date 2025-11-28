@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace App\Services\LanguageApp;
 
 use App\Models\Exam;
-use App\Models\QuestionGroup;
 use App\Models\Question;
+use App\Models\QuestionGroup;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 
@@ -91,7 +91,7 @@ class QuestionGroupAudioProcessor
     public function processGroup(QuestionGroup $group): string
     {
         // Проверяем нужно ли генерировать аудио
-        if (!$this->shouldGenerateAudio($group)) {
+        if (! $this->shouldGenerateAudio($group)) {
             return 'skipped';
         }
 
@@ -112,11 +112,12 @@ class QuestionGroupAudioProcessor
                 'group_id' => $group->id,
                 'title' => $group->title,
             ]);
+
             return 'skipped';
         }
 
         // Генерируем аудио
-        $filename = 'group_' . $group->id . '_' . time();
+        $filename = 'group_'.$group->id.'_'.time();
 
         // Выбираем голос в зависимости от типа контента
         $voice = $this->selectVoice($group);
@@ -127,6 +128,7 @@ class QuestionGroupAudioProcessor
             Log::warning('[QuestionGroupAudioProcessor] Audio generation returned empty result', [
                 'group_id' => $group->id,
             ]);
+
             return 'error';
         }
 
@@ -149,7 +151,7 @@ class QuestionGroupAudioProcessor
     protected function shouldGenerateAudio(QuestionGroup $group): bool
     {
         // TTS должен быть включен
-        if (!config('ai.tts.enabled', false)) {
+        if (! config('ai.tts.enabled', false)) {
             return false;
         }
 
@@ -186,9 +188,9 @@ class QuestionGroupAudioProcessor
         }
 
         // Проверяем что это не реальный URL
-        if (!filter_var($url, FILTER_VALIDATE_URL)) {
+        if (! filter_var($url, FILTER_VALIDATE_URL)) {
             // Не валидный URL и не http/https - скорее всего плейсхолдер
-            if (!str_starts_with($url, 'http://') && !str_starts_with($url, 'https://')) {
+            if (! str_starts_with($url, 'http://') && ! str_starts_with($url, 'https://')) {
                 return true;
             }
         }
@@ -236,7 +238,7 @@ class QuestionGroupAudioProcessor
 
         // True/False, Yes/No обычно к unified stimulus
         $unifiedTypes = ['listen_true_false', 'listen_yes_no_ng', 'true_false', 'yes_no_ng'];
-        $hasUnifiedTypes = !empty(array_intersect($questionTypes, $unifiedTypes));
+        $hasUnifiedTypes = ! empty(array_intersect($questionTypes, $unifiedTypes));
 
         if ($hasUnifiedTypes && $questionCount >= 4) {
             return 'unified';
@@ -267,7 +269,7 @@ class QuestionGroupAudioProcessor
         $stimulus = $group->stimulus ?? [];
 
         // Приоритет 1: Уже есть text_html в stimulus - используем его
-        if (!empty($stimulus['text_html'])) {
+        if (! empty($stimulus['text_html'])) {
             $text = strip_tags($stimulus['text_html']);
 
             // Проверяем что это не просто тема/заголовок
@@ -297,14 +299,14 @@ class QuestionGroupAudioProcessor
             $questionStimulus = $question->stimulus ?? [];
             $questionText = $questionStimulus['text_html'] ?? '';
 
-            if (!empty($questionText)) {
+            if (! empty($questionText)) {
                 $fragments[] = strip_tags($questionText);
             } else {
                 // Пробуем получить из instructions
                 $instructions = $question->instructions ?? [];
                 $instrText = $instructions['full'] ?? $instructions['brief'] ?? '';
 
-                if (!empty($instrText)) {
+                if (! empty($instrText)) {
                     $fragments[] = $instrText;
                 }
             }

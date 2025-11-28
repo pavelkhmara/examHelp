@@ -11,9 +11,12 @@ use Laravel\Nova\Fields\Number;
 use Laravel\Nova\Fields\Text;
 use Laravel\Nova\Http\Requests\NovaRequest;
 
+/**
+ * @extends Resource<\App\Models\ExamDocument>
+ */
 class ExamDocument extends Resource
 {
-    public static $model = \App\Models\ExamDocument::class;
+    public static string $model = \App\Models\ExamDocument::class;
 
     public static $title = 'original_name';
 

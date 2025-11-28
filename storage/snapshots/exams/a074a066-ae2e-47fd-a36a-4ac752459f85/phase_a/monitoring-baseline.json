@@ -1,0 +1,122 @@
+{
+    "exam_id": "a074a066-ae2e-47fd-a36a-4ac752459f85",
+    "stage": "phase_a",
+    "label": "monitoring-baseline",
+    "hash": "48efe2ab637309205495f3cf1b7247c429ed612da3faa6066afd141d6885fa0f",
+    "data": {
+        "stage": "phase_a",
+        "exam_id": "a074a066-ae2e-47fd-a36a-4ac752459f85",
+        "structure_v2": {
+            "id": "ielts-academic-listening-british-council-long-monitor-1",
+            "version": "2.0",
+            "meta": {
+                "name": "[LONG-MONITOR-1] IELTS Academic Listening",
+                "tags": [
+                    "IELTS",
+                    "Academic",
+                    "Listening",
+                    "British Council",
+                    "paper-based",
+                    "official-format"
+                ],
+                "level": "B1",
+                "session": null,
+                "language": "en",
+                "provider": "British Council"
+            },
+            "pass_policy": {
+                "mode": "overall_only",
+                "overall_threshold_percent": 0
+            },
+            "policies": {
+                "navigation": {
+                    "backtracking": false
+                },
+                "proctoring": {
+                    "mic": false,
+                    "camera": true,
+                    "screen": true
+                },
+                "policy_precedence": "question>section>exam",
+                "answer_transfer_window_sec": 600
+            },
+            "sections": [
+                {
+                    "id": "sec-listening",
+                    "skill": "listening",
+                    "title": "Listening Test",
+                    "max_score": 40,
+                    "questions": [],
+                    "duration_min": 30,
+                    "question_archetypes": [
+                        {
+                            "id": "listen_mcq_main_idea",
+                            "name": "Listening MCQ - Detail\/Main Idea",
+                            "type": "listen_mcq",
+                            "config": {
+                                "scoring": {
+                                    "max_points": 1,
+                                    "partial_credit": false
+                                },
+                                "duration_sec": 75,
+                                "options_count": 4,
+                                "shuffle_options": true
+                            },
+                            "difficulty": "medium"
+                        },
+                        {
+                            "id": "dictation_form_completion",
+                            "name": "Dictation - Notes\/Form Completion",
+                            "type": "dictation",
+                            "config": {
+                                "scoring": {
+                                    "max_points": 1,
+                                    "partial_credit": false
+                                },
+                                "duration_sec": 60,
+                                "input_constraints": {
+                                    "max_chars": 30,
+                                    "case_sensitive": false,
+                                    "allow_hyphenated": true
+                                }
+                            },
+                            "difficulty": "easy"
+                        },
+                        {
+                            "id": "listen_true_false_facts",
+                            "name": "True\/False - Fact Checking",
+                            "type": "listen_true_false",
+                            "config": {
+                                "scoring": {
+                                    "max_points": 1,
+                                    "partial_credit": false
+                                },
+                                "duration_sec": 45
+                            },
+                            "difficulty": "medium"
+                        },
+                        {
+                            "id": "listen_yes_no_ng_inference",
+                            "name": "Yes\/No\/Not Given - Inference",
+                            "type": "listen_yes_no_ng",
+                            "config": {
+                                "scoring": {
+                                    "max_points": 1,
+                                    "partial_credit": false
+                                },
+                                "duration_sec": 75
+                            },
+                            "difficulty": "hard"
+                        }
+                    ]
+                }
+            ]
+        }
+    },
+    "captured_at": "2025-11-27T10:33:57+00:00",
+    "metadata": {
+        "exam_title": "[LONG-MONITOR-1] IELTS Listening Minimal",
+        "exam_level": "B1",
+        "research_status": "completed"
+    }
+}

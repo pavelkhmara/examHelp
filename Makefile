@@ -1,5 +1,5 @@
 SHELL := /usr/bin/env bash
-.PHONY: up down init migrate seed test cs stan bash app-shell queue queue-shell refresh fast-refresh worker-restart logs lint cache-clear dump-autoload app-bash mysql-buffers ctx ctx-models ctx-db ctx-models-db ctx-nova ctx-file ctx-file-auto ctx-help qs qw
+.PHONY: up down init migrate seed test cs stan bash app-shell queue queue-shell refresh fast-refresh worker-restart logs lint cache-clear dump-autoload app-bash mysql-buffers ctx ctx-models ctx-db ctx-models-db ctx-nova ctx-file ctx-file-auto ctx-help qs qw qwl
 
 DC = docker compose
 
@@ -67,29 +67,97 @@ worker-restart:
 logs:
 	docker compose logs -f app
 
-# Queue status - показывает какие джобы сейчас выполняются
+# Queue status - показывает какие джобы сейчас выполняются (snapshot)
 qs:
-	@echo "=== QUEUE STATUS $$(date '+%Y-%m-%d %H:%M:%S') ==="
+	@echo "=================================================================="
+	@echo "  QUEUE STATUS: $$(date '+%Y-%m-%d %H:%M:%S')"
+	@echo "=================================================================="
 	@echo ""
-	@echo "📌 RUNNING JOBS (reserved):"
-	@$(DC) exec -T redis redis-cli ZRANGE queues:default:reserved 0 -1 2>/dev/null | \
-		while read -r job; do \
-			class=$$(echo "$$job" | grep -oP '"displayName":"[^"]+' | sed 's/"displayName":"//' | head -1); \
-			task_id=$$(echo "$$job" | grep -oP '"taskId":[0-9]+' | sed 's/"taskId"://' | head -1); \
+	@echo "[WORKERS STATUS]"
+	@running=0; total=10; \
+	for i in 1 2 3 4 5 6 7 8 9 10; do \
+		if $(DC) ps queue-worker-$$i 2>/dev/null | grep -q "Up"; then \
+			running=$$((running + 1)); \
+		fi; \
+	done; \
+	echo "   Active: $$running/$$total workers"
+	@echo ""
+	@echo "[RUNNING JOBS (reserved)]"
+	@jobs=$$($(DC) exec -T redis redis-cli ZRANGE laravel_database_queues:default:reserved 0 -1 2>/dev/null); \
+	if [ -z "$$jobs" ]; then \
+		echo "   (none)"; \
+	else \
+		echo "$$jobs" | while read -r job; do \
+			class=$$(echo "$$job" | sed -n 's/.*"displayName":"\([^"]*\)".*/\1/p' | head -1); \
+			task_id=$$(echo "$$job" | sed -n 's/.*s:6:\\"taskId\\";i:\([0-9]*\);.*/\1/p' | head -1); \
+			exam_id=$$(echo "$$job" | sed -n 's/.*s:6:\\"examId\\";s:[0-9]*:\\"\([0-9a-f-]*\)\\";.*/\1/p' | head -1); \
 			if [ -n "$$class" ]; then \
+				printf "   >> "; \
 				if [ -n "$$task_id" ]; then \
-					echo "   • $$class (task: $$task_id)"; \
+					printf "$$class (task: $$task_id"; \
+					[ -n "$$exam_id" ] && printf ", exam: $$exam_id"; \
+					printf ")\n"; \
 				else \
-					echo "   • $$class"; \
+					echo "$$class"; \
 				fi; \
 			fi; \
-		done || echo "   (none)"
+		done; \
+	fi
 	@echo ""
-	@echo "⏳ PENDING: $$($(DC) exec -T redis redis-cli LLEN queues:default 2>/dev/null || echo 0)"
+	@pending=$$($(DC) exec -T redis redis-cli LLEN laravel_database_queues:default 2>/dev/null || echo 0); \
+	echo "[PENDING]: $$pending jobs"
+	@echo ""
+	@failed=$$($(DC) exec -T redis redis-cli ZCARD laravel_database_queues:default:failed 2>/dev/null || echo 0); \
+	delayed=$$($(DC) exec -T redis redis-cli ZCARD laravel_database_queues:default:delayed 2>/dev/null || echo 0); \
+	echo "[FAILED]: $$failed  |  [DELAYED]: $$delayed"
+	@echo ""
+	@mem=$$($(DC) exec -T redis redis-cli INFO memory 2>/dev/null | grep "used_memory_human" | cut -d: -f2 | tr -d '\r'); \
+	[ -n "$$mem" ] && echo "[REDIS MEMORY]: $$mem" || echo "[REDIS MEMORY]: N/A"
+	@echo ""
 
-# Queue watch - смотрит логи воркеров в реальном времени
+# Queue watch - мониторит активные джобы в реальном времени (авто-обновление)
 qw:
-	docker compose logs -f --tail=2 queue-worker-1 queue-worker-2 queue-worker-3 queue-worker-4 queue-worker-5 queue-worker-6 queue-worker-7 queue-worker-8 queue-worker-9 queue-worker-10
+	@echo "Queue Watch - press Ctrl+C to exit"
+	@echo "Refreshing every 2 seconds..."
+	@echo ""
+	@while true; do \
+		clear; \
+		echo "=================================================================="; \
+		echo "  LIVE QUEUE MONITOR: $$(date '+%Y-%m-%d %H:%M:%S')"; \
+		echo "=================================================================="; \
+		echo ""; \
+		jobs=$$($(DC) exec -T redis redis-cli ZRANGE laravel_database_queues:default:reserved 0 -1 2>/dev/null); \
+		if [ -z "$$jobs" ]; then \
+			echo "[RUNNING JOBS]: None - queue is idle"; \
+		else \
+			echo "[RUNNING JOBS]:"; \
+			echo "$$jobs" | while read -r job; do \
+				class=$$(echo "$$job" | sed -n 's/.*"displayName":"\([^"]*\)".*/\1/p' | head -1); \
+				task_id=$$(echo "$$job" | sed -n 's/.*s:6:\\"taskId\\";i:\([0-9]*\);.*/\1/p' | head -1); \
+				exam_id=$$(echo "$$job" | sed -n 's/.*s:6:\\"examId\\";s:[0-9]*:\\"\([0-9a-f-]*\)\\";.*/\1/p' | head -1); \
+				if [ -n "$$class" ]; then \
+					printf "   >> "; \
+					if [ -n "$$task_id" ]; then \
+						printf "$$class (task: $$task_id"; \
+						[ -n "$$exam_id" ] && printf ", exam: $$exam_id"; \
+						printf ")\n"; \
+					else \
+						echo "$$class"; \
+					fi; \
+				fi; \
+			done; \
+		fi; \
+		echo ""; \
+		pending=$$($(DC) exec -T redis redis-cli LLEN laravel_database_queues:default 2>/dev/null || echo 0); \
+		echo "[PENDING]: $$pending jobs"; \
+		echo ""; \
+		echo "Press Ctrl+C to exit..."; \
+		sleep 2; \
+	done
+
+# Queue watch logs - показывает логи воркеров (старое поведение)
+qwl:
+	docker compose logs -f --tail=20 queue-worker-1 queue-worker-2 queue-worker-3 queue-worker-4 queue-worker-5 queue-worker-6 queue-worker-7 queue-worker-8 queue-worker-9 queue-worker-10
 
 lint:
 	docker compose exec app vendor/bin/pint --test

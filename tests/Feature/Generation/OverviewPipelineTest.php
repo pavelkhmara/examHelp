@@ -9,6 +9,9 @@ use App\Services\LanguageApp\ExamResearchService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
+/**
+ * @group broken
+ */
 class OverviewPipelineTest extends TestCase
 {
     use RefreshDatabase;

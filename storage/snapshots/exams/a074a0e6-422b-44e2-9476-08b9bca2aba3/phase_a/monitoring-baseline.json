@@ -1,0 +1,131 @@
+{
+    "exam_id": "a074a0e6-422b-44e2-9476-08b9bca2aba3",
+    "stage": "phase_a",
+    "label": "monitoring-baseline",
+    "hash": "721b097532153f80274d14f264be966ea1b8cf586460cad0849c24b9158cb089",
+    "data": {
+        "stage": "phase_a",
+        "exam_id": "a074a0e6-422b-44e2-9476-08b9bca2aba3",
+        "structure_v2": {
+            "id": "toefl-ibt-reading-standard-2025-01",
+            "version": "2.0",
+            "meta": {
+                "name": "[LONG-MONITOR-2] TOEFL Reading Standard",
+                "tags": [
+                    "TOEFL iBT",
+                    "Reading",
+                    "ETS",
+                    "Academic",
+                    "Computer-delivered"
+                ],
+                "level": "B2",
+                "session": null,
+                "language": "en",
+                "provider": "ETS"
+            },
+            "pass_policy": {
+                "mode": "per_section_only",
+                "per_section_threshold_percent": 60
+            },
+            "policies": {
+                "navigation": {
+                    "backtracking": true
+                },
+                "proctoring": {
+                    "mic": true,
+                    "camera": true,
+                    "screen": true
+                },
+                "policy_precedence": "question>section>exam",
+                "answer_transfer_window_sec": 0
+            },
+            "sections": [
+                {
+                    "id": "reading-section-1",
+                    "skill": "reading",
+                    "title": "Reading",
+                    "max_score": 30,
+                    "questions": [],
+                    "duration_min": 35,
+                    "question_archetypes": [
+                        {
+                            "id": "read_mcq_main_idea",
+                            "name": "Reading MCQ - Main Idea\/Inference",
+                            "type": "read_mcq",
+                            "config": {
+                                "scoring": {
+                                    "max_points": 1,
+                                    "partial_credit": false
+                                },
+                                "duration_sec": 90,
+                                "options_count": 4
+                            },
+                            "difficulty": "medium"
+                        },
+                        {
+                            "id": "read_mcq_detail",
+                            "name": "Reading MCQ - Detail\/Reference",
+                            "type": "read_mcq",
+                            "config": {
+                                "scoring": {
+                                    "max_points": 1,
+                                    "partial_credit": false
+                                },
+                                "duration_sec": 75,
+                                "options_count": 4
+                            },
+                            "difficulty": "easy"
+                        },
+                        {
+                            "id": "read_true_false_inference",
+                            "name": "Reading True\/False - Inference\/Judgment",
+                            "type": "read_true_false",
+                            "config": {
+                                "scoring": {
+                                    "max_points": 1,
+                                    "partial_credit": false
+                                },
+                                "duration_sec": 60
+                            },
+                            "difficulty": "medium"
+                        },
+                        {
+                            "id": "matching_headings",
+                            "name": "Reading Matching - Headings to Paragraphs",
+                            "type": "matching",
+                            "config": {
+                                "scoring": {
+                                    "max_points": 3,
+                                    "partial_credit": true
+                                },
+                                "pair_count": 3,
+                                "duration_sec": 180
+                            },
+                            "difficulty": "hard"
+                        },
+                        {
+                            "id": "sentence_completion_paraphrase",
+                            "name": "Reading Sentence Completion - Paraphrase",
+                            "type": "sentence_completion",
+                            "config": {
+                                "blanks": 1,
+                                "scoring": {
+                                    "max_points": 1,
+                                    "partial_credit": false
+                                },
+                                "duration_sec": 75
+                            },
+                            "difficulty": "medium"
+                        }
+                    ]
+                }
+            ]
+        }
+    },
+    "captured_at": "2025-11-27T10:33:56+00:00",
+    "metadata": {
+        "exam_title": "[LONG-MONITOR-2] TOEFL Reading Standard",
+        "exam_level": "B2",
+        "research_status": "completed"
+    }
+}

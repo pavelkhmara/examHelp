@@ -13,7 +13,7 @@ class QuestionDeduplicator
     private const DUPLICATE_THRESHOLD = 0.85;
 
     /**
-     * @param array<int, array<string, mixed>> $newQuestions
+     * @param  array<int, array<string, mixed>>  $newQuestions
      * @return array<int, array<string, mixed>>
      */
     public function detectDuplicates(array $newQuestions, Exam $exam): array
@@ -60,7 +60,7 @@ class QuestionDeduplicator
     }
 
     /**
-     * @param array<int, array<string, mixed>> $questions
+     * @param  array<int, array<string, mixed>>  $questions
      * @return array<int, array{id: string, text: string}>
      */
     protected function buildComparisonIndex(array $questions): array
@@ -80,7 +80,7 @@ class QuestionDeduplicator
     }
 
     /**
-     * @param array<string, mixed> $question
+     * @param  array<string, mixed>  $question
      */
     protected function buildComparableText(array $question): string
     {
@@ -111,7 +111,7 @@ class QuestionDeduplicator
     }
 
     /**
-     * @param array<int, array{id: string, text: string}> $index
+     * @param  array<int, array{id: string, text: string}>  $index
      * @return array{id: string, score: float}|null
      */
     protected function findDuplicateMatch(string $text, array $index): ?array
@@ -160,4 +160,3 @@ class QuestionDeduplicator
         return $value;
     }
 }
-

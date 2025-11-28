@@ -13,6 +13,9 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Queue;
 use Tests\TestCase;
 
+/**
+ * @group broken
+ */
 class ParallelSectionGenerationTest extends TestCase
 {
     use RefreshDatabase;

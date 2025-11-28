@@ -2,7 +2,6 @@
 
 namespace App\Services\LanguageApp;
 
-use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
 
 /**
@@ -15,9 +14,6 @@ class WebSearchService extends AbstractAiService
 {
     /**
      * Search for information and return summarized results
-     *
-     * @param string $query
-     * @return array
      */
     public function search(string $query): array
     {

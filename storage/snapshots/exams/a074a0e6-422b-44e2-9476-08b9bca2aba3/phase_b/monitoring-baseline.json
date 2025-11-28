@@ -1,0 +1,238 @@
+{
+    "exam_id": "a074a0e6-422b-44e2-9476-08b9bca2aba3",
+    "stage": "phase_b",
+    "label": "monitoring-baseline",
+    "hash": "a6cd5a2806b5646b40f6e5be031c7b6343f300540b4f0153c7ee1b3f52fc6247",
+    "data": {
+        "stage": "phase_b",
+        "exam_id": "a074a0e6-422b-44e2-9476-08b9bca2aba3",
+        "structure_v2": {
+            "id": "toefl-ibt-reading-standard-2025-01",
+            "meta": {
+                "name": "[LONG-MONITOR-2] TOEFL Reading Standard",
+                "tags": [
+                    "TOEFL iBT",
+                    "Reading",
+                    "ETS",
+                    "Academic",
+                    "Computer-delivered"
+                ],
+                "level": "B2",
+                "session": null,
+                "language": "en",
+                "provider": "ETS"
+            },
+            "rubrics": null,
+            "version": "2.0",
+            "policies": {
+                "navigation": {
+                    "backtracking": true
+                },
+                "proctoring": {
+                    "mic": true,
+                    "camera": true,
+                    "screen": true
+                },
+                "policy_precedence": "question>section>exam",
+                "answer_transfer_window_sec": 0
+            },
+            "sections": [
+                {
+                    "id": "reading-section-1",
+                    "skill": "reading",
+                    "title": "Reading",
+                    "assembly": {
+                        "mode": "inline",
+                        "question_groups": [
+                            {
+                                "id": "reading-task-1",
+                                "title": "Passage 1 - Urban Ecology",
+                                "stimulus": {
+                                    "text_html": "<article><h2>Urban Bird Ecology<\/h2><p>Cities create unique ecological niches that influence the behavior and distribution of bird species. Researchers have documented shifts in feeding strategies, nesting sites, and vocalizations as birds adapt to urban noise and architecture.<\/p><p>While some species thrive in human-altered habitats, others decline due to habitat fragmentation and reduced food diversity. Understanding these dynamics helps urban planners integrate biodiversity considerations into city design.<\/p><p>Long-term studies reveal that microclimates, artificial light at night, and seasonal food availability shape population dynamics in subtle but measurable ways.<\/p><\/article>"
+                                },
+                                "questions": [
+                                    {
+                                        "id": "q1",
+                                        "type": "read_mcq"
+                                    },
+                                    {
+                                        "id": "q2",
+                                        "type": "read_mcq"
+                                    },
+                                    {
+                                        "id": "q3",
+                                        "type": "read_mcq"
+                                    },
+                                    {
+                                        "id": "q4",
+                                        "type": "read_mcq"
+                                    },
+                                    {
+                                        "id": "q5",
+                                        "type": "read_mcq"
+                                    },
+                                    {
+                                        "id": "q6",
+                                        "type": "read_true_false"
+                                    },
+                                    {
+                                        "id": "q7",
+                                        "type": "read_true_false"
+                                    },
+                                    {
+                                        "id": "q8",
+                                        "type": "matching"
+                                    },
+                                    {
+                                        "id": "q9",
+                                        "type": "sentence_completion"
+                                    },
+                                    {
+                                        "id": "q10",
+                                        "type": "sentence_completion"
+                                    }
+                                ],
+                                "playback_settings": null
+                            },
+                            {
+                                "id": "reading-task-2",
+                                "title": "Passage 2 - History of Technology",
+                                "stimulus": {
+                                    "text_html": "<article><h2>The Printing Press and Knowledge Networks<\/h2><p>The introduction of movable type accelerated the circulation of ideas across Europe, reshaping scholarly communities and commercial markets. Printers acted as editors, entrepreneurs, and cultural intermediaries.<\/p><p>Standardization of texts reduced copying errors but also introduced new gatekeeping roles that influenced which works reached broad audiences. The economics of production affected genres, formats, and the geography of book trade.<\/p><p>These changes fostered feedback loops between technological capability and social demand, laying foundations for modern knowledge networks.<\/p><\/article>"
+                                },
+                                "questions": [
+                                    {
+                                        "id": "q11",
+                                        "type": "read_mcq"
+                                    },
+                                    {
+                                        "id": "q12",
+                                        "type": "read_mcq"
+                                    },
+                                    {
+                                        "id": "q13",
+                                        "type": "read_mcq"
+                                    },
+                                    {
+                                        "id": "q14",
+                                        "type": "read_mcq"
+                                    },
+                                    {
+                                        "id": "q15",
+                                        "type": "read_mcq"
+                                    },
+                                    {
+                                        "id": "q16",
+                                        "type": "read_true_false"
+                                    },
+                                    {
+                                        "id": "q17",
+                                        "type": "read_true_false"
+                                    },
+                                    {
+                                        "id": "q18",
+                                        "type": "matching"
+                                    },
+                                    {
+                                        "id": "q19",
+                                        "type": "sentence_completion"
+                                    },
+                                    {
+                                        "id": "q20",
+                                        "type": "sentence_completion"
+                                    }
+                                ],
+                                "playback_settings": null
+                            }
+                        ]
+                    },
+                    "max_score": 30,
+                    "questions": [],
+                    "duration_min": 35,
+                    "question_archetypes": [
+                        {
+                            "id": "read_mcq_main_idea",
+                            "name": "Reading MCQ - Main Idea\/Inference",
+                            "type": "read_mcq",
+                            "config": {
+                                "scoring": {
+                                    "max_points": 1,
+                                    "partial_credit": false
+                                },
+                                "duration_sec": 90,
+                                "options_count": 4
+                            },
+                            "difficulty": "medium"
+                        },
+                        {
+                            "id": "read_mcq_detail",
+                            "name": "Reading MCQ - Detail\/Reference",
+                            "type": "read_mcq",
+                            "config": {
+                                "scoring": {
+                                    "max_points": 1,
+                                    "partial_credit": false
+                                },
+                                "duration_sec": 75,
+                                "options_count": 4
+                            },
+                            "difficulty": "easy"
+                        },
+                        {
+                            "id": "read_true_false_inference",
+                            "name": "Reading True\/False - Inference\/Judgment",
+                            "type": "read_true_false",
+                            "config": {
+                                "scoring": {
+                                    "max_points": 1,
+                                    "partial_credit": false
+                                },
+                                "duration_sec": 60
+                            },
+                            "difficulty": "medium"
+                        },
+                        {
+                            "id": "matching_headings",
+                            "name": "Reading Matching - Headings to Paragraphs",
+                            "type": "matching",
+                            "config": {
+                                "scoring": {
+                                    "max_points": 3,
+                                    "partial_credit": true
+                                },
+                                "pair_count": 3,
+                                "duration_sec": 180
+                            },
+                            "difficulty": "hard"
+                        },
+                        {
+                            "id": "sentence_completion_paraphrase",
+                            "name": "Reading Sentence Completion - Paraphrase",
+                            "type": "sentence_completion",
+                            "config": {
+                                "blanks": 1,
+                                "scoring": {
+                                    "max_points": 1,
+                                    "partial_credit": false
+                                },
+                                "duration_sec": 75
+                            },
+                            "difficulty": "medium"
+                        }
+                    ]
+                }
+            ],
+            "resources": null,
+            "pass_policy": {
+                "mode": "per_section_only",
+                "per_section_threshold_percent": 60
+            }
+        }
+    },
+    "captured_at": "2025-11-27T10:33:56+00:00",
+    "metadata": {
+        "exam_title": "[LONG-MONITOR-2] TOEFL Reading Standard",
+        "exam_level": "B2",
+        "research_status": "completed"
+    }
+}

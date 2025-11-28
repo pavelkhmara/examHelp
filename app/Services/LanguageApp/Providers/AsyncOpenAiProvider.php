@@ -5,7 +5,6 @@ namespace App\Services\LanguageApp\Providers;
 use App\Services\LanguageApp\AiRateLimiter;
 use App\Services\LanguageApp\AsyncAiProvider;
 use GuzzleHttp\Client;
-use GuzzleHttp\Exception\GuzzleException;
 use GuzzleHttp\Promise\PromiseInterface;
 use GuzzleHttp\Promise\Utils;
 use Illuminate\Support\Facades\Log;
@@ -21,7 +20,7 @@ final class AsyncOpenAiProvider implements AsyncAiProvider
     public function __construct(
         private readonly Client $http,
         private readonly string $apiKey,
-        private readonly string $baseUrl,
+        private readonly string $baseUrl, // @phpstan-ignore-line (reserved for future use)
         private readonly string $model
     ) {
         // Initialize rate limiter if enabled

@@ -1,0 +1,68 @@
+{
+    "stage": "identity",
+    "exam_id": "pl-b1-extracted",
+    "identity_data": {
+        "hold": false,
+        "status": "certain",
+        "anchors": [
+            {
+                "page": null,
+                "snippet": "exam_name: \"Państwowy Certyfikat Języka Polskiego B1\""
+            },
+            {
+                "page": null,
+                "snippet": "provider: \"Państwowa Komisja Poświadczania Znajomości Języka Polskiego jako Obcego\""
+            }
+        ],
+        "canonical": {
+            "name": "Państwowy Certyfikat Języka Polskiego B1",
+            "family": "Państwowy Certyfikat Języka Polskiego",
+            "variant": null,
+            "provider": "Państwowa Komisja Poświadczania Znajomości Języka Polskiego jako Obcego",
+            "language_of_test": "Polish"
+        },
+        "followups": [],
+        "candidates": [
+            {
+                "name": "Państwowy Certyfikat Języka Polskiego B1",
+                "score": 0.9,
+                "family": "Państwowy Certyfikat Języka Polskiego",
+                "provider": "Państwowa Komisja Poświadczania Znajomości Języka Polskiego jako Obcego"
+            }
+        ],
+        "confidence": 1,
+        "need_fields": [
+            "exam_code",
+            "exam_modality"
+        ],
+        "confirmed_at": "2025-11-21T16:39:23.743928Z",
+        "user_confirmed": true,
+        "confirmation_notes": "Confirmed \"Państwowy Certyfikat Języka Polskiego B1\" via ExamWorkflowHub",
+        "original_confidence": 0.9,
+        "confidence_boosted_by": "user_confirmation",
+        "needs_confidence_boost": true
+    },
+    "confidence": {
+        "overall": 1
+    },
+    "$schema": "../_schemas/01-identity.json",
+    "version": "1.0",
+    "_comparison_hints": {
+        "critical_fields": [
+            "identity_data.confirmed_title",
+            "identity_data.confirmed_provider",
+            "identity_data.confirmed_level"
+        ],
+        "flexible_fields": [
+            "identity_data.family",
+            "identity_data.description",
+            "confidence.overall"
+        ],
+        "ignore_fields": [
+            "sources",
+            "verification_method",
+            "iterations_count"
+        ]
+    },
+    "_notes": "Extracted from exam: a069581a-5c5e-4bcc-bc51-bafd0ce22330 (Test Polish B1 - Pipeline Stabilization)"
+}

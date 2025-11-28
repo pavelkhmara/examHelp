@@ -10,7 +10,7 @@ class GenerationTaskFactory extends Factory
     public function definition(): array
     {
         // Create Exam without events to avoid triggering ExamObserver
-        $exam = Exam::withoutEvents(fn() => Exam::factory()->create());
+        $exam = Exam::withoutEvents(fn () => Exam::factory()->create());
 
         return [
             'exam_id' => $exam->id,

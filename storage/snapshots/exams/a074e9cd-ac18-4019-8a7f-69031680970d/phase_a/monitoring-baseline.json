@@ -1,0 +1,433 @@
+{
+    "exam_id": "a074e9cd-ac18-4019-8a7f-69031680970d",
+    "stage": "phase_a",
+    "label": "monitoring-baseline",
+    "hash": "182275edcce7ff2f0f093af144f614e948af085f0eff48d48db354adcd989e34",
+    "data": {
+        "stage": "phase_a",
+        "exam_id": "a074e9cd-ac18-4019-8a7f-69031680970d",
+        "structure_v2": {
+            "id": "pcjp-b1-structure-2025-11-27-warszawa",
+            "version": "2.0",
+            "meta": {
+                "name": "Państwowy Certyfikat Języka Polskiego B1",
+                "tags": [
+                    "Państwowy Certyfikat",
+                    "B1",
+                    "Warszawa",
+                    "offline"
+                ],
+                "level": "B1",
+                "session": null,
+                "language": "pl",
+                "provider": "Państwowa Komisja ds. Poświadczania Znajomości Języka Polskiego jako Obcego"
+            },
+            "pass_policy": {
+                "mode": "mixed",
+                "overall_threshold_percent": 60,
+                "per_section_threshold_percent": 50
+            },
+            "policies": {
+                "navigation": {
+                    "backtracking": true
+                },
+                "proctoring": {
+                    "mic": false,
+                    "camera": false,
+                    "screen": false
+                },
+                "policy_precedence": "question>section>exam",
+                "answer_transfer_window_sec": 0
+            },
+            "sections": [
+                {
+                    "id": "b1-listening",
+                    "skill": "listening",
+                    "title": "Rozumienie ze słuchu",
+                    "max_score": 30,
+                    "questions": [],
+                    "duration_min": 25,
+                    "question_archetypes": [
+                        {
+                            "id": "listen_mcq_main_idea",
+                            "name": "Pytania wielokrotnego wyboru – główna myśl",
+                            "type": "listen_mcq",
+                            "config": {
+                                "scoring": {
+                                    "max_points": 1,
+                                    "partial_credit": false
+                                },
+                                "duration_sec": 75,
+                                "options_count": 3
+                            },
+                            "difficulty": "medium"
+                        },
+                        {
+                            "id": "listen_true_false_details",
+                            "name": "Prawda\/Fałsz – informacje szczegółowe",
+                            "type": "listen_true_false",
+                            "config": {
+                                "scoring": {
+                                    "max_points": 1,
+                                    "partial_credit": false
+                                },
+                                "duration_sec": 60
+                            },
+                            "difficulty": "easy"
+                        },
+                        {
+                            "id": "listen_yes_no_ng_inference",
+                            "name": "Tak\/Nie\/Brak danych – wnioskowanie",
+                            "type": "listen_yes_no_ng",
+                            "config": {
+                                "scoring": {
+                                    "max_points": 1,
+                                    "partial_credit": false
+                                },
+                                "duration_sec": 75
+                            },
+                            "difficulty": "medium"
+                        },
+                        {
+                            "id": "listen_mcq_attitude",
+                            "name": "Pytania wielokrotnego wyboru – intencja\/nastawienie",
+                            "type": "listen_mcq",
+                            "config": {
+                                "scoring": {
+                                    "max_points": 1,
+                                    "partial_credit": false
+                                },
+                                "duration_sec": 90,
+                                "options_count": 3
+                            },
+                            "difficulty": "hard"
+                        }
+                    ]
+                },
+                {
+                    "id": "b1-reading",
+                    "skill": "reading",
+                    "title": "Rozumienie tekstów pisanych",
+                    "max_score": 30,
+                    "questions": [],
+                    "duration_min": 45,
+                    "question_archetypes": [
+                        {
+                            "id": "read_mcq_main_idea_b1",
+                            "name": "Czytanie - Pytanie wielokrotnego wyboru (główna myśl \/ szczegóły)",
+                            "type": "read_mcq",
+                            "config": {
+                                "scoring": {
+                                    "max_points": 1,
+                                    "partial_credit": false
+                                },
+                                "duration_sec": 90,
+                                "options_count": 4
+                            },
+                            "difficulty": "medium"
+                        },
+                        {
+                            "id": "read_true_false_facts_b1",
+                            "name": "Czytanie - Prawda\/Fałsz (informacje szczegółowe)",
+                            "type": "read_true_false",
+                            "config": {
+                                "scoring": {
+                                    "max_points": 1,
+                                    "partial_credit": false
+                                },
+                                "duration_sec": 60
+                            },
+                            "difficulty": "easy"
+                        },
+                        {
+                            "id": "read_yes_no_ng_inference_b1",
+                            "name": "Czytanie - Tak\/Nie\/Brak informacji (wnioskowanie)",
+                            "type": "read_yes_no_ng",
+                            "config": {
+                                "scoring": {
+                                    "max_points": 1,
+                                    "partial_credit": false
+                                },
+                                "duration_sec": 75
+                            },
+                            "difficulty": "medium"
+                        },
+                        {
+                            "id": "read_matching_headings_b1",
+                            "name": "Czytanie - Dopasowywanie nagłówków\/ogłoszeń",
+                            "type": "matching",
+                            "config": {
+                                "scoring": {
+                                    "max_points": 5,
+                                    "partial_credit": true
+                                },
+                                "pairs_count": 5,
+                                "duration_sec": 300
+                            },
+                            "difficulty": "medium"
+                        },
+                        {
+                            "id": "read_sentence_completion_b1",
+                            "name": "Czytanie - Uzupełnianie zdań (parafraza i selekcja informacji)",
+                            "type": "sentence_completion",
+                            "config": {
+                                "scoring": {
+                                    "max_points": 1,
+                                    "partial_credit": false
+                                },
+                                "duration_sec": 75,
+                                "blanks_per_question": 1
+                            },
+                            "difficulty": "medium"
+                        }
+                    ]
+                },
+                {
+                    "id": "b1-grammar-lexis",
+                    "skill": "grammar_lexis",
+                    "title": "Znajomość struktur gramatyczno-leksykalnych",
+                    "max_score": 30,
+                    "questions": [],
+                    "duration_min": 45,
+                    "question_archetypes": [
+                        {
+                            "id": "gl_single_cloze_01",
+                            "name": "Gramatyka – wybór jednego wariantu (cloze)",
+                            "type": "single_select",
+                            "config": {
+                                "scoring": {
+                                    "max_points": 1,
+                                    "partial_credit": false
+                                },
+                                "duration_sec": 60,
+                                "options_count": 4,
+                                "randomize_options": true
+                            },
+                            "difficulty": "medium"
+                        },
+                        {
+                            "id": "gl_text_input_01",
+                            "name": "Formy wyrazów – uzupełnianie (pisownia, fleksja)",
+                            "type": "text_input",
+                            "config": {
+                                "scoring": {
+                                    "max_points": 1,
+                                    "partial_credit": false
+                                },
+                                "max_chars": 20,
+                                "duration_sec": 75,
+                                "response_format": "word",
+                                "case_insensitive": true
+                            },
+                            "difficulty": "medium"
+                        },
+                        {
+                            "id": "gl_multi_select_01",
+                            "name": "Kolokacje i łączliwość – wybór wielokrotny",
+                            "type": "multi_select",
+                            "config": {
+                                "scoring": {
+                                    "max_points": 1,
+                                    "partial_credit": true
+                                },
+                                "min_correct": 2,
+                                "duration_sec": 90,
+                                "options_count": 5,
+                                "randomize_options": true
+                            },
+                            "difficulty": "medium"
+                        },
+                        {
+                            "id": "gl_matching_01",
+                            "name": "Dopasowywanie – prefiksy, definicje, rekcje",
+                            "type": "matching",
+                            "config": {
+                                "scoring": {
+                                    "max_points": 1,
+                                    "partial_credit": true
+                                },
+                                "shuffle": true,
+                                "pairs_count": 5,
+                                "duration_sec": 120
+                            },
+                            "difficulty": "easy"
+                        },
+                        {
+                            "id": "gl_sentence_completion_01",
+                            "name": "Uzupełnianie zdań – struktury gramatyczne",
+                            "type": "sentence_completion",
+                            "config": {
+                                "scoring": {
+                                    "max_points": 1,
+                                    "partial_credit": false
+                                },
+                                "duration_sec": 75,
+                                "blanks_per_item": 1
+                            },
+                            "difficulty": "medium"
+                        }
+                    ]
+                },
+                {
+                    "id": "b1-writing",
+                    "skill": "writing",
+                    "title": "Wypowiedź pisemna",
+                    "max_score": 30,
+                    "questions": [],
+                    "duration_min": 45,
+                    "question_archetypes": [
+                        {
+                            "id": "wp_b1_functional_message_01",
+                            "name": "B1 Functional Writing - Email\/Message",
+                            "type": "writing_prompt",
+                            "config": {
+                                "tags": [
+                                    "functional",
+                                    "email",
+                                    "B1"
+                                ],
+                                "scoring": {
+                                    "max_points": 10,
+                                    "partial_credit": true
+                                },
+                                "duration_sec": 900,
+                                "response_format": "text",
+                                "recommended_word_range": {
+                                    "max": 100,
+                                    "min": 60
+                                }
+                            },
+                            "difficulty": "medium"
+                        },
+                        {
+                            "id": "wp_b1_long_composition_01",
+                            "name": "B1 Long Composition - Opinion\/Argument",
+                            "type": "writing_prompt",
+                            "config": {
+                                "tags": [
+                                    "opinion",
+                                    "essay",
+                                    "B1"
+                                ],
+                                "scoring": {
+                                    "max_points": 20,
+                                    "partial_credit": true
+                                },
+                                "duration_sec": 1800,
+                                "response_format": "text",
+                                "recommended_word_range": {
+                                    "max": 220,
+                                    "min": 180
+                                }
+                            },
+                            "difficulty": "hard"
+                        },
+                        {
+                            "id": "wp_b1_formal_letter_01",
+                            "name": "B1 Formal Letter - Complaint\/Application",
+                            "type": "writing_prompt",
+                            "config": {
+                                "tags": [
+                                    "formal_letter",
+                                    "complaint",
+                                    "B1"
+                                ],
+                                "scoring": {
+                                    "max_points": 20,
+                                    "partial_credit": true
+                                },
+                                "duration_sec": 1700,
+                                "response_format": "text",
+                                "recommended_word_range": {
+                                    "max": 180,
+                                    "min": 140
+                                }
+                            },
+                            "difficulty": "medium"
+                        },
+                        {
+                            "id": "tr_b1_short_translation_01",
+                            "name": "B1 Translation - Short Passage",
+                            "type": "translation",
+                            "config": {
+                                "tags": [
+                                    "translation",
+                                    "B1"
+                                ],
+                                "scoring": {
+                                    "max_points": 10,
+                                    "partial_credit": true
+                                },
+                                "direction": "L1->PL",
+                                "duration_sec": 600,
+                                "recommended_word_range": {
+                                    "max": 80,
+                                    "min": 40
+                                }
+                            },
+                            "difficulty": "medium"
+                        }
+                    ]
+                },
+                {
+                    "id": "b1-speaking",
+                    "skill": "speaking",
+                    "title": "Wypowiedź ustna",
+                    "max_score": 30,
+                    "questions": [],
+                    "duration_min": 15,
+                    "question_archetypes": [
+                        {
+                            "id": "sp_roleplay_01",
+                            "name": "Role-play – Everyday Situation",
+                            "type": "roleplay",
+                            "config": {
+                                "scoring": {
+                                    "max_points": 10,
+                                    "partial_credit": true
+                                },
+                                "duration_sec": 300,
+                                "prep_time_sec": 60
+                            },
+                            "difficulty": "medium"
+                        },
+                        {
+                            "id": "sp_picture_01",
+                            "name": "Picture Description with Follow-up Questions",
+                            "type": "speaking_prompt",
+                            "config": {
+                                "scoring": {
+                                    "max_points": 10,
+                                    "partial_credit": true
+                                },
+                                "duration_sec": 240,
+                                "prep_time_sec": 60
+                            },
+                            "difficulty": "medium"
+                        },
+                        {
+                            "id": "sp_opinion_01",
+                            "name": "Monologue – Opinion\/Argument",
+                            "type": "speaking_prompt",
+                            "config": {
+                                "scoring": {
+                                    "max_points": 10,
+                                    "partial_credit": true
+                                },
+                                "duration_sec": 240,
+                                "prep_time_sec": 60
+                            },
+                            "difficulty": "hard"
+                        }
+                    ]
+                }
+            ]
+        }
+    },
+    "captured_at": "2025-11-27T16:51:48+00:00",
+    "metadata": {
+        "exam_title": "pjc Egzaminy certyfikatowe z języka polskiego jako obcego",
+        "exam_level": "B1",
+        "research_status": "completed"
+    }
+}

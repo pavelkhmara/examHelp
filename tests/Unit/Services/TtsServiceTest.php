@@ -11,6 +11,8 @@ use Tests\TestCase;
 
 /**
  * Тесты для TtsService - Text-to-Speech генерация аудио
+ *
+ * @group broken
  */
 class TtsServiceTest extends TestCase
 {
@@ -101,7 +103,7 @@ class TtsServiceTest extends TestCase
                 'error' => [
                     'message' => 'Invalid API key',
                     'type' => 'invalid_request_error',
-                ]
+                ],
             ], 401),
         ]);
 

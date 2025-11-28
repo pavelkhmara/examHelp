@@ -19,11 +19,13 @@ class PromptOverviewPhaseA
         string $contextNotes,
         ?string $retryHint = null,
         ?array $userInputParsed = null,
-        string $documentsHint = ''
+        string $documentsHint = '',
+        ?array $confirmedIdentity = null
     ): string {
         $documentPriorityHint = self::getDocumentPriorityHint($documentsHint);
         $localizationHint = self::getLocalizationHint($userInputParsed);
         $schemaDescription = self::getSchemaDescription();
+        $confirmedIdentityHint = self::getConfirmedIdentityHint($confirmedIdentity);
 
         return <<<EOT
 # Роль и цель
@@ -32,6 +34,7 @@ class PromptOverviewPhaseA
 **Цель этого запроса:** Сформируй **только скелет экзамена** (структуру без отдельных заданий) строго по схеме `s2_exam_json_archetype_v2.json`.
 
 **Важно:** В этом запросе ты НЕ генерируешь отдельные экзаменационные вопросы (questions). Только структуру секций.
+{$confirmedIdentityHint}
 
 # Входные данные
 **Exam Title**: {$examTitle}
@@ -219,11 +222,55 @@ HINT;
     }
 
     /**
+     * Get confirmed identity hint for AI prompt
+     */
+    private static function getConfirmedIdentityHint(?array $confirmedIdentity): string
+    {
+        if (! $confirmedIdentity) {
+            return '';
+        }
+
+        $name = $confirmedIdentity['name'] ?? 'Unknown';
+        $family = $confirmedIdentity['family'] ?? null;
+        $variant = $confirmedIdentity['variant'] ?? null;
+        $provider = $confirmedIdentity['provider'] ?? null;
+
+        $parts = ["**Exam: {$name}**"];
+        if ($family) {
+            $parts[] = "Family: {$family}";
+        }
+        if ($variant) {
+            $parts[] = "Variant: {$variant}";
+        }
+        if ($provider) {
+            $parts[] = "Provider: {$provider}";
+        }
+
+        $identityStr = implode(' | ', $parts);
+
+        return <<<HINT
+
+# ⚠️ CONFIRMED EXAM IDENTITY (CRITICAL - DO NOT IGNORE!)
+
+{$identityStr}
+
+**THIS IS THE CONFIRMED EXAM.** The user has verified this exam identity.
+You MUST generate the structure for THIS SPECIFIC EXAM, not a different one.
+
+- If the title says "англ" but confirmed identity is "IELTS General Training" → generate IELTS General Training structure
+- If the description mentions "B1" but confirmed identity is "C1" → use the confirmed identity level
+- NEVER substitute another exam even if it seems similar
+- Use official sources for the CONFIRMED exam (e.g., ielts.org for IELTS, goethe.de for Goethe-Zertifikat)
+
+HINT;
+    }
+
+    /**
      * Get localization hint for local sources
      */
     private static function getLocalizationHint(?array $userInput): string
     {
-        if (!$userInput) {
+        if (! $userInput) {
             return '';
         }
 
@@ -231,14 +278,14 @@ HINT;
         $language = $userInput['language'] ?? null;
 
         if ($country) {
-            return "\n**Local Sources Requirement:**\n" .
-                   "Include at least 1-2 sources from {$country} in local language if available.\n" .
+            return "\n**Local Sources Requirement:**\n".
+                   "Include at least 1-2 sources from {$country} in local language if available.\n".
                    "Prioritize official government sites and certification bodies from {$country}.";
         }
 
         if ($language) {
-            return "\n**Local Sources Requirement:**\n" .
-                   "Include at least 1-2 sources in {$language} language.\n" .
+            return "\n**Local Sources Requirement:**\n".
+                   "Include at least 1-2 sources in {$language} language.\n".
                    "Prioritize official certification bodies and exam providers in {$language}.";
         }
 

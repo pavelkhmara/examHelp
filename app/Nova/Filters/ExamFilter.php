@@ -15,6 +15,9 @@ class ExamFilter extends Filter
 
     /**
      * Apply the filter to the given query.
+     *
+     * @param  \Illuminate\Database\Eloquent\Builder<\Illuminate\Database\Eloquent\Model>  $query
+     * @return \Illuminate\Database\Eloquent\Builder<\Illuminate\Database\Eloquent\Model>
      */
     public function apply(Request $request, $query, $value)
     {

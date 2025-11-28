@@ -1,0 +1,24 @@
+{
+    "stage": "resolve_plans",
+    "exam_id": "pl-b1-extracted",
+    "generation_plans": [],
+    "summary": {
+        "total_plans": 0,
+        "by_section": []
+    },
+    "$schema": "../_schemas/04-resolve-plans.json",
+    "version": "1.0",
+    "_comparison_hints": {
+        "critical_fields": [
+            "generation_plans[].section_id",
+            "generation_plans[].questions_count",
+            "generation_plans[].question_type",
+            "summary.total_plans"
+        ],
+        "flexible_fields": [
+            "summary.by_section"
+        ],
+        "ignore_fields": []
+    },
+    "_notes": "Extracted from exam: a069581a-5c5e-4bcc-bc51-bafd0ce22330 (Test Polish B1 - Pipeline Stabilization)"
+}

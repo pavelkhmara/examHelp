@@ -6,9 +6,9 @@ use App\Http\Controllers\Controller;
 use App\Models\Exam;
 use App\Models\ExamCategory;
 use App\Models\ExamExampleQuestion;
-use App\Models\GenerationTask;
 use App\Models\GenerationLog;
-use Illuminate\Http\Request;
+use App\Models\GenerationTask;
+use Illuminate\Http\JsonResponse;
 
 /**
  * Diagnostics API endpoints for monitoring and testing
@@ -20,7 +20,7 @@ class DiagnosticsController extends Controller
      * Get list of all exams with basic info
      * GET /api/diagnostics/exams
      */
-    public function exams()
+    public function exams(): JsonResponse
     {
         $exams = Exam::query()
             ->orderBy('created_at', 'desc')
@@ -36,8 +36,8 @@ class DiagnosticsController extends Controller
                     'analysis_status' => $exam->analysis_status,
                     'categories_count' => $exam->categories_count ?? 0,
                     'examples_count' => $exam->examples_count ?? 0,
-                    'created_at' => $exam->created_at?->toISOString(),
-                    'updated_at' => $exam->updated_at?->toISOString(),
+                    'created_at' => $exam->created_at->toISOString(),
+                    'updated_at' => $exam->updated_at->toISOString(),
                 ];
             });
 
@@ -52,7 +52,7 @@ class DiagnosticsController extends Controller
      * Get detailed exam information
      * GET /api/diagnostics/exams/{examId}
      */
-    public function exam(string $examId)
+    public function exam(string $examId): JsonResponse
     {
         $exam = Exam::query()->findOrFail($examId);
 
@@ -74,8 +74,8 @@ class DiagnosticsController extends Controller
                 'user_input' => $exam->user_input,
                 'identity' => $exam->identity,
                 'exam_structure' => $exam->exam_structure,
-                'created_at' => $exam->created_at?->toISOString(),
-                'updated_at' => $exam->updated_at?->toISOString(),
+                'created_at' => $exam->created_at->toISOString(),
+                'updated_at' => $exam->updated_at->toISOString(),
             ],
             'latest_task' => $latestTask ? [
                 'id' => $latestTask->id,
@@ -83,8 +83,8 @@ class DiagnosticsController extends Controller
                 'status' => $latestTask->status,
                 'attempts' => $latestTask->attempts,
                 'error' => $latestTask->error,
-                'created_at' => $latestTask->created_at?->toISOString(),
-                'updated_at' => $latestTask->updated_at?->toISOString(),
+                'created_at' => $latestTask->created_at->toISOString(),
+                'updated_at' => $latestTask->updated_at->toISOString(),
             ] : null,
             'documents_count' => $exam->documents()->count(),
             'tasks_count' => $exam->generationTasks()->count(),
@@ -96,7 +96,7 @@ class DiagnosticsController extends Controller
      * Get generation tasks for an exam
      * GET /api/diagnostics/exams/{examId}/tasks
      */
-    public function examTasks(string $examId)
+    public function examTasks(string $examId): JsonResponse
     {
         $exam = Exam::query()->findOrFail($examId);
 
@@ -114,8 +114,8 @@ class DiagnosticsController extends Controller
                     'error' => $task->error ? substr($task->error, 0, 200) : null,
                     'request_source' => $task->request['source'] ?? null,
                     'activities_count' => is_array($task->activities) ? count($task->activities) : 0,
-                    'created_at' => $task->created_at?->toISOString(),
-                    'updated_at' => $task->updated_at?->toISOString(),
+                    'created_at' => $task->created_at->toISOString(),
+                    'updated_at' => $task->updated_at->toISOString(),
                 ];
             });
 
@@ -139,7 +139,7 @@ class DiagnosticsController extends Controller
      * Get detailed task information with activities
      * GET /api/diagnostics/tasks/{taskId}
      */
-    public function task(int $taskId)
+    public function task(int $taskId): JsonResponse
     {
         $task = GenerationTask::query()->findOrFail($taskId);
 
@@ -156,8 +156,8 @@ class DiagnosticsController extends Controller
                 'request' => $task->request,
                 'result' => $task->result,
                 'activities' => $task->activities,
-                'created_at' => $task->created_at?->toISOString(),
-                'updated_at' => $task->updated_at?->toISOString(),
+                'created_at' => $task->created_at->toISOString(),
+                'updated_at' => $task->updated_at->toISOString(),
             ],
             'exam' => [
                 'id' => $task->exam->id,
@@ -170,7 +170,7 @@ class DiagnosticsController extends Controller
      * Get generation logs for an exam
      * GET /api/diagnostics/exams/{examId}/logs
      */
-    public function examLogs(string $examId)
+    public function examLogs(string $examId): JsonResponse
     {
         $exam = Exam::query()->findOrFail($examId);
 
@@ -188,7 +188,7 @@ class DiagnosticsController extends Controller
                     'total_tokens' => $log->total_tokens,
                     'model' => $log->model,
                     'duration_ms' => $log->duration_ms,
-                    'created_at' => $log->created_at?->toISOString(),
+                    'created_at' => $log->created_at->toISOString(),
                 ];
             });
 
@@ -209,7 +209,7 @@ class DiagnosticsController extends Controller
      * Get categories for an exam
      * GET /api/diagnostics/exams/{examId}/categories
      */
-    public function examCategories(string $examId)
+    public function examCategories(string $examId): JsonResponse
     {
         $exam = Exam::query()->findOrFail($examId);
 
@@ -224,7 +224,7 @@ class DiagnosticsController extends Controller
                     'slug' => $category->slug,
                     'duration_min' => $category->duration_min,
                     'question_types' => $category->question_types,
-                    'created_at' => $category->created_at?->toISOString(),
+                    'created_at' => $category->created_at->toISOString(),
                 ];
             });
 
@@ -241,7 +241,7 @@ class DiagnosticsController extends Controller
      * Get example questions for an exam
      * GET /api/diagnostics/exams/{examId}/examples
      */
-    public function examExamples(string $examId)
+    public function examExamples(string $examId): JsonResponse
     {
         $exam = Exam::query()->findOrFail($examId);
 
@@ -256,7 +256,7 @@ class DiagnosticsController extends Controller
                     'question_text' => substr($example->question_text ?? '', 0, 200),
                     'task_type' => $example->task_type,
                     'difficulty' => $example->difficulty,
-                    'created_at' => $example->created_at?->toISOString(),
+                    'created_at' => $example->created_at->toISOString(),
                 ];
             });
 
@@ -273,7 +273,7 @@ class DiagnosticsController extends Controller
      * Get system statistics
      * GET /api/diagnostics/stats
      */
-    public function stats()
+    public function stats(): JsonResponse
     {
         return response()->json([
             'success' => true,
@@ -310,7 +310,7 @@ class DiagnosticsController extends Controller
      * Get recent activity (last 20 tasks)
      * GET /api/diagnostics/activity
      */
-    public function activity()
+    public function activity(): JsonResponse
     {
         $recentTasks = GenerationTask::query()
             ->with('exam:id,title')
@@ -326,8 +326,8 @@ class DiagnosticsController extends Controller
                     'status' => $task->status,
                     'idempotency_key' => $task->idempotency_key,
                     'source' => $task->request['source'] ?? null,
-                    'created_at' => $task->created_at?->toISOString(),
-                    'updated_at' => $task->updated_at?->toISOString(),
+                    'created_at' => $task->created_at->toISOString(),
+                    'updated_at' => $task->updated_at->toISOString(),
                 ];
             });
 
@@ -341,12 +341,12 @@ class DiagnosticsController extends Controller
      * Check if Nova actions are registered
      * GET /api/diagnostics/actions
      */
-    public function actions()
+    public function actions(): JsonResponse
     {
         try {
             $exam = Exam::first();
 
-            if (!$exam) {
+            if (! $exam) {
                 return response()->json([
                     'success' => false,
                     'message' => 'No exams found in database',
@@ -354,7 +354,9 @@ class DiagnosticsController extends Controller
             }
 
             $resource = new \App\Nova\Exam($exam);
-            $actions = $resource->actions(request());
+            // Create NovaRequest from current request for Nova compatibility
+            $novaRequest = \Laravel\Nova\Http\Requests\NovaRequest::createFrom(request());
+            $actions = $resource->actions($novaRequest);
 
             $actionsList = collect($actions)->map(function ($action) {
                 return [
@@ -381,7 +383,7 @@ class DiagnosticsController extends Controller
      * Health check endpoint
      * GET /api/diagnostics/health
      */
-    public function health()
+    public function health(): JsonResponse
     {
         return response()->json([
             'status' => 'ok',
@@ -394,7 +396,7 @@ class DiagnosticsController extends Controller
      * Get queue information
      * GET /api/diagnostics/queue
      */
-    public function queueInfo()
+    public function queueInfo(): JsonResponse
     {
         $queueDriver = config('queue.default');
         $queueInfo = [
@@ -441,12 +443,12 @@ class DiagnosticsController extends Controller
                                     'created_at' => \Carbon\Carbon::createFromTimestamp($job->created_at)->toISOString(),
                                     'job_class' => $payload['displayName'] ?? 'Unknown',
                                     'task_id' => $taskId,
-                                    'waiting_time' => now()->diffInSeconds(\Carbon\Carbon::createFromTimestamp($job->created_at)) . 's',
+                                    'waiting_time' => now()->diffInSeconds(\Carbon\Carbon::createFromTimestamp($job->created_at)).'s',
                                 ];
                             } catch (\Exception $e) {
                                 return [
                                     'id' => $job->id ?? null,
-                                    'error' => 'Failed to parse job: ' . $e->getMessage(),
+                                    'error' => 'Failed to parse job: '.$e->getMessage(),
                                 ];
                             }
                         })
@@ -478,7 +480,7 @@ class DiagnosticsController extends Controller
                             } catch (\Exception $e) {
                                 return [
                                     'id' => $job->id ?? null,
-                                    'error' => 'Failed to parse failed job: ' . $e->getMessage(),
+                                    'error' => 'Failed to parse failed job: '.$e->getMessage(),
                                 ];
                             }
                         })

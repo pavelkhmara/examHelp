@@ -6,7 +6,6 @@ use App\Models\Exam;
 use App\Models\ExamCategory;
 use App\Models\Question;
 use App\Models\QuestionGroup;
-use Database\Factories\QuestionGroupFactory;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 

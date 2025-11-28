@@ -22,7 +22,7 @@ class ExamObserver
             $originalSlug = $slug;
             $counter = 1;
             while (Exam::where('slug', $slug)->where('id', '!=', $exam->id)->exists()) {
-                $slug = substr($originalSlug, 0, 17) . '-' . $counter;
+                $slug = substr($originalSlug, 0, 17).'-'.$counter;
                 $counter++;
             }
 
@@ -31,7 +31,7 @@ class ExamObserver
         }
 
         // Dispatch metadata analysis job if there's something to analyze
-        if (!empty($exam->user_input) || !empty($exam->description) || !empty($exam->identity)) {
+        if (! empty($exam->user_input) || ! empty($exam->description) || ! empty($exam->identity)) {
             Log::info("ExamObserver: Dispatching metadata analysis for exam {$exam->id}");
             AnalyzeExamMetadataJob::dispatch($exam->id);
         } else {
@@ -67,7 +67,7 @@ class ExamObserver
             }
         }
 
-        if (!empty($changedFields)) {
+        if (! empty($changedFields)) {
             Log::info('ExamObserver: Identity-affecting fields changed', [
                 'exam_id' => $exam->id,
                 'changed_fields' => $changedFields,
@@ -77,7 +77,7 @@ class ExamObserver
             $confirmedIdentityService = app(\App\Services\LanguageApp\ConfirmedIdentityService::class);
             $confirmedIdentityService->invalidateConfirmedIdentity(
                 $exam,
-                'Fields changed: ' . implode(', ', $changedFields)
+                'Fields changed: '.implode(', ', $changedFields)
             );
 
             // Сбросить dismissed cards, чтобы показать FieldsChangedCard
@@ -86,7 +86,7 @@ class ExamObserver
                 // Убираем 'fields_changed' из dismissed, чтобы карточка показалась снова
                 $meta['dismissed_cards'] = array_filter(
                     $meta['dismissed_cards'],
-                    fn($card) => $card !== 'fields_changed'
+                    fn ($card) => $card !== 'fields_changed'
                 );
                 $exam->meta = $meta;
                 $exam->saveQuietly(); // Не вызываем observer снова

@@ -11,12 +11,14 @@ class EvaluateTextDemoSeeder extends Seeder
 {
     public function run(): void
     {
+        /** @var Exam $exam */
         $exam = Exam::factory()->create([
             'title' => 'English B1 Demo',
             'level' => 'B1',
             'is_active' => true,
         ]);
 
+        /** @var ExamCategory $cat */
         $cat = ExamCategory::factory()->create([
             'exam_id' => $exam->id,
             'key' => 'writing',
@@ -24,6 +26,7 @@ class EvaluateTextDemoSeeder extends Seeder
             'order' => 1,
         ]);
 
+        /** @var ExamExampleQuestion $ex */
         $ex = ExamExampleQuestion::factory()->create([
             'exam_id' => $exam->id,
             'exam_category_id' => $cat->id,

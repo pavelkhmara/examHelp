@@ -9,10 +9,14 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class QuestionOption extends Model
 {
+    /** @use HasFactory<\Database\Factories\QuestionOptionFactory> */
     use HasFactory, HasUuid;
 
     protected $fillable = ['question_id', 'text', 'is_correct'];
 
+    /**
+     * @return BelongsTo<Question, covariant self>
+     */
     public function question(): BelongsTo
     {
         return $this->belongsTo(Question::class);

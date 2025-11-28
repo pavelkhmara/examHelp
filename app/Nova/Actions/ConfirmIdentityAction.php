@@ -21,15 +21,15 @@ class ConfirmIdentityAction extends Action
 
     public $uriKey = 'confirm-reject-identity';
 
-    /**
-     * Perform the action on the given models.
-     */
-    public function authorizedToRun(\Illuminate\Http\Request $request, $model)
+    public function authorizedToRun(\Illuminate\Http\Request $request, $model): bool
     {
         return true;
     }
 
-    public function handle(ActionFields $fields, Collection $models)
+    /**
+     * @param  Collection<int, \App\Models\Exam>  $models
+     */
+    public function handle(ActionFields $fields, Collection $models): mixed
     {
         foreach ($models as $exam) {
             /** @var Exam $exam */
@@ -47,7 +47,7 @@ class ConfirmIdentityAction extends Action
             $result = $task->result ?? [];
             $identity = null;
 
-            if (isset($result['verification_attempts']) && !empty($result['verification_attempts'])) {
+            if (isset($result['verification_attempts']) && ! empty($result['verification_attempts'])) {
                 $latestAttempt = end($result['verification_attempts']);
                 $identity = $latestAttempt['identity_result'] ?? null;
             } else {
@@ -86,7 +86,7 @@ class ConfirmIdentityAction extends Action
 
                 // Update identity in verification_attempts structure
                 $result = (array) ($task->result ?? []);
-                if (isset($result['verification_attempts']) && !empty($result['verification_attempts'])) {
+                if (isset($result['verification_attempts']) && ! empty($result['verification_attempts'])) {
                     $attemptIndex = count($result['verification_attempts']) - 1;
                     $result['verification_attempts'][$attemptIndex]['identity_result'] = $identity;
                 } else {
@@ -147,7 +147,7 @@ class ConfirmIdentityAction extends Action
 
                 // Update identity in verification_attempts structure
                 $result = (array) ($task->result ?? []);
-                if (isset($result['verification_attempts']) && !empty($result['verification_attempts'])) {
+                if (isset($result['verification_attempts']) && ! empty($result['verification_attempts'])) {
                     $attemptIndex = count($result['verification_attempts']) - 1;
                     $result['verification_attempts'][$attemptIndex]['identity_result'] = $identity;
                 } else {

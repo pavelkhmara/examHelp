@@ -25,16 +25,18 @@ class ImageSearchService
     /**
      * Search for images by query
      *
-     * @param string $query Search query
-     * @param int|null $count Number of images to return (defaults to config)
+     * @param  string  $query  Search query
+     * @param  int|null  $count  Number of images to return (defaults to config)
      * @return array<array{url: string, thumb_url: string, description: string, author: string, author_url: string, source: string, license: string}>
+     *
      * @throws \Exception
      */
     public function searchImages(string $query, ?int $count = null): array
     {
         // Check if image search is enabled
-        if (!config('ai.images.enabled', false)) {
+        if (! config('ai.images.enabled', false)) {
             Log::info('[ImageSearchService] Image search disabled, skipping');
+
             return [];
         }
 
@@ -75,7 +77,7 @@ class ImageSearchService
         $providerName = config('ai.images.provider', 'unsplash');
 
         return match ($providerName) {
-            'unsplash' => new UnsplashImageSearchProvider(),
+            'unsplash' => new UnsplashImageSearchProvider,
             // TODO: Add more providers
             // 'pexels' => new PexelsImageSearchProvider(),
             // 'pixabay' => new PixabayImageSearchProvider(),

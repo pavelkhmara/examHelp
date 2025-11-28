@@ -7,13 +7,14 @@ use App\Models\Attempt;
 use App\Models\AttemptAnswer;
 use App\Models\Question;
 use App\Models\QuestionOption;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\Rule;
 
 class AttemptController extends Controller
 {
-    public function store(Request $request)
+    public function store(Request $request): JsonResponse
     {
         $data = $request->validate([
             'exam_id' => ['required', 'uuid', Rule::exists('exams', 'id')->where('is_active', true)],
@@ -27,7 +28,7 @@ class AttemptController extends Controller
         return response()->json(['data' => ['id' => $attempt->id]], 201);
     }
 
-    public function answer(Request $request, Attempt $attempt)
+    public function answer(Request $request, Attempt $attempt): JsonResponse
     {
         abort_if($attempt->completed_at !== null, 422, 'Attempt already completed.');
 
@@ -73,7 +74,7 @@ class AttemptController extends Controller
         });
     }
 
-    public function complete(Request $request, Attempt $attempt)
+    public function complete(Request $request, Attempt $attempt): JsonResponse
     {
         abort_if($attempt->completed_at !== null, 422, 'Attempt already completed.');
 

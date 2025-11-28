@@ -5,6 +5,7 @@ namespace App\Jobs;
 use App\Models\Exam;
 use App\Models\GenerationPlan;
 use App\Models\GenerationTask;
+use App\Services\LanguageApp\Contracts\QuestionGroupContract;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
@@ -15,10 +16,11 @@ use Illuminate\Support\Facades\Log;
 
 class SynthesizeQuestionsJob implements ShouldQueue
 {
-    use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
     use \App\Jobs\Concerns\EnsuresConnectionStability;
+    use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
 
     public int $tries = 3;
+
     public int $timeout = 1800; // 30 minutes for AI-heavy task
 
     public function __construct(public int $taskId) {}
@@ -89,7 +91,7 @@ class SynthesizeQuestionsJob implements ShouldQueue
                 ]);
 
                 if ($plans->isEmpty()) {
-                    throw new \Exception('Requested generation plans not found: ' . implode(', ', $planIds));
+                    throw new \Exception('Requested generation plans not found: '.implode(', ', $planIds));
                 }
             } else {
                 // Load all pending/failed plans for this exam
@@ -98,11 +100,16 @@ class SynthesizeQuestionsJob implements ShouldQueue
                 ]);
 
                 // Atomic update - claim all pending/failed plans
+                // For plans without started_at, set it manually before update
+                GenerationPlan::where('exam_id', $exam->id)
+                    ->whereIn('status', ['pending', 'failed'])
+                    ->whereNull('started_at')
+                    ->update(['started_at' => now()]);
+
                 $updated = GenerationPlan::where('exam_id', $exam->id)
                     ->whereIn('status', ['pending', 'failed'])
                     ->update([
                         'status' => 'in_progress',
-                        'started_at' => DB::raw('COALESCE(started_at, NOW())'),
                     ]);
 
                 // Load ALL in_progress plans (not just recently claimed)
@@ -139,10 +146,11 @@ class SynthesizeQuestionsJob implements ShouldQueue
                         ];
                         $task->status = 'completed';
                         $task->save();
+
                         return;
                     }
 
-                    throw new \Exception('No generation plans found (pending, failed or in_progress). Total: ' . $totalCount . ', completed: ' . $completedCount);
+                    throw new \Exception('No generation plans found (pending, failed or in_progress). Total: '.$totalCount.', completed: '.$completedCount);
                 }
             }
 
@@ -189,7 +197,7 @@ class SynthesizeQuestionsJob implements ShouldQueue
                 'plans_processed' => $plans->count(),
                 'total_generated' => $totalGenerated,
                 'total_attached' => $totalAttached,
-                'audio_generated' => $audioStats['audio_generated'] ?? 0,
+                'audio_generated' => $audioStats['audio_generated'],
             ]);
             $task->updateHeartbeat();
 
@@ -219,11 +227,13 @@ class SynthesizeQuestionsJob implements ShouldQueue
     /**
      * Synthesize questions in parallel for all sections (plans)
      * Uses ParallelQuestionSynthesizer for parallel AI requests
+     *
+     * @param  \Illuminate\Support\Collection<int, \App\Models\GenerationPlan>  $plans
      */
     private function synthesizeInParallel(
         GenerationTask $task,
         Exam $exam,
-        $plans
+        \Illuminate\Support\Collection $plans
     ): array {
         // Check if task-level parallelization is enabled
         $useTaskLevelParallelization = config('ai.use_task_level_parallelization', false);
@@ -285,15 +295,12 @@ class SynthesizeQuestionsJob implements ShouldQueue
      * NEW: Synthesize questions using task-level parallelization.
      * Dispatches SynthesizeTaskQuestionsJob for each filter/slot.
      *
-     * @param GenerationTask $task
-     * @param Exam $exam
-     * @param \Illuminate\Support\Collection $plans
-     * @return array
+     * @param  \Illuminate\Support\Collection<int, \App\Models\GenerationPlan>  $plans
      */
     private function synthesizeWithTaskLevelParallelization(
         GenerationTask $task,
         Exam $exam,
-        $plans
+        \Illuminate\Support\Collection $plans
     ): array {
         $task->addActivity('task_level_synthesis_start', 'Starting task-level parallelization', [
             'plans_count' => $plans->count(),
@@ -338,10 +345,6 @@ class SynthesizeQuestionsJob implements ShouldQueue
     /**
      * Dispatch task-level jobs for all filters/slots in a plan.
      *
-     * @param Exam $exam
-     * @param GenerationPlan $plan
-     * @param GenerationTask $task
-     * @return void
      * @throws \RuntimeException
      */
     protected function dispatchTaskLevelJobs(Exam $exam, GenerationPlan $plan, GenerationTask $task): void
@@ -379,7 +382,40 @@ class SynthesizeQuestionsJob implements ShouldQueue
         } elseif ($mode === 'blueprint') {
             $filters = $planData['slots'] ?? [];
         } elseif ($mode === 'inline') {
-            $filters = $planData['placeholders'] ?? [];
+            // Check for question_groups first (new format for listening/reading)
+            $questionGroups = $planData['question_groups'] ?? [];
+            if (! empty($questionGroups)) {
+                // For inline + question_groups: each GROUP is a "filter" (task unit)
+                // This preserves group context while allowing parallel processing
+                foreach ($questionGroups as $groupIndex => $group) {
+                    // ✅ VALIDATE CONTRACT: Ensure group spec meets contract requirements
+                    QuestionGroupContract::validateQuestionGroupSpec($group);
+
+                    $groupId = $group['id'] ?? "group_{$groupIndex}";
+                    $groupQuestions = $group['questions'] ?? [];
+
+                    $filters[] = [
+                        'type' => 'question_group',
+                        'group_index' => $groupIndex,
+                        'group_id' => $groupId,
+                        'group_title' => $group['title'] ?? '',
+                        'group_stimulus' => $group['stimulus'] ?? [],
+                        'group_instructions' => $group['instructions'] ?? [],
+                        'group_playback_settings' => $group['playback_settings'] ?? null,
+                        'questions' => $groupQuestions,
+                        'pick' => count($groupQuestions),
+                    ];
+                }
+
+                Log::info('Inline mode with question_groups: '.count($filters).' groups as tasks', [
+                    'plan_id' => $plan->id,
+                    'groups_count' => count($questionGroups),
+                    'total_questions' => array_sum(array_map(fn ($g) => count($g['questions'] ?? []), $questionGroups)),
+                ]);
+            } else {
+                // Fallback to placeholders (legacy format)
+                $filters = $planData['placeholders'] ?? [];
+            }
         } else {
             throw new \RuntimeException("Unknown assembly mode: {$mode}");
         }
@@ -389,6 +425,7 @@ class SynthesizeQuestionsJob implements ShouldQueue
         if ($totalFilters === 0) {
             Log::warning("No filters found in plan {$plan->id}, marking as completed");
             $plan->markAsCompleted();
+
             return;
         }
 
@@ -427,9 +464,6 @@ class SynthesizeQuestionsJob implements ShouldQueue
     /**
      * Poll plan.meta until all filters completed.
      *
-     * @param GenerationPlan $plan
-     * @param GenerationTask $task
-     * @return void
      * @throws \RuntimeException
      */
     protected function waitForTaskCompletion(GenerationPlan $plan, GenerationTask $task): void
@@ -462,6 +496,7 @@ class SynthesizeQuestionsJob implements ShouldQueue
             // Check completion
             if ($completedFilters >= $totalFilters) {
                 Log::info("All filters completed for plan {$plan->id}");
+
                 return;
             }
 
@@ -482,10 +517,6 @@ class SynthesizeQuestionsJob implements ShouldQueue
      *
      * This removes questions with section_ids that no longer exist in current ExamCategories.
      * Prevents accumulation of outdated data when Research is re-run (which recreates categories).
-     *
-     * @param Exam $exam
-     * @param GenerationTask $task
-     * @return void
      */
     protected function cleanupGeneratedQuestions(Exam $exam, GenerationTask $task): void
     {
@@ -502,6 +533,7 @@ class SynthesizeQuestionsJob implements ShouldQueue
         // Filter out questions with stale section_ids
         $validQuestions = array_filter($existingQuestions, function ($q) use ($currentCategoryIds) {
             $sectionId = $q['section_id'] ?? null;
+
             return $sectionId !== null && in_array($sectionId, $currentCategoryIds);
         });
 
@@ -530,17 +562,16 @@ class SynthesizeQuestionsJob implements ShouldQueue
     /**
      * Generate audio for question groups (listening sections)
      *
-     * @param Exam $exam
-     * @param GenerationTask $task
      * @return array{processed: int, audio_generated: int, errors: int, skipped: int}
      */
     private function generateGroupAudio(Exam $exam, GenerationTask $task): array
     {
         // Check if TTS is enabled
-        if (!config('ai.tts.enabled', false)) {
+        if (! config('ai.tts.enabled', false)) {
             Log::info('TTS disabled, skipping group audio generation', [
                 'exam_id' => $exam->id,
             ]);
+
             return [
                 'processed' => 0,
                 'audio_generated' => 0,
@@ -581,7 +612,7 @@ class SynthesizeQuestionsJob implements ShouldQueue
                 'error' => $e->getMessage(),
             ]);
 
-            $task->addActivity('audio_generation_failed', 'Audio generation failed: ' . $e->getMessage());
+            $task->addActivity('audio_generation_failed', 'Audio generation failed: '.$e->getMessage());
 
             // Don't fail the whole job - audio is not critical
             return [

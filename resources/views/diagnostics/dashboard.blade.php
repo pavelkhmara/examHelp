@@ -252,6 +252,172 @@
                 </div>
             </div>
 
+            <!-- Golden Stage Comparison (NEW) -->
+            <div class="bg-white rounded-lg shadow mb-8" x-data="goldenComparison()">
+                <div class="px-6 py-4 border-b border-gray-200">
+                    <h2 class="text-lg font-semibold text-gray-900">🏆 Golden Stage Comparison</h2>
+                    <p class="text-sm text-gray-600 mt-1">Compare exam pipeline stages with golden fixtures (reference standards)</p>
+                </div>
+                <div class="p-6">
+                    <!-- Form -->
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Exam to Compare</label>
+                            <input type="text"
+                                   x-model="examId"
+                                   placeholder="Enter exam UUID"
+                                   class="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-purple-500 focus:border-purple-500">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Golden Fixture</label>
+                            <select x-model="fixtureId" class="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-purple-500 focus:border-purple-500">
+                                <option value="">-- Select golden fixture --</option>
+                                <template x-for="fixture in fixtures" :key="fixture.id">
+                                    <option :value="fixture.id" x-text="`${fixture.id} (${fixture.stages.length} stages)`"></option>
+                                </template>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="flex gap-2 mb-4">
+                        <button @click="compare"
+                                :disabled="loading || !examId || !fixtureId"
+                                class="px-6 py-2 bg-purple-600 text-white rounded-md hover:bg-purple-700 disabled:opacity-50 disabled:cursor-not-allowed">
+                            <span x-show="!loading">🔍 Compare All Stages</span>
+                            <span x-show="loading" x-cloak>Comparing...</span>
+                        </button>
+                        <button @click="captureSnapshot"
+                                :disabled="captureLoading || !examId"
+                                class="px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 disabled:opacity-50 disabled:cursor-not-allowed">
+                            <span x-show="!captureLoading">📸 Capture Baseline</span>
+                            <span x-show="captureLoading" x-cloak>Capturing...</span>
+                        </button>
+                    </div>
+
+                    <!-- Error -->
+                    <div x-show="error" x-cloak class="mt-4 p-4 bg-red-50 border border-red-200 rounded-md">
+                        <p class="text-sm text-red-800" x-text="error"></p>
+                    </div>
+
+                    <!-- Capture Result -->
+                    <div x-show="captureResult" x-cloak class="mt-4 p-4 bg-green-50 border border-green-200 rounded-md">
+                        <p class="text-sm text-green-800">✅ Snapshot captured! Label: <code class="bg-green-100 px-1 rounded" x-text="captureResult?.label"></code></p>
+                    </div>
+
+                    <!-- Results -->
+                    <div x-show="result && !error" x-cloak class="mt-6">
+                        <!-- Overall Score -->
+                        <div class="mb-6 p-6 rounded-lg text-center"
+                             :class="{
+                                 'bg-green-50 border border-green-200': result.summary?.grade === 'excellent' || result.summary?.grade === 'good',
+                                 'bg-yellow-50 border border-yellow-200': result.summary?.grade === 'acceptable',
+                                 'bg-orange-50 border border-orange-200': result.summary?.grade === 'needs_improvement',
+                                 'bg-red-50 border border-red-200': result.summary?.grade === 'poor'
+                             }">
+                            <p class="text-sm text-gray-600 mb-2">Overall Similarity</p>
+                            <p class="text-5xl font-bold"
+                               :class="{
+                                   'text-green-600': result.summary?.grade === 'excellent' || result.summary?.grade === 'good',
+                                   'text-yellow-600': result.summary?.grade === 'acceptable',
+                                   'text-orange-600': result.summary?.grade === 'needs_improvement',
+                                   'text-red-600': result.summary?.grade === 'poor'
+                               }"
+                               x-text="result.summary?.overall_similarity + '%'"></p>
+                            <p class="text-lg mt-2 font-medium"
+                               :class="{
+                                   'text-green-700': result.summary?.grade === 'excellent' || result.summary?.grade === 'good',
+                                   'text-yellow-700': result.summary?.grade === 'acceptable',
+                                   'text-orange-700': result.summary?.grade === 'needs_improvement',
+                                   'text-red-700': result.summary?.grade === 'poor'
+                               }"
+                               x-text="result.summary?.grade?.replace('_', ' ').toUpperCase()"></p>
+                            <p class="text-sm text-gray-500 mt-2">
+                                <span x-text="result.summary?.passed_stages"></span> / <span x-text="result.summary?.total_stages"></span> stages passed
+                            </p>
+                        </div>
+
+                        <!-- Exam Info -->
+                        <div class="bg-blue-50 p-4 rounded-lg border border-blue-200 mb-6">
+                            <h4 class="font-semibold text-blue-900 mb-2">Exam Under Test</h4>
+                            <p class="text-sm text-blue-800" x-text="result.exam?.title"></p>
+                            <p class="text-xs text-blue-600 mt-1">
+                                <span x-text="result.exam?.level"></span> |
+                                Status: <span x-text="result.exam?.research_status"></span>
+                            </p>
+                        </div>
+
+                        <!-- Stage Results -->
+                        <div class="mb-6">
+                            <h4 class="font-semibold text-gray-900 mb-3">📑 Pipeline Stage Results</h4>
+                            <div class="space-y-3">
+                                <template x-for="(data, stage) in result.stages" :key="stage">
+                                    <div class="p-4 rounded-lg border"
+                                         :class="{
+                                             'bg-green-50 border-green-200': data.passed,
+                                             'bg-red-50 border-red-200': !data.passed && !data.error,
+                                             'bg-gray-50 border-gray-200': data.error
+                                         }">
+                                        <div class="flex items-center justify-between">
+                                            <div class="flex items-center">
+                                                <span x-show="data.passed" class="text-green-600 mr-2">✅</span>
+                                                <span x-show="!data.passed && !data.error" class="text-red-600 mr-2">❌</span>
+                                                <span x-show="data.error" class="text-gray-400 mr-2">⚠️</span>
+                                                <span class="font-medium" x-text="stage.replace('_', ' ').toUpperCase()"></span>
+                                            </div>
+                                            <div class="flex items-center gap-4">
+                                                <span x-show="!data.error" class="text-sm">
+                                                    Similarity: <span class="font-bold" x-text="data.similarity + '%'"></span>
+                                                </span>
+                                                <span x-show="!data.error" class="text-xs text-gray-500">
+                                                    (<span x-text="data.diffs_count"></span> diffs)
+                                                </span>
+                                                <button @click="selectedStage = selectedStage === stage ? null : stage"
+                                                        class="text-xs text-blue-600 hover:underline">
+                                                    <span x-text="selectedStage === stage ? 'Hide Details' : 'Show Details'"></span>
+                                                </button>
+                                            </div>
+                                        </div>
+                                        <p x-show="data.error" class="text-xs text-gray-600 mt-1" x-text="data.error"></p>
+
+                                        <!-- Stage Details -->
+                                        <div x-show="selectedStage === stage && !data.error" x-cloak class="mt-4 pt-4 border-t border-gray-200">
+                                            <p class="text-xs text-gray-600 mb-2" x-text="data.message"></p>
+                                            <div x-show="data.diffs?.length > 0" class="space-y-1">
+                                                <p class="text-xs font-medium text-gray-700">Top Differences:</p>
+                                                <template x-for="(diff, idx) in data.diffs" :key="idx">
+                                                    <div class="text-xs bg-white p-2 rounded border">
+                                                        <span class="text-gray-500" x-text="diff.type"></span>
+                                                        <span class="font-mono text-purple-600 ml-2" x-text="diff.path"></span>
+                                                        <span x-show="diff.generated" class="text-green-600 ml-2">gen: <span x-text="diff.generated"></span></span>
+                                                        <span x-show="diff.golden" class="text-orange-600 ml-2">gold: <span x-text="diff.golden"></span></span>
+                                                    </div>
+                                                </template>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </template>
+                            </div>
+                        </div>
+
+                        <!-- Stage Legend -->
+                        <div class="text-xs text-gray-500 bg-gray-50 p-3 rounded-lg">
+                            <p class="font-medium mb-1">Pipeline Stages:</p>
+                            <p><strong>identity</strong> - Exam identification and verification</p>
+                            <p><strong>phase_a</strong> - Skeleton structure (sections without assembly)</p>
+                            <p><strong>phase_b</strong> - Full structure with assembly plans and question groups</p>
+                            <p><strong>resolve_plans</strong> - Generation plans resolved</p>
+                            <p><strong>synthesis</strong> - Final synthesized questions</p>
+                        </div>
+                    </div>
+
+                    <!-- No fixtures hint -->
+                    <div x-show="fixtures.length === 0" class="mt-4 p-4 bg-yellow-50 border border-yellow-200 rounded-lg">
+                        <p class="text-sm text-yellow-800">
+                            ⚠️ No golden fixtures found. Run <code class="bg-yellow-100 px-1 rounded">php artisan golden:report</code> to check available fixtures.
+                        </p>
+                    </div>
+                </div>
+            </div>
+
             <!-- Exam Quality Comparison -->
             <div class="bg-white rounded-lg shadow mb-8" x-data="examComparison()">
                 <div class="px-6 py-4 border-b border-gray-200">
@@ -1099,6 +1265,96 @@
 
                 refreshData() {
                     window.location.reload();
+                }
+            }
+        }
+
+        function goldenComparison() {
+            return {
+                examId: '',
+                fixtureId: '',
+                fixtures: [],
+                result: null,
+                error: null,
+                loading: false,
+                captureLoading: false,
+                captureResult: null,
+                selectedStage: null,
+
+                async init() {
+                    try {
+                        const response = await fetch('/diagnostics-dashboard/golden-fixtures');
+                        const data = await response.json();
+                        if (data.success) {
+                            this.fixtures = data.fixtures;
+                        }
+                    } catch (error) {
+                        console.error('Failed to load golden fixtures:', error);
+                    }
+                },
+
+                async compare() {
+                    if (!this.examId.trim() || !this.fixtureId) {
+                        this.error = 'Please enter exam ID and select golden fixture';
+                        return;
+                    }
+
+                    this.loading = true;
+                    this.error = null;
+                    this.result = null;
+                    this.captureResult = null;
+                    this.selectedStage = null;
+
+                    try {
+                        const response = await fetch(`/diagnostics-dashboard/golden-compare/${encodeURIComponent(this.examId.trim())}/${encodeURIComponent(this.fixtureId)}`);
+                        const data = await response.json();
+
+                        if (!response.ok || !data.success) {
+                            this.error = data.error || 'Comparison failed';
+                            return;
+                        }
+
+                        this.result = data;
+                    } catch (error) {
+                        this.error = `Error: ${error.message}`;
+                    } finally {
+                        this.loading = false;
+                    }
+                },
+
+                async captureSnapshot() {
+                    if (!this.examId.trim()) {
+                        this.error = 'Please enter exam ID';
+                        return;
+                    }
+
+                    this.captureLoading = true;
+                    this.error = null;
+                    this.captureResult = null;
+
+                    try {
+                        const response = await fetch(`/diagnostics-dashboard/snapshot/capture/${encodeURIComponent(this.examId.trim())}`, {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json',
+                                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
+                            },
+                            body: JSON.stringify({ all: true, label: 'baseline' })
+                        });
+
+                        const data = await response.json();
+
+                        if (!response.ok || !data.success) {
+                            this.error = data.error || 'Capture failed';
+                            return;
+                        }
+
+                        this.captureResult = data;
+                    } catch (error) {
+                        this.error = `Error: ${error.message}`;
+                    } finally {
+                        this.captureLoading = false;
+                    }
                 }
             }
         }

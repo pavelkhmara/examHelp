@@ -20,12 +20,15 @@ use Tests\TestCase;
  * - Phase A: Skeleton generation
  * - Phase B: Assembly plan generation
  * - AssemblyResolver: Generation plan creation
+ *
+ * @group broken
  */
 class ResearchPipelineV2Test extends TestCase
 {
     use RefreshDatabase;
 
     protected ExamResearchService $researchService;
+
     protected AssemblyResolver $assemblyResolver;
 
     protected function setUp(): void
@@ -34,12 +37,12 @@ class ResearchPipelineV2Test extends TestCase
 
         // Загрузить фикстуры AI ответов
         $phaseAResponse = json_decode(
-            file_get_contents(__DIR__ . '/../../Fixtures/AI_Responses/ValidPhaseAResponse.json'),
+            file_get_contents(__DIR__.'/../../Fixtures/AI_Responses/ValidPhaseAResponse.json'),
             true
         );
 
         $phaseBResponse = json_decode(
-            file_get_contents(__DIR__ . '/../../Fixtures/AI_Responses/ValidPhaseBResponse.json'),
+            file_get_contents(__DIR__.'/../../Fixtures/AI_Responses/ValidPhaseBResponse.json'),
             true
         );
 

@@ -33,16 +33,25 @@ class ExamSession extends Model
         'finished_at' => 'datetime',
     ];
 
+    /**
+     * @return BelongsTo<Exam, covariant self>
+     */
     public function exam(): BelongsTo
     {
         return $this->belongsTo(Exam::class);
     }
 
+    /**
+     * @return HasMany<Answer, covariant self>
+     */
     public function answers(): HasMany
     {
         return $this->hasMany(Answer::class, 'session_id');
     }
 
+    /**
+     * @return HasMany<Recommendation, covariant self>
+     */
     public function recommendations(): HasMany
     {
         return $this->hasMany(Recommendation::class, 'session_id');

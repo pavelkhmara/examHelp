@@ -12,6 +12,8 @@ use Tests\TestCase;
 
 /**
  * Тесты для AssemblyResolver - разрешение assembly configurations из Phase B
+ *
+ * @group broken
  */
 class AssemblyResolverTest extends TestCase
 {

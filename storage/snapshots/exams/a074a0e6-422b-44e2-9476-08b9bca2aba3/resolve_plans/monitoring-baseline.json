@@ -1,0 +1,41 @@
+{
+    "exam_id": "a074a0e6-422b-44e2-9476-08b9bca2aba3",
+    "stage": "resolve_plans",
+    "label": "monitoring-baseline",
+    "hash": "80be058b35615fb89ad4134f66c339e61d285c38a7965aa54f5ca3ebe81fa5cc",
+    "data": {
+        "stage": "resolve_plans",
+        "exam_id": "a074a0e6-422b-44e2-9476-08b9bca2aba3",
+        "generation_plans": [
+            {
+                "section_id": "reading-section-1",
+                "group_id": "reading-task-1",
+                "questions_count": 10,
+                "question_type": "read_mcq",
+                "synthesis_mode": "inline"
+            },
+            {
+                "section_id": "reading-section-1",
+                "group_id": "reading-task-2",
+                "questions_count": 10,
+                "question_type": "read_mcq",
+                "synthesis_mode": "inline"
+            }
+        ],
+        "summary": {
+            "total_plans": 2,
+            "by_section": {
+                "reading-section-1": {
+                    "plans": 2,
+                    "questions": 20
+                }
+            }
+        }
+    },
+    "captured_at": "2025-11-27T10:33:56+00:00",
+    "metadata": {
+        "exam_title": "[LONG-MONITOR-2] TOEFL Reading Standard",
+        "exam_level": "B2",
+        "research_status": "completed"
+    }
+}

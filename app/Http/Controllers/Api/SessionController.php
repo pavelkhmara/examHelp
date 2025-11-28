@@ -172,7 +172,10 @@ class SessionController extends Controller
         // Group answers by category
         $answers = $session->answers()->with('question.section')->get();
 
-        $byCategory = $answers->groupBy(fn ($a) => $a->question?->section_id)->map(function ($group, $categoryId) {
+        /** @var \Illuminate\Support\Collection<int|string, \Illuminate\Support\Collection<int, \App\Models\Answer>> $grouped */
+        // @phpstan-ignore argument.templateType
+        $grouped = $answers->groupBy(fn ($a) => $a->question?->section_id);
+        $byCategory = $grouped->map(function ($group, $categoryId) {
             $section = $group->first()?->question?->section;
             $correct = $group->where('is_correct', true)->count();
             $total = $group->count();

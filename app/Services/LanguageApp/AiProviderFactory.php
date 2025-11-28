@@ -25,7 +25,7 @@ final class AiProviderFactory
             $apiKey = (string) ($cfg[$provider]['api_key'] ?? '');
             $timeout = (int) ($cfg[$provider]['timeout'] ?? 60);
 
-            if (! $baseUrl || ! $apiKey) {
+            if ($baseUrl === '/' || $apiKey === '') {
                 if (! empty($cfg['openai']['fallback_to_mock_on_error'])) {
                     Log::warning('AiProviderFactory: missing base_url/api_key -> fallback to mock');
 
@@ -65,7 +65,8 @@ final class AiProviderFactory
         Log::debug('AiProviderFactory: creating async provider', ['provider' => $provider]);
 
         if ($provider === 'mock') {
-            throw new \RuntimeException('Async mock provider not implemented yet');
+            // ✅ NEW: MockAiProvider now implements AsyncAiProvider
+            return new Providers\MockAiProvider($cfg);
         }
 
         try {
@@ -73,7 +74,7 @@ final class AiProviderFactory
             $apiKey = (string) ($cfg[$provider]['api_key'] ?? '');
             $timeout = (int) ($cfg[$provider]['timeout'] ?? 90);
 
-            if (! $baseUrl || ! $apiKey) {
+            if ($baseUrl === '/' || $apiKey === '') {
                 throw new \RuntimeException('AI base_url/api_key is not configured.');
             }
 
