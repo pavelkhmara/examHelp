@@ -43,7 +43,7 @@ abstract class AbstractAiService
 
         // 1) Context
         $examTitle = $payload['exam_title'] ?? $payload['exam_slug'] ?? 'No exam title provided';
-        $userInput = $payload['input'];
+        $userInput = (string) ($payload['input'] ?? '');
         // web
         if (! empty($opts['web']) && $cfg[strval($provider)]['enable_web_search']) {
             $contextNotes = $this->gatherWebHints([$payload['exam_level'], $payload['exam_description'] ?? $payload['input'] ?? 'No exam info provided'], (int) ($cfg[strval($provider)]['max_web_snippets'] ?? 5));
