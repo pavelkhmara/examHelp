@@ -21,7 +21,63 @@ use Illuminate\Support\Facades\Route;
 use Laravel\Nova\Http\Middleware\Authenticate;
 
 Route::get('/health', function () {
-    return response()->json(['status' => 'ok']);
+    // Check database connectivity
+    $dbOk = false;
+    $dbError = null;
+    try {
+        \Illuminate\Support\Facades\DB::select('SELECT 1');
+        $dbOk = true;
+    } catch (\Exception $e) {
+        $dbError = $e->getMessage();
+    }
+
+    // Check Redis connectivity
+    $redisOk = false;
+    $redisError = null;
+    try {
+        \Illuminate\Support\Facades\Redis::ping();
+        $redisOk = true;
+    } catch (\Exception $e) {
+        $redisError = $e->getMessage();
+    }
+
+    // Check API keys configuration
+    $openaiKey = config('ai.api_key');
+    $ttsKey = config('ai.tts.api_key') ?: config('ai.api_key');
+    $unsplashKey = config('ai.images.unsplash.api_key');
+
+    // Overall status
+    $status = ($dbOk && $redisOk) ? 'healthy' : 'degraded';
+
+    $checks = [
+        'database' => $dbOk ? 'ok' : 'fail',
+        'redis' => $redisOk ? 'ok' : 'fail',
+        'openai_api_key' => $openaiKey ? 'configured' : 'missing',
+        'tts' => [
+            'enabled' => config('ai.tts.enabled', false),
+            'api_key' => $ttsKey ? 'configured' : 'missing',
+        ],
+        'images' => [
+            'enabled' => config('ai.images.enabled', false),
+            'unsplash_api_key' => $unsplashKey ? 'configured' : 'missing',
+        ],
+        'queue_connection' => config('queue.default'),
+        'ai_provider' => config('ai.default'),
+    ];
+
+    // Add error details if any
+    if (! $dbOk) {
+        $checks['database_error'] = $dbError;
+    }
+    if (! $redisOk) {
+        $checks['redis_error'] = $redisError;
+    }
+
+    return response()->json([
+        'status' => $status,
+        'checks' => $checks,
+        'timestamp' => now()->toIso8601String(),
+    ], $status === 'healthy' ? 200 : 503);
 });
 
 // Route::get('/exams', [ExamController::class, 'index'])->name('exams.index');

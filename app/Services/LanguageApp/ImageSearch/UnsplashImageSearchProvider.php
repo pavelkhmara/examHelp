@@ -26,6 +26,14 @@ class UnsplashImageSearchProvider implements ImageSearchProvider
         $this->apiKey = config('ai.images.unsplash.api_key');
         $this->baseUrl = config('ai.images.unsplash.base_url', 'https://api.unsplash.com');
         $this->timeout = config('ai.images.timeout', 30);
+
+        // Fail-fast validation: если image search enabled но API key отсутствует
+        if (config('ai.images.enabled', false) && ! $this->apiKey) {
+            throw new \RuntimeException(
+                'Image search is enabled (AI_IMAGES_ENABLED=true) but Unsplash API key not configured. '.
+                'Set AI_IMAGE_UNSPLASH_KEY in .env file, or disable image search with AI_IMAGES_ENABLED=false.'
+            );
+        }
     }
 
     public function getName(): string

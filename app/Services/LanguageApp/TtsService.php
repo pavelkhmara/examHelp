@@ -36,6 +36,14 @@ class TtsService
         $this->voice = config('ai.tts.voice', 'alloy');
         $this->speed = config('ai.tts.speed', 1.0);
         $this->timeout = config('ai.tts.timeout', 60);
+
+        // Fail-fast validation: если TTS enabled но API key отсутствует
+        if (config('ai.tts.enabled', false) && ! $this->apiKey) {
+            throw new \RuntimeException(
+                'TTS is enabled (AI_TTS_ENABLED=true) but API key not configured. '.
+                'Set AI_TTS_API_KEY or AI_API_KEY in .env file, or disable TTS with AI_TTS_ENABLED=false.'
+            );
+        }
     }
 
     /**

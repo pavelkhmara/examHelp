@@ -153,12 +153,12 @@ class Exam extends Resource
                 ->hideFromIndex()
                 ->help('Select the exam family from our database, or choose "Unknown"'),
 
-            // User Input
-            Textarea::make('User Input', 'user_input')
+            // User Input (array field, displayed as JSON)
+            Code::make('User Input', 'user_input')
+                ->json()
                 ->nullable()
-                ->rows(6)
                 ->hideFromIndex()
-                ->help('Strictly user information as-is, including in user\'s language. Can be plain text or JSON.'),
+                ->help('User information as JSON object. Can include notes, family, provider, etc.'),
 
             // Single document upload (for multiple documents, use the "Documents" relationship below)
             File::make('Upload Document', 'document_upload')
