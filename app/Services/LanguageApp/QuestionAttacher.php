@@ -9,6 +9,7 @@ use App\Models\ExamCategory;
 use App\Models\GenerationPlan;
 use App\Models\Question;
 use App\Services\LanguageApp\Contracts\QuestionGroupContract;
+use App\Services\LanguageApp\QuestionIdGenerator;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 
@@ -72,10 +73,10 @@ class QuestionAttacher
 
                     if ($groupIdString) {
                         // Grouped question: use group_id prefix to match skeleton questions
-                        $uniqueQuestionId = "{$groupIdString}_{$rawQuestionId}";
+                        $uniqueQuestionId = QuestionIdGenerator::forGroupedQuestion($groupIdString, $rawQuestionId);
                     } else {
                         // Ungrouped question: use section prefix
-                        $uniqueQuestionId = "{$sectionKey}_{$rawQuestionId}";
+                        $uniqueQuestionId = QuestionIdGenerator::forUngroupedQuestion($sectionKey, $rawQuestionId);
                     }
 
                     Log::debug('[QuestionAttacher] Generated uniqueQuestionId', [
