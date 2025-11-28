@@ -157,9 +157,10 @@ class SynthesizeTaskQuestionsJob implements ShouldQueue
                 'attached' => count($attachedQuestions),
             ]);
 
-            // Update plan metadata (atomic)
-            DB::transaction(function () use ($plan, $attachedQuestions, $task) {
-                $plan->refresh();
+            // Update plan metadata (atomic with pessimistic lock to prevent race conditions)
+            DB::transaction(function () use ($attachedQuestions, $task) {
+                // ✅ FIX: Lock plan for exclusive access to prevent lost updates from concurrent filters
+                $plan = GenerationPlan::lockForUpdate()->findOrFail($this->planId);
                 $meta = $plan->meta ?? [];
                 $meta['questions_generated'] = ($meta['questions_generated'] ?? 0) + count($attachedQuestions);
                 $meta['filters_completed'] = ($meta['filters_completed'] ?? 0) + 1;

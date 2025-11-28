@@ -295,6 +295,9 @@ class SynthesizeQuestionsJob implements ShouldQueue
      * NEW: Synthesize questions using task-level parallelization.
      * Dispatches SynthesizeTaskQuestionsJob for each filter/slot.
      *
+     * ✅ PLAN-LEVEL PARALLELIZATION: Dispatches ALL plans upfront, then waits for ALL to complete.
+     * This allows multiple plans (sections) to be processed simultaneously by different workers.
+     *
      * @param  \Illuminate\Support\Collection<int, \App\Models\GenerationPlan>  $plans
      */
     private function synthesizeWithTaskLevelParallelization(
@@ -302,42 +305,35 @@ class SynthesizeQuestionsJob implements ShouldQueue
         Exam $exam,
         \Illuminate\Support\Collection $plans
     ): array {
-        $task->addActivity('task_level_synthesis_start', 'Starting task-level parallelization', [
+        $task->addActivity('task_level_synthesis_start', 'Starting task-level + plan-level parallelization', [
             'plans_count' => $plans->count(),
         ]);
 
-        $results = [];
-
+        // ✅ STEP 1: Dispatch task-level jobs for ALL plans upfront (plan-level parallelization)
         foreach ($plans as $plan) {
             try {
-                // Dispatch task-level jobs for this plan
                 $this->dispatchTaskLevelJobs($exam, $plan, $task);
-
-                // Wait for all filters to complete
-                $this->waitForTaskCompletion($plan, $task);
-
-                // Plan completed successfully
-                $results[] = [
+                Log::info("Dispatched filters for plan {$plan->id}", [
                     'plan_id' => $plan->id,
                     'section_id' => $plan->section_id,
-                    'success' => true,
-                    'generated' => $plan->meta['questions_generated'] ?? 0,
-                    'attached' => $plan->meta['questions_generated'] ?? 0,
-                ];
-
+                ]);
             } catch (\Throwable $e) {
-                Log::error("Plan {$plan->id} task-level synthesis failed", [
+                Log::error("Failed to dispatch filters for plan {$plan->id}", [
                     'error' => $e->getMessage(),
                 ]);
-
-                $results[] = [
-                    'plan_id' => $plan->id,
-                    'section_id' => $plan->section_id,
-                    'success' => false,
-                    'error' => $e->getMessage(),
-                ];
+                // Don't fail entire job - mark this plan as failed and continue
+                $plan->status = 'failed';
+                $plan->error = "Failed to dispatch filters: {$e->getMessage()}";
+                $plan->save();
             }
         }
+
+        $task->addActivity('all_plans_dispatched', 'All plans dispatched, waiting for completion', [
+            'plans_count' => $plans->count(),
+        ]);
+
+        // ✅ STEP 2: Wait for ALL plans to complete (polls all plans concurrently)
+        $results = $this->waitForAllPlansCompletion($plans, $task);
 
         return $results;
     }
@@ -508,6 +504,126 @@ class SynthesizeQuestionsJob implements ShouldQueue
             // Timeout check
             if (time() - $startTime > $maxWaitTime) {
                 throw new \RuntimeException("Timeout waiting for filters to complete (plan {$plan->id})");
+            }
+        }
+    }
+
+    /**
+     * ✅ NEW: Wait for ALL plans to complete (plan-level parallelization).
+     * Polls all plans concurrently instead of waiting for each plan sequentially.
+     *
+     * @param  \Illuminate\Support\Collection<int, \App\Models\GenerationPlan>  $plans
+     * @throws \RuntimeException
+     */
+    protected function waitForAllPlansCompletion(
+        \Illuminate\Support\Collection $plans,
+        GenerationTask $task
+    ): array {
+        $maxWaitTime = 30 * 60; // 30 minutes total
+        $pollInterval = 10; // 10 seconds
+        $startTime = time();
+
+        $planIds = $plans->pluck('id')->toArray();
+        $totalPlans = count($planIds);
+
+        Log::info("Waiting for {$totalPlans} plans to complete (plan-level parallelization)", [
+            'plan_ids' => $planIds,
+        ]);
+
+        $completedPlans = [];
+        $failedPlans = [];
+
+        while (true) {
+            sleep($pollInterval);
+
+            // Keep connection alive
+            $this->keepConnectionAlive();
+
+            // Refresh ALL plans at once
+            $freshPlans = GenerationPlan::whereIn('id', $planIds)->get()->keyBy('id');
+
+            // Check each plan's status
+            $stillPending = [];
+            foreach ($planIds as $planId) {
+                $plan = $freshPlans->get($planId);
+
+                if (! $plan) {
+                    Log::error("Plan {$planId} not found during polling");
+                    $failedPlans[$planId] = 'Plan not found';
+
+                    continue;
+                }
+
+                $totalFilters = $plan->meta['total_filters'] ?? 0;
+                $completedFilters = $plan->meta['filters_completed'] ?? 0;
+
+                // Already completed/failed - skip
+                if (isset($completedPlans[$planId]) || isset($failedPlans[$planId])) {
+                    continue;
+                }
+
+                // Check completion
+                if ($completedFilters >= $totalFilters && $totalFilters > 0) {
+                    Log::info("Plan {$planId} completed ({$completedFilters}/{$totalFilters} filters)");
+                    $completedPlans[$planId] = [
+                        'plan_id' => $planId,
+                        'section_id' => $plan->section_id,
+                        'success' => true,
+                        'generated' => $plan->meta['questions_generated'] ?? 0,
+                        'attached' => $plan->meta['questions_generated'] ?? 0,
+                    ];
+
+                    continue;
+                }
+
+                // Check for failures
+                if ($plan->status === 'failed') {
+                    Log::error("Plan {$planId} failed: {$plan->error}");
+                    $failedPlans[$planId] = $plan->error ?? 'Unknown error';
+                    $completedPlans[$planId] = [
+                        'plan_id' => $planId,
+                        'section_id' => $plan->section_id,
+                        'success' => false,
+                        'error' => $plan->error ?? 'Unknown error',
+                    ];
+
+                    continue;
+                }
+
+                // Still pending
+                $stillPending[] = $planId;
+            }
+
+            // Log progress
+            $completedCount = count($completedPlans);
+            $failedCount = count($failedPlans);
+            Log::info("Plan-level progress: {$completedCount}/{$totalPlans} completed, {$failedCount} failed, ".count($stillPending).' pending');
+
+            // Update task heartbeat
+            $task->updateHeartbeat();
+
+            // All plans done?
+            if ($completedCount >= $totalPlans) {
+                Log::info('All plans completed!', [
+                    'total' => $totalPlans,
+                    'succeeded' => $completedCount - $failedCount,
+                    'failed' => $failedCount,
+                ]);
+
+                $task->addActivity('all_plans_completed', 'All plans completed', [
+                    'total_plans' => $totalPlans,
+                    'succeeded' => $completedCount - $failedCount,
+                    'failed' => $failedCount,
+                ]);
+
+                return array_values($completedPlans);
+            }
+
+            // Timeout check
+            if (time() - $startTime > $maxWaitTime) {
+                $pendingPlans = implode(', ', $stillPending);
+
+                throw new \RuntimeException("Timeout waiting for plans to complete. Pending plans: {$pendingPlans}");
             }
         }
     }
