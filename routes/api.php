@@ -5,6 +5,7 @@ use App\Http\Controllers\Api\DocumentController;
 use App\Http\Controllers\Api\EvaluationController;
 use App\Http\Controllers\Api\ExamController;
 use App\Http\Controllers\Api\ExamResearchController;
+use App\Http\Controllers\Api\MonitoringController;
 use App\Http\Controllers\Api\ScoringController;
 use App\Http\Controllers\Api\StructureController;
 use App\Http\Controllers\Api\TasksController;
@@ -357,6 +358,34 @@ Route::prefix('diagnostics')->group(function () {
 
     Route::get('/tasks/{taskId}', [DiagnosticsController::class, 'task']);
 });
+
+// ===== MONITORING routes (restricted to non-production environments) =====
+// JSON equivalents of monitoring scripts for remote access
+// IMPORTANT: These endpoints are restricted to local/staging environments for security
+Route::prefix('monitoring')
+    ->middleware(\App\Http\Middleware\RestrictToNonProduction::class)
+    ->group(function () {
+        // Overview metrics (equivalent to scripts/monitoring_new_exams.php)
+        Route::get('/overview', [MonitoringController::class, 'overview']);
+
+        // Queue status (equivalent to scripts/monitor_queue.php)
+        Route::get('/queue', [MonitoringController::class, 'queue']);
+
+        // Tasks list with filters
+        Route::get('/tasks', [MonitoringController::class, 'tasks']);
+
+        // Task logs
+        Route::get('/tasks/{task}/logs', [MonitoringController::class, 'taskLogs']);
+
+        // Exam synthesis tasks (equivalent to scripts/check_synthesis_tasks.php)
+        Route::get('/exams/{exam}/synthesis', [MonitoringController::class, 'examSynthesis']);
+
+        // Detailed exam analysis (equivalent to scripts/analyze_synthesis.php)
+        Route::get('/exams/{exam}/analysis', [MonitoringController::class, 'examAnalysis']);
+
+        // Generation plan details
+        Route::get('/plans/{plan}', [MonitoringController::class, 'planDetails']);
+    });
 
 // ===== TASK MANAGEMENT routes (public, write operations) =====
 Route::prefix('tasks')->group(function () {
