@@ -154,11 +154,36 @@ class Exam extends Resource
                 ->help('Select the exam family from our database, or choose "Unknown"'),
 
             // User Input (text field)
-            Textarea::make('User Input', 'user_input')
-                ->rows(5)
+            Text::make('User Input', 'user_input')
+                ->resolveUsing(function ($value) {
+                    // Convert array to JSON string for display
+                    if (is_array($value)) {
+                        return json_encode($value, JSON_UNESCAPED_UNICODE);
+                    }
+
+                    return $value;
+                })
+                ->fillUsing(function ($request, $model, $attribute, $requestAttribute) {
+                    // Try to parse JSON, if fails - store as plain text
+                    $value = $request->input($requestAttribute);
+                    if (empty($value)) {
+                        $model->{$attribute} = null;
+
+                        return;
+                    }
+
+                    // Try to decode as JSON
+                    $decoded = json_decode($value, true);
+                    if (json_last_error() === JSON_ERROR_NONE && is_array($decoded)) {
+                        $model->{$attribute} = $decoded;
+                    } else {
+                        // Store as plain text in array format
+                        $model->{$attribute} = ['notes' => $value];
+                    }
+                })
                 ->nullable()
                 ->hideFromIndex()
-                ->help('User information as text. Can include notes, family, provider, etc.'),
+                ->help('User information as text. You can enter plain text or JSON.'),
 
             // Single document upload (for multiple documents, use the "Documents" relationship below)
             File::make('Upload Document', 'document_upload')
