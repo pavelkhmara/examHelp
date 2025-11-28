@@ -20,6 +20,7 @@
     <php>
         <!-- окружение тестов -->
         <server name="APP_ENV" value="testing"/>
+        <server name="APP_KEY" value="base64:AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA="/>
 
         <!-- отдельные кеш-файлы только для тестов -->
         <server name="APP_CONFIG_CACHE"   value="bootstrap/cache/config.testing.php"/>

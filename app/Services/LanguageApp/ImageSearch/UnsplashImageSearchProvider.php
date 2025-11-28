@@ -15,7 +15,7 @@ use Illuminate\Support\Facades\Log;
  */
 class UnsplashImageSearchProvider implements ImageSearchProvider
 {
-    private string $apiKey;
+    private ?string $apiKey;
 
     private string $baseUrl;
 
@@ -26,10 +26,6 @@ class UnsplashImageSearchProvider implements ImageSearchProvider
         $this->apiKey = config('ai.images.unsplash.api_key');
         $this->baseUrl = config('ai.images.unsplash.base_url', 'https://api.unsplash.com');
         $this->timeout = config('ai.images.timeout', 30);
-
-        if (empty($this->apiKey)) {
-            throw new \RuntimeException('Unsplash API key not configured (AI_IMAGE_UNSPLASH_KEY)');
-        }
     }
 
     public function getName(): string
@@ -49,6 +45,12 @@ class UnsplashImageSearchProvider implements ImageSearchProvider
     {
         if (empty($query)) {
             throw new \InvalidArgumentException('Search query cannot be empty');
+        }
+
+        if (! $this->apiKey) {
+            Log::warning('[UnsplashImageSearch] API key not configured, returning empty results');
+
+            return [];
         }
 
         Log::info('[UnsplashImageSearch] Searching images', [

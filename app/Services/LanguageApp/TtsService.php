@@ -16,7 +16,7 @@ use Illuminate\Support\Facades\Storage;
  */
 class TtsService
 {
-    private string $apiKey;
+    private ?string $apiKey;
 
     private string $baseUrl;
 
@@ -30,7 +30,7 @@ class TtsService
 
     public function __construct()
     {
-        $this->apiKey = config('ai.tts.api_key', config('ai.api_key'));
+        $this->apiKey = config('ai.tts.api_key') ?: config('ai.api_key');
         $this->baseUrl = config('ai.tts.base_url', 'https://api.openai.com/v1');
         $this->model = config('ai.tts.model', 'tts-1');
         $this->voice = config('ai.tts.voice', 'alloy');
@@ -57,6 +57,16 @@ class TtsService
         // Проверяем включен ли TTS
         if (! config('ai.tts.enabled', false)) {
             Log::info('[TtsService] TTS disabled, skipping audio generation');
+
+            return [
+                'path' => '',
+                'url' => '',
+            ];
+        }
+
+        // Проверяем наличие API ключа
+        if (! $this->apiKey) {
+            Log::warning('[TtsService] API key not configured, skipping audio generation');
 
             return [
                 'path' => '',
