@@ -145,6 +145,7 @@ class StructureMaterializer
                             'question_id' => $uniqueQuestionId,
                             'type' => $qData['type'] ?? 'unknown',
                             'order' => $qData['order'] ?? $questionOrder,
+                            'status' => 'draft', // Phase 2.2: Explicit status for fixture imports
                             'skills_measured' => $qData['skills_measured'] ?? [],
                             'time_limit_sec' => $qData['time_limit_sec'] ?? 0,
                             'instructions' => $qData['instructions'] ?? [],
