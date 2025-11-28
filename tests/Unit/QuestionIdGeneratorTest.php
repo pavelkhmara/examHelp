@@ -15,6 +15,7 @@ class QuestionIdGeneratorTest extends TestCase
 {
     /**
      * @test
+     *
      * @dataProvider groupedQuestionProvider
      */
     public function it_generates_grouped_question_ids(string $groupId, string $questionId, string $expected): void
@@ -26,6 +27,7 @@ class QuestionIdGeneratorTest extends TestCase
 
     /**
      * @test
+     *
      * @dataProvider ungroupedQuestionProvider
      */
     public function it_generates_ungrouped_question_ids(string $sectionKey, string $questionId, string $expected): void
@@ -92,6 +94,7 @@ class QuestionIdGeneratorTest extends TestCase
 
     /**
      * @test
+     *
      * @dataProvider validIdProvider
      */
     public function it_validates_correct_ids(string $questionId): void
@@ -103,6 +106,7 @@ class QuestionIdGeneratorTest extends TestCase
 
     /**
      * @test
+     *
      * @dataProvider invalidIdProvider
      */
     public function it_rejects_invalid_ids(string $questionId): void
@@ -114,6 +118,7 @@ class QuestionIdGeneratorTest extends TestCase
 
     /**
      * @test
+     *
      * @dataProvider parseIdProvider
      */
     public function it_parses_question_ids(string $questionId, array $expected): void
@@ -139,7 +144,6 @@ class QuestionIdGeneratorTest extends TestCase
     /**
      * Data providers
      */
-
     public static function groupedQuestionProvider(): array
     {
         return [

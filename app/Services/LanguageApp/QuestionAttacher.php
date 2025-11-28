@@ -9,7 +9,6 @@ use App\Models\ExamCategory;
 use App\Models\GenerationPlan;
 use App\Models\Question;
 use App\Services\LanguageApp\Contracts\QuestionGroupContract;
-use App\Services\LanguageApp\QuestionIdGenerator;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 

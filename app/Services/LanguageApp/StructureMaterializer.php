@@ -11,9 +11,9 @@ use Illuminate\Support\Facades\Log;
 
 /**
  * Phase 2.1: Centralized ID Generation
+ *
  * @see QuestionIdGenerator
  */
-use App\Services\LanguageApp\QuestionIdGenerator;
 
 /**
  * Materializes structure_v2 (from meta) into database tables.
