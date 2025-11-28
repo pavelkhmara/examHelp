@@ -22,7 +22,7 @@ return [
     'openai' => [
         'base_url' => rtrim(env('AI_BASE_URL', 'https://api.openai.com/v1'), '/'),
         'api_key' => env('AI_API_KEY'),
-        'model' => env('AI_MODEL', 'gpt-4o-mini'),
+        'model' => env('AI_MODEL', 'gpt-5-mini'),
         'timeout' => (int) env('AI_TIMEOUT', 180),
 
         'json_strict' => (bool) env('AI_JSON_STRICT', true),
