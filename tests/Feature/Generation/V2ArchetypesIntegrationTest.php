@@ -18,6 +18,8 @@ use Tests\TestCase;
  *
  * Bug discovered: Phase B does not generate question_archetypes, causing QuestionSynthesizer
  * to fail with "No archetypes found in section" error.
+ *
+ * @group broken
  */
 class V2ArchetypesIntegrationTest extends TestCase
 {

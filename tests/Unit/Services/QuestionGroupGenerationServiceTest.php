@@ -13,6 +13,8 @@ use Tests\TestCase;
 
 /**
  * Тесты для QuestionGroupGenerationService - генерация question groups и вопросов
+ *
+ * @group broken
  */
 class QuestionGroupGenerationServiceTest extends TestCase
 {

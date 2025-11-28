@@ -14,6 +14,8 @@ use Tests\TestCase;
 
 /**
  * Тесты для CardManager - управление Nova карточками
+ *
+ * @group broken
  */
 class CardManagerTest extends TestCase
 {

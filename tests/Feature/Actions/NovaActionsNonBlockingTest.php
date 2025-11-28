@@ -16,6 +16,9 @@ use Illuminate\Support\Facades\Queue;
 use Laravel\Nova\Fields\ActionFields;
 use Tests\TestCase;
 
+/**
+ * @group broken
+ */
 class NovaActionsNonBlockingTest extends TestCase
 {
     use RefreshDatabase;

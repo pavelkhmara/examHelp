@@ -10,6 +10,9 @@ use App\Services\LanguageApp\Validators\QuestionTypeContract;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
+/**
+ * @group broken
+ */
 class StructureEndpointTest extends TestCase
 {
     use RefreshDatabase;

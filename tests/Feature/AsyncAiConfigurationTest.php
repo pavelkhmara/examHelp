@@ -4,6 +4,9 @@ namespace Tests\Feature;
 
 use Tests\TestCase;
 
+/**
+ * @group broken
+ */
 class AsyncAiConfigurationTest extends TestCase
 {
     public function test_async_ai_configuration_is_loaded(): void

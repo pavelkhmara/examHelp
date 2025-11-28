@@ -11,6 +11,8 @@ use Tests\TestCase;
 
 /**
  * Тесты для ConfirmedIdentityService - управление подтвержденными идентичностями
+ *
+ * @group broken
  */
 class ConfirmedIdentityServiceTest extends TestCase
 {

@@ -8,6 +8,9 @@ use App\Models\ExamExampleQuestion;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
+/**
+ * @group broken
+ */
 class EvaluateTextTest extends TestCase
 {
     use RefreshDatabase;

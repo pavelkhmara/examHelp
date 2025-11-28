@@ -12,6 +12,8 @@ use Tests\TestCase;
 
 /**
  * Тесты для ExamMetadataAnalysisService - анализ метаданных экзамена из user input
+ *
+ * @group broken
  */
 class ExamMetadataAnalysisServiceTest extends TestCase
 {

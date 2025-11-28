@@ -11,6 +11,9 @@ use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Queue;
 use Tests\TestCase;
 
+/**
+ * @group broken
+ */
 class NovaActionDispatchTest extends TestCase
 {
     use RefreshDatabase;

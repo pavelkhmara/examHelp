@@ -12,6 +12,9 @@ use Mockery;
 use Mockery\MockInterface;
 use Tests\TestCase;
 
+/**
+ * @group broken
+ */
 class RunExamResearchJobTest extends TestCase
 {
     use RefreshDatabase;

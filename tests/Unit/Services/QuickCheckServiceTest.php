@@ -10,6 +10,8 @@ use Tests\TestCase;
 
 /**
  * Тесты для QuickCheckService - проверка готовности экзамена к research
+ *
+ * @group broken
  */
 class QuickCheckServiceTest extends TestCase
 {

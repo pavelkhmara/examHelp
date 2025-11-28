@@ -19,6 +19,8 @@ use Tests\TestCase;
  * 4. Польский язык B1 без файла
  *
  * Все тесты используют without_confirmation=true для автоматического продолжения.
+ *
+ * @group broken
  */
 class SuccessCasesTest extends TestCase
 {

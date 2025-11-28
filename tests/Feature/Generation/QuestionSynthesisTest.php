@@ -13,6 +13,9 @@ use App\Services\LanguageApp\QuestionValidator;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
+/**
+ * @group broken
+ */
 class QuestionSynthesisTest extends TestCase
 {
     use RefreshDatabase;

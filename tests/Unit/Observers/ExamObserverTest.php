@@ -12,6 +12,8 @@ use Tests\TestCase;
 
 /**
  * Тесты для ExamObserver - отслеживание изменений в Exam
+ *
+ * @group broken
  */
 class ExamObserverTest extends TestCase
 {

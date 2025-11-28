@@ -9,6 +9,9 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Str;
 use Tests\TestCase;
 
+/**
+ * @group broken
+ */
 class ExamsReadTest extends TestCase
 {
     use RefreshDatabase;

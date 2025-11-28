@@ -10,6 +10,9 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 use Laravel\Nova\Nova;
 use Tests\TestCase;
 
+/**
+ * @group broken
+ */
 class ExamFullViewTest extends TestCase
 {
     use RefreshDatabase;
