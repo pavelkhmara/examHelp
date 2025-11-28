@@ -31,14 +31,22 @@ Route::get('/health', function () {
         $dbError = $e->getMessage();
     }
 
-    // Check Redis connectivity
+    // Check Redis connectivity (skip in testing environment where queue=sync)
     $redisOk = false;
     $redisError = null;
-    try {
-        \Illuminate\Support\Facades\Redis::ping();
+    $redisRequired = config('queue.default') !== 'sync';
+
+    if ($redisRequired) {
+        try {
+            \Illuminate\Support\Facades\Redis::ping();
+            $redisOk = true;
+        } catch (\Exception $e) {
+            $redisError = $e->getMessage();
+        }
+    } else {
+        // Redis not required in test environment
         $redisOk = true;
-    } catch (\Exception $e) {
-        $redisError = $e->getMessage();
+        $redisError = 'not required (queue=sync)';
     }
 
     // Check API keys configuration
@@ -69,7 +77,7 @@ Route::get('/health', function () {
     if (! $dbOk) {
         $checks['database_error'] = $dbError;
     }
-    if (! $redisOk) {
+    if ($redisRequired && ! $redisOk) {
         $checks['redis_error'] = $redisError;
     }
 
