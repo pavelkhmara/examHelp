@@ -72,10 +72,10 @@ class QuestionAttacher
 
                     if ($groupIdString) {
                         // Grouped question: use group_id prefix to match skeleton questions
-                        $uniqueQuestionId = "{$groupIdString}_{$rawQuestionId}";
+                        $uniqueQuestionId = QuestionIdGenerator::forGroupedQuestion($groupIdString, $rawQuestionId);
                     } else {
                         // Ungrouped question: use section prefix
-                        $uniqueQuestionId = "{$sectionKey}_{$rawQuestionId}";
+                        $uniqueQuestionId = QuestionIdGenerator::forUngroupedQuestion($sectionKey, $rawQuestionId);
                     }
 
                     Log::debug('[QuestionAttacher] Generated uniqueQuestionId', [
@@ -140,8 +140,8 @@ class QuestionAttacher
 
                         if ($existingQuestion) {
                             // UPDATE existing skeleton question with synthesized content
-                            // Check if it's a skeleton (empty interaction)
-                            $isSkeleton = empty($existingQuestion->interaction);
+                            // Phase 2.2: Check explicit status field instead of heuristic
+                            $isSkeleton = $existingQuestion->status === 'skeleton';
 
                             // ✅ CHECKPOINT LOGGING: Log before UPDATE
                             Log::info('[Contract:BeforeAttach] Question ready to attach', [
@@ -150,12 +150,14 @@ class QuestionAttacher
                                 'section_id' => $record['section_id'],
                                 'action' => 'UPDATE',
                                 'is_skeleton' => $isSkeleton,
+                                'status' => $existingQuestion->status,
                             ]);
 
                             if ($isSkeleton) {
                                 // Update with new content (excluding exam_id, section_id, question_group_id, question_id)
                                 $updateData = [
                                     'type' => $record['type'],
+                                    'status' => 'draft', // Phase 2.2: Upgrade skeleton to draft
                                     'skills_measured' => $record['skills_measured'],
                                     'time_limit_sec' => $record['time_limit_sec'],
                                     'instructions' => $record['instructions'],

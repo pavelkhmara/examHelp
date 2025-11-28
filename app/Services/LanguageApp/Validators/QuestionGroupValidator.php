@@ -107,7 +107,7 @@ final class QuestionGroupValidator
                     'type' => 'array',
                     'minItems' => 2,
                     'maxItems' => 20,
-                    'description' => 'Questions in this group (minimum 2)',
+                    'description' => 'Questions in this group (minimum 2 sharing common stimulus)',
                 ],
                 'metadata' => [
                     'type' => 'object',
@@ -182,7 +182,7 @@ final class QuestionGroupValidator
             if (! is_array($data['questions'])) {
                 $errors['questions'] = 'questions must be an array';
             } elseif (count($data['questions']) < 2) {
-                $errors['questions'] = 'question group must have at least 2 questions';
+                $errors['questions'] = 'question group must have at least 2 questions (use placeholders for standalone tasks)';
             } elseif (count($data['questions']) > 20) {
                 $errors['questions'] = 'question group cannot have more than 20 questions';
             }

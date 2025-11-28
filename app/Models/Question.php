@@ -128,6 +128,7 @@ class Question extends Model
         'time_limit_sec' => 'integer',
         'requires_audio' => 'boolean',
         'frozen_at' => 'datetime',
+        'status' => 'string',
     ];
 
     // ========== RELATIONSHIPS ==========

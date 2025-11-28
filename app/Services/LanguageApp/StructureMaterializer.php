@@ -10,6 +10,12 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 
 /**
+ * Phase 2.1: Centralized ID Generation
+ *
+ * @see QuestionIdGenerator
+ */
+
+/**
  * Materializes structure_v2 (from meta) into database tables.
  *
  * Converts JSON structure into:
@@ -130,7 +136,7 @@ class StructureMaterializer
 
                         // Generate unique question_id with group prefix to avoid collisions
                         $rawQuestionId = $qData['id'] ?? $qData['question_id'] ?? "q{$questionOrder}";
-                        $uniqueQuestionId = "{$groupIdPrefix}_{$rawQuestionId}";
+                        $uniqueQuestionId = QuestionIdGenerator::forGroupedQuestion($groupIdPrefix, $rawQuestionId);
 
                         Question::create([
                             'exam_id' => $exam->id,
@@ -139,6 +145,7 @@ class StructureMaterializer
                             'question_id' => $uniqueQuestionId,
                             'type' => $qData['type'] ?? 'unknown',
                             'order' => $qData['order'] ?? $questionOrder,
+                            'status' => 'draft', // Phase 2.2: Explicit status for fixture imports
                             'skills_measured' => $qData['skills_measured'] ?? [],
                             'time_limit_sec' => $qData['time_limit_sec'] ?? 0,
                             'instructions' => $qData['instructions'] ?? [],
