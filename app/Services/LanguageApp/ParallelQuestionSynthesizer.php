@@ -9,6 +9,7 @@ use App\Models\QuestionGroup;
 use App\Services\LanguageApp\Prompts\PromptQuestionSynthesis;
 use App\Services\LanguageApp\Schemas\QuestionArraySchema;
 use App\Services\LanguageApp\Validators\JsonSchemaQuestionV2;
+use App\Services\LanguageApp\Validators\PreValidator;
 use Illuminate\Support\Facades\Log;
 
 /**
@@ -28,6 +29,7 @@ class ParallelQuestionSynthesizer extends AbstractAiService
     public function __construct(
         AiProvider $ai,
         protected readonly JsonSchemaQuestionV2 $validator,
+        protected readonly PreValidator $preValidator,
         protected readonly QuestionValidator $questionValidator,
         protected readonly QuestionDeduplicator $deduplicator,
         protected readonly QuestionAttacher $attacher,
@@ -814,7 +816,29 @@ PROMPT;
             Log::debug('[ParallelQuestionSynthesizer] Wrapped single object in array');
         }
 
-        // Step 2: Validate each question with JsonSchemaQuestionV2
+        // Step 2a: PRE-VALIDATION with auto-fix (Phase 1.6 - P1.2)
+        $preValidationResult = $this->preValidator->preValidate($questions);
+
+        if (! $preValidationResult['valid']) {
+            throw new \Exception(
+                'Pre-validation failed: '.implode(', ', $preValidationResult['errors'])
+            );
+        }
+
+        // Use auto-fixed questions instead of raw AI output
+        $questions = $preValidationResult['fixed'];
+
+        // Log auto-fixes for monitoring
+        if ($preValidationResult['auto_fixes_applied'] > 0) {
+            Log::warning('[ParallelQuestionSynthesizer] Pre-validation auto-fixes applied', [
+                'count' => $preValidationResult['auto_fixes_applied'],
+                'errors' => $preValidationResult['errors'],
+            ]);
+        } else {
+            Log::debug('[ParallelQuestionSynthesizer] Pre-validation passed without fixes');
+        }
+
+        // Step 2b: Strict validation with JsonSchemaQuestionV2
         $validated = [];
         foreach ($questions as $index => $question) {
             try {
@@ -826,7 +850,7 @@ PROMPT;
                     'error' => $e->getMessage(),
                     'question_id' => $question['id'] ?? 'unknown',
                 ]);
-                // Skip invalid questions (should rarely happen with Structured Outputs)
+                // Skip invalid questions (should rarely happen with Structured Outputs + Pre-validation)
             }
         }
 

@@ -10,11 +10,16 @@ use Illuminate\Support\Collection;
 use Laravel\Nova\Actions\Action;
 use Laravel\Nova\Fields\ActionFields;
 
+/**
+ * @deprecated This action is deprecated and will be removed in a future version.
+ * Plan resolution is now automatically integrated into Research pipeline (Phase B).
+ * Use the main Research action instead.
+ */
 class ResolveGenerationPlanAction extends Action
 {
     use InteractsWithQueue, Queueable;
 
-    public $name = '3️⃣ Resolve Plans';
+    public $name = '⚠️ Resolve Plans (DEPRECATED)';
 
     public $uriKey = 'resolve-generation-plans-v2';
 
@@ -124,7 +129,7 @@ class ResolveGenerationPlanAction extends Action
             // Dispatch job
             ResolveGenerationPlansJob::dispatch($task->id);
 
-            return Action::message('✅ Plan resolution queued. Check Activity Timeline for progress.');
+            return Action::message('⚠️ DEPRECATED: This action is deprecated. Plan resolution is now automatic in Research pipeline. Use the main Research action instead. ✅ Plan resolution queued for this run.');
         }
 
         return Action::message('Plan resolution queued.');

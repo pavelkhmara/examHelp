@@ -212,7 +212,7 @@ class GenerationPlan extends Model
         $this->update([
             'status' => 'completed',
             'completed_at' => now(),
-            'generated_questions' => $this->total_questions,
+            'generated_questions' => $this->meta['questions_generated'] ?? 0,
         ]);
     }
 

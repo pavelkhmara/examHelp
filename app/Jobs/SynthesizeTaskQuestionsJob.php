@@ -15,6 +15,7 @@ use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
 use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Queue\SerializesModels;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 
@@ -69,17 +70,110 @@ class SynthesizeTaskQuestionsJob implements ShouldQueue
         $this->ensureConnection();
 
         $task = GenerationTask::findOrFail($this->taskId);
+
+        // ✅ CRITICAL FIX (Phase 1.5A): Validate parent task is still running
+        // Prevents orphaned child jobs from previous/cancelled tasks from executing
+        // See: docs/architecture/synthesis-filter-duplication-architectural-analysis-2025-11-28.md
+        if ($task->status !== 'running') {
+            Log::warning('SynthesizeTaskQuestionsJob: Skipping orphaned child job', [
+                'task_id' => $this->taskId,
+                'task_status' => $task->status,
+                'filter_key' => $this->filterKey,
+                'plan_id' => $this->planId,
+                'reason' => 'Parent task not running (orphaned from previous run)',
+            ]);
+
+            return; // Skip processing - this is an orphaned job
+        }
+
+        // ✅ CRITICAL FIX (Phase 1.5B + P0.2): Task-scoped idempotency via execution key
+        // Problem: Cache::has() + Cache::add() is NON-ATOMIC (Check-Then-Act pattern)
+        // Solution: Use Cache::add() return value directly (atomic operation)
+        // See: Architect analysis V4 - Non-Atomic Execution Key Check
+        $executionKey = "synthesis:task:{$this->taskId}:plan:{$this->planId}:filter:{$this->filterKey}";
+
+        // ✅ DEBUG LOGGING (P0.1 Investigation)
+        Log::info('[DEBUG] Child job started', [
+            'job_uuid' => $this->job->uuid() ?? 'unknown',
+            'task_id' => $this->taskId,
+            'plan_id' => $this->planId,
+            'filter_key' => $this->filterKey,
+            'execution_key' => $executionKey,
+            'worker' => gethostname(),
+            'pid' => getmypid(),
+        ]);
+
+        // ✅ P0.2 FIX (V4): Try to acquire execution key ATOMICALLY
+        // Cache::add() returns TRUE only if key didn't exist (atomic operation)
+        // If another worker already acquired the key, we get FALSE and MUST exit
+        $acquired = Cache::add($executionKey, [
+            'started_at' => now()->toIso8601String(),
+            'worker_id' => getmypid(),
+            'worker_hostname' => gethostname(),
+            'task_id' => $this->taskId,
+            'status' => 'processing',
+        ], now()->addHours(2)); // ✅ Increased TTL from 1h to 2h (safety margin)
+
+        if (! $acquired) {
+            // ✅ CRITICAL: Another worker already processing this filter - MUST exit
+            $existingData = Cache::get($executionKey);
+
+            Log::warning('[DEBUG] Duplicate execution detected - Cache::add() failed', [
+                'execution_key' => $executionKey,
+                'existing_data' => $existingData,
+                'existing_worker_id' => $existingData['worker_id'] ?? 'unknown',
+                'existing_worker_hostname' => $existingData['worker_hostname'] ?? 'unknown',
+                'existing_started_at' => $existingData['started_at'] ?? 'unknown',
+                'current_worker' => gethostname(),
+                'current_pid' => getmypid(),
+                'task_id' => $this->taskId,
+                'filter_key' => $this->filterKey,
+                'reason' => 'Cache::add() returned FALSE - another worker has acquired this key',
+            ]);
+
+            Log::info('SynthesizeTaskQuestionsJob: Filter already processing (execution key acquisition failed)', [
+                'task_id' => $this->taskId,
+                'plan_id' => $this->planId,
+                'filter_key' => $this->filterKey,
+                'execution_key' => $executionKey,
+                'reason' => 'Idempotency check - another worker is processing this filter',
+            ]);
+
+            return; // ✅ CRITICAL: Exit immediately - do NOT proceed
+        }
+
+        // ✅ Execution key acquired successfully - safe to proceed
+        Log::info('[DEBUG] Execution key acquired successfully', [
+            'execution_key' => $executionKey,
+            'worker' => gethostname(),
+            'pid' => getmypid(),
+            'task_id' => $this->taskId,
+            'filter_key' => $this->filterKey,
+            'ttl_hours' => 2,
+        ]);
+
+        Log::info('SynthesizeTaskQuestionsJob: Execution key acquired', [
+            'execution_key' => $executionKey,
+            'worker_id' => getmypid(),
+        ]);
+
         $exam = Exam::findOrFail($this->examId);
         $plan = GenerationPlan::lockForUpdate()->findOrFail($this->planId);
 
-        // Check if this filter already completed
+        // Check if this filter already completed (fallback check)
         $completedFilters = $plan->meta['completed_filters'] ?? [];
         if (in_array($this->filterKey, $completedFilters)) {
-            Log::info('SynthesizeTaskQuestionsJob: filter already completed, skipping', [
+            Log::info('SynthesizeTaskQuestionsJob: filter already completed in plan metadata, skipping', [
                 'task_id' => $this->taskId,
                 'plan_id' => $this->planId,
                 'filter_key' => $this->filterKey,
             ]);
+
+            // Mark execution key as completed
+            Cache::put($executionKey, [
+                'completed_at' => now()->toIso8601String(),
+                'status' => 'skipped_already_completed',
+            ], now()->addDay());
 
             return;
         }
@@ -202,6 +296,13 @@ class SynthesizeTaskQuestionsJob implements ShouldQueue
                 'filters_completed' => "{$completedFilters}/{$totalFilters}",
             ]);
 
+            // ✅ Mark execution key as completed (extend TTL to 1 day)
+            Cache::put($executionKey, [
+                'completed_at' => now()->toIso8601String(),
+                'status' => 'completed',
+                'questions_attached' => count($attachedQuestions),
+            ], now()->addDay());
+
         } catch (\Throwable $e) {
             Log::error('SynthesizeTaskQuestionsJob failed', [
                 'task_id' => $this->taskId,
@@ -230,6 +331,13 @@ class SynthesizeTaskQuestionsJob implements ShouldQueue
                     'error' => $e->getMessage(),
                 ]);
             });
+
+            // ✅ Cleanup execution key на ошибке (позволить retry)
+            Cache::forget($executionKey);
+
+            Log::info('SynthesizeTaskQuestionsJob: Execution key cleared after error (retry allowed)', [
+                'execution_key' => $executionKey,
+            ]);
 
             throw $e;
         }

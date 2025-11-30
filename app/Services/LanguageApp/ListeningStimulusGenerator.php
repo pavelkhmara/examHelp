@@ -68,6 +68,7 @@ class ListeningStimulusGenerator
                 ],
             ], [
                 'model' => 'default', // Используем основную модель
+                'json_strict' => false, // Override global json_strict - we need plain text for TTS
             ]);
 
             if (! ($response['ok'] ?? false)) {

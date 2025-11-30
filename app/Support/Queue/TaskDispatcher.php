@@ -75,6 +75,15 @@ class TaskDispatcher
             }
         }
 
+        // DEBUG: Log subject параметр
+        Log::info('[TaskDispatcher] Creating task', [
+            'type' => $type,
+            'subject_class' => $subject ? get_class($subject) : 'NULL',
+            'subject_id' => $subject?->id ?? 'NULL',
+            'exam_id' => $examId,
+            'idempotency_key' => $idempotencyKey,
+        ]);
+
         $task = GenerationTask::create([
             'exam_id' => $examId,
             'subject_type' => $subject ? get_class($subject) : null,

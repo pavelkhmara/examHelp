@@ -1844,7 +1844,7 @@ class Exam extends Resource
             (new \App\Nova\Actions\GenerateExamplesAction)->onlyOnDetail(),
 
             // Question synthesis pipeline
-            (new \App\Nova\Actions\ResolveGenerationPlanAction)->onlyOnDetail(),
+            // Note: Resolve Plans is now automatic in Research pipeline (deprecated as standalone action)
             (new \App\Nova\Actions\SynthesizeQuestionsAction)->onlyOnDetail(),
             (new \App\Nova\Actions\ValidateAttachQuestionsAction)->onlyOnDetail(),
 
