@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Services\LanguageApp;
 
 use App\Models\QuestionGroup;
+use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Support\Facades\Log;
 
 /**
@@ -126,7 +127,7 @@ class GrammarLexisContextGenerator
      * @param  \Illuminate\Database\Eloquent\Collection<int, \App\Models\Question>  $questions
      * @return array<string, int> Массив: grammar_point => count
      */
-    protected function extractGrammarPoints($questions): array
+    protected function extractGrammarPoints(Collection $questions): array
     {
         $points = [];
 
@@ -250,10 +251,12 @@ class GrammarLexisContextGenerator
 
     /**
      * Собирает контекст для промпта
+     *
+     * @param  \Illuminate\Database\Eloquent\Collection<int, \App\Models\Question>  $questions
      */
     protected function buildContext(
         QuestionGroup $group,
-        $questions,
+        Collection $questions,
         array $grammarPoints,
         string $theme,
         string $contextType
