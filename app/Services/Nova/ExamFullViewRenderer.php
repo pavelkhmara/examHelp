@@ -426,22 +426,28 @@ class ExamFullViewRenderer
         if (! empty($stimulus['text_html'])) {
             $textHtml = $stimulus['text_html'];
 
-            // Replace ______ (underscores) or [__X__] with input fields
-            $inputHtml = '<input type="text" style="border: 1px solid #d1d5db; border-radius: 4px; padding: 2px 6px; min-width: 80px; background: #fff; font-size: 14px;" placeholder="..." disabled>';
-            $textHtml = preg_replace('/_{3,}|(?:\[__[A-Z]?__\])/', $inputHtml, $textHtml);
+            // Skip placeholder texts (used for validation during assembly generation)
+            $isPlaceholder = str_contains($textHtml, 'Placeholder text') ||
+                           str_contains($textHtml, 'placeholder text');
 
-            // Check if this is a two-column matching question (Kolumna I / Kolumna II)
-            $isColumnTask = preg_match('/Kolumna\s+I/i', $textHtml) && preg_match('/Kolumna\s+II/i', $textHtml);
+            if (! $isPlaceholder) {
+                // Replace ______ (underscores) or [__X__] with input fields
+                $inputHtml = '<input type="text" style="border: 1px solid #d1d5db; border-radius: 4px; padding: 2px 6px; min-width: 80px; background: #fff; font-size: 14px;" placeholder="..." disabled>';
+                $textHtml = preg_replace('/_{3,}|(?:\[__[A-Z]?__\])/', $inputHtml, $textHtml);
 
-            if ($isColumnTask) {
-                // Split into two columns and render as table
-                $html .= $this->renderTwoColumnStimulus($textHtml);
-            } else {
-                $html .= '<div style="margin-bottom: 12px; padding: 12px; background: #f9fafb; border-radius: 4px; border: 1px solid #e5e7eb;">';
-                $html .= '<div style="font-size: 15px; line-height: 1.8; color: #374151;">';
-                $html .= $textHtml;
-                $html .= '</div>';
-                $html .= '</div>';
+                // Check if this is a two-column matching question (Kolumna I / Kolumna II)
+                $isColumnTask = preg_match('/Kolumna\s+I/i', $textHtml) && preg_match('/Kolumna\s+II/i', $textHtml);
+
+                if ($isColumnTask) {
+                    // Split into two columns and render as table
+                    $html .= $this->renderTwoColumnStimulus($textHtml);
+                } else {
+                    $html .= '<div style="margin-bottom: 12px; padding: 12px; background: #f9fafb; border-radius: 4px; border: 1px solid #e5e7eb;">';
+                    $html .= '<div style="font-size: 15px; line-height: 1.8; color: #374151;">';
+                    $html .= $textHtml;
+                    $html .= '</div>';
+                    $html .= '</div>';
+                }
             }
         }
 
@@ -495,6 +501,23 @@ class ExamFullViewRenderer
      */
     private function renderGroupAudio(QuestionGroup $questionGroup, array $audioUrls): string
     {
+        // First, check if there are any real audio URLs (not placeholders)
+        $hasRealAudio = false;
+        foreach ($audioUrls as $audioUrl) {
+            $url = is_string($audioUrl) ? $audioUrl : ($audioUrl['url'] ?? '');
+            if ($url && ! str_contains($url, 'placeholder_audio')) {
+                $hasRealAudio = true;
+                break;
+            }
+        }
+
+        // If no real audio, show informational message and return early
+        if (! $hasRealAudio) {
+            return '<div style="margin-bottom: 16px; padding: 12px; background: #f3f4f6; border-left: 3px solid #9ca3af; border-radius: 4px;">'
+                .'<p style="margin: 0; font-size: 14px; color: #6b7280; font-style: italic;">ℹ️ Аудио для этой группы задач доступно на уровне отдельных вопросов</p>'
+                .'</div>';
+        }
+
         $playbackSettings = $questionGroup->playback_settings ?? [];
         $maxPlays = $playbackSettings['max_plays'] ?? null;
         $enforcement = $playbackSettings['enforcement'] ?? 'none';
@@ -515,10 +538,12 @@ class ExamFullViewRenderer
             $html .= '</div>';
         }
 
-        // Audio player
+        // Audio player (only render real audio URLs)
         foreach ($audioUrls as $audioUrl) {
             $url = is_string($audioUrl) ? $audioUrl : ($audioUrl['url'] ?? '');
-            if ($url) {
+
+            // Skip placeholder URLs (used for validation during assembly generation)
+            if ($url && ! str_contains($url, 'placeholder_audio')) {
                 $html .= '<audio controls class="question-group-audio" style="width: 100%; margin-bottom: 8px;">';
                 $html .= '<source src="'.htmlspecialchars($url).'" type="audio/mpeg">';
                 $html .= 'Ваш браузер не поддерживает аудио.';

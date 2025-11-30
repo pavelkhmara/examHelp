@@ -88,10 +88,13 @@ final class OpenAiProvider implements AiProvider
             }
         }
 
+        // Check opts first, then fallback to config (allows per-request override)
+        $jsonStrictEnabled = $opts['json_strict'] ?? $openai_cfg['json_strict'] ?? false;
+
         $messages = [];
 
         // 1. System message for JSON strict mode
-        if ($openai_cfg['json_strict'] ?? false) {
+        if ($jsonStrictEnabled) {
             $messages[] = [
                 'role' => 'system',
                 'content' => 'Return ONLY valid JSON that matches the provided JSON schema. No prose, no markdown.',
@@ -117,6 +120,7 @@ final class OpenAiProvider implements AiProvider
 
         // Support Structured Outputs via json_schema option
         $jsonSchema = $opts['json_schema'] ?? null;
+
         if ($jsonSchema) {
             $body['response_format'] = [
                 'type' => 'json_schema',
@@ -126,7 +130,7 @@ final class OpenAiProvider implements AiProvider
                     'schema' => $jsonSchema,
                 ],
             ];
-        } elseif ($openai_cfg['json_strict'] ?? false) {
+        } elseif ($jsonStrictEnabled) {
             $body['response_format'] = ['type' => 'json_object'];
         }
 
@@ -240,24 +244,45 @@ final class OpenAiProvider implements AiProvider
         }
 
         $contentText = $body['choices'][0]['message']['content'];
-        $content = json_decode($contentText, true);
 
-        Log::debug('AiProviderFactory: response FULL ►', ['body' => $body, 'content' => $content, 'contentText' => $contentText]);
+        // Parse as JSON only if JSON mode was enabled
+        if ($jsonStrictEnabled || $jsonSchema) {
+            $content = json_decode($contentText, true);
 
-        if (! is_array($content)) {
-            throw new \RuntimeException('AI returned non-JSON content: '.self::clip($contentText));
+            Log::debug('AiProviderFactory: response FULL ►', ['body' => $body, 'content' => $content, 'contentText' => $contentText]);
+
+            if (! is_array($content)) {
+                throw new \RuntimeException('AI returned non-JSON content: '.self::clip($contentText));
+            }
+
+            return [
+                'ok' => true,
+                'raw' => $raw,                 // сырое тело HTTP-ответа провайдера
+                'body' => $body,                // декодированный top-level JSON провайдера
+                'content_text' => $contentText,         // строка JSON внутри message.content
+                'content' => $content,             // ДЕКОДИРОВАННЫЙ overview-объект — используем дальше в сервисе
+                'text' => $content['text'] ?? $content['response'] ?? json_encode($content, JSON_UNESCAPED_UNICODE), // Fallback for text extraction
+                'usage' => $body['usage'] ?? ['prompt_tokens' => 0, 'completion_tokens' => 0, 'total_tokens' => 0],
+                'model' => $model,                 // Модель использованная для запроса (для логов)
+                'model_alias' => $opts['model'] ?? null, // Алиас модели (thinking, default, etc.)
+                'sent_messages' => $messages,      // Final messages sent to AI (for logging)
+            ];
         }
+
+        // Plain text mode - return text directly
+        Log::debug('AiProviderFactory: response FULL (plain text) ►', ['body' => $body, 'contentText' => $contentText]);
 
         return [
             'ok' => true,
-            'raw' => $raw,                 // сырое тело HTTP-ответа провайдера
-            'body' => $body,                // декодированный top-level JSON провайдера
-            'content_text' => $contentText,         // строка JSON внутри message.content
-            'content' => $content,             // ДЕКОДИРОВАННЫЙ overview-объект — используем дальше в сервисе
+            'raw' => $raw,
+            'body' => $body,
+            'content_text' => $contentText,
+            'content' => null,  // No JSON content in plain text mode
+            'text' => $contentText,  // Return plain text directly
             'usage' => $body['usage'] ?? ['prompt_tokens' => 0, 'completion_tokens' => 0, 'total_tokens' => 0],
-            'model' => $model,                 // Модель использованная для запроса (для логов)
-            'model_alias' => $opts['model'] ?? null, // Алиас модели (thinking, default, etc.)
-            'sent_messages' => $messages,      // Final messages sent to AI (for logging)
+            'model' => $model,
+            'model_alias' => $opts['model'] ?? null,
+            'sent_messages' => $messages,
         ];
     }
 
