@@ -121,108 +121,86 @@ class QuestionAttacher
                 }
             }
 
-            // Insert new questions OR update existing skeleton questions
+            // Phase 2.3: INSERT-only (no skeleton UPDATE logic)
+            // Skeleton questions no longer created in Research - synthesis creates Questions directly
             if (! empty($questionRecords)) {
                 try {
-                    // Check for existing question_ids
-                    $allQuestionIds = array_map(fn ($r) => $r['question_id'], $questionRecords);
+                    // ✅ STEP 1: Check for duplicates WITHIN batch (internal validation)
+                    $questionIds = array_column($questionRecords, 'question_id');
+                    $uniqueIds = array_unique($questionIds);
 
-                    $existingQuestions = Question::whereIn('question_id', $allQuestionIds)
-                        ->get()
-                        ->keyBy('question_id');
+                    if (count($questionIds) !== count($uniqueIds)) {
+                        $duplicates = array_diff_assoc($questionIds, $uniqueIds);
 
-                    $newRecords = [];
-                    $updatedCount = 0;
-
-                    foreach ($questionRecords as $record) {
-                        $questionId = $record['question_id'];
-                        $existingQuestion = $existingQuestions->get($questionId);
-
-                        if ($existingQuestion) {
-                            // UPDATE existing skeleton question with synthesized content
-                            // Phase 2.2: Check explicit status field instead of heuristic
-                            $isSkeleton = $existingQuestion->status === 'skeleton';
-
-                            // ✅ CHECKPOINT LOGGING: Log before UPDATE
-                            Log::info('[Contract:BeforeAttach] Question ready to attach', [
-                                'uniqueQuestionId' => $questionId,
-                                'group_id' => $record['question_group_id'] ?? 'NULL',
-                                'section_id' => $record['section_id'],
-                                'action' => 'UPDATE',
-                                'is_skeleton' => $isSkeleton,
-                                'status' => $existingQuestion->status,
-                            ]);
-
-                            if ($isSkeleton) {
-                                // Update with new content (excluding exam_id, section_id, question_group_id, question_id)
-                                $updateData = [
-                                    'type' => $record['type'],
-                                    'status' => 'draft', // Phase 2.2: Upgrade skeleton to draft
-                                    'skills_measured' => $record['skills_measured'],
-                                    'time_limit_sec' => $record['time_limit_sec'],
-                                    'instructions' => $record['instructions'],
-                                    'stimulus' => $record['stimulus'],
-                                    'interaction' => $record['interaction'],
-                                    'response' => $record['response'],
-                                    'scoring' => $record['scoring'],
-                                    'metadata' => $record['metadata'],
-                                    'constraints' => $record['constraints'],
-                                    'randomization' => $record['randomization'],
-                                    'outcome_reporting' => $record['outcome_reporting'],
-                                    'io_signature' => $record['io_signature'],
-                                    'typical_errors' => $record['typical_errors'],
-                                    'ui_hints' => $record['ui_hints'],
-                                    'accessibility' => $record['accessibility'],
-                                ];
-
-                                // Use raw query to bypass model casts (data already JSON-encoded)
-                                Question::where('id', $existingQuestion->id)->update($updateData);
-                                $updatedCount++;
-
-                                Log::debug('[QuestionAttacher] Updated skeleton question with synthesized content', [
-                                    'question_id' => $questionId,
-                                    'db_id' => $existingQuestion->id,
-                                ]);
-                            } else {
-                                Log::debug('[QuestionAttacher] Skipping non-skeleton question (already has content)', [
-                                    'question_id' => $questionId,
-                                ]);
-                            }
-                        } else {
-                            // ✅ CHECKPOINT LOGGING: Log before INSERT
-                            Log::info('[Contract:BeforeAttach] Question ready to attach', [
-                                'uniqueQuestionId' => $questionId,
-                                'group_id' => $record['question_group_id'] ?? 'NULL',
-                                'section_id' => $record['section_id'],
-                                'action' => 'INSERT',
-                                'is_skeleton' => false,
-                            ]);
-
-                            // New question - add to insert batch
-                            $newRecords[] = $record;
-                        }
-                    }
-
-                    // Insert new records
-                    if (! empty($newRecords)) {
-                        $inserted = Question::insertOrIgnore($newRecords);
-
-                        Log::info('[QuestionAttacher] Created new question records', [
+                        Log::error('[QuestionAttacher] Duplicate question_id within batch', [
                             'exam_id' => $exam->id,
                             'section_id' => $plan->section_id,
-                            'prepared' => count($newRecords),
+                            'total_questions' => count($questionIds),
+                            'unique_questions' => count($uniqueIds),
+                            'duplicates' => array_values($duplicates),
+                        ]);
+
+                        throw new \Exception('Duplicate question_id within batch: '.implode(', ', $duplicates));
+                    }
+
+                    // ✅ P0.3 FIX (V6): Use insertOrIgnore to delegate deduplication to UNIQUE index
+                    // Problem (V5): lockForUpdate() does NOT lock non-existent rows → race condition persists
+                    // Solution: Let MySQL UNIQUE(question_id) be the single source of truth
+                    //           - insertOrIgnore() gracefully handles duplicates without error
+                    //           - P0.1 (dispatch lock) + P0.2 (execution key) already prevent 99.9% of duplicates
+                    //           - insertOrIgnore() catches remaining 0.1% edge cases
+                    // See: docs/fixes/p0-3-locking-strategy-problem.md
+                    $inserted = 0;
+                    DB::transaction(function () use ($questionRecords, $questionIds, $exam, $plan, &$inserted) {
+                        // ✅ STEP 2: insertOrIgnore - no error on duplicate key constraint
+                        // Returns number of ACTUALLY inserted rows (may be less than count($questionRecords))
+                        $inserted = Question::insertOrIgnore($questionRecords);
+
+                        // ✅ STEP 3: Log if some questions were skipped due to duplicates
+                        if ($inserted < count($questionRecords)) {
+                            // Find which question_ids already existed
+                            $existingIds = Question::whereIn('question_id', $questionIds)
+                                ->pluck('question_id')
+                                ->toArray();
+
+                            $duplicates = array_values(array_intersect($questionIds, $existingIds));
+
+                            Log::warning('[QuestionAttacher] Some questions already exist (duplicates ignored)', [
+                                'exam_id' => $exam->id,
+                                'section_id' => $plan->section_id,
+                                'expected' => count($questionRecords),
+                                'inserted' => $inserted,
+                                'duplicates_count' => count($duplicates),
+                                'duplicate_ids' => $duplicates,
+                            ]);
+                        }
+
+                        Log::info('[QuestionAttacher] Questions inserted successfully', [
+                            'exam_id' => $exam->id,
+                            'section_id' => $plan->section_id,
+                            'prepared' => count($questionRecords),
                             'inserted' => $inserted,
                         ]);
-                    }
+                    });
 
                     // Log summary
                     Log::info('[QuestionAttacher] Question attach summary', [
                         'exam_id' => $exam->id,
                         'section_id' => $plan->section_id,
                         'total_records' => count($questionRecords),
-                        'new_inserted' => count($newRecords),
-                        'skeletons_updated' => $updatedCount,
+                        'inserted' => $inserted,
                     ]);
+                } catch (\Illuminate\Database\QueryException $e) {
+                    // SQL constraint violation (duplicate key, FK violation, etc.)
+                    Log::error('[QuestionAttacher] SQL constraint violation during INSERT', [
+                        'exam_id' => $exam->id,
+                        'section_id' => $plan->section_id,
+                        'error_code' => $e->getCode(),
+                        'error_message' => $e->getMessage(),
+                        'question_ids' => array_column($questionRecords, 'question_id'),
+                    ]);
+
+                    throw $e;
                 } catch (\Throwable $e) {
                     Log::error('[QuestionAttacher] Bulk insert/update failed', [
                         'exam_id' => $exam->id,

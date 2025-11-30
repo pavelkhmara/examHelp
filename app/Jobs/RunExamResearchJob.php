@@ -4,6 +4,7 @@ namespace App\Jobs;
 
 use App\Models\Exam;
 use App\Models\GenerationTask;
+use App\Services\LanguageApp\AssemblyResolver;
 use App\Services\LanguageApp\ExamResearchService;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
@@ -19,7 +20,7 @@ class RunExamResearchJob implements ShouldQueue
 
     public function __construct(public int $taskId) {}
 
-    public function handle(ExamResearchService $svc): void
+    public function handle(ExamResearchService $svc, AssemblyResolver $assemblyResolver): void
     {
         $task = GenerationTask::query()->findOrFail($this->taskId);
         /** @var Exam $exam */
@@ -856,6 +857,47 @@ class RunExamResearchJob implements ShouldQueue
         // ========================================
 
         $task->addActivity('finalization_started', 'Starting research finalization');
+
+        // Resolve generation plans from assembly configuration (v2 only)
+        if ($useTwoPhaseGeneration && ! empty($exam->meta['structure_v2']['sections'])) {
+            $task->addActivity('resolve_plans_started', 'Resolving generation plans from assembly configuration');
+            $task->updateHeartbeat();
+
+            try {
+                $plans = $assemblyResolver->resolve($exam);
+                $plansCount = count($plans);
+
+                $task->addActivity('resolve_plans_completed', "Resolved {$plansCount} generation plans", [
+                    'plans_count' => $plansCount,
+                    'plans' => collect($plans)->map(fn ($p) => [
+                        'id' => $p->id,
+                        'section_id' => $p->section_id,
+                        'assembly_mode' => $p->assembly_mode,
+                        'total_questions' => $p->total_questions,
+                    ])->toArray(),
+                ]);
+
+                \Illuminate\Support\Facades\Log::info('[RunExamResearchJob] Generation plans resolved', [
+                    'exam_id' => $exam->id,
+                    'task_id' => $task->id,
+                    'plans_count' => $plansCount,
+                ]);
+            } catch (\Throwable $e) {
+                \Illuminate\Support\Facades\Log::error('[RunExamResearchJob] Plan resolution failed', [
+                    'exam_id' => $exam->id,
+                    'task_id' => $task->id,
+                    'error' => $e->getMessage(),
+                ]);
+
+                $task->addActivity('resolve_plans_failed', 'Plan resolution failed: '.$e->getMessage());
+
+                // Don't fail the whole job - plans can be resolved on-demand later
+                $result = (array) ($task->result ?? []);
+                $result['plan_resolution_error'] = $e->getMessage();
+                $task->result = $result;
+                $task->save();
+            }
+        }
 
         // Materialize structure_v2 into database tables (v2 only)
         if ($useTwoPhaseGeneration && ! empty($exam->meta['structure_v2']['sections'])) {

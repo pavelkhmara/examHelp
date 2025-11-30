@@ -21,7 +21,25 @@ class AsArrayWithUnescapedSlashes implements CastsAttributes
             return null;
         }
 
-        return json_decode($value, true);
+        // If already an array, return it as-is
+        if (is_array($value)) {
+            return $value;
+        }
+
+        // If it's a string, try to decode it
+        if (is_string($value)) {
+            $decoded = json_decode($value, true);
+
+            // If decoding failed or didn't return an array, return null
+            if (! is_array($decoded)) {
+                return null;
+            }
+
+            return $decoded;
+        }
+
+        // For any other type, return null
+        return null;
     }
 
     /**

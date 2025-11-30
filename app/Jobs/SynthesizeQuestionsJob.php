@@ -34,18 +34,21 @@ class SynthesizeQuestionsJob implements ShouldQueue
         /** @var Exam $exam */
         $exam = Exam::query()->findOrFail($task->exam_id);
 
-        // Prevent duplicate execution
-        if ($task->status === 'completed') {
-            Log::info('Job stopped: task already completed', [
+        // Prevent duplicate execution (guard against both completed and failed tasks)
+        // CRITICAL FIX: Retries must not re-run tasks that already failed/completed
+        // See: docs/fixes/synthesis-retry-mechanism-fix-2025-11-29.md
+        if (in_array($task->status, ['completed', 'failed'])) {
+            Log::info('Job stopped: task already finished', [
                 'task_id' => $task->id,
                 'status' => $task->status,
+                'reason' => 'Task already in terminal state (retry prevented)',
             ]);
 
-            return;
+            return; // Skip retry - task already finished
         }
 
         try {
-            // Set status to running
+            // Set status to running (only if not already failed/completed)
             $task->status = 'running';
             $task->save();
 
@@ -99,43 +102,48 @@ class SynthesizeQuestionsJob implements ShouldQueue
                     'exam_id' => $exam->id,
                 ]);
 
-                // Atomic update - claim all pending/failed plans
-                // For plans without started_at, set it manually before update
-                GenerationPlan::where('exam_id', $exam->id)
-                    ->whereIn('status', ['pending', 'failed'])
-                    ->whereNull('started_at')
-                    ->update(['started_at' => now()]);
+                // ✅ FIX: Use pessimistic locking (SELECT FOR UPDATE) to atomically claim plans
+                // This prevents race condition where two workers claim same plans
+                $plans = DB::transaction(function () use ($exam) {
+                    // Lock pending/failed/in_progress plans for exclusive access
+                    // NOTE: Including 'in_progress' allows parent job to resume interrupted synthesis
+                    $plansToClaim = GenerationPlan::where('exam_id', $exam->id)
+                        ->whereIn('status', ['pending', 'failed', 'in_progress'])
+                        ->lockForUpdate()
+                        ->get();
 
-                $updated = GenerationPlan::where('exam_id', $exam->id)
-                    ->whereIn('status', ['pending', 'failed'])
-                    ->update([
-                        'status' => 'in_progress',
-                    ]);
+                    // Update status to in_progress (already locked, no race condition)
+                    foreach ($plansToClaim as $plan) {
+                        $plan->status = 'in_progress';
+                        if (! $plan->started_at) {
+                            $plan->started_at = now();
+                        }
+                        $plan->save();
+                    }
 
-                // Load ALL in_progress plans (not just recently claimed)
-                // This allows us to track plans claimed by other workers too
-                $plans = GenerationPlan::where('exam_id', $exam->id)
-                    ->where('status', 'in_progress')
-                    ->get();
+                    return $plansToClaim;
+                });
 
-                Log::info('Loaded in_progress plans', [
-                    'updated' => $updated,
-                    'found' => $plans->count(),
+                Log::info('Claimed and loaded plans', [
+                    'plans_claimed' => $plans->count(),
+                    'plan_ids' => $plans->pluck('id')->toArray(),
                 ]);
 
-                // If no plans in_progress, check if all completed
+                // If no plans found, check if all completed
                 if ($plans->isEmpty()) {
+                    $totalCount = GenerationPlan::where('exam_id', $exam->id)->count();
                     $completedCount = GenerationPlan::where('exam_id', $exam->id)
                         ->where('status', 'completed')
                         ->count();
-                    $totalCount = GenerationPlan::where('exam_id', $exam->id)->count();
 
-                    if ($completedCount === $totalCount && $totalCount > 0) {
-                        // All plans already completed - this is success, not error
-                        Log::info('All generation plans already completed', [
+                    // If ALL plans already completed - this is normal, not error
+                    if ($totalCount > 0 && $completedCount === $totalCount) {
+                        Log::info('[SynthesizeQuestionsJob] All plans already completed - nothing to do', [
                             'exam_id' => $exam->id,
-                            'completed_count' => $completedCount,
+                            'total_plans' => $totalCount,
+                            'completed_plans' => $completedCount,
                         ]);
+
                         $task->addActivity('all_plans_completed', 'All generation plans already completed', [
                             'completed_count' => $completedCount,
                         ]);
@@ -150,7 +158,8 @@ class SynthesizeQuestionsJob implements ShouldQueue
                         return;
                     }
 
-                    throw new \Exception('No generation plans found (pending, failed or in_progress). Total: '.$totalCount.', completed: '.$completedCount);
+                    // Otherwise this is a real error - no plans but not all completed
+                    throw new \Exception("No generation plans found. Total: {$totalCount}, completed: {$completedCount}");
                 }
             }
 
@@ -181,6 +190,9 @@ class SynthesizeQuestionsJob implements ShouldQueue
             // Generate audio for question groups (listening sections)
             $audioStats = $this->generateGroupAudio($exam, $task);
 
+            // Generate text passages for question groups (reading sections)
+            $textStats = $this->generateGroupText($exam, $task);
+
             // Update task
             $task->result = [
                 'success' => true,
@@ -189,6 +201,7 @@ class SynthesizeQuestionsJob implements ShouldQueue
                 'total_attached' => $totalAttached,
                 'results' => $results,
                 'audio_stats' => $audioStats,
+                'text_stats' => $textStats,
             ];
             $task->status = 'completed';
             $task->save();
@@ -198,6 +211,7 @@ class SynthesizeQuestionsJob implements ShouldQueue
                 'total_generated' => $totalGenerated,
                 'total_attached' => $totalAttached,
                 'audio_generated' => $audioStats['audio_generated'],
+                'text_generated' => $textStats['text_generated'],
             ]);
             $task->updateHeartbeat();
 
@@ -295,8 +309,8 @@ class SynthesizeQuestionsJob implements ShouldQueue
      * NEW: Synthesize questions using task-level parallelization.
      * Dispatches SynthesizeTaskQuestionsJob for each filter/slot.
      *
-     * ✅ PLAN-LEVEL PARALLELIZATION: Dispatches ALL plans upfront, then waits for ALL to complete.
-     * This allows multiple plans (sections) to be processed simultaneously by different workers.
+     * ⚠️ SEQUENTIAL PLANS: Plans processed one-by-one to avoid race conditions.
+     * ✅ FILTER-LEVEL PARALLEL: Filters within each plan processed in parallel by workers.
      *
      * @param  \Illuminate\Support\Collection<int, \App\Models\GenerationPlan>  $plans
      */
@@ -305,35 +319,68 @@ class SynthesizeQuestionsJob implements ShouldQueue
         Exam $exam,
         \Illuminate\Support\Collection $plans
     ): array {
-        $task->addActivity('task_level_synthesis_start', 'Starting task-level + plan-level parallelization', [
+        $task->addActivity('task_level_synthesis_start', 'Starting task-level parallelization (sequential plans, parallel filters)', [
             'plans_count' => $plans->count(),
         ]);
 
-        // ✅ STEP 1: Dispatch task-level jobs for ALL plans upfront (plan-level parallelization)
-        foreach ($plans as $plan) {
+        $results = [];
+
+        // ✅ SEQUENTIAL: Process plans one-by-one to prevent race conditions
+        foreach ($plans as $planIndex => $plan) {
             try {
-                $this->dispatchTaskLevelJobs($exam, $plan, $task);
-                Log::info("Dispatched filters for plan {$plan->id}", [
+                $planNumber = $planIndex + 1;
+                $totalPlans = $plans->count();
+                Log::info("Processing plan {$plan->id} ({$planNumber}/{$totalPlans})", [
                     'plan_id' => $plan->id,
                     'section_id' => $plan->section_id,
                 ]);
+
+                // Dispatch filters for THIS plan (parallel execution by workers)
+                $this->dispatchTaskLevelJobs($exam, $plan, $task);
+
+                // Wait for THIS plan to complete before moving to next
+                $this->waitForTaskCompletion($plan, $task);
+
+                // Collect results
+                $plan->refresh();
+                $results[] = [
+                    'plan_id' => $plan->id,
+                    'section_id' => $plan->section_id,
+                    'success' => $plan->status === 'completed',
+                    'generated' => $plan->meta['questions_generated'] ?? 0,
+                    'attached' => $plan->meta['questions_generated'] ?? 0,
+                    'error' => $plan->error ?? null,
+                ];
+
+                Log::info("Plan {$plan->id} completed", [
+                    'questions_generated' => $plan->meta['questions_generated'] ?? 0,
+                ]);
             } catch (\Throwable $e) {
-                Log::error("Failed to dispatch filters for plan {$plan->id}", [
+                Log::error("Failed to process plan {$plan->id}", [
                     'error' => $e->getMessage(),
                 ]);
-                // Don't fail entire job - mark this plan as failed and continue
+
+                // Mark plan as failed
                 $plan->status = 'failed';
-                $plan->error = "Failed to dispatch filters: {$e->getMessage()}";
+                $plan->error = $e->getMessage();
                 $plan->save();
+
+                $results[] = [
+                    'plan_id' => $plan->id,
+                    'section_id' => $plan->section_id,
+                    'success' => false,
+                    'error' => $e->getMessage(),
+                ];
+
+                // Continue with next plan (soft failure)
             }
         }
 
-        $task->addActivity('all_plans_dispatched', 'All plans dispatched, waiting for completion', [
+        $task->addActivity('all_plans_completed', 'All plans processed sequentially', [
             'plans_count' => $plans->count(),
+            'succeeded' => collect($results)->where('success', true)->count(),
+            'failed' => collect($results)->where('success', false)->count(),
         ]);
-
-        // ✅ STEP 2: Wait for ALL plans to complete (polls all plans concurrently)
-        $results = $this->waitForAllPlansCompletion($plans, $task);
 
         return $results;
     }
@@ -347,114 +394,158 @@ class SynthesizeQuestionsJob implements ShouldQueue
     {
         Log::info("Dispatching task-level jobs for plan {$plan->id}");
 
-        // Check if jobs were already dispatched (by another worker)
-        // If meta.total_filters is set, jobs were already dispatched - just wait for them
-        if (isset($plan->meta['total_filters']) && $plan->meta['total_filters'] > 0) {
-            $totalFilters = $plan->meta['total_filters'];
-            $completedFilters = $plan->meta['filters_completed'] ?? 0;
+        // ✅ P0.1 FIX (V3): Use distributed lock for ENTIRE dispatch sequence
+        // Problem: lockForUpdate() released after SELECT query (2-10ms)
+        // Solution: Hold distributed lock for entire dispatch loop (50-200ms)
+        // See: Architect analysis V3 - Lock Lifetime Mismatch
+        $lockKey = "synthesis:dispatch:plan:{$plan->id}";
+        $lock = \Illuminate\Support\Facades\Cache::lock($lockKey, 120); // 2 minutes
 
-            Log::info("Jobs already dispatched for plan {$plan->id}, skipping dispatch", [
-                'total_filters' => $totalFilters,
-                'completed_filters' => $completedFilters,
-            ]);
-
-            $task->addActivity('jobs_already_dispatched', "Jobs already dispatched for plan #{$plan->id}", [
+        if (! $lock->get()) {
+            Log::info('[SynthesizeQuestionsJob] Another worker dispatching plan, skipping', [
                 'plan_id' => $plan->id,
-                'total_filters' => $totalFilters,
-                'completed_filters' => $completedFilters,
+                'lock_key' => $lockKey,
+                'reason' => 'Distributed lock acquisition failed - another worker has it',
             ]);
 
-            return; // Don't dispatch again, just wait for completion
+            $task->addActivity('dispatch_skipped_locked', "Another worker dispatching plan #{$plan->id}", [
+                'plan_id' => $plan->id,
+                'lock_key' => $lockKey,
+            ]);
+
+            return; // Exit - another worker is handling this plan
         }
 
-        // Get plan data
-        $planData = $plan->plan_data ?? [];
-        $mode = $plan->assembly_mode;
+        try {
+            // Check if jobs were already dispatched (by another worker)
+            // If meta.total_filters is set, jobs were already dispatched - just wait for them
+            $plan->refresh(); // Reload from DB
+            if (isset($plan->meta['total_filters']) && $plan->meta['total_filters'] > 0) {
+                $totalFilters = $plan->meta['total_filters'];
+                $completedFilters = $plan->meta['filters_completed'] ?? 0;
 
-        // Extract filters/slots based on assembly mode
-        $filters = [];
-        if ($mode === 'pool') {
-            $filters = $planData['filters'] ?? [];
-        } elseif ($mode === 'blueprint') {
-            $filters = $planData['slots'] ?? [];
-        } elseif ($mode === 'inline') {
-            // Check for question_groups first (new format for listening/reading)
-            $questionGroups = $planData['question_groups'] ?? [];
-            if (! empty($questionGroups)) {
-                // For inline + question_groups: each GROUP is a "filter" (task unit)
-                // This preserves group context while allowing parallel processing
-                foreach ($questionGroups as $groupIndex => $group) {
-                    // ✅ VALIDATE CONTRACT: Ensure group spec meets contract requirements
-                    QuestionGroupContract::validateQuestionGroupSpec($group);
-
-                    $groupId = $group['id'] ?? "group_{$groupIndex}";
-                    $groupQuestions = $group['questions'] ?? [];
-
-                    $filters[] = [
-                        'type' => 'question_group',
-                        'group_index' => $groupIndex,
-                        'group_id' => $groupId,
-                        'group_title' => $group['title'] ?? '',
-                        'group_stimulus' => $group['stimulus'] ?? [],
-                        'group_instructions' => $group['instructions'] ?? [],
-                        'group_playback_settings' => $group['playback_settings'] ?? null,
-                        'questions' => $groupQuestions,
-                        'pick' => count($groupQuestions),
-                    ];
-                }
-
-                Log::info('Inline mode with question_groups: '.count($filters).' groups as tasks', [
-                    'plan_id' => $plan->id,
-                    'groups_count' => count($questionGroups),
-                    'total_questions' => array_sum(array_map(fn ($g) => count($g['questions'] ?? []), $questionGroups)),
+                Log::info("Jobs already dispatched for plan {$plan->id}, skipping dispatch", [
+                    'total_filters' => $totalFilters,
+                    'completed_filters' => $completedFilters,
                 ]);
-            } else {
-                // Fallback to placeholders (legacy format)
-                $filters = $planData['placeholders'] ?? [];
+
+                $task->addActivity('jobs_already_dispatched', "Jobs already dispatched for plan #{$plan->id}", [
+                    'plan_id' => $plan->id,
+                    'total_filters' => $totalFilters,
+                    'completed_filters' => $completedFilters,
+                ]);
+
+                return; // Don't dispatch again, just wait for completion
             }
-        } else {
-            throw new \RuntimeException("Unknown assembly mode: {$mode}");
-        }
 
-        $totalFilters = count($filters);
+            // Get plan data
+            $planData = $plan->plan_data ?? [];
+            $mode = $plan->assembly_mode;
 
-        if ($totalFilters === 0) {
-            Log::warning("No filters found in plan {$plan->id}, marking as completed");
-            $plan->markAsCompleted();
+            // Extract filters/slots based on assembly mode
+            $filters = [];
+            if ($mode === 'pool') {
+                $filters = $planData['filters'] ?? [];
+            } elseif ($mode === 'blueprint') {
+                $filters = $planData['slots'] ?? [];
+            } elseif ($mode === 'inline') {
+                // Check for question_groups first (new format for listening/reading)
+                $questionGroups = $planData['question_groups'] ?? [];
+                if (! empty($questionGroups)) {
+                    // For inline + question_groups: each GROUP is a "filter" (task unit)
+                    // This preserves group context while allowing parallel processing
+                    foreach ($questionGroups as $groupIndex => $group) {
+                        // ✅ VALIDATE CONTRACT: Ensure group spec meets contract requirements
+                        QuestionGroupContract::validateQuestionGroupSpec($group);
 
-            return;
-        }
+                        $groupId = $group['id'] ?? "group_{$groupIndex}";
+                        $groupQuestions = $group['questions'] ?? [];
 
-        // Initialize plan metadata
-        $plan->meta = array_merge($plan->meta ?? [], [
-            'total_filters' => $totalFilters,
-            'filters_completed' => 0,
-            'questions_generated' => 0,
-            'completed_filters' => [],
-            'failed_filters' => [],
-        ]);
-        $plan->save();
+                        $filters[] = [
+                            'type' => 'question_group',
+                            'group_index' => $groupIndex,
+                            'group_id' => $groupId,
+                            'group_title' => $group['title'] ?? '',
+                            'group_stimulus' => $group['stimulus'] ?? [],
+                            'group_instructions' => $group['instructions'] ?? [],
+                            'group_playback_settings' => $group['playback_settings'] ?? null,
+                            'questions' => $groupQuestions,
+                            'pick' => count($groupQuestions),
+                        ];
+                    }
 
-        // Dispatch one job per filter
-        foreach ($filters as $index => $filter) {
-            $filterKey = "section_{$plan->section_id}_filter_{$index}";
+                    Log::info('Inline mode with question_groups: '.count($filters).' groups as tasks', [
+                        'plan_id' => $plan->id,
+                        'groups_count' => count($questionGroups),
+                        'total_questions' => array_sum(array_map(fn ($g) => count($g['questions'] ?? []), $questionGroups)),
+                    ]);
+                } else {
+                    // Fallback to placeholders (legacy format)
+                    $filters = $planData['placeholders'] ?? [];
+                }
+            } else {
+                throw new \RuntimeException("Unknown assembly mode: {$mode}");
+            }
 
-            Log::info("Dispatching SynthesizeTaskQuestionsJob for filter {$filterKey}", [
-                'plan_id' => $plan->id,
-                'filter_index' => $index,
-                'filter' => $filter,
+            $totalFilters = count($filters);
+
+            if ($totalFilters === 0) {
+                Log::warning("No filters found in plan {$plan->id}, marking as completed");
+                $plan->markAsCompleted();
+
+                return;
+            }
+
+            // Initialize plan metadata
+            $plan->meta = array_merge($plan->meta ?? [], [
+                'total_filters' => $totalFilters,
+                'filters_completed' => 0,
+                'questions_generated' => 0,
+                'completed_filters' => [],
+                'failed_filters' => [],
             ]);
+            $plan->save();
 
-            SynthesizeTaskQuestionsJob::dispatch(
-                taskId: $task->id,
-                examId: $exam->id,
-                planId: $plan->id,
-                filterKey: $filterKey,
-                filterData: $filter
-            )->onQueue('default');
+            // Dispatch one job per filter
+            foreach ($filters as $index => $filter) {
+                $filterKey = "section_{$plan->section_id}_filter_{$index}";
+
+                Log::info("Dispatching SynthesizeTaskQuestionsJob for filter {$filterKey}", [
+                    'plan_id' => $plan->id,
+                    'filter_index' => $index,
+                    'filter' => $filter,
+                ]);
+
+                // ✅ DEBUG LOGGING (P0.1 Investigation)
+                Log::info('[DEBUG] Dispatching child job', [
+                    'task_id' => $task->id,
+                    'plan_id' => $plan->id,
+                    'filter_key' => $filterKey,
+                    'filter_index' => $index,
+                    'worker' => gethostname(),
+                    'pid' => getmypid(),
+                ]);
+
+                SynthesizeTaskQuestionsJob::dispatch(
+                    taskId: $task->id,
+                    examId: $exam->id,
+                    planId: $plan->id,
+                    filterKey: $filterKey,
+                    filterData: $filter
+                )->onQueue('default');
+            }
+
+            Log::info("Dispatched {$totalFilters} task-level jobs for plan {$plan->id}");
+
+        } finally {
+            // ✅ P0.1: Always release distributed lock
+            $lock->release();
+
+            Log::info('[SynthesizeQuestionsJob] Distributed lock released', [
+                'plan_id' => $plan->id,
+                'lock_key' => $lockKey,
+            ]);
         }
-
-        Log::info("Dispatched {$totalFilters} task-level jobs for plan {$plan->id}");
     }
 
     /**
@@ -467,6 +558,7 @@ class SynthesizeQuestionsJob implements ShouldQueue
         $maxWaitTime = 30 * 60; // 30 minutes
         $pollInterval = 10; // 10 seconds
         $startTime = time();
+        $maxWaitForDispatch = 60; // Wait max 60 seconds for total_filters to be set
 
         $totalFilters = $plan->meta['total_filters'] ?? 0;
 
@@ -483,14 +575,24 @@ class SynthesizeQuestionsJob implements ShouldQueue
 
             $completedFilters = $plan->meta['filters_completed'] ?? 0;
             $questionsGenerated = $plan->meta['questions_generated'] ?? 0;
+            $totalFilters = $plan->meta['total_filters'] ?? 0;
+
+            // ✅ FIX: If total_filters still not set after maxWaitForDispatch, throw error
+            // This prevents immediate exit when dispatchTaskLevelJobs() hasn't run yet
+            if ($totalFilters === 0 && (time() - $startTime) > $maxWaitForDispatch) {
+                throw new \RuntimeException(
+                    "total_filters not set after {$maxWaitForDispatch}s (plan {$plan->id}). ".
+                    'dispatchTaskLevelJobs() may have failed or been skipped.'
+                );
+            }
 
             Log::info("Polling plan {$plan->id}: {$completedFilters}/{$totalFilters} filters completed, {$questionsGenerated} questions generated");
 
             // Update task heartbeat
             $task->updateHeartbeat();
 
-            // Check completion
-            if ($completedFilters >= $totalFilters) {
+            // Check completion (only if totalFilters > 0)
+            if ($totalFilters > 0 && $completedFilters >= $totalFilters) {
                 Log::info("All filters completed for plan {$plan->id}");
 
                 return;
@@ -735,6 +837,58 @@ class SynthesizeQuestionsJob implements ShouldQueue
             return [
                 'processed' => 0,
                 'audio_generated' => 0,
+                'errors' => 1,
+                'skipped' => 0,
+                'error' => $e->getMessage(),
+            ];
+        }
+    }
+
+    /**
+     * Generate text passages for question groups (reading sections)
+     *
+     * @return array{processed: int, text_generated: int, errors: int, skipped: int}
+     */
+    private function generateGroupText(Exam $exam, GenerationTask $task): array
+    {
+        try {
+            $task->addActivity('text_generation_start', 'Starting text generation for reading groups');
+            $task->updateHeartbeat();
+
+            // Keep connection alive
+            $this->keepConnectionAlive();
+
+            /** @var \App\Services\LanguageApp\QuestionGroupTextProcessor $textProcessor */
+            $textProcessor = app(\App\Services\LanguageApp\QuestionGroupTextProcessor::class);
+
+            $stats = $textProcessor->processExam($exam);
+
+            $task->addActivity('text_generation_completed', 'Text generation completed', [
+                'processed' => $stats['processed'],
+                'text_generated' => $stats['text_generated'],
+                'errors' => $stats['errors'],
+                'skipped' => $stats['skipped'],
+            ]);
+
+            Log::info('Group text generation completed', [
+                'exam_id' => $exam->id,
+                'stats' => $stats,
+            ]);
+
+            return $stats;
+
+        } catch (\Throwable $e) {
+            Log::error('Group text generation failed', [
+                'exam_id' => $exam->id,
+                'error' => $e->getMessage(),
+            ]);
+
+            $task->addActivity('text_generation_failed', 'Text generation failed: '.$e->getMessage());
+
+            // Don't fail the whole job - text generation is not critical
+            return [
+                'processed' => 0,
+                'text_generated' => 0,
                 'errors' => 1,
                 'skipped' => 0,
                 'error' => $e->getMessage(),

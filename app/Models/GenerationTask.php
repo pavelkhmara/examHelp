@@ -17,7 +17,7 @@ class GenerationTask extends Model
     use HasFactory;
 
     protected $fillable = [
-        'exam_id', 'type', 'status',
+        'exam_id', 'subject_type', 'subject_id', 'type', 'status',
         'request', 'response', 'result',
         'error', 'attempts',
         'idempotency_key', 'activities', 'heartbeat_at',

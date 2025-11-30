@@ -5,6 +5,7 @@ namespace App\Jobs;
 use App\Models\Exam;
 use App\Models\ExamCategory;
 use App\Models\GenerationTask;
+use App\Services\LanguageApp\AssemblyResolver;
 use App\Services\LanguageApp\ExamResearchService;
 use App\Services\LanguageApp\SanityCheckerService;
 use App\Services\LanguageApp\StructureMaterializer;
@@ -36,8 +37,11 @@ class FinalizeSectionGenerationJob implements ShouldQueue
 
     public function __construct(public int $taskId) {}
 
-    public function handle(ExamResearchService $svc, SanityCheckerService $sanityChecker): void
-    {
+    public function handle(
+        ExamResearchService $svc,
+        SanityCheckerService $sanityChecker,
+        AssemblyResolver $assemblyResolver
+    ): void {
         $task = GenerationTask::query()->findOrFail($this->taskId);
         /** @var Exam $exam */
         $exam = Exam::query()->findOrFail($task->exam_id);
@@ -211,6 +215,46 @@ class FinalizeSectionGenerationJob implements ShouldQueue
                     $task->result = $result;
                     $task->save();
                 }
+            }
+
+            // Resolve generation plans from assembly configuration
+            $task->addActivity('resolve_plans_started', 'Resolving generation plans from assembly configuration');
+            $task->updateHeartbeat();
+
+            try {
+                $plans = $assemblyResolver->resolve($exam);
+                $plansCount = count($plans);
+
+                $task->addActivity('resolve_plans_completed', "Resolved {$plansCount} generation plans", [
+                    'plans_count' => $plansCount,
+                    'plans' => collect($plans)->map(fn ($p) => [
+                        'id' => $p->id,
+                        'section_id' => $p->section_id,
+                        'assembly_mode' => $p->assembly_mode,
+                        'total_questions' => $p->total_questions,
+                    ])->toArray(),
+                ]);
+
+                Log::info('[FinalizeSectionGenerationJob] Generation plans resolved', [
+                    'exam_id' => $exam->id,
+                    'task_id' => $task->id,
+                    'plans_count' => $plansCount,
+                ]);
+            } catch (\Throwable $e) {
+                Log::error('[FinalizeSectionGenerationJob] Plan resolution failed', [
+                    'exam_id' => $exam->id,
+                    'task_id' => $task->id,
+                    'error' => $e->getMessage(),
+                ]);
+
+                $task->addActivity('resolve_plans_failed', 'Plan resolution failed: '.$e->getMessage());
+
+                // Don't fail the whole job - plans are resolved on-demand later
+                // Store error in task result for visibility
+                $result = (array) ($task->result ?? []);
+                $result['plan_resolution_error'] = $e->getMessage();
+                $task->result = $result;
+                $task->save();
             }
 
             // Materialize structure_v2 into database tables (ExamCategory, QuestionGroup, Question)
