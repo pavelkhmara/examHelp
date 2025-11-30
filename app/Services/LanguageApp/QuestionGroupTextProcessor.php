@@ -31,10 +31,13 @@ class QuestionGroupTextProcessor
         'Placeholder describing',
     ];
 
-    private const MIN_TEXT_LENGTH = 500; // Минимальная длина текста для reading passage
+    private const MIN_TEXT_LENGTH_READING = 500; // Минимальная длина для reading passage
+
+    private const MIN_TEXT_LENGTH_GRAMMAR = 200; // Минимальная длина для grammar/lexis context
 
     public function __construct(
-        private readonly ReadingStimulusGenerator $stimulusGenerator
+        private readonly ReadingStimulusGenerator $stimulusGenerator,
+        private readonly GrammarLexisContextGenerator $grammarGenerator
     ) {}
 
     /**
@@ -95,17 +98,24 @@ class QuestionGroupTextProcessor
             return 'skipped';
         }
 
+        $section = $group->section;
+        $skill = $section->skill ?? 'reading';
+
         Log::info('[QuestionGroupTextProcessor] Processing group', [
             'group_id' => $group->id,
             'title' => $group->title,
-            'passage_type' => $this->detectPassageType($group),
+            'skill' => $skill,
         ]);
 
-        // Определяем тип passage
-        $passageType = $this->detectPassageType($group);
-
-        // Генерируем текст через AI
-        $generatedText = $this->stimulusGenerator->generatePassage($group, $passageType);
+        // Используем разные генераторы в зависимости от skill
+        if ($skill === 'grammar_lexis') {
+            // Grammar/lexis: короткий контекст (200-300 слов)
+            $generatedText = $this->grammarGenerator->generateContext($group);
+        } else {
+            // Reading: полноценный passage (1500-3000 слов)
+            $passageType = $this->detectPassageType($group);
+            $generatedText = $this->stimulusGenerator->generatePassage($group, $passageType);
+        }
 
         if (empty($generatedText)) {
             Log::warning('[QuestionGroupTextProcessor] Text generation returned empty result', [
@@ -133,7 +143,7 @@ class QuestionGroupTextProcessor
      *
      * Генерируем если:
      * - Текст является плейсхолдером
-     * - Текст короче MIN_TEXT_LENGTH (500 chars)
+     * - Текст короче минимальной длины (зависит от skill)
      * - Еще не был сгенерирован (нет флага text_generated)
      */
     protected function shouldGenerateText(QuestionGroup $group): bool
@@ -141,7 +151,7 @@ class QuestionGroupTextProcessor
         $stimulus = $group->stimulus ?? [];
         $textHtml = $stimulus['text_html'] ?? '';
 
-        // Нет text_html в stimulus - не reading группа
+        // Нет text_html в stimulus - не нуждается в генерации
         if (empty($textHtml)) {
             return false;
         }
@@ -151,16 +161,25 @@ class QuestionGroupTextProcessor
             return true;
         }
 
+        // Определяем минимальную длину в зависимости от skill
+        $section = $group->section;
+        $skill = $section->skill ?? 'reading';
+
+        $minLength = ($skill === 'grammar_lexis')
+            ? self::MIN_TEXT_LENGTH_GRAMMAR  // 200 слов для grammar
+            : self::MIN_TEXT_LENGTH_READING; // 500 слов для reading
+
         // Проверяем длину текста
         $textPlain = strip_tags($textHtml);
         $textLength = mb_strlen($textPlain);
 
         // Текст слишком короткий - генерируем
-        if ($textLength < self::MIN_TEXT_LENGTH) {
+        if ($textLength < $minLength) {
             Log::info('[QuestionGroupTextProcessor] Text too short, will generate', [
                 'group_id' => $group->id,
+                'skill' => $skill,
                 'current_length' => $textLength,
-                'min_length' => self::MIN_TEXT_LENGTH,
+                'min_length' => $minLength,
             ]);
 
             return true;

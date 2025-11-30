@@ -66,13 +66,26 @@ The question must conform to this archetype structure:
 # Output Format
 Return a **valid JSON array** containing {$quantity} question object(s).
 
-Example structure (for single_select):
+**⚠️ CRITICAL JSON REQUIREMENTS (P1.1 - AI Quality)**:
+1. **EVERY question MUST have 'id' field** (required, string, non-empty)
+   - Format: letters, numbers, hyphens only (e.g., "q1", "read-q1", NOT "r1_q1")
+   - Missing 'id' will cause VALIDATION FAILURE
+2. **EVERY question MUST have 'type' field** (required, valid enum value)
+   - Must be one of: single_select, multi_select, true_false, essay, short_answer, matching, listen_mcq, dictation, etc.
+   - Invalid 'type' will cause VALIDATION FAILURE
+3. **JSON must be VALID** (proper escaping, NO trailing commas, proper quotes)
+   - Use double quotes for strings, not single quotes
+   - Escape special characters in text (\\", \\n, \\t)
+   - No trailing commas after last array/object element
+4. **ALL required fields must be present** (see schema below)
+
+Example VALID format (for single_select):
 ```json
 [
   {
-    "id": "q1",
+    "id": "read-q1",  // ← REQUIRED (non-empty string)
     "version": "2.0",
-    "type": "single_select",
+    "type": "single_select",  // ← REQUIRED (valid enum)
     "skills_measured": ["reading_comprehension"],
     "time_limit_sec": 60,
     "instructions": {
@@ -112,6 +125,7 @@ Example structure (for single_select):
 {$checklist}
 
 # Critical Reminders
+- **TRIPLE-CHECK 'id' and 'type' fields are present** (most common validation error)
 - Output MUST be valid JSON array (even for single question: `[{...}]`)
 - All required fields MUST be present
 - Follow the archetype config structure exactly
@@ -119,6 +133,7 @@ Example structure (for single_select):
 - Ensure logical consistency (e.g., answer_key must reference valid option IDs)
 - Use appropriate difficulty level for {$examLevel}
 - Questions must be realistic and relevant to {$sectionSkill} skill
+- **BEFORE submitting, verify JSON syntax is valid** (no trailing commas, proper escaping)
 
 EOT;
     }
@@ -142,6 +157,7 @@ EOT;
      * scoring (method, answer_key/rubric, max_score)
      * metadata (cefr, difficulty, topic, language)
    - Data types match schema (string, integer, array, object)
+   - **ID FORMAT**: Question IDs MUST contain ONLY letters, numbers, and hyphens. NO underscores allowed (e.g., 'q1', 'read-q1', NOT 'r1_q1')
    - **LANGUAGE REQUIREMENT**: ALL user-facing content MUST be in exam language ({$examLanguage}):
      * instructions.brief and instructions.full
      * stimulus.text_html (questions, passages, prompts)
@@ -286,7 +302,7 @@ REQ,
 # Response Schema (s2_question_json_archetype_v2.json)
 ```json
 {
-  "id": "string (unique question ID, e.g., 'q1', 'q2')",
+  "id": "string (unique question ID, ONLY letters, numbers, and hyphens - NO underscores. Examples: 'q1', 'q2', 'read-q1', 'listen-mcq-01')",
   "version": "string (schema version, default: '2.0')",
   "type": "string (question type: single_select, multi_select, essay, etc.)",
   "skills_measured": ["string (skills tested, e.g., 'reading_comprehension', 'listening')"],
