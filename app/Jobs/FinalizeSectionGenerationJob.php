@@ -217,7 +217,22 @@ class FinalizeSectionGenerationJob implements ShouldQueue
                 }
             }
 
+            // Materialize structure_v2 into database tables (ExamCategory, QuestionGroup, Question)
+            // IMPORTANT: Must be done BEFORE resolving plans (plans need ExamCategory to exist) (ExamCategory, QuestionGroup, Question)
+            $task->addActivity('materializing_structure', 'Materializing structure_v2 into database tables');
+
+            $materializer = new StructureMaterializer;
+            $stats = $materializer->materialize($exam, $sections);
+
+            $task->addActivity('structure_materialized', sprintf(
+                'Materialized: %d categories, %d question groups, %d questions',
+                $stats['categories'],
+                $stats['question_groups'],
+                $stats['questions']
+            ));
+
             // Resolve generation plans from assembly configuration
+            // IMPORTANT: Must be done AFTER materializing (needs ExamCategory records)
             $task->addActivity('resolve_plans_started', 'Resolving generation plans from assembly configuration');
             $task->updateHeartbeat();
 
@@ -256,19 +271,6 @@ class FinalizeSectionGenerationJob implements ShouldQueue
                 $task->result = $result;
                 $task->save();
             }
-
-            // Materialize structure_v2 into database tables (ExamCategory, QuestionGroup, Question)
-            $task->addActivity('materializing_structure', 'Materializing structure_v2 into database tables');
-
-            $materializer = new StructureMaterializer;
-            $stats = $materializer->materialize($exam, $sections);
-
-            $task->addActivity('structure_materialized', sprintf(
-                'Materialized: %d categories, %d question groups, %d questions',
-                $stats['categories'],
-                $stats['question_groups'],
-                $stats['questions']
-            ));
 
             // Update exam research_status
             $exam->research_status = 'completed';

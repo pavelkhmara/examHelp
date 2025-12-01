@@ -102,6 +102,10 @@ Route::get('/health', function () {
 //     ->withoutMiddleware(['auth', 'auth:sanctum', Authenticate::class])
 //     ->name('exams.structure');
 
+Route::post('/exams/{examId}/resolve-plans', [ExamResearchController::class, 'resolvePlans'])
+    ->withoutMiddleware(['auth', 'auth:sanctum', Authenticate::class])
+    ->name('exams.resolve-plans');
+
 // Route::post('/score/preview', [ScoringController::class, 'preview'])
 //     ->withoutMiddleware(['auth', 'auth:sanctum', Authenticate::class])
 //     ->name('score.preview');

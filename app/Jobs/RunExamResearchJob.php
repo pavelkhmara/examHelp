@@ -858,7 +858,24 @@ class RunExamResearchJob implements ShouldQueue
 
         $task->addActivity('finalization_started', 'Starting research finalization');
 
+        // Materialize structure_v2 into database tables (v2 only)
+        // IMPORTANT: Must be done BEFORE resolving plans (plans need ExamCategory to exist)
+        if ($useTwoPhaseGeneration && ! empty($exam->meta['structure_v2']['sections'])) {
+            $task->addActivity('materializing_structure', 'Materializing structure_v2 into database tables');
+
+            $materializer = new \App\Services\LanguageApp\StructureMaterializer;
+            $stats = $materializer->materialize($exam, $exam->meta['structure_v2']['sections']);
+
+            $task->addActivity('structure_materialized', sprintf(
+                'Materialized: %d categories, %d question groups, %d questions',
+                $stats['categories'],
+                $stats['question_groups'],
+                $stats['questions']
+            ));
+        }
+
         // Resolve generation plans from assembly configuration (v2 only)
+        // IMPORTANT: Must be done AFTER materializing (needs ExamCategory records)
         if ($useTwoPhaseGeneration && ! empty($exam->meta['structure_v2']['sections'])) {
             $task->addActivity('resolve_plans_started', 'Resolving generation plans from assembly configuration');
             $task->updateHeartbeat();
@@ -897,21 +914,6 @@ class RunExamResearchJob implements ShouldQueue
                 $task->result = $result;
                 $task->save();
             }
-        }
-
-        // Materialize structure_v2 into database tables (v2 only)
-        if ($useTwoPhaseGeneration && ! empty($exam->meta['structure_v2']['sections'])) {
-            $task->addActivity('materializing_structure', 'Materializing structure_v2 into database tables');
-
-            $materializer = new \App\Services\LanguageApp\StructureMaterializer;
-            $stats = $materializer->materialize($exam, $exam->meta['structure_v2']['sections']);
-
-            $task->addActivity('structure_materialized', sprintf(
-                'Materialized: %d categories, %d question groups, %d questions',
-                $stats['categories'],
-                $stats['question_groups'],
-                $stats['questions']
-            ));
         }
 
         // Update exam research_status
